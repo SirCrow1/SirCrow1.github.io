@@ -1,0 +1,70 @@
+/* General setup */
+
+
+
+.gveret-levin-regular {
+  font-family: "Gveret Levin", cursive;
+  font-weight: 400;
+  font-style: normal;
+}
+
+
+.nunito-sans-plain {
+  font-family: "Nunito Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100,
+    "YTLC" 500;
+}
+
+html{
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Nunito Sans", sans-serif;
+  line-height: 1.4;
+  margin: 0 auto;
+  padding: 0 20px;
+  min-width: 980px;
+  max-width: 1400px;
+}
+h1, h2, h3 {
+  font-family: "Gveret Levin", cursive;
+  font-size: 1.5em;
+  color: #2a2a2a;
+}
+
+h1{
+	text-align: center; 
+}
+
+h2{
+	margin-bottom: 0px;
+}
+/* Layout */
+
+main {
+  display: grid;
+  grid-template-columns: 5fr 2fr 2fr;
+  gap: 40px;
+  padding: 20px 0;
+}
+
+/* header and footer */
+
+header {
+  border-bottom: 5px solid #aa6666;
+}
+
+footer {
+  border-top: 5px solid #aa6666;
+}
+
+footer p {
+  text-align: center;
+}
