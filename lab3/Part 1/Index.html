@@ -1,170 +1,128 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8">
     <title>Forms challenge</title>
-   <!--
-            Name: Muntakim Snigdho
-            File: filename.html
-            Date: 2026/02/06
-            This lab makes a bug website.
-            -->
-
-
-    <link href="style.css" rel="stylesheet" />
+    <!--
+        Name: Muntakim Snigdho
+        File: filename.html
+        Date: 2026/02/06
+        This lab makes a bug website.
+    -->
+    <link href="style.css" rel="stylesheet">
     <script defer src="index.js"></script>
   </head>
   <body>
     <form>
-   <h1>We want your feedback!</h1>
-   <p>
-    We're very excited that you visited the <a href="#">little house in 
-      the woods,</a>
-    and we want to hear what you thought of it! Please fill in the below
-    sections. You don't need to provide your name or contact details, but
-    if you do, we'll enter you into a <a href="#"> prize draw <a>where you'll have a chance
-    to win prizes.
-    </p>
+      <h1>We want your feedback!</h1>
+      <p>
+        We're very excited that you visited the <a href="#">little house in 
+        the woods,</a>
+        and we want to hear what you thought of it! Please fill in the below
+        sections. You don't need to provide your name or contact details, but
+        if you do, we'll enter you into a <a href="#">prize draw</a> where you'll have a chance
+        to win prizes.
+      </p>
 
-    -- <img 
-    src="https://mdn.github.io/shared-assets/images/examples/learn/woodland-strip.jpg"
-alt=""></a>    
+      <img 
+        src="https://mdn.github.io/shared-assets/images/examples/learn/woodland-strip.jpg"
+        alt="">    
 
-<div class ="form sector">
-    <h2>Facilities</h2>
+      <div class="form sector">
+        <h2>Facilities</h2>
 
-    <fieldset>
-    <legend>Was the porridge</legend>
-    <input
-    type="radio"
-    id="porriage-1"
-    name="porriage"
-    value="hot"
-    checked /><lebel for="porriage-1">Too hot?</lebel>
+        <fieldset>
+          <legend>Was the porridge</legend>
+          <input type="radio" id="Porriage-1" name="Porriage" value="Hot" checked>
+          <label for="Porriage-1">Too hot?</label>
 
-  <input
-  type="radio"
-  id="porriage-2"
-  name="porriage"
-  value ="cold" /><lebel for="porriage-2">Too cold?</lebel> 
-    </lebel>
+          <input type="radio" id="Porriage-2" name="Porriage" value="Cold">
+          <label for="Porriage-2">Too cold?</label>
 
-     <input
-  type="radio"
-  id="porriage-3"
-  name="porriage"
-  value ="right" /><lebel for="porriage-3">Just Right</lebel> 
-    </lebel>
+          <input type="radio" id="Porriage-3" name="Porriage" value="Right">
+          <label for="Porriage-3">Just Right</label>
+        </fieldset>
 
-    </fieldset><fieldset>
+        <fieldset>
+          <legend>Were the beds</legend>
+          <input type="radio" id="Beds-1" name="Beds" value="Hard" checked>
+          <label for="Beds-1">Too hard?</label>
 
+          <input type="radio" id="Beds-2" name="Beds" value="Soft">
+          <label for="Beds-2">Too soft?</label>
 
-   <legend>Were the beds</legend>
-          <input
-            type="radio"
-            id="beds-1"
-            name="beds"
-            value="hard"
-            checked /><label for="beds-1">Too hard?</label>
+          <input type="radio" id="Beds-3" name="Beds" value="Right">
+          <label for="Beds-3">Just right?</label>
+        </fieldset>
 
-          <input type="radio" id="beds-2" name="beds" value="soft" /><label
-            for="beds-2"
-            >Too soft?</label
-          >
-          <input type="radio" id="beds-3" name="beds" value="right" /><label
-            for="beds-3"
-            >Just right?</label
-          >
+        <fieldset>
+          <legend>Describe the chairs (select all you agree with)</legend>
+          <input type="checkbox" id="Comfy" name="Comfy">
+          <label for="Comfy">Comfy</label>
 
-    </fieldset><fieldset>
-    <legend>Describe the chairs (select all you agree with)</legend>
-    <input type="checkbox" id="Comfy" name="Comfy" /><label for="Comfy"  
-    for="Comfy"
-            >Comfy</label
-          >
-          <input type="checkbox" id="luxurious" name="luxurious" 
-/><label
-for="luxurious"
->Luxurious</label>
-><input type="checkbox" id="hi tech" name="hi-tech" />
-<label 
-for="hi-tech" >Hi-tech</label>
-<input type="checkbox" id="pretty" name="pretty" />
-<label for = "pretty"
->Pretty</label>
-><input type="checkbox" id="Majestic" name="Majestic" />
-<Label
-for="Majestic"
->Majestic</Label>
->
-    </fieldset>
-    </div>
+          <input type="checkbox" id="Luxurious" name="Luxurious">
+          <label for="Luxurious">Luxurious</label>
 
+          <input type="checkbox" id="Hi-tech" name="Hi-tech">
+          <label for="Hi-tech">Hi-tech</label>
 
-        <h2>About your hosts</h2>
-    --
-<div class="form-section"
+          <input type="checkbox" id="Pretty" name="Pretty">
+          <label for="Pretty">Pretty</label>
 
- <div class="separator">
-<label for="favourite">Who is your favourite bear?</label>
-<select name="favourite" id="favourite">
-  <option value="Papa">Papa Bear</option>
-    <option value="Mother">Mama Bear</option>
-    <option value="Junior">Junior</option>
-      <option value="Randy">Cousin Randy</option>
+          <input type="checkbox" id="Majestic" name="Majestic">
+          <label for="Majestic">Majestic</label>
+        </fieldset>
+      </div>
 
-<select> 
-</div>
-
-<div class= "separator">
-  <label for="greeting">Which greeting did you prefer?</label>
-</label>
-<select name="greeting" id="greeting">
-  <option value="Papa">Wave</option>
-    <option value="Mama">Friendly Greeting</option>
-  <option value="Junior">Growl</option>
-  <option value="Randy">Clarw marks in the door</option>
-</select>
-</div>
-</div>
-
-    --
-<div class="form-section"
-  
-<h2>Any other feedback?</h2>
-
-<label for="Give us your comments"> </label>  
-<br/>
-<textarea id="comments" name="comments"></textarea>
-<div>
-
-    --
-
-    <h2>Your details</h2>
-        <div class="separator">
-          <label for="name">Name</label>
-          <input type="text" id="name" name="name" />
-        </div>
-
-  
-    <h2>Your details</h2>
-< <div class="separator">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" />
-        </div>
-
-  
-    <h2>Your details</h2>
-<div class="Phone">
-  <label for="Phone" >Phone</label>
-  <input type="Phone" id="Phone" name="Phone" />
-  </div>
-</div>
-    --
+      <h2>About your hosts</h2>
       <div class="form-section">
-   <button>Submit</button>
-   </div>
-</form>
-    -- 
+        <div class="separator">
+          <label for="favourite">Who is your favourite bear?</label>
+          <select name="favourite" id="favourite">
+            <option value="Papa">Papa Bear</option>
+            <option value="Mother">Mama Bear</option>
+            <option value="Junior">Junior</option>
+            <option value="Dozer">Dozer</option>
+          </select>
+        </div>
+
+        <div class="separator">
+          <label for="greeting">Which greeting did you prefer?</label>
+          <select name="greeting" id="greeting">
+            <option value="Wave">Wave</option>
+            <option value="Friendly">Friendly Greeting</option>
+            <option value="Growl">Growl</option>
+            <option value="Claw">Claw marks in the door</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2>Any other feedback?</h2>
+        <label for="Comments">Your comments:</label>  
+        <br>
+        <textarea id="Comments" name="Comments"></textarea>
+      </div>
+
+      <h2>Your details</h2>
+      <div class="separator">
+        <label for="Name">Name</label>
+        <input type="text" id="Name" name="Name">
+      </div>
+
+      <div class="separator">
+        <label for="Email">Email</label>
+        <input type="email" id="Email" name="Email">
+      </div>
+
+      <div class="Phone">
+        <label for="Phone">Phone</label>
+        <input type="tel" id="Phone" name="Phone">
+      </div>
+
+      <div class="form-section">
+        <button>Submit</button>
+      </div>
+    </form>
   </body>
 </html>
