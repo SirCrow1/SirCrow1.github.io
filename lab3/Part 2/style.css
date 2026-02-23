@@ -1,7 +1,5 @@
 /* General setup */
 
-
-
 .gveret-levin-regular {
   font-family: "Gveret Levin", cursive;
   font-weight: 400;
@@ -19,7 +17,7 @@
     "YTLC" 500;
 }
 
-html{
+html
 
 * {
   box-sizing: border-box;
@@ -39,6 +37,7 @@ h1, h2, h3 {
   font-family: "Gveret Levin", cursive;
   color: #2a2a2a;
 }
+
 
 h1{
 	font-size: 2.0rem;
@@ -74,3 +73,29 @@ footer {
 footer p {
   text-align: center;
 }
+a {
+  color: #aa6666; 
+  text-decoration: underline;
+  }
+  a:hover, 
+  a:focus { color:#aa6666; 
+    text-decoration: none;}
+a:focus { outline: none;}
+
+ul, ol {line-height: 1.6;
+margin 1em 0;}
+
+
+nav ul { list-style: none;
+  puddling: 0;
+  margin: 0;
+   }
+
+   nav a { 
+    display: block;
+    padding: 15px 0;
+    text-align: center
+    font-family:  "Gveret Levin", cursive;
+    text-transform: uppercase;  
+ }
+
