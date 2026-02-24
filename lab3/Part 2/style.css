@@ -92,10 +92,43 @@ nav ul { list-style: none;
    }
 
    nav a { 
+    display: flex;
+    gap: 0.625%;
     display: block;
-    padding: 15px 0;
+    padding: 15px;
     text-align: center
     font-family:  "Gveret Levin", cursive;
     text-transform: uppercase;  
- }
+    margin: 3px;
+    flex: 1;
+    text-decoration: none;
+    outline-color: transparent;
+    text-align: center;
+    line-height: 3;
+    color: #000000;
+    background-color: #DDDDDD;
+    border: 1px solid brown;
+  }
+
+ a[href^="http"]::after {
+  content: "";
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  margin-left: 0.25em;
+
+  background-size: 100%;
+  background-image: url("external-link-52.png");
+}
+.container {
+}
+
+a.container {
+  flex: 1;
+  text-decoration: none;
+  outline-color: transparent;
+  text-align: center;
+  line-height: 3;
+  color: black;
+}
 
