@@ -8,14 +8,29 @@ body {
   color: #333333;
   margin: 0;
   font: 1.2em / 1.6 sans-serif;
+
+  padding: 20px;
+  width:500px ;
+  background-color: #efefef;
+  margin: 0 auto:;
 }
 
-
+ul {
+  background-color:white;
+  border: 5px solid purple;
+  padding: 30px;
+  border-radius: 20px;
+  }
+  
+a {color: green;}
+a: :hover, a:focus
+{color:darkgreen;
 
 img {
   max-width: 100%;
   display: block;
   border: 1px solid black;
+  text-decoration:none;
 }
 
 .logo {
@@ -56,3 +71,4 @@ nav a {
 .feature {
   width: 200px;
 }
+
