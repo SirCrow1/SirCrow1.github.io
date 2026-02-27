@@ -15,6 +15,14 @@ body {
   margin: 0 auto:;
 }
 
+h1 {color:darkslategray;
+font-size: 2rem;
+border-bottom: 10px dotted purple;}
+
+
+
+
+
 ul {
   background-color:white;
   border: 5px solid purple;
@@ -22,15 +30,18 @@ ul {
   border-radius: 20px;
   }
   
-a {color: green;}
-a: :hover, a:focus
-{color:darkgreen;
+a {
+  color: green;
+}a:hover, 
+a:focus {
+ color: darkgreen;
+  text-decoration: none}
+
 
 img {
   max-width: 100%;
   display: block;
   border: 1px solid black;
-  text-decoration:none;
 }
 
 .logo {
