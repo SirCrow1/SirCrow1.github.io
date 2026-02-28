@@ -1,3 +1,6 @@
+
+
+/* Css comment */
 * {
   box-sizing: border-box;
 }
@@ -29,10 +32,7 @@ img {
   grid-template-columns: 3fr 1fr;
   gap: 20px;
   align-items: start;
-}
-
-
-nav {
+}   
   background-color: black;
   padding: 0.5em;
   top: 0;
