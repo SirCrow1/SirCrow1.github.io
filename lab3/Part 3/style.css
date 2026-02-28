@@ -9,6 +9,19 @@ body {
   font: 1.2em / 1.6 sans-serif;
 }
 
+nav {
+  position: stick;
+  top 0;}
+
+  nav ul {display: flex
+justify-content: space-around;}
+
+.grid
+display: grid;
+grid-template colums: 1fr 3fr;
+gap: 20px; 
+  
+
 img {
   max-width: 100%;
   display: block;
@@ -44,6 +57,10 @@ nav a {
   padding: 0.5em 1em;
 }
 
+nav {position:sticky;
+  top: 0;}
+
+
 .photos {
   list-style: none;
   margin: 0;
@@ -53,3 +70,12 @@ nav a {
 .feature {
   width: 200px;
 }
+
+.photos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;}
+
+  .feature{float, left; margin: 0 20px 10px 0;}
+
+
