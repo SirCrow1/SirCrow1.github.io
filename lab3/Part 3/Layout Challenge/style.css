@@ -25,9 +25,12 @@ img {
 .grid {
   margin: 0 auto;
   max-width: 980px;
-  column-gap: 20px 
-grid-template-columns: 3fr 1fr;
- display: grid;}
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
 
 nav {
   background-color: black;
@@ -44,6 +47,7 @@ nav ul {
   display: flex;
 }
 
+
 nav a {
   color: white;
   text-decoration: none;
@@ -54,11 +58,13 @@ nav a {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 5px;
-  display: grid;
 }
 
 .feature {
   width: 200px;
+  float: left;
+  margin: 8px 30px 20px 0;
 }
