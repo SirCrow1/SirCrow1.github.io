@@ -25,17 +25,23 @@ img {
 .grid {
   margin: 0 auto;
   max-width: 980px;
-}
+  column-gap: 20px 
+grid-template-columns: 3fr 1fr;
+ display: grid;}
 
 nav {
   background-color: black;
   padding: 0.5em;
+  top: 0;
+  position: sticky;
 }
 
 nav ul {
   margin: 0;
   padding: 0;
   list-style: none;
+  justify-content: space-around;
+  display: flex;
 }
 
 nav a {
@@ -48,6 +54,9 @@ nav a {
   list-style: none;
   margin: 0;
   padding: 0;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  display: grid;
 }
 
 .feature {
