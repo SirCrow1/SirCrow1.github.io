@@ -29,3 +29,21 @@ newImage.addEventListener('keydown, (e)=>
         }
   });
 }
+
+function updateDisplayImage(img){
+    displayedImage.src = e.target.src;
+    displayedImage.alt = image.alt}
+
+btn.addEventListener('click', () => {
+    const btnClass - btn.getAttribute('class');
+
+    if(btnClass)==='dark'){
+        btn.textContent='Lighten'
+        overlay.style.backgroundColor='rgb(0 0 0/0);}
+        btn.classList.toggle('dark');
+        });
+        
+
+
+
+
