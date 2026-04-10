@@ -2,8 +2,12 @@
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
 
+const para = document.querySelector('p');
+let count = 0;
+
 const width = (canvas.width = window.innerWidth);
 const height = (canvas.height = window.innerHeight);
+
 
 
 function random(min, max) {
@@ -79,7 +83,10 @@ class EvilCircle extends Shape {
           //alert("in outer if");
 
           ball.exists = false;
-        }
+
+count--; 
+para.textContent = `Ball count: ${count}`;
+ }
       }
     }
   }
@@ -152,7 +159,15 @@ while (balls.length < 25) {
   );
 
   balls.push(ball);
+
+  count++;
+  para.textContent = `Ball count: ${count}`;
+
+
 }
+
+
+
 const pacman = new EvilCircle(100, 200);
   
 function loop() {
@@ -165,12 +180,12 @@ function loop() {
     ball.update();
     ball.collisionDetect();
     }
-    pacman.draw();
+  }
+
+  pacman.draw();
     pacman.checkBounds();
     pacman.collisionDetect();
     
-  }
-
   requestAnimationFrame(loop);
 }
 
