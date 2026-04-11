@@ -10,7 +10,6 @@ function randomValueFromArray(array) {
   return array[random];
 }
 
-// Raw text strings
 
 const characters = ["Willy the Goblin", "Big Daddy", "Father Christmas"];
 
@@ -26,7 +25,6 @@ function returnRandomStoryString() {
   const storyText = `It was 94 Fahrenheit outside, so ${randomCharacter} went for a walk. When they got to ${randomPlace}, they stared in horror for a few moments, then ${randomEvent}. Bob saw the whole thing, but was not surprised — ${randomCharacter} weighs 300 pounds, and it was a hot day.`;
   return storyText;
 }
-
 
 generateBtn.addEventListener("click", generateStory);
 
