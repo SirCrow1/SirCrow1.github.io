@@ -1,4 +1,3 @@
-//alert("In main.js");
 console.log("Hello world!");
 // Complete variable definitions and random functions
 
@@ -28,7 +27,6 @@ function returnRandomStoryString() {
   return storyText;
 }
 
-// Event listener and partial generate function definition
 
 generateBtn.addEventListener("click", generateStory);
 
@@ -47,7 +45,6 @@ function generateStory() {
     newStory = newStory.replace("94 Fahrenheit", temperature);
   }
 
-  // TODO: replace "" with the correct expression
   story.textContent = newStory;
   story.style.visibility = "visible";
 }
