@@ -1,5 +1,4 @@
 console.log("Hello world!");
-// Complete variable definitions and random functions
 
 const customName = document.getElementById("custom-name");
 const generateBtn = document.querySelector(".generate");
@@ -9,7 +8,6 @@ function randomValueFromArray(array) {
   const random = Math.floor(Math.random() * array.length);
   return array[random];
 }
-
 
 const characters = ["Willy the Goblin", "Big Daddy", "Father Christmas"];
 
