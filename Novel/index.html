@@ -19,19 +19,22 @@
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col items-center p-4 transition-colors duration-200" onkeydown="handleGlobalKey(event)">
 
     <header class="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6 text-center transition-colors duration-200">
-        <!-- Top bar with Theme Toggle -->
-        <div class="flex justify-between items-center mb-4">
-            <div id="header-left-slot" class="w-36"></div>
-            <div></div>
+        <!-- Top Navigation Bar & Theme Toggle -->
+        <div class="flex justify-between items-center mb-6 pb-4 border-b dark:border-gray-700">
+            <div class="flex items-center gap-4 text-xs font-semibold text-gray-600 dark:text-gray-300">
+                <a href="#volumes-section" class="hover:text-blue-500 transition">📚 Volumes</a>
+                <a href="#characters-section" class="hover:text-blue-500 transition">👥 Characters</a>
+                <button onclick="openGlossary()" class="hover:text-purple-500 transition">📖 Glossary</button>
+            </div>
             <button onclick="toggleTheme()" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-sm rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">
                 🌙 / ☀️ Mode
             </button>
         </div>
 
-        <!-- Centered Large Logo Image cleanly in normal flow with proper spacing -->
-        <div class="flex justify-center items-center my-6">
+        <!-- Balanced Logo Image -->
+        <div class="flex justify-center items-center mb-6">
             <h1 class="cursor-pointer inline-flex items-center justify-center" onclick="goBack()">
-                <img src="Spirit Warrior.png" alt="Spirit Warrior" class="h-40 w-auto object-contain drop-shadow-lg">
+                <img src="Spirit Warrior.png" alt="Spirit Warrior" class="h-24 w-auto object-contain drop-shadow-md">
             </h1>
         </div>
         
@@ -51,7 +54,7 @@
             </div>
 
             <!-- Volume Selection & Glossary -->
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div id="volumes-section" class="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div>
                     <h3 class="text-sm font-semibold mb-2 text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left">Select Volume</h3>
                     <div class="flex flex-wrap gap-2">
@@ -67,7 +70,7 @@
             </div>
 
             <!-- Character Grid (9 Characters in Order) -->
-            <div class="border-t dark:border-gray-700 pt-6">
+            <div id="characters-section" class="border-t dark:border-gray-700 pt-6">
                 <h3 class="text-md font-bold mb-3 text-gray-700 dark:text-gray-200">Meet the Characters</h3>
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <!-- 1. Yato -->
