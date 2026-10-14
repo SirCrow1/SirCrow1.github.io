@@ -19,22 +19,23 @@
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col items-center p-4 transition-colors duration-200" onkeydown="handleGlobalKey(event)">
 
     <header class="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6 text-center transition-colors duration-200">
-        <div class="relative flex justify-between items-center mb-6">
-            <!-- Left spacer -->
+        <!-- Top bar with Theme Toggle and extra clearance -->
+        <div class="relative flex justify-between items-center mb-10">
             <div id="header-left-slot" class="w-36"></div>
-            <!-- Centered Logo Image (Made even larger: h-32) -->
-            <h1 class="absolute left-1/2 -translate-x-1/2 cursor-pointer flex items-center justify-center" onclick="goBack()">
-                <img src="Spirit Warrior.png" alt="Spirit Warrior" class="h-32 w-auto object-contain">
+            <div class="absolute right-0 top-0">
+                <button onclick="toggleTheme()" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-sm rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                    🌙 / ☀️ Mode
+                </button>
+            </div>
+            <!-- Centered Logo Image (Extra Large & Overflowing safely without clipping) -->
+            <h1 class="absolute left-1/2 -translate-x-1/2 -top-6 cursor-pointer flex items-center justify-center z-10" onclick="goBack()">
+                <img src="Spirit Warrior.png" alt="Spirit Warrior" class="h-44 w-auto object-contain drop-shadow-lg">
             </h1>
-            <!-- Theme Toggle Button -->
-            <button onclick="toggleTheme()" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-sm rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-                🌙 / ☀️ Mode
-            </button>
         </div>
         
         <!-- Main Menu Container -->
-        <div id="selector-container" class="space-y-6">
-            <!-- Story Intro & Resume Banner -->
+        <div id="selector-container" class="space-y-6 pt-12">
+            <!-- Story Intro & Resume Banner (Pushed down to prevent logo overlap) -->
             <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border dark:border-gray-700 text-left space-y-3">
                 <h2 class="text-md font-bold text-blue-600 dark:text-blue-400">Introduction</h2>
                 <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
