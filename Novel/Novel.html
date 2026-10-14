@@ -37,14 +37,14 @@
             border: 1px solid rgba(148, 163, 184, 0.15);
         }
         
-        /* Unique Character Hover Glow Effects */
+        /* Unique Character Hover Glow Effects with Corrected Colors */
         .dark .card-yato:hover { border-color: rgba(168, 85, 247, 0.7); box-shadow: 0 0 25px rgba(168, 85, 247, 0.35), inset 0 0 10px rgba(168, 85, 247, 0.1); }
         .dark .card-gavon:hover { border-color: rgba(59, 130, 246, 0.7); box-shadow: 0 0 25px rgba(59, 130, 246, 0.35), inset 0 0 10px rgba(59, 130, 246, 0.1); }
         .dark .card-stella:hover { border-color: rgba(236, 72, 153, 0.7); box-shadow: 0 0 25px rgba(236, 72, 153, 0.35), inset 0 0 10px rgba(236, 72, 153, 0.1); }
         .dark .card-lucia:hover { border-color: rgba(249, 115, 22, 0.7); box-shadow: 0 0 25px rgba(249, 115, 22, 0.35), inset 0 0 10px rgba(249, 115, 22, 0.1); }
         .dark .card-marin:hover { border-color: rgba(56, 189, 248, 0.7); box-shadow: 0 0 25px rgba(56, 189, 248, 0.35), inset 0 0 10px rgba(56, 189, 248, 0.1); }
         .dark .card-lumio:hover { border-color: rgba(250, 204, 21, 0.7); box-shadow: 0 0 25px rgba(250, 204, 21, 0.35), inset 0 0 10px rgba(250, 204, 21, 0.1); }
-        .dark .card-jaya:hover { border-color: rgba(217, 119, 6, 0.7); box-shadow: 0 0 25px rgba(217, 119, 6, 0.35), inset 0 0 10px rgba(217, 119, 6, 0.1); }
+        .dark .card-jaya:hover { border-color: rgba(234, 88, 12, 0.7); box-shadow: 0 0 25px rgba(234, 88, 12, 0.35), inset 0 0 10px rgba(234, 88, 12, 0.1); }
         .dark .card-surtur:hover { border-color: rgba(239, 68, 68, 0.7); box-shadow: 0 0 25px rgba(239, 68, 68, 0.35), inset 0 0 10px rgba(239, 68, 68, 0.1); }
         .dark .card-ariel:hover { border-color: rgba(34, 197, 94, 0.7); box-shadow: 0 0 25px rgba(34, 197, 94, 0.35), inset 0 0 10px rgba(34, 197, 94, 0.1); }
     </style>
@@ -107,7 +107,7 @@
                 </div>
             </div>
 
-            <!-- Character Grid (9 Characters in Order with Unique Character Hover Glows) -->
+            <!-- Character Grid (9 Characters in Order with Corrected Character Colors) -->
             <div class="border-t border-gray-200 dark:border-slate-700/80 pt-6">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-md font-bold text-gray-700 dark:text-slate-200 flex items-center gap-2">
@@ -135,11 +135,11 @@
                         <h4 class="font-bold text-sm text-pink-400 dark:text-pink-300 group-hover:text-pink-200 transition-colors">Stella</h4>
                         <p class="text-xs font-semibold text-pink-400/80 dark:text-pink-300/80">Heroine</p>
                     </div>
-                    <!-- 4. Lucia -->
+                    <!-- 4. Lucia (Orange) -->
                     <div onclick="showCharacter('lucia')" class="cursor-pointer character-card card-lucia p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
                         <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
-                        <h4 class="font-bold text-sm text-orange-400 dark:text-amber-300 group-hover:text-amber-200 transition-colors">Lucia</h4>
-                        <p class="text-xs font-semibold text-orange-400/80 dark:text-amber-300/80">Telekinetic Child</p>
+                        <h4 class="font-bold text-sm text-orange-500 dark:text-orange-400 group-hover:text-orange-300 transition-colors">Lucia</h4>
+                        <p class="text-xs font-semibold text-orange-500/80 dark:text-orange-400/80">Telekinetic Child</p>
                     </div>
                     <!-- 5. Marin -->
                     <div onclick="showCharacter('marin')" class="cursor-pointer character-card card-marin p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
@@ -153,17 +153,17 @@
                         <h4 class="font-bold text-sm text-amber-400 dark:text-yellow-300 group-hover:text-yellow-200 transition-colors">Lumio</h4>
                         <p class="text-xs font-semibold text-amber-400/80 dark:text-yellow-300/80">Light Spirit Warrior</p>
                     </div>
-                    <!-- 7. Jaya -->
+                    <!-- 7. Jaya (Brownish Orange) -->
                     <div onclick="showCharacter('jaya')" class="cursor-pointer character-card card-jaya p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
                         <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
-                        <h4 class="font-bold text-sm text-[#c05621] dark:text-amber-500 group-hover:text-amber-400 transition-colors">Jaya</h4>
-                        <p class="text-xs font-semibold text-[#c05621]/80 dark:text-amber-500/80">Earth Spirit Warrior</p>
+                        <h4 class="font-bold text-sm text-amber-700 dark:text-amber-600 group-hover:text-amber-500 transition-colors">Jaya</h4>
+                        <p class="text-xs font-semibold text-amber-700/80 dark:text-amber-600/80">Earth Spirit Warrior</p>
                     </div>
-                    <!-- 8. Surtur -->
+                    <!-- 8. Surtur (Red) -->
                     <div onclick="showCharacter('surtur')" class="cursor-pointer character-card card-surtur p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
                         <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
-                        <h4 class="font-bold text-sm text-red-500 dark:text-red-400 group-hover:text-red-300 transition-colors">Surtur</h4>
-                        <p class="text-xs font-semibold text-red-500/80 dark:text-red-400/80">Flame Spirit Warrior</p>
+                        <h4 class="font-bold text-sm text-red-600 dark:text-red-500 group-hover:text-red-400 transition-colors">Surtur</h4>
+                        <p class="text-xs font-semibold text-red-600/80 dark:text-red-500/80">Flame Spirit Warrior</p>
                     </div>
                     <!-- 9. Ariel -->
                     <div onclick="showCharacter('ariel')" class="cursor-pointer character-card card-ariel p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
