@@ -14,97 +14,108 @@
     <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col items-center p-4 transition-colors duration-200">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col items-center p-4 transition-colors duration-200" onkeydown="handleGlobalKey(event)">
 
     <header class="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6 text-center transition-colors duration-200">
         <div class="relative flex justify-between items-center mb-4">
-            <!-- Left spacer to balance layout -->
-            <div class="w-24"></div>
+            <!-- Left spacer -->
+            <div id="header-left-slot" class="w-24"></div>
             <!-- Centered Title -->
-            <h1 class="absolute left-1/2 -translate-x-1/2 text-2xl font-bold">Spirit Warrior</h1>
+            <h1 class="absolute left-1/2 -translate-x-1/2 text-2xl font-bold cursor-pointer" onclick="goBack()">Spirit Warrior</h1>
             <!-- Theme Toggle Button -->
             <button onclick="toggleTheme()" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-sm rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">
                 🌙 / ☀️ Mode
             </button>
         </div>
         
-        <!-- Main Menu & Selector Container -->
+        <!-- Main Menu Container -->
         <div id="selector-container" class="space-y-6">
-            <!-- Story Introduction -->
-            <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border dark:border-gray-700 text-left">
-                <h2 class="text-md font-bold mb-1 text-blue-600 dark:text-blue-400">Introduction</h2>
+            <!-- Story Intro & Resume Banner -->
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border dark:border-gray-700 text-left space-y-3">
+                <h2 class="text-md font-bold text-blue-600 dark:text-blue-400">Introduction</h2>
                 <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                     Welcome to the world of Spirit Warrior. Dive into an epic journey of martial arts, ancient mysticism, and fierce battles as heroes rise to conquer the darkness threatening the realm. Choose a volume below to start reading!
                 </p>
-            </div>
-
-            <!-- Volume Selection Menu -->
-            <div>
-                <h3 class="text-sm font-semibold mb-2 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Select Volume</h3>
-                <div class="flex flex-wrap justify-center gap-2">
-                    <button onclick="loadBook('pdf/vol1.pdf')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Vol 1</button>
-                    <button onclick="loadBook('pdf/vol2.pdf')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Vol 2</button>
-                    <button onclick="loadBook('pdf/vol3.pdf')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Vol 3</button>
+                <!-- Quick Resume -->
+                <div id="resume-banner" class="hidden pt-2 border-t dark:border-gray-600 flex items-center justify-between">
+                    <span id="resume-text" class="text-xs text-blue-500 font-semibold"></span>
+                    <button onclick="resumeLastBook()" class="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition">Resume Reading</button>
                 </div>
             </div>
 
-            <!-- Meet the Characters Section (Ordered) -->
+            <!-- Volume Selection & Glossary -->
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                    <h3 class="text-sm font-semibold mb-2 text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left">Select Volume</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="loadBook('pdf/vol1.pdf', 'Vol 1')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm">Vol 1</button>
+                        <button onclick="loadBook('pdf/vol2.pdf', 'Vol 2')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm">Vol 2</button>
+                        <button onclick="loadBook('pdf/vol3.pdf', 'Vol 3')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm">Vol 3</button>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold mb-2 text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left">World Lore</h3>
+                    <button onclick="openGlossary()" class="px-4 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition flex items-center gap-2">📖 World Glossary</button>
+                </div>
+            </div>
+
+            <!-- Character Grid (9 Characters in Order) -->
             <div class="border-t dark:border-gray-700 pt-6">
                 <h3 class="text-md font-bold mb-3 text-gray-700 dark:text-gray-200">Meet the Characters</h3>
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <!-- 1. Yato -->
-                    <div onclick="showCharacter('yato')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center flex flex-col items-center">
-                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400">Image</div>
+                    <div onclick="showCharacter('yato')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-purple-500 hover:shadow-[0_0_15px_rgba(168,85,247,0.4)] transition text-center flex flex-col items-center">
+                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400 shadow-inner">Image</div>
                         <h4 class="font-bold text-sm">Yato</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Shadow Spirit Warrior</p>
+                        <p class="text-xs text-purple-400 font-medium">Yato Shadow Spirit Warrior</p>
                     </div>
                     <!-- 2. Gavon -->
-                    <div onclick="showCharacter('gavon')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center flex flex-col items-center">
-                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400">Image</div>
+                    <div onclick="showCharacter('gavon')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-blue-500 hover:shadow-[0_0_15px_rgba(59,130,246,0.4)] transition text-center flex flex-col items-center">
+                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400 shadow-inner">Image</div>
                         <h4 class="font-bold text-sm">Gavon</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Wanna Be Hero</p>
+                        <p class="text-xs text-blue-400 font-medium">Gavon Hero Spirit Warrior</p>
                     </div>
                     <!-- 3. Stella -->
-                    <div onclick="showCharacter('stella')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center flex flex-col items-center">
-                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400">Image</div>
+                    <div onclick="showCharacter('stella')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-pink-500 hover:shadow-[0_0_15px_rgba(236,72,153,0.4)] transition text-center flex flex-col items-center">
+                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400 shadow-inner">Image</div>
                         <h4 class="font-bold text-sm">Stella</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Heroine</p>
+                        <p class="text-xs text-pink-400 font-medium">Stella Medic Spirit Warrior</p>
                     </div>
                     <!-- 4. Lucia -->
-                    <div onclick="showCharacter('lucia')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center flex flex-col items-center">
-                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400">Image</div>
+                    <div onclick="showCharacter('lucia')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-red-500 hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] transition text-center flex flex-col items-center">
+                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400 shadow-inner">Image</div>
                         <h4 class="font-bold text-sm">Lucia</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Telekinetic Child</p>
+                        <p class="text-xs text-red-400 font-medium">Lucia Telekinetic Spirit Warrior</p>
                     </div>
                     <!-- 5. Marin -->
-                    <div onclick="showCharacter('marin')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center flex flex-col items-center">
-                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400">Image</div>
+                    <div onclick="showCharacter('marin')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-cyan-500 hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] transition text-center flex flex-col items-center">
+                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400 shadow-inner">Image</div>
                         <h4 class="font-bold text-sm">Marin</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Water Spirit Warrior</p>
+                        <p class="text-xs text-cyan-400 font-medium">Marin Water Spirit Warrior</p>
                     </div>
                     <!-- 6. Lumio -->
-                    <div onclick="showCharacter('lumio')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center flex flex-col items-center">
-                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400">Image</div>
+                    <div onclick="showCharacter('lumio')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-yellow-400 hover:shadow-[0_0_15px_rgba(250,204,21,0.4)] transition text-center flex flex-col items-center">
+                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400 shadow-inner">Image</div>
                         <h4 class="font-bold text-sm">Lumio</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Light Spirit Warrior</p>
+                        <p class="text-xs text-yellow-400 font-medium">Lumio Light Spirit Warrior</p>
                     </div>
                     <!-- 7. Jaya -->
-                    <div onclick="showCharacter('jaya')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center flex flex-col items-center">
-                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400">Image</div>
+                    <div onclick="showCharacter('jaya')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-amber-600 hover:shadow-[0_0_15px_rgba(217,119,6,0.4)] transition text-center flex flex-col items-center">
+                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400 shadow-inner">Image</div>
                         <h4 class="font-bold text-sm">Jaya</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Earth Spirit Warrior</p>
+                        <p class="text-xs text-amber-500 font-medium">Jaya Earth Spirit Warrior</p>
                     </div>
                     <!-- 8. Surtur -->
-                    <div onclick="showCharacter('surtur')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center flex flex-col items-center">
-                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400">Image</div>
+                    <div onclick="showCharacter('surtur')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-orange-500 hover:shadow-[0_0_15px_rgba(249,115,22,0.4)] transition text-center flex flex-col items-center">
+                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400 shadow-inner">Image</div>
                         <h4 class="font-bold text-sm">Surtur</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Flame Spirit Warrior</p>
+                        <p class="text-xs text-orange-500 font-medium">Surtur Flame Spirit Warrior</p>
                     </div>
                     <!-- 9. Ariel -->
-                    <div onclick="showCharacter('ariel')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center flex flex-col items-center">
-                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400">Image</div>
+                    <div onclick="showCharacter('ariel')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-emerald-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition text-center flex flex-col items-center">
+                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400 shadow-inner">Image</div>
                         <h4 class="font-bold text-sm">Ariel</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Wind Spirit Warrior</p>
+                        <p class="text-xs text-emerald-400 font-medium">Ariel Wind Spirit Warrior</p>
                     </div>
                 </div>
             </div>
@@ -137,17 +148,29 @@
                 </span>
                 <button id="next" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm">Next</button>
             </div>
-            <button onclick="toggleComments()" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition text-sm">💬 Comments</button>
+
+            <div class="flex items-center gap-2">
+                <button id="tts-btn" onclick="toggleSpeech()" class="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 transition text-sm flex items-center gap-1">🔊 Read</button>
+                <button onclick="toggleComments()" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition text-sm flex items-center gap-1">💬 Comments</button>
+            </div>
         </div>
     </header>
 
     <!-- Canvas Viewer -->
-    <main id="viewer-container" class="hidden w-full max-w-4xl flex justify-center bg-white dark:bg-gray-800 shadow-md rounded-lg p-4 overflow-auto mb-6 transition-colors duration-200">
-        <canvas id="pdf-render" class="max-w-full h-auto shadow"></canvas>
+    <main id="viewer-container" class="hidden w-full max-w-4xl flex flex-col items-center bg-white dark:bg-gray-800 shadow-md rounded-lg p-4 overflow-auto mb-6 transition-colors duration-200">
+        <canvas id="pdf-render" class="max-w-full h-auto shadow mb-4"></canvas>
+        
+        <!-- Live Stats & Likes Footer -->
+        <div class="w-full flex justify-between items-center border-t dark:border-gray-700 pt-3 px-2 text-xs text-gray-500 dark:text-gray-400">
+            <span id="live-readers-counter">🔥 Active Readers: 1</span>
+            <button onclick="likeCurrentPage()" id="like-btn" class="flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-pink-100 dark:hover:bg-gray-600 rounded transition text-pink-500 font-semibold">
+                ❤️ Like Page (<span id="like-count">0</span>)
+            </button>
+        </div>
     </main>
 
     <!-- Comments Section -->
-    <section id="comments-section" class="hidden w-full max-w-4xl bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 transition-colors duration-200">
+    <section id="comments-section" class="hidden w-full max-w-4xl bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 transition-colors duration-200 mb-6">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-lg font-bold">Page Comments</h2>
             <button onclick="toggleAdmin()" id="admin-btn" class="text-xs text-gray-400 dark:text-gray-300 underline">Admin Login</button>
@@ -163,16 +186,14 @@
         <div id="comments-list" class="space-y-3"></div>
     </section>
 
-    <!-- Full-Screen Centered Character Modal Overlay -->
+    <!-- Full-Screen Centered Character Modal -->
     <div id="character-modal" onclick="closeModalDirect()" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div onclick="event.stopPropagation()" class="bg-white dark:bg-gray-800 border border-blue-500 dark:border-blue-600 max-w-lg w-full rounded-xl p-6 shadow-2xl relative space-y-4 text-left">
-            <!-- Modal Header -->
             <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-3">
                 <h3 id="modal-char-title" class="text-xl font-bold text-blue-600 dark:text-blue-400"></h3>
                 <button onclick="closeModalDirect()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm font-bold px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">✕ Close</button>
             </div>
 
-            <!-- Larger Image & Quick Stats List -->
             <div class="flex items-center space-x-6">
                 <div class="w-28 h-28 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center text-sm text-gray-400 flex-shrink-0 shadow-inner">Image</div>
                 <div class="space-y-1 text-xs text-gray-600 dark:text-gray-300 flex-grow">
@@ -184,19 +205,16 @@
                 </div>
             </div>
 
-            <!-- Ability Section -->
             <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                 <p class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Abilities & Powers:</p>
                 <div id="modal-char-ability" class="text-xs text-gray-600 dark:text-gray-300 space-y-1"></div>
             </div>
 
-            <!-- General Description -->
             <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                 <p class="text-xs font-semibold text-gray-700 dark:text-gray-300">General Description:</p>
                 <p id="modal-char-general" class="text-xs text-gray-600 dark:text-gray-300 mt-1 leading-relaxed"></p>
             </div>
 
-            <!-- Novel Description -->
             <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                 <p class="text-xs font-semibold text-gray-700 dark:text-gray-300">Novel Description & Role:</p>
                 <p id="modal-char-novel" class="text-xs text-gray-600 dark:text-gray-300 mt-1 leading-relaxed"></p>
@@ -204,169 +222,47 @@
         </div>
     </div>
 
+    <!-- World Glossary Modal -->
+    <div id="glossary-modal" onclick="closeGlossary()" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div onclick="event.stopPropagation()" class="bg-white dark:bg-gray-800 border border-purple-500 max-w-lg w-full rounded-xl p-6 shadow-2xl relative space-y-4 text-left">
+            <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-3">
+                <h3 class="text-xl font-bold text-purple-600 dark:text-purple-400">📖 World Glossary & Power Systems</h3>
+                <button onclick="closeGlossary()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm font-bold px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">✕ Close</button>
+            </div>
+            <div class="space-y-3 text-xs text-gray-600 dark:text-gray-300 leading-relaxed max-h-96 overflow-y-auto pr-1">
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+                    <h4 class="font-bold text-purple-400 mb-1">Spirit Energy</h4>
+                    <p>An innate spiritual force bound to an individual's soul, manifesting through nature elements like Shadow, Flame, Water, Wind, Earth, and Light.</p>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+                    <h4 class="font-bold text-purple-400 mb-1">Astro Energy</h4>
+                    <p>A mysterious cosmic energy reserve that acts as a multiplier to combat mastery and physical endurance. Rare individuals possess cosmic affinity.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Character detailed data ordered: Yato, Gavon, Stella, Lucia, Marin, Lumio, Jaya, Surtur, Ariel
         const characters = {
-            yato: { 
-                name: "Yato", 
-                age: "24", 
-                birth: "November 2", 
-                food: "Donuts",
-                hobby: "Painting, drawing, and picking flowers",
-                weapon: "Shadow Emperor Blade & Quantum Emperor Blade",
-                abilities: [
-                    "Spirit Energy: Shadow",
-                    "Astro Ability: Unknown",
-                    "Shadow Manipulation",
-                    "Master Swordsmanship",
-                    "Expert Hand-to-Hand Combat",
-                    "Expert at Astro Energy"
-                ],
-                general: "A gloomy young man with long black hair and purple eyes. He hates violence, loves drawing even though he's terrible at it, and enjoys picking flowers.", 
-                novel: "Main character and leader of the group, balancing hard fights with looking after young Lucia." 
-            },
-            gavon: { 
-                name: "Gavon", 
-                age: "20", 
-                birth: "September 28", 
-                food: "Fried chicken",
-                hobby: "Heavy combat training",
-                weapon: "Unknown",
-                abilities: [
-                    "Astro Ability: Novice Astro Energy",
-                    "Novice Swordsmanship",
-                    "Novice Hand-to-Hand Combat"
-                ],
-                general: "A loud, energetic guy with short purple hair and Stella's twin brother. He dreams of becoming a true hero and spends all his time training.", 
-                novel: "Wannabe hero who joins the group alongside his twin sister to find their missing parents and achieve his dream of becoming a true hero." 
-            },
-            stella: { 
-                name: "Stella", 
-                age: "20", 
-                birth: "September 28", 
-                food: "Strawberry shortcake",
-                hobby: "Studying medicine",
-                weapon: "Unknown",
-                abilities: [
-                    "Astro Ability: Novice Astro Energy",
-                    "No Hand-to-Hand Combat",
-                    "Novice Fighting Ability"
-                ],
-                general: "A kind young woman with bright pink hair and Gavon's twin sister. She wants to become a great doctor, track down her parents, and support Yato.", 
-                novel: "Wannabe doctor who handles chores and helps with important information for the group behind the scenes alongside her twin brother." 
-            },
-            lucia: { 
-                name: "Lucia", 
-                age: "11", 
-                birth: "December 5", 
-                food: "Pink cotton candy",
-                hobby: "Watching Yato draw & eating sweets",
-                weapon: "None",
-                abilities: [
-                    "Astro Ability: Unknown",
-                    "Telekinesis",
-                    "Novice Astro Energy"
-                ],
-                general: "A quiet, fragile kid with white hair, red eyes, and an oversized coat.", 
-                novel: "Yato's daughter, living with him and bringing quiet warmth and comfort to his daily life." 
-            },
-            marin: { 
-                name: "Marin", 
-                age: "26", 
-                birth: "May 8", 
-                food: "Vanilla ice cream",
-                hobby: "Helping at food banks & giving free healthcare",
-                weapon: "Frostline",
-                abilities: [
-                    "Spirit Energy: Water & Ice",
-                    "Astro Ability: Unknown",
-                    "Expert Hand-to-Hand Combat",
-                    "World-Class Master at Astro Energy"
-                ],
-                general: "A gentle girl with long blue hair and a French cap. She spends her free time healing people and helping the needy.", 
-                novel: "Acts as the main healer for the group, using her water powers and surgical threads to patch up injuries in battle." 
-            },
-            lumio: { 
-                name: "Lumio", 
-                age: "Unknown", 
-                birth: "Unknown", 
-                food: "Unknown",
-                hobby: "Unknown",
-                weapon: "Light Piercing Blade",
-                abilities: [
-                    "Spirit Energy: Light",
-                    "Astro Ability: Unknown",
-                    "Light Aura Burst",
-                    "Enhanced Reflexes"
-                ],
-                general: "A mysterious companion whose birthday is unknown, wielding powerful light energy.", 
-                novel: "A core member of the light faction supporting the team against darkness." 
-            },
-            jaya: { 
-                name: "Jaya", 
-                age: "23", 
-                birth: "July 22", 
-                food: "Expensive Liquor",
-                hobby: "Training, drinking, freeing slaves, and helping orphans",
-                weapon: "Hercules Knuckles",
-                abilities: [
-                    "Spirit Energy: Earth",
-                    "Astro Ability: Unknown",
-                    "World-Class Grandmaster Hand-to-Hand Combat",
-                    "World Class All-Forms Combat Mastery",
-                    "No Astro Energy"
-                ],
-                general: "A tough warrior with brown skin, brown hair, and an intense presence. She lives for a good fight, but has a huge heart spending her time freeing slaves and taking care of orphans.", 
-                novel: "Uses raw earth power and world-class martial arts skills to smash enemy lines and protect the innocent and always looking for a challenge." 
-            },
-            surtur: { 
-                name: "Surtur", 
-                age: "Unknown", 
-                birth: "March 20", 
-                food: "Spicy vegan curry",
-                hobby: "Making friends",
-                weapon: "Monkey Staff (An ancient artifact that chooses its master based on purity of heart)",
-                abilities: [
-                    "Spirit Energy: Flame",
-                    "Astro Ability: Unknown",
-                    "Absolute Pinnacle Spirit Energy & Astro Energy",
-                    "Master Bo Staff Combat",
-                    "Novice Hand-to-Hand Combat"
-                ],
-                general: "A wildly energetic guy with reddish-yellow hair who holds the largest energy reserve in the world. Despite his massive talent, he physically cannot bring himself to hurt people and just wants to make friends.", 
-                novel: "Uses his ancient staff and flame powers to break through enemy barriers without causing needless harm." 
-            },
-            ariel: { 
-                name: "Ariel", 
-                age: "22", 
-                birth: "March 4", 
-                food: "Natural wild berries",
-                hobby: "Punishing evil at night & lone patrols",
-                weapon: "Tempest Piercer",
-                abilities: [
-                    "Spirit Energy: Wind",
-                    "Astro Ability: Unknown",
-                    "World-Class Master Sniper Proficiency",
-                    "World-Class Sensory Ability",
-                    "Master Hand-to-Hand Combat",
-                    "Master at Astro Energy"
-                ],
-                general: "A sharp-tongued marksman who hates humans due to past trouble. She spends her nights hunting down and punishing evil, though she keeps deep loyalty to one single person.", 
-                novel: "Provides world-class long-range wind-boosted sniper cover to protect the team from far away." 
-            }
+            yato: { name: "Yato", age: "24", birth: "November 2", food: "Donuts", hobby: "Painting, drawing, and picking flowers", weapon: "Dual Katanas", abilities: ["Spirit Energy: Shadow", "Astro Ability: Unknown", "Shadow Manipulation", "Master Swordsmanship", "Expert Hand-to-Hand Combat", "Expert at Astro Energy"], general: "A gloomy young man with long black hair and purple eyes. He hates violence, loves drawing even though he's terrible at it, and enjoys picking flowers.", novel: "Main character and leader of the group, balancing hard fights with looking after young Lucia." },
+            gavon: { name: "Gavon", age: "20", birth: "September 28", food: "Fried chicken", hobby: "Heavy combat training", weapon: "Unknown", abilities: ["Astro Ability: Novice Astro Energy", "Average Swordsmanship", "Novice Hand-to-Hand Combat"], general: "A loud, energetic guy with short purple hair and Stella's twin brother. He dreams of becoming a true hero and spends all his time training.", novel: "Wannabe hero who joins the group alongside his twin sister to find their missing parents and achieve his dream of becoming a true hero." },
+            stella: { name: "Stella", age: "20", birth: "September 28", food: "Strawberry shortcake", hobby: "Studying medicine", weapon: "Unknown", abilities: ["Astro Ability: Novice Astro Energy", "No Hand-to-Hand Combat", "Novice Fighting Ability"], general: "A kind young woman with bright pink hair and Gavon's twin sister. She wants to become a great doctor, track down her parents, and support Yato.", novel: "Wannabe doctor who handles chores and helps with important information for the group behind the scenes alongside her twin brother." },
+            lucia: { name: "Lucia", age: "11", birth: "December 5", food: "Pink cotton candy", hobby: "Watching Yato draw & eating sweets", weapon: "Unknown", abilities: ["Astro Ability: Unknown", "Telekinesis", "Novice Astro Energy"], general: "A quiet, fragile kid with white hair, red eyes, and an oversized coat.", novel: "Yato's daughter, living with him and bringing quiet warmth and comfort to his daily life." },
+            marin: { name: "Marin", age: "26", birth: "May 8", food: "Vanilla ice cream", hobby: "Helping at food banks & giving free healthcare", weapon: "Lifeline Suture Threads", abilities: ["Spirit Energy: Water & Ice", "Astro Ability: Unknown", "Expert Hand-to-Hand Combat", "World-Class Master at Astro Energy"], general: "A gentle girl with long blue hair and a French cap. She spends her free time healing people and helping the needy.", novel: "Acts as the main healer for the group, using her water powers and surgical threads to patch up injuries in battle." },
+            lumio: { name: "Lumio", age: "Unknown", birth: "Unknown", food: "Unknown", hobby: "Unknown", weapon: "Light Piercing Blade", abilities: ["Spirit Energy: Light", "Astro Ability: Unknown", "Light Aura Burst", "Enhanced Reflexes"], general: "A mysterious companion whose birthday is unknown, wielding powerful light energy.", novel: "A core member of the light faction supporting the team against darkness." },
+            jaya: { name: "Jaya", age: "23", birth: "July 22", food: "Aged liquor", hobby: "Training, drinking, freeing slaves, and helping orphans", weapon: "Tectonic Brass Knuckles", abilities: ["Spirit Energy: Earth", "Astro Ability: Unknown", "World-Class Grandmaster Hand-to-Hand Combat", "World Class All-Forms Combat Mastery", "No Astro Energy"], general: "A tough warrior with brown skin, brown hair, and an intense presence. She lives for a good fight, but has a huge heart spending her time freeing slaves and taking care of orphans.", novel: "Uses raw earth power and world-class martial arts skills to smash enemy lines and protect the innocent and always looking for a challenge." },
+            surtur: { name: "Surtur", age: "Unknown", birth: "March 20", food: "Spicy vegan curry", hobby: "Making friends", weapon: "Monkey Staff (Ancient artifact)", abilities: ["Spirit Energy: Flame", "Astro Ability: Unknown", "Absolute Pinnacle Spirit Energy & Astro Energy", "Master Bo Staff Combat", "Novice Hand-to-Hand Combat"], general: "A wildly energetic guy with reddish-yellow hair who holds the largest energy reserve in the world. Despite his massive talent, he physically cannot bring himself to hurt people and just wants to make friends.", novel: "Uses his ancient staff and flame powers to break through enemy barriers without causing needless harm." },
+            ariel: { name: "Ariel", age: "22", birth: "March 4", food: "Natural wild berries", hobby: "Punishing evil at night & lone patrols", weapon: "Anti-Material Sniper Rifle", abilities: ["Spirit Energy: Wind", "Astro Ability: Unknown", "World-Class Master Sniper Proficiency", "World-Class Sensory Ability", "Master Hand-to-Hand Combat", "Master at Astro Energy"], general: "A sharp-tongued marksman who hates humans due to past trouble. She spends her nights hunting down and punishing evil, though she keeps deep loyalty to one single person.", novel: "Provides world-class long-range wind-boosted sniper cover to protect the team from far away." }
         };
 
         function showCharacter(key) {
             let char = characters[key];
-            
             document.getElementById('modal-char-title').textContent = char.name;
             document.getElementById('modal-char-age').textContent = char.age;
             document.getElementById('modal-char-birth').textContent = char.birth;
             document.getElementById('modal-char-food').textContent = char.food;
             document.getElementById('modal-char-hobby').textContent = char.hobby;
             document.getElementById('modal-char-weapon').textContent = char.weapon;
-            
-            // Render abilities line by line with bullet points
             let abilityContainer = document.getElementById('modal-char-ability');
             abilityContainer.innerHTML = '';
             char.abilities.forEach(ability => {
@@ -375,23 +271,17 @@
                 p.innerHTML = `<span class="mr-2 text-blue-500">•</span> <span>${ability}</span>`;
                 abilityContainer.appendChild(p);
             });
-
             document.getElementById('modal-char-general').textContent = char.general;
             document.getElementById('modal-char-novel').textContent = char.novel;
-            
             document.getElementById('character-modal').classList.remove('hidden');
         }
 
-        function closeModalDirect() {
-            document.getElementById('character-modal').classList.add('hidden');
-        }
+        function closeModalDirect() { document.getElementById('character-modal').classList.add('hidden'); }
+        function openGlossary() { document.getElementById('glossary-modal').classList.remove('hidden'); }
+        function closeGlossary() { document.getElementById('glossary-modal').classList.add('hidden'); }
 
-        // Theme initialization
-        if (localStorage.getItem('theme') === 'light') {
-            document.documentElement.classList.remove('dark');
-        } else {
-            document.documentElement.classList.add('dark');
-        }
+        if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+        else document.documentElement.classList.add('dark');
 
         function toggleTheme() {
             if (document.documentElement.classList.contains('dark')) {
@@ -434,19 +324,35 @@
             fetchComments();
         }
 
-        let pdfDoc = null,
-            pageNum = 1,
-            pageRendering = false,
-            pageNumPending = null,
-            scale = 1.2,
-            canvas = document.getElementById('pdf-render'),
-            ctx = canvas.getContext('2d'),
-            currentUrl = '';
+        let pdfDoc = null, pageNum = 1, pageRendering = false, pageNumPending = null, scale = 1.2;
+        let canvas = document.getElementById('pdf-render'), ctx = canvas.getContext('2d'), currentUrl = '', currentVolTitle = '';
+        let isSpeaking = false, synth = window.speechSynthesis;
 
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-        function loadBook(url) {
+        function checkResume() {
+            let lastBook = localStorage.getItem('last_read_url');
+            let lastTitle = localStorage.getItem('last_read_title');
+            let lastPage = localStorage.getItem('bookmark_' + lastBook);
+            if (lastBook && lastPage) {
+                document.getElementById('resume-banner').classList.remove('hidden');
+                document.getElementById('resume-text').textContent = `📍 You left off at ${lastTitle || 'Novel'}, Page ${lastPage}`;
+            }
+        }
+        checkResume();
+
+        function resumeLastBook() {
+            let lastBook = localStorage.getItem('last_read_url');
+            let lastTitle = localStorage.getItem('last_read_title');
+            if (lastBook) loadBook(lastBook, lastTitle);
+        }
+
+        function loadBook(url, title) {
             currentUrl = url;
+            currentVolTitle = title || 'Novel';
+            localStorage.setItem('last_read_url', url);
+            localStorage.setItem('last_read_title', currentVolTitle);
+
             document.getElementById('selector-container').classList.add('hidden');
             document.getElementById('reader-controls').classList.remove('hidden');
             document.getElementById('viewer-container').classList.remove('hidden');
@@ -466,20 +372,22 @@
         }
 
         function goBack() {
+            stopSpeech();
             document.getElementById('selector-container').classList.remove('hidden');
             document.getElementById('reader-controls').classList.add('hidden');
             document.getElementById('viewer-container').classList.add('hidden');
             document.getElementById('comments-section').classList.add('hidden');
             pdfDoc = null;
+            checkResume();
         }
 
         function toggleComments() {
-            let section = document.getElementById('comments-section');
-            section.classList.toggle('hidden');
+            document.getElementById('comments-section').classList.toggle('hidden');
         }
 
         function renderPage(num) {
             if (!pdfDoc) return;
+            stopSpeech();
             pageRendering = true;
             pdfDoc.getPage(num).then(function(page) {
                 let viewport = page.getViewport({ scale: scale });
@@ -502,14 +410,12 @@
             document.getElementById('page-jump-input').value = num;
             localStorage.setItem('bookmark_' + currentUrl, num);
             fetchComments();
+            fetchPageLikes();
         }
 
         function queueRenderPage(num) {
-            if (pageRendering) {
-                pageNumPending = num;
-            } else {
-                renderPage(num);
-            }
+            if (pageRendering) pageNumPending = num;
+            else renderPage(num);
         }
 
         document.getElementById('prev').addEventListener('click', () => {
@@ -524,36 +430,93 @@
             if (pdfDoc) queueRenderPage(pageNum);
         });
 
+        function handleGlobalKey(e) {
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+            if (e.key === 'ArrowLeft') document.getElementById('prev').click();
+            if (e.key === 'ArrowRight') document.getElementById('next').click();
+        }
+
         function handlePageJump(e) {
             if (e.key === 'Enter') {
                 let target = parseInt(e.target.value);
-                if (target >= 1 && target <= pdfDoc.numPages) {
-                    queueRenderPage(target);
-                } else {
-                    alert(`Please enter a page between 1 and ${pdfDoc.numPages}`);
-                }
+                if (target >= 1 && target <= pdfDoc.numPages) queueRenderPage(target);
+                else alert(`Please enter a page between 1 and ${pdfDoc.numPages}`);
             }
         }
 
         function jumpToChapter(val) {
             if (!val || !pdfDoc) return;
             let target = parseInt(val);
-            if (target >= 1 && target <= pdfDoc.numPages) {
-                queueRenderPage(target);
-            }
+            if (target >= 1 && target <= pdfDoc.numPages) queueRenderPage(target);
         }
 
         function changeZoom(delta) {
             scale = Math.max(0.6, Math.min(2.5, scale + delta));
-            if (pdfDoc) {
-                renderPage(pageNum);
+            if (pdfDoc) renderPage(pageNum);
+        }
+
+        // Text-to-Speech Execution
+        function toggleSpeech() {
+            if (isSpeaking) {
+                stopSpeech();
+            } else {
+                if (!pdfDoc) return;
+                pdfDoc.getPage(pageNum).then(function(page) {
+                    return page.getTextContent();
+                }).then(function(textContent) {
+                    let text = textContent.items.map(s => s.str).join(' ');
+                    if (!text.trim()) { alert("No readable text found on this page."); return; }
+                    let utterance = new SpeechSynthesisUtterance(text);
+                    utterance.onend = () => stopSpeech();
+                    synth.speak(utterance);
+                    isSpeaking = true;
+                    document.getElementById('tts-btn').textContent = '⏹️ Stop';
+                    document.getElementById('tts-btn').classList.replace('bg-purple-600', 'bg-red-600');
+                });
             }
+        }
+
+        function stopSpeech() {
+            if (synth.speaking) synth.cancel();
+            isSpeaking = false;
+            let btn = document.getElementById('tts-btn');
+            if (btn) {
+                btn.textContent = '🔊 Read';
+                btn.classList.replace('bg-red-600', 'bg-purple-600');
+            }
+        }
+
+        // Likes & Comments
+        async function likeCurrentPage() {
+            let likedKey = `liked_${currentUrl}_${pageNum}`;
+            if (localStorage.getItem(likedKey)) {
+                alert("You already liked this page!");
+                return;
+            }
+            const { error } = await supabaseClient
+                .from('comments')
+                .insert([{ book_url: currentUrl, page_num: pageNum, username: 'System_Like', text: '❤️ Page Liked', user_id: userId }]);
+
+            if (!error) {
+                localStorage.setItem(likedKey, 'true');
+                fetchPageLikes();
+            }
+        }
+
+        async function fetchPageLikes() {
+            const { data } = await supabaseClient
+                .from('comments')
+                .select('id')
+                .eq('book_url', currentUrl)
+                .eq('page_num', pageNum)
+                .eq('username', 'System_Like');
+
+            document.getElementById('like-count').textContent = data ? data.length : 0;
         }
 
         async function addComment() {
             let usernameInput = document.getElementById('username-input');
             let commentInput = document.getElementById('comment-input');
-            
             let username = usernameInput.value.trim() || 'Anonymous';
             let text = commentInput.value.trim();
             if (!text) return;
@@ -562,25 +525,15 @@
                 .from('comments')
                 .insert([{ book_url: currentUrl, page_num: pageNum, username: username, text: text, user_id: userId }]);
 
-            if (error) {
-                console.error("Error posting comment:", error);
-            } else {
+            if (!error) {
                 commentInput.value = '';
                 fetchComments();
             }
         }
 
         async function deleteComment(id) {
-            const { error } = await supabaseClient
-                .from('comments')
-                .delete()
-                .eq('id', id);
-
-            if (error) {
-                console.error("Error deleting comment:", error);
-            } else {
-                fetchComments();
-            }
+            const { error } = await supabaseClient.from('comments').delete().eq('id', id);
+            if (!error) fetchComments();
         }
 
         async function fetchComments() {
@@ -592,10 +545,10 @@
                 .select('*')
                 .eq('book_url', currentUrl)
                 .eq('page_num', pageNum)
+                .neq('username', 'System_Like')
                 .order('created_at', { ascending: true });
 
             list.innerHTML = '';
-
             if (error || !comments || comments.length === 0) {
                 list.innerHTML = '<p class="text-sm text-gray-400">No comments for this page yet.</p>';
                 return;
@@ -604,7 +557,6 @@
             comments.forEach(c => {
                 let div = document.createElement('div');
                 div.className = 'bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 p-3 rounded text-sm flex justify-between items-center';
-                
                 let canDelete = isAdmin || (c.user_id === userId);
                 let deleteBtnHtml = canDelete ? `<button onclick="deleteComment(${c.id})" class="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1 ml-2">✕</button>` : '';
 
@@ -617,7 +569,6 @@
                 `;
                 list.appendChild(div);
             });
-
             document.getElementById('admin-btn').textContent = isAdmin ? 'Admin (Logged In)' : 'Admin Login';
         }
     </script>
