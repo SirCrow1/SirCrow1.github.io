@@ -16,7 +16,7 @@
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col items-center p-4 transition-colors duration-200">
 
-    <header class="w-full max-w-3xl bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6 text-center transition-colors duration-200">
+    <header class="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6 text-center transition-colors duration-200">
         <div class="relative flex justify-between items-center mb-4">
             <!-- Left spacer to balance layout -->
             <div class="w-24"></div>
@@ -36,26 +36,43 @@
         </div>
 
         <!-- Reader Controls -->
-        <div id="reader-controls" class="hidden flex flex-wrap justify-between items-center gap-4 mt-6 pt-4 border-t dark:border-gray-700">
-            <button onclick="goBack()" class="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition">← Back</button>
-            <div class="flex items-center space-x-2">
-                <button id="prev" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Previous</button>
-                <span class="text-sm text-gray-600 dark:text-gray-400">
-                    Page <span id="page-num">1</span> of <span id="page-count">1</span>
-                </span>
-                <button id="next" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Next</button>
+        <div id="reader-controls" class="hidden flex flex-wrap justify-between items-center gap-3 mt-6 pt-4 border-t dark:border-gray-700">
+            <button onclick="goBack()" class="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition text-sm">← Back</button>
+            
+            <!-- Zoom Controls -->
+            <div class="flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                <span class="text-xs text-gray-500 dark:text-gray-300 mr-1">Zoom:</span>
+                <button onclick="changeZoom(-0.2)" class="px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded text-xs hover:bg-gray-300">-</button>
+                <button onclick="changeZoom(0.2)" class="px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded text-xs hover:bg-gray-300">+</button>
             </div>
-            <button onclick="toggleComments()" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition">💬 Comments</button>
+
+            <!-- Chapter Quick-Jump -->
+            <select id="chapter-select" onchange="jumpToChapter(this.value)" class="border dark:border-gray-700 bg-gray-50 dark:bg-gray-700 rounded px-2 py-1 text-sm focus:outline-none">
+                <option value="">Jump to Chapter...</option>
+                <option value="1">Chapter 1 (Page 1)</option>
+                <option value="10">Chapter 2 (Page 10)</option>
+                <option value="25">Chapter 3 (Page 25)</option>
+            </select>
+
+            <div class="flex items-center space-x-2">
+                <button id="prev" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm">Previous</button>
+                <span class="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                    <input type="number" id="page-jump-input" min="1" onkeydown="handlePageJump(event)" class="w-12 border dark:border-gray-700 bg-transparent rounded px-1 text-center text-sm" title="Type page & hit Enter"> 
+                    / <span id="page-count">1</span>
+                </span>
+                <button id="next" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm">Next</button>
+            </div>
+            <button onclick="toggleComments()" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition text-sm">💬 Comments</button>
         </div>
     </header>
 
     <!-- Canvas Viewer -->
-    <main id="viewer-container" class="hidden w-full max-w-3xl flex justify-center bg-white dark:bg-gray-800 shadow-md rounded-lg p-4 overflow-auto mb-6 transition-colors duration-200">
+    <main id="viewer-container" class="hidden w-full max-w-4xl flex justify-center bg-white dark:bg-gray-800 shadow-md rounded-lg p-4 overflow-auto mb-6 transition-colors duration-200">
         <canvas id="pdf-render" class="max-w-full h-auto shadow"></canvas>
     </main>
 
     <!-- Comments Section -->
-    <section id="comments-section" class="hidden w-full max-w-3xl bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 transition-colors duration-200">
+    <section id="comments-section" class="hidden w-full max-w-4xl bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 transition-colors duration-200">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-lg font-bold">Page Comments</h2>
             <button onclick="toggleAdmin()" id="admin-btn" class="text-xs text-gray-400 dark:text-gray-300 underline">Admin Login</button>
@@ -72,7 +89,7 @@
     </section>
 
     <script>
-        // Theme initialization: Default to dark unless explicitly saved as light
+        // Theme initialization
         if (localStorage.getItem('theme') === 'light') {
             document.documentElement.classList.remove('dark');
         } else {
@@ -94,7 +111,6 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_Mcs4utHHAnFEE5P3UGOMVw_43WYbkt5';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Persistent User ID for tracking own comments
         let userId = localStorage.getItem('novel_user_id');
         if (!userId) {
             userId = 'user_' + Math.random().toString(36).substring(2, 15);
@@ -138,10 +154,14 @@
             document.getElementById('reader-controls').classList.remove('hidden');
             document.getElementById('viewer-container').classList.remove('hidden');
 
-            pageNum = 1;
+            // Load saved bookmark page if it exists, otherwise start at 1
+            let savedPage = parseInt(localStorage.getItem('bookmark_' + url)) || 1;
+            pageNum = savedPage;
+
             pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
                 pdfDoc = pdfDoc_;
                 document.getElementById('page-count').textContent = pdfDoc.numPages;
+                if (pageNum > pdfDoc.numPages) pageNum = pdfDoc.numPages;
                 renderPage(pageNum);
             }).catch(function() {
                 document.getElementById('page-count').textContent = '1';
@@ -182,7 +202,9 @@
                 });
             });
 
-            document.getElementById('page-num').textContent = num;
+            pageNum = num;
+            document.getElementById('page-jump-input').value = num;
+            localStorage.setItem('bookmark_' + currentUrl, num);
             fetchComments();
         }
 
@@ -197,24 +219,40 @@
         document.getElementById('prev').addEventListener('click', () => {
             if (pageNum <= 1) return;
             pageNum--;
-            if (pdfDoc) {
-                queueRenderPage(pageNum);
-            } else {
-                document.getElementById('page-num').textContent = pageNum;
-                fetchComments();
-            }
+            if (pdfDoc) queueRenderPage(pageNum);
         });
 
         document.getElementById('next').addEventListener('click', () => {
             if (pdfDoc && pageNum >= pdfDoc.numPages) return;
             pageNum++;
-            if (pdfDoc) {
-                queueRenderPage(pageNum);
-            } else {
-                document.getElementById('page-num').textContent = pageNum;
-                fetchComments();
-            }
+            if (pdfDoc) queueRenderPage(pageNum);
         });
+
+        function handlePageJump(e) {
+            if (e.key === 'Enter') {
+                let target = parseInt(e.target.value);
+                if (target >= 1 && target <= pdfDoc.numPages) {
+                    queueRenderPage(target);
+                } else {
+                    alert(`Please enter a page between 1 and ${pdfDoc.numPages}`);
+                }
+            }
+        }
+
+        function jumpToChapter(val) {
+            if (!val || !pdfDoc) return;
+            let target = parseInt(val);
+            if (target >= 1 && target <= pdfDoc.numPages) {
+                queueRenderPage(target);
+            }
+        }
+
+        function changeZoom(delta) {
+            scale = Math.max(0.6, Math.min(2.5, scale + delta));
+            if (pdfDoc) {
+                renderPage(pageNum);
+            }
+        }
 
         async function addComment() {
             let usernameInput = document.getElementById('username-input');
