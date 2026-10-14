@@ -17,12 +17,15 @@
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col items-center p-4 transition-colors duration-200">
 
     <header class="w-full max-w-3xl bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6 text-center transition-colors duration-200">
-        <div class="flex justify-between items-center mb-4">
-            <h1 class="text-2xl font-bold">Spirit Warrior</h1>
+        <div class="grid grid-cols-3 items-center mb-4">
+            <div></div>
+            <h1 class="text-2xl font-bold justify-self-center">Spirit Warrior</h1>
             <!-- Theme Toggle Button -->
-            <button onclick="toggleTheme()" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-sm rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-                🌙 / ☀️ Mode
-            </button>
+            <div class="justify-self-end">
+                <button onclick="toggleTheme()" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-sm rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                    🌙 / ☀️ Mode
+                </button>
+            </div>
         </div>
         
         <!-- Volume Selection Menu -->
@@ -111,178 +114,4 @@
                     localStorage.setItem('novel_is_admin', 'true');
                     isAdmin = true;
                     alert('Admin mode enabled!');
-                } else if (pass !== null) {
-                    alert('Incorrect password.');
-                }
-            }
-            fetchComments();
-        }
-
-        let pdfDoc = null,
-            pageNum = 1,
-            pageRendering = false,
-            pageNumPending = null,
-            scale = 1.2,
-            canvas = document.getElementById('pdf-render'),
-            ctx = canvas.getContext('2d'),
-            currentUrl = '';
-
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-        function loadBook(url) {
-            currentUrl = url;
-            document.getElementById('selector-container').classList.add('hidden');
-            document.getElementById('reader-controls').classList.remove('hidden');
-            document.getElementById('viewer-container').classList.remove('hidden');
-
-            pageNum = 1;
-            pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
-                pdfDoc = pdfDoc_;
-                document.getElementById('page-count').textContent = pdfDoc.numPages;
-                renderPage(pageNum);
-            }).catch(function() {
-                document.getElementById('page-count').textContent = '1';
-                fetchComments();
-            });
-        }
-
-        function goBack() {
-            document.getElementById('selector-container').classList.remove('hidden');
-            document.getElementById('reader-controls').classList.add('hidden');
-            document.getElementById('viewer-container').classList.add('hidden');
-            document.getElementById('comments-section').classList.add('hidden');
-            pdfDoc = null;
-        }
-
-        function toggleComments() {
-            let section = document.getElementById('comments-section');
-            section.classList.toggle('hidden');
-        }
-
-        function renderPage(num) {
-            if (!pdfDoc) return;
-            pageRendering = true;
-            pdfDoc.getPage(num).then(function(page) {
-                let viewport = page.getViewport({ scale: scale });
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-
-                let renderContext = { canvasContext: ctx, viewport: viewport };
-                let renderTask = page.render(renderContext);
-
-                renderTask.promise.then(function() {
-                    pageRendering = false;
-                    if (pageNumPending !== null) {
-                        renderPage(pageNumPending);
-                        pageNumPending = null;
-                    }
-                });
-            });
-
-            document.getElementById('page-num').textContent = num;
-            fetchComments();
-        }
-
-        function queueRenderPage(num) {
-            if (pageRendering) {
-                pageNumPending = num;
-            } else {
-                renderPage(num);
-            }
-        }
-
-        document.getElementById('prev').addEventListener('click', () => {
-            if (pageNum <= 1) return;
-            pageNum--;
-            if (pdfDoc) {
-                queueRenderPage(pageNum);
-            } else {
-                document.getElementById('page-num').textContent = pageNum;
-                fetchComments();
-            }
-        });
-
-        document.getElementById('next').addEventListener('click', () => {
-            if (pdfDoc && pageNum >= pdfDoc.numPages) return;
-            pageNum++;
-            if (pdfDoc) {
-                queueRenderPage(pageNum);
-            } else {
-                document.getElementById('page-num').textContent = pageNum;
-                fetchComments();
-            }
-        });
-
-        async function addComment() {
-            let usernameInput = document.getElementById('username-input');
-            let commentInput = document.getElementById('comment-input');
-            
-            let username = usernameInput.value.trim() || 'Anonymous';
-            let text = commentInput.value.trim();
-            if (!text) return;
-
-            const { error } = await supabaseClient
-                .from('comments')
-                .insert([{ book_url: currentUrl, page_num: pageNum, username: username, text: text, user_id: userId }]);
-
-            if (error) {
-                console.error("Error posting comment:", error);
-            } else {
-                commentInput.value = '';
-                fetchComments();
-            }
-        }
-
-        async function deleteComment(id) {
-            const { error } = await supabaseClient
-                .from('comments')
-                .delete()
-                .eq('id', id);
-
-            if (error) {
-                console.error("Error deleting comment:", error);
-            } else {
-                fetchComments();
-            }
-        }
-
-        async function fetchComments() {
-            let list = document.getElementById('comments-list');
-            list.innerHTML = '<p class="text-sm text-gray-400">Loading comments...</p>';
-
-            const { data: comments, error } = await supabaseClient
-                .from('comments')
-                .select('*')
-                .eq('book_url', currentUrl)
-                .eq('page_num', pageNum)
-                .order('created_at', { ascending: true });
-
-            list.innerHTML = '';
-
-            if (error || !comments || comments.length === 0) {
-                list.innerHTML = '<p class="text-sm text-gray-400">No comments for this page yet.</p>';
-                return;
-            }
-
-            comments.forEach(c => {
-                let div = document.createElement('div');
-                div.className = 'bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 p-3 rounded text-sm flex justify-between items-center';
-                
-                let canDelete = isAdmin || (c.user_id === userId);
-                let deleteBtnHtml = canDelete ? `<button onclick="deleteComment(${c.id})" class="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1 ml-2">✕</button>` : '';
-
-                div.innerHTML = `
-                    <div>
-                        <span class="font-bold text-blue-600 dark:text-blue-400">${c.username || 'Anonymous'}:</span> 
-                        <span class="text-gray-700 dark:text-gray-200">${c.text}</span>
-                    </div>
-                    ${deleteBtnHtml}
-                `;
-                list.appendChild(div);
-            });
-
-            document.getElementById('admin-btn').textContent = isAdmin ? 'Admin (Logged In)' : 'Admin Login';
-        }
-    </script>
-</body>
-</html>
+                } else if (pass !== null)
