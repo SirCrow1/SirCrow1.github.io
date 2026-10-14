@@ -48,7 +48,7 @@
                 </div>
             </div>
 
-            <!-- Meet the Characters Section (8 Characters) -->
+            <!-- Meet the Characters Section (All 8 Characters) -->
             <div class="border-t dark:border-gray-700 pt-6">
                 <h3 class="text-md font-bold mb-3 text-gray-700 dark:text-gray-200">Meet the Characters</h3>
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -87,6 +87,24 @@
                         <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400">Image</div>
                         <h4 class="font-bold text-sm">Jaya</h4>
                         <p class="text-xs text-gray-500 dark:text-gray-400">Jaya Earth Spirit Warrior</p>
+                    </div>
+                    <!-- Gavon -->
+                    <div onclick="showCharacter('gavon')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center flex flex-col items-center">
+                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400">Image</div>
+                        <h4 class="font-bold text-sm">Gavon</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Gavon Hero Spirit Warrior</p>
+                    </div>
+                    <!-- Stella -->
+                    <div onclick="showCharacter('stella')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center flex flex-col items-center">
+                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400">Image</div>
+                        <h4 class="font-bold text-sm">Stella</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Stella Medic Spirit Warrior</p>
+                    </div>
+                    <!-- Lucia -->
+                    <div onclick="showCharacter('lucia')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center flex flex-col items-center">
+                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400">Image</div>
+                        <h4 class="font-bold text-sm">Lucia</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Lucia Telekinetic Spirit Warrior</p>
                     </div>
                 </div>
             </div>
@@ -267,7 +285,7 @@
                 abilities: [
                     "Spirit Energy: Flame",
                     "Astro Ability: Unknown",
-                    "Absolute Pinnacle Spirit Energy & Astro Energy (Highest output ever recorded / Unmatched Talent)",
+                    "Absolute Pinnacle Spirit Energy & Astro Energy",
                     "Master Bo Staff Combat",
                     "Novice Hand-to-Hand Combat"
                 ],
@@ -290,6 +308,51 @@
                 ],
                 general: "A tough warrior with brown skin, brown hair, and an intense presence. She lives for a good fight, but has a huge heart spending her time freeing slaves and taking care of orphans.", 
                 novel: "Uses raw earth power and world-class martial arts skills to smash enemy lines and protect the innocent and always looking for a challenge." 
+            },
+            gavon: { 
+                name: "Gavon", 
+                age: "20", 
+                birth: "September 28", 
+                food: "Fried chicken",
+                hobby: "Heavy combat training",
+                weapon: "Unknown",
+                abilities: [
+                    "Astro Ability: Novice Astro Energy",
+                    "Average Swordsmanship",
+                    "Novice Hand-to-Hand Combat"
+                ],
+                general: "A loud, energetic guy with short purple hair and Stella's twin brother. He dreams of becoming a true hero and spends all his time training.", 
+                novel: "Main character who joins the group alongside his twin sister to find their missing parents and achieve his dream of becoming a true hero." 
+            },
+            stella: { 
+                name: "Stella", 
+                age: "20", 
+                birth: "September 28", 
+                food: "Strawberry shortcake",
+                hobby: "Studying medicine",
+                weapon: "Unknown",
+                abilities: [
+                    "Astro Ability: Novice Astro Energy",
+                    "No Hand-to-Hand Combat",
+                    "Novice Fighting Ability"
+                ],
+                general: "A kind young woman with bright pink hair and Gavon's twin sister. She wants to become a great doctor, track down her parents, and support Yato.", 
+                novel: "Handles chores and help with important information for the group behind the scenes alongside her twin brother." 
+            },
+            lucia: { 
+                name: "Lucia", 
+                age: "11", 
+                birth: "December 5", 
+                food: "Pink cotton candy",
+                hobby: "Watching Yato draw & eating sweets",
+                weapon: "Unknown",
+                abilities: [
+                    "Astro Ability: Unknown",
+                    "Telekinesis",
+                    "Novice Astro Energy"
+                ],
+                general: "A quiet, fragile kid with white hair, red eyes, and an oversized coat.", 
+                novel: "Lives with Yato, bringing quiet warmth and comfort to his daily life." 
             }
         };
 
