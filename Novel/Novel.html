@@ -15,114 +15,142 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @keyframes subtle-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(168, 85, 247, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(59, 130, 246, 0.4); }
+        }
+        .magical-box {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.08) 100%);
+            backdrop-filter: blur(10px);
+        }
+        .dark .magical-box {
+            background: linear-gradient(135deg, rgba(17, 24, 39, 0.7) 0%, rgba(31, 41, 55, 0.8) 100%);
+            border: 1px solid rgba(75, 85, 99, 0.4);
+        }
+    </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col items-center p-4 transition-colors duration-200" onkeydown="handleGlobalKey(event)">
 
-    <header class="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6 text-center transition-colors duration-200">
+    <header class="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-6 mb-6 text-center transition-colors duration-200 border border-gray-200 dark:border-gray-700/60 relative overflow-hidden">
+        
+        <!-- Decorative Ambient Glow Background Effects -->
+        <div class="absolute -top-24 -left-24 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
         <!-- Top bar with Theme Toggle -->
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex justify-between items-center mb-4 relative z-10">
             <div id="header-left-slot" class="w-36"></div>
             <div></div>
-            <button onclick="toggleTheme()" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-sm rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+            <button onclick="toggleTheme()" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700/80 text-sm rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition shadow-sm border border-gray-300 dark:border-gray-600">
                 🌙 / ☀️ Mode
             </button>
         </div>
 
-        <!-- Centered Large Logo Image cleanly in normal flow with proper spacing -->
-        <div class="flex justify-center items-center my-6">
+        <!-- Centered Large Logo Image -->
+        <div class="flex justify-center items-center my-6 relative z-10">
             <h1 class="cursor-pointer inline-flex items-center justify-center" onclick="goBack()">
-                <img src="Spirit Warrior.png" alt="Spirit Warrior" class="h-40 w-auto object-contain drop-shadow-lg">
+                <img src="Spirit Warrior.png" alt="Spirit Warrior" class="h-40 w-auto object-contain drop-shadow-[0_10px_15px_rgba(0,0,0,0.3)]">
             </h1>
         </div>
         
         <!-- Main Menu Container -->
-        <div id="selector-container" class="space-y-6">
-            <!-- Story Intro & Resume Banner -->
-            <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border dark:border-gray-700 text-left space-y-3">
-                <h2 class="text-md font-bold text-blue-600 dark:text-blue-400">Introduction</h2>
-                <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+        <div id="selector-container" class="space-y-6 relative z-10">
+            <!-- Story Intro & Resume Banner with stylized borders -->
+            <div class="magical-box p-5 rounded-xl border border-blue-500/30 dark:border-blue-500/20 text-left space-y-3 shadow-sm">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                    <h2 class="text-md font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide text-xs">Introduction</h2>
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed font-light">
                     Welcome to the world of Spirit Warrior. Dive into an epic journey of martial arts, ancient mysticism, and fierce battles as heroes rise to conquer the darkness threatening the realm. Choose a volume below to start reading!
                 </p>
                 <!-- Quick Resume -->
-                <div id="resume-banner" class="hidden pt-2 border-t dark:border-gray-600 flex items-center justify-between">
+                <div id="resume-banner" class="hidden pt-3 border-t border-gray-200 dark:border-gray-700/60 flex items-center justify-between">
                     <span id="resume-text" class="text-xs text-blue-500 font-semibold"></span>
-                    <button onclick="resumeLastBook()" class="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition">Resume Reading</button>
+                    <button onclick="resumeLastBook()" class="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs rounded-lg hover:from-blue-700 hover:to-indigo-700 transition shadow-md">Resume Reading</button>
                 </div>
             </div>
 
-            <!-- Volume Selection & Glossary -->
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div>
-                    <h3 class="text-sm font-semibold mb-2 text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left">Select Volume</h3>
+            <!-- Volume Selection & Glossary Section Boxes -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="magical-box p-4 rounded-xl border border-gray-200 dark:border-gray-700/60 text-left shadow-sm">
+                    <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Select Volume</h3>
                     <div class="flex flex-wrap gap-2">
-                        <button onclick="loadBook('pdf/vol1.pdf', 'Vol 1')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm">Vol 1</button>
-                        <button onclick="loadBook('pdf/vol2.pdf', 'Vol 2')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm">Vol 2</button>
-                        <button onclick="loadBook('pdf/vol3.pdf', 'Vol 3')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm">Vol 3</button>
+                        <button onclick="loadBook('pdf/vol1.pdf', 'Vol 1')" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition text-sm shadow-md font-medium">Vol 1</button>
+                        <button onclick="loadBook('pdf/vol2.pdf', 'Vol 2')" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition text-sm shadow-md font-medium">Vol 2</button>
+                        <button onclick="loadBook('pdf/vol3.pdf', 'Vol 3')" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition text-sm shadow-md font-medium">Vol 3</button>
                     </div>
                 </div>
-                <div>
-                    <h3 class="text-sm font-semibold mb-2 text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left">World Lore</h3>
-                    <button onclick="openGlossary()" class="px-4 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition flex items-center gap-2">📖 World Glossary</button>
+                <div class="magical-box p-4 rounded-xl border border-purple-500/30 dark:border-purple-500/20 text-left shadow-sm flex flex-col justify-between">
+                    <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">World Lore</h3>
+                    <button onclick="openGlossary()" class="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm rounded-lg hover:from-purple-700 hover:to-indigo-700 transition flex items-center justify-center gap-2 shadow-md font-medium">📖 World Glossary</button>
                 </div>
             </div>
 
-            <!-- Character Grid (9 Characters in Order) -->
-            <div class="border-t dark:border-gray-700 pt-6">
-                <h3 class="text-md font-bold mb-3 text-gray-700 dark:text-gray-200">Meet the Characters</h3>
+            <!-- Character Grid (9 Characters in Order with Enhanced Styled Cards) -->
+            <div class="border-t border-gray-200 dark:border-gray-700/60 pt-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-md font-bold text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                        <span>✨ Meet the Characters</span>
+                    </h3>
+                    <span class="text-xs text-gray-400 font-light">Click a card for lore & abilities</span>
+                </div>
+                
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <!-- 1. Yato -->
-                    <div onclick="showCharacter('yato')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-purple-500 hover:shadow-[0_0_15px_rgba(168,85,247,0.4)] transition text-center flex flex-col items-center">
-                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400 shadow-inner">Image</div>
-                        <h4 class="font-bold text-sm text-[#79529c]">Yato</h4>
-                        <p class="text-xs font-bold text-[#79529c]">Shadow Spirit Warrior</p>
+                    <div onclick="showCharacter('yato')" class="cursor-pointer magical-box p-4 rounded-xl border border-gray-200 dark:border-gray-700/60 hover:border-purple-500 hover:shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all duration-300 text-center flex flex-col items-center group">
+                        <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-gray-600">Image</div>
+                        <h4 class="font-bold text-sm text-[#79529c] group-hover:text-purple-400 transition-colors">Yato</h4>
+                        <p class="text-xs font-semibold text-[#79529c]/80">Shadow Spirit Warrior</p>
                     </div>
                     <!-- 2. Gavon -->
-                    <div onclick="showCharacter('gavon')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-blue-500 hover:shadow-[0_0_15px_rgba(59,130,246,0.4)] transition text-center flex flex-col items-center">
-                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400 shadow-inner">Image</div>
-                        <h4 class="font-bold text-sm text-purple-400">Gavon</h4>
-                        <p class="text-xs font-bold text-purple-400">Wannabe Hero</p>
+                    <div onclick="showCharacter('gavon')" class="cursor-pointer magical-box p-4 rounded-xl border border-gray-200 dark:border-gray-700/60 hover:border-blue-500 hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all duration-300 text-center flex flex-col items-center group">
+                        <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-gray-600">Image</div>
+                        <h4 class="font-bold text-sm text-purple-400 group-hover:text-blue-400 transition-colors">Gavon</h4>
+                        <p class="text-xs font-semibold text-purple-400/80">Wannabe Hero</p>
                     </div>
                     <!-- 3. Stella -->
-                    <div onclick="showCharacter('stella')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-pink-500 hover:shadow-[0_0_15px_rgba(236,72,153,0.4)] transition text-center flex flex-col items-center">
-                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400 shadow-inner">Image</div>
-                        <h4 class="font-bold text-sm text-pink-400">Stella</h4>
-                        <p class="text-xs font-bold text-pink-400">Heroine</p>
+                    <div onclick="showCharacter('stella')" class="cursor-pointer magical-box p-4 rounded-xl border border-gray-200 dark:border-gray-700/60 hover:border-pink-500 hover:shadow-[0_0_20px_rgba(236,72,153,0.3)] transition-all duration-300 text-center flex flex-col items-center group">
+                        <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-gray-600">Image</div>
+                        <h4 class="font-bold text-sm text-pink-400 group-hover:text-pink-300 transition-colors">Stella</h4>
+                        <p class="text-xs font-semibold text-pink-400/80">Heroine</p>
                     </div>
                     <!-- 4. Lucia -->
-                    <div onclick="showCharacter('lucia')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-red-500 hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] transition text-center flex flex-col items-center">
-                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400 shadow-inner">Image</div>
-                        <h4 class="font-bold text-sm text-orange-400">Lucia</h4>
-                        <p class="text-xs font-bold text-orange-400">Telekinetic Child</p>
+                    <div onclick="showCharacter('lucia')" class="cursor-pointer magical-box p-4 rounded-xl border border-gray-200 dark:border-gray-700/60 hover:border-red-500 hover:shadow-[0_0_20px_rgba(239,68,68,0.3)] transition-all duration-300 text-center flex flex-col items-center group">
+                        <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-gray-600">Image</div>
+                        <h4 class="font-bold text-sm text-orange-400 group-hover:text-orange-300 transition-colors">Lucia</h4>
+                        <p class="text-xs font-semibold text-orange-400/80">Telekinetic Child</p>
                     </div>
                     <!-- 5. Marin -->
-                    <div onclick="showCharacter('marin')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-cyan-500 hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] transition text-center flex flex-col items-center">
-                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400 shadow-inner">Image</div>
-                        <h4 class="font-bold text-sm text-sky-400">Marin</h4>
-                        <p class="text-xs font-bold text-sky-400">Water Spirit Warrior</p>
+                    <div onclick="showCharacter('marin')" class="cursor-pointer magical-box p-4 rounded-xl border border-gray-200 dark:border-gray-700/60 hover:border-cyan-500 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all duration-300 text-center flex flex-col items-center group">
+                        <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-gray-600">Image</div>
+                        <h4 class="font-bold text-sm text-sky-400 group-hover:text-sky-300 transition-colors">Marin</h4>
+                        <p class="text-xs font-semibold text-sky-400/80">Water Spirit Warrior</p>
                     </div>
                     <!-- 6. Lumio -->
-                    <div onclick="showCharacter('lumio')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-yellow-400 hover:shadow-[0_0_15px_rgba(250,204,21,0.4)] transition text-center flex flex-col items-center">
-                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400 shadow-inner">Image</div>
-                        <h4 class="font-bold text-sm text-amber-400">Lumio</h4>
-                        <p class="text-xs font-bold text-amber-400">Light Spirit Warrior</p>
+                    <div onclick="showCharacter('lumio')" class="cursor-pointer magical-box p-4 rounded-xl border border-gray-200 dark:border-gray-700/60 hover:border-yellow-400 hover:shadow-[0_0_20px_rgba(250,204,21,0.3)] transition-all duration-300 text-center flex flex-col items-center group">
+                        <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-gray-600">Image</div>
+                        <h4 class="font-bold text-sm text-amber-400 group-hover:text-amber-300 transition-colors">Lumio</h4>
+                        <p class="text-xs font-semibold text-amber-400/80">Light Spirit Warrior</p>
                     </div>
                     <!-- 7. Jaya -->
-                    <div onclick="showCharacter('jaya')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-amber-600 hover:shadow-[0_0_15px_rgba(217,119,6,0.4)] transition text-center flex flex-col items-center">
-                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400 shadow-inner">Image</div>
-                        <h4 class="font-bold text-sm text-[#c05621]">Jaya</h4>
-                        <p class="text-xs font-bold text-[#c05621]">Earth Spirit Warrior</p>
+                    <div onclick="showCharacter('jaya')" class="cursor-pointer magical-box p-4 rounded-xl border border-gray-200 dark:border-gray-700/60 hover:border-amber-600 hover:shadow-[0_0_20px_rgba(217,119,6,0.3)] transition-all duration-300 text-center flex flex-col items-center group">
+                        <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-gray-600">Image</div>
+                        <h4 class="font-bold text-sm text-[#c05621] group-hover:text-amber-500 transition-colors">Jaya</h4>
+                        <p class="text-xs font-semibold text-[#c05621]/80">Earth Spirit Warrior</p>
                     </div>
                     <!-- 8. Surtur -->
-                    <div onclick="showCharacter('surtur')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-orange-500 hover:shadow-[0_0_15px_rgba(249,115,22,0.4)] transition text-center flex flex-col items-center">
-                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400 shadow-inner">Image</div>
-                        <h4 class="font-bold text-sm text-red-500">Surtur</h4>
-                        <p class="text-xs font-bold text-red-500">Flame Spirit Warrior</p>
+                    <div onclick="showCharacter('surtur')" class="cursor-pointer magical-box p-4 rounded-xl border border-gray-200 dark:border-gray-700/60 hover:border-orange-500 hover:shadow-[0_0_20px_rgba(249,115,22,0.3)] transition-all duration-300 text-center flex flex-col items-center group">
+                        <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-gray-600">Image</div>
+                        <h4 class="font-bold text-sm text-red-500 group-hover:text-red-400 transition-colors">Surtur</h4>
+                        <p class="text-xs font-semibold text-red-500/80">Flame Spirit Warrior</p>
                     </div>
                     <!-- 9. Ariel -->
-                    <div onclick="showCharacter('ariel')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 hover:border-emerald-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition text-center flex flex-col items-center">
-                        <div class="w-24 h-24 mx-auto mb-3 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-sm text-gray-400 shadow-inner">Image</div>
-                        <h4 class="font-bold text-sm text-green-500">Ariel</h4>
-                        <p class="text-xs font-bold text-green-500">Wind Spirit Warrior</p>
+                    <div onclick="showCharacter('ariel')" class="cursor-pointer magical-box p-4 rounded-xl border border-gray-200 dark:border-gray-700/60 hover:border-emerald-500 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all duration-300 text-center flex flex-col items-center group">
+                        <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-gray-600">Image</div>
+                        <h4 class="font-bold text-sm text-green-500 group-hover:text-green-400 transition-colors">Ariel</h4>
+                        <p class="text-xs font-semibold text-green-500/80">Wind Spirit Warrior</p>
                     </div>
                 </div>
             </div>
