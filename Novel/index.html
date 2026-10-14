@@ -20,21 +20,23 @@
 
     <header class="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6 text-center transition-colors duration-200">
         <!-- Top bar with Theme Toggle -->
-        <div class="relative flex justify-between items-center mb-6">
+        <div class="flex justify-between items-center mb-4">
             <div id="header-left-slot" class="w-36"></div>
-            <div class="absolute right-0 top-0">
-                <button onclick="toggleTheme()" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-sm rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-                    🌙 / ☀️ Mode
-                </button>
-            </div>
-            <!-- Centered Logo Image (Preferred Larger Size) -->
-            <h1 class="absolute left-1/2 -translate-x-1/2 -top-6 cursor-pointer flex items-center justify-center z-10" onclick="goBack()">
+            <div></div>
+            <button onclick="toggleTheme()" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-sm rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                🌙 / ☀️ Mode
+            </button>
+        </div>
+
+        <!-- Centered Large Logo Image cleanly in normal flow with proper spacing -->
+        <div class="flex justify-center items-center my-6">
+            <h1 class="cursor-pointer inline-flex items-center justify-center" onclick="goBack()">
                 <img src="Spirit Warrior.png" alt="Spirit Warrior" class="h-40 w-auto object-contain drop-shadow-lg">
             </h1>
         </div>
         
-        <!-- Main Menu Container (Pushed down slightly to give the logo clean space) -->
-        <div id="selector-container" class="space-y-6 pt-10">
+        <!-- Main Menu Container -->
+        <div id="selector-container" class="space-y-6">
             <!-- Story Intro & Resume Banner -->
             <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border dark:border-gray-700 text-left space-y-3">
                 <h2 class="text-md font-bold text-blue-600 dark:text-blue-400">Introduction</h2>
