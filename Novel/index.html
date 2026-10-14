@@ -22,9 +22,9 @@
         <div class="relative flex justify-between items-center mb-4">
             <!-- Left spacer -->
             <div id="header-left-slot" class="w-24"></div>
-            <!-- Centered Logo Image -->
+            <!-- Centered Logo Image (Increased height for better visibility) -->
             <h1 class="absolute left-1/2 -translate-x-1/2 cursor-pointer flex items-center justify-center" onclick="goBack()">
-                <img src="Spirit Warrior.png" alt="Spirit Warrior" class="h-10 w-auto object-contain">
+                <img src="Spirit Warrior.png" alt="Spirit Warrior" class="h-16 w-auto object-contain">
             </h1>
             <!-- Theme Toggle Button -->
             <button onclick="toggleTheme()" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-sm rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">
@@ -542,7 +542,7 @@
 
         async function fetchComments() {
             let list = document.getElementById('comments-list');
-            list.innerHTML = '<p class="text-sm text-gray-400">Loading comments...</p>';
+            list.innerHTML = '<p class="text-sm text-gray-400">Loading comments comments...</p>';
 
             const { data: comments, error } = await supabaseClient
                 .from('comments')
