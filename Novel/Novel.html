@@ -27,7 +27,7 @@
             <div class="flex items-center space-x-2">
                 <button id="prev" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Previous</button>
                 <span class="text-sm text-gray-600">
-                    Page <span id="page-num"></span> of <span id="page-count"></span>
+                    Page <span id="page-num">1</span> of <span id="page-count">1</span>
                 </span>
                 <button id="next" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Next</button>
             </div>
@@ -74,13 +74,14 @@
             document.getElementById('viewer-container').classList.remove('hidden');
 
             pageNum = 1;
-            pdfjsLib.getDocument(currentUrl).promise.then(function(pdfDoc_) {
+            pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
                 pdfDoc = pdfDoc_;
                 document.getElementById('page-count').textContent = pdfDoc.numPages;
                 renderPage(pageNum);
             }).catch(function() {
-                alert("PDF file not found in 'pdf/' folder yet!");
-                goBack();
+                // Fails silently if PDF isn't uploaded yet so the site stays usable
+                document.getElementById('page-count').textContent = '1';
+                fetchComments();
             });
         }
 
@@ -98,6 +99,7 @@
         }
 
         function renderPage(num) {
+            if (!pdfDoc) return;
             pageRendering = true;
             pdfDoc.getPage(num).then(function(page) {
                 let viewport = page.getViewport({ scale: scale });
@@ -131,13 +133,23 @@
         document.getElementById('prev').addEventListener('click', () => {
             if (pageNum <= 1) return;
             pageNum--;
-            queueRenderPage(pageNum);
+            if (pdfDoc) {
+                queueRenderPage(pageNum);
+            } else {
+                document.getElementById('page-num').textContent = pageNum;
+                fetchComments();
+            }
         });
 
         document.getElementById('next').addEventListener('click', () => {
-            if (pageNum >= pdfDoc.numPages) return;
+            if (pdfDoc && pageNum >= pdfDoc.numPages) return;
             pageNum++;
-            queueRenderPage(pageNum);
+            if (pdfDoc) {
+                queueRenderPage(pageNum);
+            } else {
+                document.getElementById('page-num').textContent = pageNum;
+                fetchComments();
+            }
         });
 
         async function addComment() {
