@@ -28,11 +28,92 @@
             </button>
         </div>
         
-        <!-- Volume Selection Menu -->
-        <div id="selector-container" class="flex flex-wrap justify-center gap-2">
-            <button onclick="loadBook('pdf/vol1.pdf')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Vol 1</button>
-            <button onclick="loadBook('pdf/vol2.pdf')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Vol 2</button>
-            <button onclick="loadBook('pdf/vol3.pdf')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Vol 3</button>
+        <!-- Main Menu & Selector Container -->
+        <div id="selector-container" class="space-y-6">
+            <!-- Story Introduction -->
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border dark:border-gray-700 text-left">
+                <h2 class="text-md font-bold mb-1 text-blue-600 dark:text-blue-400">Introduction</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                    Welcome to the world of Spirit Warrior. Dive into an epic journey of martial arts, ancient mysticism, and fierce battles as heroes rise to conquer the darkness threatening the realm. Choose a volume below to start reading!
+                </p>
+            </div>
+
+            <!-- Volume Selection Menu -->
+            <div>
+                <h3 class="text-sm font-semibold mb-2 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Select Volume</h3>
+                <div class="flex flex-wrap justify-center gap-2">
+                    <button onclick="loadBook('pdf/vol1.pdf')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Vol 1</button>
+                    <button onclick="loadBook('pdf/vol2.pdf')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Vol 2</button>
+                    <button onclick="loadBook('pdf/vol3.pdf')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Vol 3</button>
+                </div>
+            </div>
+
+            <!-- Meet the Characters Section (9 Cards) -->
+            <div class="border-t dark:border-gray-700 pt-6">
+                <h3 class="text-md font-bold mb-3 text-gray-700 dark:text-gray-200">Meet the Characters</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <!-- Card 1 -->
+                    <div onclick="showCharacter('char1')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center">
+                        <div class="w-16 h-16 mx-auto mb-2 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-xs text-gray-400">Image</div>
+                        <h4 class="font-bold text-sm">Kairos</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Spirit Warrior</p>
+                    </div>
+                    <!-- Card 2 -->
+                    <div onclick="showCharacter('char2')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center">
+                        <div class="w-16 h-16 mx-auto mb-2 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-xs text-gray-400">Image</div>
+                        <h4 class="font-bold text-sm">Master Jin</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Wise Mentor</p>
+                    </div>
+                    <!-- Card 3 -->
+                    <div onclick="showCharacter('char3')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center">
+                        <div class="w-16 h-16 mx-auto mb-2 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-xs text-gray-400">Image</div>
+                        <h4 class="font-bold text-sm">Malakor</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Shadow Lord</p>
+                    </div>
+                    <!-- Card 4 -->
+                    <div onclick="showCharacter('char4')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center">
+                        <div class="w-16 h-16 mx-auto mb-2 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-xs text-gray-400">Image</div>
+                        <h4 class="font-bold text-sm">Rinna</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Elemental Archer</p>
+                    </div>
+                    <!-- Card 5 -->
+                    <div onclick="showCharacter('char5')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center">
+                        <div class="w-16 h-16 mx-auto mb-2 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-xs text-gray-400">Image</div>
+                        <h4 class="font-bold text-sm">Targon</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Shield Guardian</p>
+                    </div>
+                    <!-- Card 6 -->
+                    <div onclick="showCharacter('char6')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center">
+                        <div class="w-16 h-16 mx-auto mb-2 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-xs text-gray-400">Image</div>
+                        <h4 class="font-bold text-sm">Lyra</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Spirit Scholar</p>
+                    </div>
+                    <!-- Card 7 -->
+                    <div onclick="showCharacter('char7')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center">
+                        <div class="w-16 h-16 mx-auto mb-2 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-xs text-gray-400">Image</div>
+                        <h4 class="font-bold text-sm">Vane</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Rogue Assassin</p>
+                    </div>
+                    <!-- Card 8 -->
+                    <div onclick="showCharacter('char8')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center">
+                        <div class="w-16 h-16 mx-auto mb-2 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-xs text-gray-400">Image</div>
+                        <h4 class="font-bold text-sm">Elder Cael</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Grand Council Leader</p>
+                    </div>
+                    <!-- Card 9 -->
+                    <div onclick="showCharacter('char9')" class="cursor-pointer bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border dark:border-gray-600 hover:border-blue-500 transition text-center">
+                        <div class="w-16 h-16 mx-auto mb-2 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-xs text-gray-400">Image</div>
+                        <h4 class="font-bold text-sm">Nyx</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Mysterious Ally</p>
+                    </div>
+                </div>
+
+                <!-- Character Description Box -->
+                <div id="character-box" class="hidden mt-4 p-4 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-lg text-left transition-all">
+                    <h4 id="char-title" class="font-bold text-blue-600 dark:text-blue-400 text-sm mb-1"></h4>
+                    <p id="char-desc" class="text-xs text-gray-600 dark:text-gray-300"></p>
+                </div>
+            </div>
         </div>
 
         <!-- Reader Controls -->
@@ -89,6 +170,29 @@
     </section>
 
     <script>
+        // Character descriptions data for 9 characters
+        const characters = {
+            char1: { name: "Kairos (The Spirit Warrior)", desc: "A young, determined martial artist who discovers an ancient spirit bond, granting him extraordinary powers to protect his homeland." },
+            char2: { name: "Master Jin", desc: "A seasoned veteran of the spiritual arts who guides Kairos through rigorous training and uncovers dark secrets of the past." },
+            char3: { name: "Malakor", desc: "A ruthless warlord seeking to absorb all spiritual energy to plunge the world into eternal darkness." },
+            char4: { name: "Rinna", desc: "A skilled archer capable of infusing her arrows with elemental spirit magic." },
+            char5: { name: "Targon", desc: "A stalwart warrior whose indestructible shield can withstand catastrophic attacks." },
+            char6: { name: "Lyra", desc: "A brilliant scholar dedicated to deciphering ancient spirit runes and relics." },
+            char7: { name: "Vane", desc: "A shadowy rogue who maneuvers unnoticed through enemy defenses." },
+            char8: { name: "Elder Cael", desc: "Leader of the Grand Council who holds vast knowledge of spiritual traditions." },
+            char9: { name: "Nyx", desc: "A enigmatic wanderer whose true motives remain shrouded in mystery." }
+        };
+
+        function showCharacter(key) {
+            let box = document.getElementById('character-box');
+            let title = document.getElementById('char-title');
+            let desc = document.getElementById('char-desc');
+            
+            title.textContent = characters[key].name;
+            desc.textContent = characters[key].desc;
+            box.classList.remove('hidden');
+        }
+
         // Theme initialization
         if (localStorage.getItem('theme') === 'light') {
             document.documentElement.classList.remove('dark');
@@ -154,7 +258,6 @@
             document.getElementById('reader-controls').classList.remove('hidden');
             document.getElementById('viewer-container').classList.remove('hidden');
 
-            // Load saved bookmark page if it exists, otherwise start at 1
             let savedPage = parseInt(localStorage.getItem('bookmark_' + url)) || 1;
             pageNum = savedPage;
 
