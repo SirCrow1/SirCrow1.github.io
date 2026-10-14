@@ -36,10 +36,17 @@
             background: linear-gradient(145deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
             border: 1px solid rgba(148, 163, 184, 0.15);
         }
-        .dark .character-card:hover {
-            border-color: rgba(56, 189, 248, 0.6);
-            box-shadow: 0 0 25px rgba(56, 189, 248, 0.25), inset 0 0 10px rgba(56, 189, 248, 0.05);
-        }
+        
+        /* Unique Character Hover Glow Effects */
+        .dark .card-yato:hover { border-color: rgba(168, 85, 247, 0.7); box-shadow: 0 0 25px rgba(168, 85, 247, 0.35), inset 0 0 10px rgba(168, 85, 247, 0.1); }
+        .dark .card-gavon:hover { border-color: rgba(59, 130, 246, 0.7); box-shadow: 0 0 25px rgba(59, 130, 246, 0.35), inset 0 0 10px rgba(59, 130, 246, 0.1); }
+        .dark .card-stella:hover { border-color: rgba(236, 72, 153, 0.7); box-shadow: 0 0 25px rgba(236, 72, 153, 0.35), inset 0 0 10px rgba(236, 72, 153, 0.1); }
+        .dark .card-lucia:hover { border-color: rgba(249, 115, 22, 0.7); box-shadow: 0 0 25px rgba(249, 115, 22, 0.35), inset 0 0 10px rgba(249, 115, 22, 0.1); }
+        .dark .card-marin:hover { border-color: rgba(56, 189, 248, 0.7); box-shadow: 0 0 25px rgba(56, 189, 248, 0.35), inset 0 0 10px rgba(56, 189, 248, 0.1); }
+        .dark .card-lumio:hover { border-color: rgba(250, 204, 21, 0.7); box-shadow: 0 0 25px rgba(250, 204, 21, 0.35), inset 0 0 10px rgba(250, 204, 21, 0.1); }
+        .dark .card-jaya:hover { border-color: rgba(217, 119, 6, 0.7); box-shadow: 0 0 25px rgba(217, 119, 6, 0.35), inset 0 0 10px rgba(217, 119, 6, 0.1); }
+        .dark .card-surtur:hover { border-color: rgba(239, 68, 68, 0.7); box-shadow: 0 0 25px rgba(239, 68, 68, 0.35), inset 0 0 10px rgba(239, 68, 68, 0.1); }
+        .dark .card-ariel:hover { border-color: rgba(34, 197, 94, 0.7); box-shadow: 0 0 25px rgba(34, 197, 94, 0.35), inset 0 0 10px rgba(34, 197, 94, 0.1); }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-[#090d16] text-gray-800 dark:text-gray-100 min-h-screen flex flex-col items-center p-4 transition-colors duration-200" onkeydown="handleGlobalKey(event)">
@@ -100,7 +107,7 @@
                 </div>
             </div>
 
-            <!-- Character Grid (9 Characters in Order with Enhanced Styled Cards) -->
+            <!-- Character Grid (9 Characters in Order with Unique Character Hover Glows) -->
             <div class="border-t border-gray-200 dark:border-slate-700/80 pt-6">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-md font-bold text-gray-700 dark:text-slate-200 flex items-center gap-2">
@@ -111,55 +118,55 @@
                 
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <!-- 1. Yato -->
-                    <div onclick="showCharacter('yato')" class="cursor-pointer character-card p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
+                    <div onclick="showCharacter('yato')" class="cursor-pointer character-card card-yato p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
                         <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
                         <h4 class="font-bold text-sm text-[#79529c] dark:text-purple-300 group-hover:text-purple-400 transition-colors">Yato</h4>
                         <p class="text-xs font-semibold text-[#79529c]/80 dark:text-purple-400/80">Shadow Spirit Warrior</p>
                     </div>
                     <!-- 2. Gavon -->
-                    <div onclick="showCharacter('gavon')" class="cursor-pointer character-card p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
+                    <div onclick="showCharacter('gavon')" class="cursor-pointer character-card card-gavon p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
                         <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
                         <h4 class="font-bold text-sm text-purple-400 dark:text-indigo-300 group-hover:text-indigo-200 transition-colors">Gavon</h4>
                         <p class="text-xs font-semibold text-purple-400/80 dark:text-indigo-300/80">Wannabe Hero</p>
                     </div>
                     <!-- 3. Stella -->
-                    <div onclick="showCharacter('stella')" class="cursor-pointer character-card p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
+                    <div onclick="showCharacter('stella')" class="cursor-pointer character-card card-stella p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
                         <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
                         <h4 class="font-bold text-sm text-pink-400 dark:text-pink-300 group-hover:text-pink-200 transition-colors">Stella</h4>
                         <p class="text-xs font-semibold text-pink-400/80 dark:text-pink-300/80">Heroine</p>
                     </div>
                     <!-- 4. Lucia -->
-                    <div onclick="showCharacter('lucia')" class="cursor-pointer character-card p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
+                    <div onclick="showCharacter('lucia')" class="cursor-pointer character-card card-lucia p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
                         <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
                         <h4 class="font-bold text-sm text-orange-400 dark:text-amber-300 group-hover:text-amber-200 transition-colors">Lucia</h4>
                         <p class="text-xs font-semibold text-orange-400/80 dark:text-amber-300/80">Telekinetic Child</p>
                     </div>
                     <!-- 5. Marin -->
-                    <div onclick="showCharacter('marin')" class="cursor-pointer character-card p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
+                    <div onclick="showCharacter('marin')" class="cursor-pointer character-card card-marin p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
                         <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
                         <h4 class="font-bold text-sm text-sky-400 dark:text-cyan-300 group-hover:text-cyan-200 transition-colors">Marin</h4>
                         <p class="text-xs font-semibold text-sky-400/80 dark:text-cyan-300/80">Water Spirit Warrior</p>
                     </div>
                     <!-- 6. Lumio -->
-                    <div onclick="showCharacter('lumio')" class="cursor-pointer character-card p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
+                    <div onclick="showCharacter('lumio')" class="cursor-pointer character-card card-lumio p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
                         <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
                         <h4 class="font-bold text-sm text-amber-400 dark:text-yellow-300 group-hover:text-yellow-200 transition-colors">Lumio</h4>
                         <p class="text-xs font-semibold text-amber-400/80 dark:text-yellow-300/80">Light Spirit Warrior</p>
                     </div>
                     <!-- 7. Jaya -->
-                    <div onclick="showCharacter('jaya')" class="cursor-pointer character-card p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
+                    <div onclick="showCharacter('jaya')" class="cursor-pointer character-card card-jaya p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
                         <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
                         <h4 class="font-bold text-sm text-[#c05621] dark:text-amber-500 group-hover:text-amber-400 transition-colors">Jaya</h4>
                         <p class="text-xs font-semibold text-[#c05621]/80 dark:text-amber-500/80">Earth Spirit Warrior</p>
                     </div>
                     <!-- 8. Surtur -->
-                    <div onclick="showCharacter('surtur')" class="cursor-pointer character-card p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
+                    <div onclick="showCharacter('surtur')" class="cursor-pointer character-card card-surtur p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
                         <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
                         <h4 class="font-bold text-sm text-red-500 dark:text-red-400 group-hover:text-red-300 transition-colors">Surtur</h4>
                         <p class="text-xs font-semibold text-red-500/80 dark:text-red-400/80">Flame Spirit Warrior</p>
                     </div>
                     <!-- 9. Ariel -->
-                    <div onclick="showCharacter('ariel')" class="cursor-pointer character-card p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
+                    <div onclick="showCharacter('ariel')" class="cursor-pointer character-card card-ariel p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
                         <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
                         <h4 class="font-bold text-sm text-green-500 dark:text-emerald-400 group-hover:text-emerald-300 transition-colors">Ariel</h4>
                         <p class="text-xs font-semibold text-green-500/80 dark:text-emerald-400/80">Wind Spirit Warrior</p>
