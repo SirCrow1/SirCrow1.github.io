@@ -108,10 +108,24 @@
                     </div>
                 </div>
 
-                <!-- Character Description Box -->
-                <div id="character-box" class="hidden mt-4 p-4 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-lg text-left transition-all">
-                    <h4 id="char-title" class="font-bold text-blue-600 dark:text-blue-400 text-sm mb-1"></h4>
-                    <p id="char-desc" class="text-xs text-gray-600 dark:text-gray-300"></p>
+                <!-- Character Detailed Description Box -->
+                <div id="character-box" class="hidden mt-4 p-4 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-lg text-left transition-all space-y-2">
+                    <div class="flex justify-between items-center border-b border-blue-200 dark:border-blue-900 pb-2">
+                        <h4 id="char-title" class="font-bold text-blue-600 dark:text-blue-400 text-base"></h4>
+                        <button onclick="closeCharacterBox()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xs font-bold px-2 py-0.5">✕ Close</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-xs text-gray-500 dark:text-gray-400">
+                        <p><strong>Age:</strong> <span id="char-age"></span></p>
+                        <p><strong>Birthdate:</strong> <span id="char-birth"></span></p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-gray-700 dark:text-gray-300 mt-2">General Description:</p>
+                        <p id="char-general" class="text-xs text-gray-600 dark:text-gray-300 mt-0.5"></p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-gray-700 dark:text-gray-300 mt-2">Novel Description & Role:</p>
+                        <p id="char-novel" class="text-xs text-gray-600 dark:text-gray-300 mt-0.5"></p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -170,27 +184,88 @@
     </section>
 
     <script>
-        // Character descriptions data for 9 characters
+        // Character detailed data
         const characters = {
-            char1: { name: "Kairos (The Spirit Warrior)", desc: "A young, determined martial artist who discovers an ancient spirit bond, granting him extraordinary powers to protect his homeland." },
-            char2: { name: "Master Jin", desc: "A seasoned veteran of the spiritual arts who guides Kairos through rigorous training and uncovers dark secrets of the past." },
-            char3: { name: "Malakor", desc: "A ruthless warlord seeking to absorb all spiritual energy to plunge the world into eternal darkness." },
-            char4: { name: "Rinna", desc: "A skilled archer capable of infusing her arrows with elemental spirit magic." },
-            char5: { name: "Targon", desc: "A stalwart warrior whose indestructible shield can withstand catastrophic attacks." },
-            char6: { name: "Lyra", desc: "A brilliant scholar dedicated to deciphering ancient spirit runes and relics." },
-            char7: { name: "Vane", desc: "A shadowy rogue who maneuvers unnoticed through enemy defenses." },
-            char8: { name: "Elder Cael", desc: "Leader of the Grand Council who holds vast knowledge of spiritual traditions." },
-            char9: { name: "Nyx", desc: "A enigmatic wanderer whose true motives remain shrouded in mystery." }
+            char1: { 
+                name: "Kairos", 
+                age: "18", 
+                birth: "April 12", 
+                general: "A passionate and resilient youth gifted with rare spiritual affinity.", 
+                novel: "As the main protagonist of Spirit Warrior, Kairos embarks on a quest across volumes to master his inner energy, unlock ancestral techniques, and confront Malakor." 
+            },
+            char2: { 
+                name: "Master Jin", 
+                age: "54", 
+                birth: "November 3", 
+                general: "A calm, experienced martial arts master with deep knowledge of ancient lore.", 
+                novel: "Serves as Kairos's mentor, providing guidance through grueling training regimens while carrying a heavy burden from the past." 
+            },
+            char3: { 
+                name: "Malakor", 
+                age: "Unknown (~300)", 
+                birth: "Eclipse Solstice", 
+                general: "A towering, ruthless warlord wielding corrupt shadow magic.", 
+                novel: "The primary antagonist driving the conflict in the Spirit Warrior series, seeking to absorb all realm energy." 
+            },
+            char4: { 
+                name: "Rinna", 
+                age: "19", 
+                birth: "August 22", 
+                general: "An agile archer with unmatched precision and sharp instincts.", 
+                novel: "A loyal companion who joins Kairos, using elemental arrow techniques to turn the tide in critical skirmishes." 
+            },
+            char5: { 
+                name: "Targon", 
+                age: "25", 
+                birth: "February 15", 
+                general: "A muscular warrior possessing unbreakable physical endurance.", 
+                novel: "Acts as the frontline protector for the party, capable of deploying massive barrier shields against enemy onslaughts." 
+            },
+            char6: { 
+                name: "Lyra", 
+                age: "17", 
+                birth: "May 30", 
+                general: "A brilliant intellectual deeply fascinated by ancient artifacts and rune-casting.", 
+                novel: "Provides critical intelligence and deciphers mysterious clues needed to advance the party's journey." 
+            },
+            char7: { 
+                name: "Vane", 
+                age: "22", 
+                birth: "October 31", 
+                general: "A quiet rogue who operates seamlessly in secrecy and shadows.", 
+                novel: "Gathers intelligence behind enemy lines and handles high-risk infiltration missions." 
+            },
+            char8: { 
+                name: "Elder Cael", 
+                age: "88", 
+                birth: "January 5", 
+                general: "A revered statesman who oversees the spiritual council.", 
+                novel: "Offers political context, historical warnings, and strategic counsel to the younger generation of fighters." 
+            },
+            char9: { 
+                name: "Nyx", 
+                age: "Unknown", 
+                birth: "Unknown", 
+                general: "A mysterious wanderer whose allegiance shifts like the wind.", 
+                novel: "A wild card character who occasionally assists or challenges Kairos depending on the circumstances." 
+            }
         };
 
         function showCharacter(key) {
             let box = document.getElementById('character-box');
-            let title = document.getElementById('char-title');
-            let desc = document.getElementById('char-desc');
+            let char = characters[key];
             
-            title.textContent = characters[key].name;
-            desc.textContent = characters[key].desc;
+            document.getElementById('char-title').textContent = char.name;
+            document.getElementById('char-age').textContent = char.age;
+            document.getElementById('char-birth').textContent = char.birth;
+            document.getElementById('char-general').textContent = char.general;
+            document.getElementById('char-novel').textContent = char.novel;
+            
             box.classList.remove('hidden');
+        }
+
+        function closeCharacterBox() {
+            document.getElementById('character-box').classList.add('hidden');
         }
 
         // Theme initialization
