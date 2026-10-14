@@ -107,26 +107,6 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400">Mysterious Ally</p>
                     </div>
                 </div>
-
-                <!-- Character Detailed Description Box -->
-                <div id="character-box" class="hidden mt-4 p-4 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-lg text-left transition-all space-y-2">
-                    <div class="flex justify-between items-center border-b border-blue-200 dark:border-blue-900 pb-2">
-                        <h4 id="char-title" class="font-bold text-blue-600 dark:text-blue-400 text-base"></h4>
-                        <button onclick="closeCharacterBox()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xs font-bold px-2 py-0.5">✕ Close</button>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2 text-xs text-gray-500 dark:text-gray-400">
-                        <p><strong>Age:</strong> <span id="char-age"></span></p>
-                        <p><strong>Birthdate:</strong> <span id="char-birth"></span></p>
-                    </div>
-                    <div>
-                        <p class="text-xs font-semibold text-gray-700 dark:text-gray-300 mt-2">General Description:</p>
-                        <p id="char-general" class="text-xs text-gray-600 dark:text-gray-300 mt-0.5"></p>
-                    </div>
-                    <div>
-                        <p class="text-xs font-semibold text-gray-700 dark:text-gray-300 mt-2">Novel Description & Role:</p>
-                        <p id="char-novel" class="text-xs text-gray-600 dark:text-gray-300 mt-0.5"></p>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -183,8 +163,40 @@
         <div id="comments-list" class="space-y-3"></div>
     </section>
 
+    <!-- Full Screen Character Modal -->
+    <div id="character-modal" onclick="closeCharacterModal(event)" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div onclick="event.stopPropagation()" class="bg-white dark:bg-gray-800 border dark:border-gray-700 max-w-lg w-full rounded-xl p-6 shadow-2xl relative space-y-4">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center border-b dark:border-gray-700 pb-3">
+                <h3 id="modal-char-title" class="text-xl font-bold text-blue-600 dark:text-blue-400"></h3>
+                <button onclick="closeModalDirect()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg font-bold">✕</button>
+            </div>
+
+            <!-- Image & Quick Info -->
+            <div class="flex items-center space-x-4">
+                <div class="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center text-xs text-gray-400 flex-shrink-0">Image</div>
+                <div class="space-y-1 text-sm text-gray-600 dark:text-gray-300">
+                    <p><strong>Age:</strong> <span id="modal-char-age"></span></p>
+                    <p><strong>Birthdate:</strong> <span id="modal-char-birth"></span></p>
+                </div>
+            </div>
+
+            <!-- General Description -->
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border dark:border-gray-700">
+                <p class="text-xs font-semibold text-gray-700 dark:text-gray-300">General Description</p>
+                <p id="modal-char-general" class="text-xs text-gray-600 dark:text-gray-300 mt-1 leading-relaxed"></p>
+            </div>
+
+            <!-- Novel Description -->
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border dark:border-gray-700">
+                <p class="text-xs font-semibold text-gray-700 dark:text-gray-300">Novel Description & Role</p>
+                <p id="modal-char-novel" class="text-xs text-gray-600 dark:text-gray-300 mt-1 leading-relaxed"></p>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Character detailed data
+        // Character detailed data for 9 characters
         const characters = {
             char1: { 
                 name: "Kairos", 
@@ -252,20 +264,23 @@
         };
 
         function showCharacter(key) {
-            let box = document.getElementById('character-box');
             let char = characters[key];
             
-            document.getElementById('char-title').textContent = char.name;
-            document.getElementById('char-age').textContent = char.age;
-            document.getElementById('char-birth').textContent = char.birth;
-            document.getElementById('char-general').textContent = char.general;
-            document.getElementById('char-novel').textContent = char.novel;
+            document.getElementById('modal-char-title').textContent = char.name;
+            document.getElementById('modal-char-age').textContent = char.age;
+            document.getElementById('modal-char-birth').textContent = char.birth;
+            document.getElementById('modal-char-general').textContent = char.general;
+            document.getElementById('modal-char-novel').textContent = char.novel;
             
-            box.classList.remove('hidden');
+            document.getElementById('character-modal').classList.remove('hidden');
         }
 
-        function closeCharacterBox() {
-            document.getElementById('character-box').classList.add('hidden');
+        function closeModalDirect() {
+            document.getElementById('character-modal').classList.add('hidden');
+        }
+
+        function closeCharacterModal(event) {
+            document.getElementById('character-modal').classList.add('hidden');
         }
 
         // Theme initialization
