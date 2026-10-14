@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spirit Warrior Novel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
+
+    <header class="w-full max-w-3xl bg-white shadow-md rounded-lg p-6 mb-6 text-center">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">Spirit Warrior Novel</h1>
+        
+        <!-- Volume Selection Menu -->
+        <div id="selector-container" class="flex flex-wrap justify-center gap-2">
+            <button onclick="loadBook('pdf/vol1.pdf')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Vol 1</button>
+            <button onclick="loadBook('pdf/vol2.pdf')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Vol 2</button>
+            <button onclick="loadBook('pdf/vol3.pdf')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Vol 3</button>
+        </div>
+
+        <!-- Reader Controls -->
+        <div id="reader-controls" class="hidden flex flex-wrap justify-between items-center gap-4 mt-6 pt-4 border-t">
+            <button onclick="goBack()" class="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition">← Back</button>
+            <div class="flex items-center space-x-2">
+                <button id="prev" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Previous</button>
+                <span class="text-sm text-gray-600">
+                    Page <span id="page-num">1</span> of <span id="page-count">1</span>
+                </span>
+                <button id="next" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Next</button>
+            </div>
+            <button onclick="toggleComments()" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition">💬 Comments</button>
+        </div>
+    </header>
+
+    <!-- Canvas Viewer -->
+    <main id="viewer-container" class="hidden w-full max-w-3xl flex justify-center bg-white shadow-md rounded-lg p-4 overflow-auto mb-6">
+        <canvas id="pdf-render" class="max-w-full h-auto shadow"></canvas>
+    </main>
+
+    <!-- Comments Section -->
+    <section id="comments-section" class="hidden w-full max-w-3xl bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-lg font-bold text-gray-800 mb-4">Page Comments</h2>
+        <div class="flex gap-2 mb-4">
+            <input type="text" id="comment-input" placeholder="Write a comment..." class="flex-grow border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button onclick="addComment()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Post</button>
+        </div>
+        <div id="comments-list" class="space-y-3"></div>
+    </section>
+
+    <script>
+        // Supabase configuration
+        const SUPABASE_URL = 'https://rhnceiumgsnbzkssbrnh.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Mcs4utHHAnFEE5P3UGOMVw_43WYbkt5';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let pdfDoc = null,
+            pageNum = 1,
+            pageRendering = false,
+            pageNumPending = null,
+            scale = 1.2,
+            canvas = document.getElementById('pdf-render'),
+            ctx = canvas.getContext('2d'),
+            currentUrl = '';
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        function loadBook(url) {
+            currentUrl = url;
+            document.getElementById('selector-container').classList.add('hidden');
+            document.getElementById('reader-controls').classList.remove('hidden');
+            document.getElementById('viewer-container').classList.remove('hidden');
+
+            pageNum = 1;
+            pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
+                pdfDoc = pdfDoc_;
+                document.getElementById('page-count').textContent = pdfDoc.numPages;
+                renderPage(pageNum);
+            }).catch(function() {
+                document.getElementById('page-count').textContent = '1';
+                fetchComments();
+            });
+        }
+
+        function goBack() {
+            document.getElementById('selector-container').classList.remove('hidden');
+            document.getElementById('reader-controls').classList.add('hidden');
+            document.getElementById('viewer-container').classList.add('hidden');
+            document.getElementById('comments-section').classList.add('hidden');
+            pdfDoc = null;
+        }
+
+        function toggleComments() {
+            let section = document.getElementById('comments-section');
+            section.classList.toggle('hidden');
+        }
+
+        function renderPage(num) {
+            if (!pdfDoc) return;
+            pageRendering = true;
+            pdfDoc.getPage(num).then(function(page) {
+                let viewport = page.getViewport({ scale: scale });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                let renderContext = { canvasContext: ctx, viewport: viewport };
+                let renderTask = page.render(renderContext);
+
+                renderTask.promise.then(function() {
+                    pageRendering = false;
+                    if (pageNumPending !== null) {
+                        renderPage(pageNumPending);
+                        pageNumPending = null;
+                    }
+                });
+            });
+
+            document.getElementById('page-num').textContent = num;
+            fetchComments();
+        }
+
+        function queueRenderPage(num) {
+            if (pageRendering) {
+                pageNumPending = num;
+            } else {
+                renderPage(num);
+            }
+        }
+
+        document.getElementById('prev').addEventListener('click', () => {
+            if (pageNum <= 1) return;
+            pageNum--;
+            if (pdfDoc) {
+                queueRenderPage(pageNum);
+            } else {
+                document.getElementById('page-num').textContent = pageNum;
+                fetchComments();
+            }
+        });
+
+        document.getElementById('next').addEventListener('click', () => {
+            if (pdfDoc && pageNum >= pdfDoc.numPages) return;
+            pageNum++;
+            if (pdfDoc) {
+                queueRenderPage(pageNum);
+            } else {
+                document.getElementById('page-num').textContent = pageNum;
+                fetchComments();
+            }
+        });
+
+        async function addComment() {
+            let input = document.getElementById('comment-input');
+            let text = input.value.trim();
+            if (!text) return;
+
+            const { error } = await supabaseClient
+                .from('comments')
+                .insert([{ book_url: currentUrl, page_num: pageNum, text: text }]);
+
+            if (error) {
+                console.error("Error posting comment:", error);
+            } else {
+                input.value = '';
+                fetchComments();
+            }
+        }
+
+        async function fetchComments() {
+            let list = document.getElementById('comments-list');
+            list.innerHTML = '<p class="text-sm text-gray-400">Loading comments...</p>';
+
+            const { data: comments, error } = await supabaseClient
+                .from('comments')
+                .select('*')
+                .eq('book_url', currentUrl)
+                .eq('page_num', pageNum)
+                .order('created_at', { ascending: true });
+
+            list.innerHTML = '';
+
+            if (error || !comments || comments.length === 0) {
+                list.innerHTML = '<p class="text-sm text-gray-400">No comments for this page yet.</p>';
+                return;
+            }
+
+            comments.forEach(c => {
+                let div = document.createElement('div');
+                div.className = 'bg-gray-50 border p-3 rounded text-sm text-gray-700';
+                div.textContent = c.text;
+                list.appendChild(div);
+            });
+        }
+    </script>
+</body>
+</html>
