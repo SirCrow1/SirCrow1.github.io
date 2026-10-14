@@ -12,14 +12,14 @@
     <header class="w-full max-w-3xl bg-white shadow-md rounded-lg p-6 mb-6 text-center">
         <h1 class="text-2xl font-bold text-gray-800 mb-4">Spirit Warrior Novel</h1>
         
-        <!-- Book / Volume Selection Menu -->
+        <!-- Volume Selection Menu -->
         <div id="selector-container" class="flex flex-wrap justify-center gap-2">
             <button onclick="loadBook('pdf/vol1.pdf')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Vol 1</button>
             <button onclick="loadBook('pdf/vol2.pdf')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Vol 2</button>
             <button onclick="loadBook('pdf/vol3.pdf')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Vol 3</button>
         </div>
 
-        <!-- Reader Controls & Comments Toggle (Hidden until a book is picked) -->
+        <!-- Reader Controls (Hidden until a book is picked) -->
         <div id="reader-controls" class="hidden flex flex-wrap justify-between items-center gap-4 mt-6 pt-4 border-t">
             <button onclick="goBack()" class="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition">← Back</button>
             <div class="flex items-center space-x-2">
@@ -38,16 +38,14 @@
         <canvas id="pdf-render" class="max-w-full h-auto shadow"></canvas>
     </main>
 
-    <!-- Comments Section (Hidden by default, toggled via button) -->
+    <!-- Comments Section (Hidden initially) -->
     <section id="comments-section" class="hidden w-full max-w-3xl bg-white shadow-md rounded-lg p-6">
         <h2 class="text-lg font-bold text-gray-800 mb-4">Page Comments</h2>
         <div class="flex gap-2 mb-4">
             <input type="text" id="comment-input" placeholder="Write a comment..." class="flex-grow border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
             <button onclick="addComment()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Post</button>
         </div>
-        <div id="comments-list" class="space-y-3">
-            <!-- Dynamic comments appear here -->
-        </div>
+        <div id="comments-list" class="space-y-3"></div>
     </section>
 
     <script>
@@ -69,15 +67,14 @@
             document.getElementById('viewer-container').classList.remove('hidden');
 
             pageNum = 1;
-            loadPdfDoc();
-        }
-
-        function loadPdfDoc() {
             pdfjsLib.getDocument(currentUrl).promise.then(function(pdfDoc_) {
                 pdfDoc = pdfDoc_;
                 document.getElementById('page-count').textContent = pdfDoc.numPages;
                 renderPage(pageNum);
                 renderComments();
+            }).catch(function(error) {
+                alert("PDF file not found in 'pdf/' folder yet!");
+                goBack();
             });
         }
 
@@ -114,7 +111,7 @@
             });
 
             document.getElementById('page-num').textContent = num;
-            renderComments(); // Refresh comments specific to this page
+            renderComments();
         }
 
         function queueRenderPage(num) {
@@ -137,7 +134,6 @@
             queueRenderPage(pageNum);
         });
 
-        // Simple local storage comments keyed by book + page
         function getStorageKey() {
             return currentUrl + '_page_' + pageNum;
         }
