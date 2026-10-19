@@ -63,19 +63,19 @@
         }
         
         /* 
-           FIXED SCALES & POSITIONS FOR ALL PORTRAITS TO STOP CUTTING:
-           - Using transform: scale() to cleanly zoom into faces
-           - Using object-position to align heads perfectly
+           PERFECTED SCALES & POSITIONS:
+           - Higher scale (2.8) zooms right into the face.
+           - Adjust percentage to move face up/down.
         */
-        .pos-yato { transform: scale(1.6); object-position: center 20%; }
-        .pos-lucia { transform: scale(1.6); object-position: center 20%; }
-        .pos-gavon { transform: scale(1.6); object-position: center 20%; }
-        .pos-stella { transform: scale(1.6); object-position: center 20%; }
-        .pos-marin { transform: scale(1.6); object-position: center 20%; }
-        .pos-lumio { transform: scale(1.6); object-position: center 20%; }
-        .pos-jaya { transform: scale(1.6); object-position: center 20%; }
-        .pos-surtur { transform: scale(1.6); object-position: center 20%; }
-        .pos-ariel { transform: scale(1.6); object-position: center 20%; }
+        .pos-yato { transform: scale(2.8); object-position: center 30%; }
+        .pos-lucia { transform: scale(2.8); object-position: center 30%; }
+        .pos-gavon { transform: scale(2.8); object-position: center 30%; }
+        .pos-stella { transform: scale(2.8); object-position: center 30%; }
+        .pos-marin { transform: scale(2.8); object-position: center 30%; }
+        .pos-lumio { transform: scale(2.8); object-position: center 30%; }
+        .pos-jaya { transform: scale(2.8); object-position: center 30%; }
+        .pos-surtur { transform: scale(2.8); object-position: center 30%; }
+        .pos-ariel { transform: scale(2.8); object-position: center 30%; }
     </style>
 </head>
 <body class="bg-[#090d16] text-gray-100 min-h-screen flex flex-col items-center p-4" onkeydown="handleGlobalKey(event)">
@@ -137,7 +137,7 @@
                 </div>
                 
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <!-- 1. Yato (Strictly Yato.jpg) -->
+                    <!-- 1. Yato -->
                     <div onclick="showCharacter('yato')" class="cursor-pointer character-card card-yato p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
                         <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-purple-500/50 bg-slate-800">
                             <img src="Yato.jpg" alt="Yato" class="face-portrait pos-yato">
@@ -346,7 +346,7 @@
             lumio: { name: "Lumio", img: "Lumio.jpg", posClass: "pos-lumio", colorClass: "text-yellow-300", borderClass: "border-yellow-500/50", age: "Unknown", birth: "Unknown", food: "Unknown", hobby: "Unknown", weapon: "Light Piercing Blade", abilities: ["Spirit Energy: Light", "Astro Ability: Unknown", "Light Aura Burst", "Enhanced Reflexes"], general: "A mysterious companion whose birthday is unknown, wielding powerful light energy.", novel: "A core member of the light faction supporting the team against darkness." },
             jaya: { name: "Jaya", img: "Jaya.jpg", posClass: "pos-jaya", colorClass: "text-amber-600", borderClass: "border-amber-600/50", age: "23", birth: "July 22", food: "Aged liquor", hobby: "Training, drinking, freeing slaves, and helping orphans", weapon: "Tectonic Brass Knuckles", abilities: ["Spirit Energy: Earth", "Astro Ability: Unknown", "World-Class Grandmaster Hand-to-Hand Combat", "World Class All-Forms Combat Mastery", "No Astro Energy"], general: "A tough warrior with brown skin, brown hair, and an intense presence. She lives for a good fight, but has a huge heart spending her time freeing slaves and taking care of orphans.", novel: "Uses raw earth power and world-class martial arts skills to smash enemy lines and protect the innocent and always looking for a challenge." },
             surtur: { name: "Surtur", img: "Surtur.jpg", posClass: "pos-surtur", colorClass: "text-red-500", borderClass: "border-red-500/50", age: "Unknown", birth: "March 20", food: "Spicy vegan curry", hobby: "Making friends", weapon: "Monkey Staff (Ancient artifact)", abilities: ["Spirit Energy: Flame", "Astro Ability: Unknown", "Absolute Pinnacle Spirit Energy & Astro Energy", "Master Bo Staff Combat", "Novice Hand-to-Hand Combat"], general: "A wildly energetic guy with reddish-yellow hair who holds the largest energy reserve in the world. Despite his massive talent, he physically cannot bring himself to hurt people and just wants to make friends.", novel: "Uses his ancient staff and flame powers to break through enemy barriers without causing needless harm." },
-            ariel: { name: "Ariel", img: "Ariel.jpg", posClass: "pos-ariel", colorClass: "text-emerald-400", borderClass: "border-emerald-500/50", age: "22", birth: "March 4", food: "Natural wild berries", hobby: "Punishing evil at night & lone patrols", weapon: "Anti-Material Sniper Rifle", abilities: ["SpiritEnergy: Wind", "Astro Ability: Unknown", "World-Class Master Sniper Proficiency", "World-Class Sensory Ability", "Master Hand-to-Hand Combat", "Master at Astro Energy"], general: "A sharp-tongued marksman who hates humans due to past trouble. She spends her nights hunting down and punishing evil, though she keeps deep loyalty to one single person.", novel: "Provides world-class long-range wind-boosted sniper cover to protect the team from far away." }
+            ariel: { name: "Ariel", img: "Ariel.jpg", posClass: "pos-ariel", colorClass: "text-emerald-400", borderClass: "border-emerald-500/50", age: "22", birth: "March 4", food: "Natural wild berries", hobby: "Punishing evil at night & lone patrols", weapon: "Anti-Material Sniper Rifle", abilities: ["Spirit Energy: Wind", "Astro Ability: Unknown", "World-Class Master Sniper Proficiency", "World-Class Sensory Ability", "Master Hand-to-Hand Combat", "Master at Astro Energy"], general: "A sharp-tongued marksman who hates humans due to past trouble. She spends her nights hunting down and punishing evil, though she keeps deep loyalty to one single person.", novel: "Provides world-class long-range wind-boosted sniper cover to protect the team from far away." }
         };
 
         function showCharacter(key) {
