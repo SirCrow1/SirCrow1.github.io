@@ -310,20 +310,20 @@
 
                 <!-- Abilities Box -->
                 <div class="bg-slate-800/60 p-4 sm:p-5 rounded-xl border border-slate-700/60 shadow-inner">
-                    <p class="text-sm font-bold text-slate-100 mb-2 tracking-wide uppercase">Abilities & Powers:</p>
-                    <div id="modal-char-ability" class="text-sm text-slate-300 space-y-1.5"></div>
+                    <p id="lbl-abilities-title" class="text-sm font-bold mb-2 tracking-wide uppercase">Abilities & Powers:</p>
+                    <div id="modal-char-ability" class="text-sm space-y-1.5"></div>
                 </div>
 
                 <!-- General Description Box -->
                 <div class="bg-slate-800/60 p-4 sm:p-5 rounded-xl border border-slate-700/60 shadow-inner">
-                    <p class="text-sm font-bold text-slate-100 tracking-wide uppercase">General Description:</p>
-                    <p id="modal-char-general" class="text-sm text-slate-300 mt-1.5 leading-relaxed font-light"></p>
+                    <p id="lbl-general-title" class="text-sm font-bold tracking-wide uppercase">General Description:</p>
+                    <p id="modal-char-general" class="text-sm mt-1.5 leading-relaxed font-medium"></p>
                 </div>
 
                 <!-- Novel Description Box -->
                 <div class="bg-slate-800/60 p-4 sm:p-5 rounded-xl border border-slate-700/60 shadow-inner">
-                    <p class="text-sm font-bold text-slate-100 tracking-wide uppercase">Novel Description & Role:</p>
-                    <p id="modal-char-novel" class="text-sm text-slate-300 mt-1.5 leading-relaxed font-light"></p>
+                    <p id="lbl-novel-title" class="text-sm font-bold tracking-wide uppercase">Novel Description & Role:</p>
+                    <p id="modal-char-novel" class="text-sm mt-1.5 leading-relaxed font-medium"></p>
                 </div>
             </div>
 
@@ -387,7 +387,7 @@
             imgElem.src = char.img;
             imgElem.className = `face-portrait ${char.posClass}`;
 
-            // Apply character's theme color to both labels and values in the top-right section
+            // Apply character's theme color to top section labels and values
             ['lbl-age', 'lbl-birth', 'lbl-food', 'lbl-hobby', 'lbl-weapon'].forEach(id => {
                 document.getElementById(id).className = `font-semibold ${char.colorClass}`;
             });
@@ -401,16 +401,28 @@
             document.getElementById('modal-char-hobby').textContent = char.hobby;
             document.getElementById('modal-char-weapon').textContent = char.weapon;
             
+            // Apply character's theme color to section titles and descriptions
+            document.getElementById('lbl-abilities-title').className = `text-sm font-bold mb-2 tracking-wide uppercase ${char.colorClass}`;
+            document.getElementById('lbl-general-title').className = `text-sm font-bold tracking-wide uppercase ${char.colorClass}`;
+            document.getElementById('lbl-novel-title').className = `text-sm font-bold tracking-wide uppercase ${char.colorClass}`;
+
+            let generalElem = document.getElementById('modal-char-general');
+            generalElem.className = `text-sm mt-1.5 leading-relaxed font-medium ${char.colorClass}`;
+            generalElem.textContent = char.general;
+
+            let novelElem = document.getElementById('modal-char-novel');
+            novelElem.className = `text-sm mt-1.5 leading-relaxed font-medium ${char.colorClass}`;
+            novelElem.textContent = char.novel;
+
             let abilityContainer = document.getElementById('modal-char-ability');
             abilityContainer.innerHTML = '';
             char.abilities.forEach(ability => {
                 let p = document.createElement('p');
-                p.className = 'flex items-start';
+                p.className = `flex items-start font-medium ${char.colorClass}`;
                 p.innerHTML = `<span class="mr-2 font-bold ${char.colorClass}">•</span> <span>${ability}</span>`;
                 abilityContainer.appendChild(p);
             });
-            document.getElementById('modal-char-general').textContent = char.general;
-            document.getElementById('modal-char-novel').textContent = char.novel;
+
             document.getElementById('character-modal').classList.remove('hidden');
         }
 
