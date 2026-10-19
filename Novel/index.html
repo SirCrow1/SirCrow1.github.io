@@ -54,6 +54,13 @@
 
         .card-ariel { border-left: 3px solid rgba(34, 197, 94, 0.6); }
         .card-ariel:hover { border-color: rgba(34, 197, 94, 0.9); box-shadow: 0 0 25px rgba(34, 197, 94, 0.35), inset 0 0 10px rgba(34, 197, 94, 0.1); }
+        
+        /* Face Portrait Focus Framing */
+        .face-portrait {
+            object-fit: cover;
+            object-position: center 20%;
+            transform: scale(1.15);
+        }
     </style>
 </head>
 <body class="bg-[#090d16] text-gray-100 min-h-screen flex flex-col items-center p-4" onkeydown="handleGlobalKey(event)">
@@ -117,72 +124,72 @@
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <!-- 1. Yato -->
                     <div onclick="showCharacter('yato')" class="cursor-pointer character-card card-yato p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
-                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-purple-500/50">
-                            <img src="Yato.jpg" alt="Yato" class="w-full h-full object-cover">
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-purple-500/50 bg-slate-800">
+                            <img src="Yato.jpg" alt="Yato" class="w-full h-full face-portrait">
                         </div>
                         <h4 class="font-bold text-sm text-purple-300 group-hover:text-purple-400 transition-colors">Yato</h4>
                         <p class="text-xs font-semibold text-purple-400/80">Shadow Spirit Warrior</p>
                     </div>
                     <!-- 2. Gavon -->
                     <div onclick="showCharacter('gavon')" class="cursor-pointer character-card card-gavon p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
-                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-indigo-500/50">
-                            <img src="Gavon.jpg" alt="Gavon" class="w-full h-full object-cover">
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-indigo-500/50 bg-slate-800">
+                            <img src="Gavon.jpg" alt="Gavon" class="w-full h-full face-portrait">
                         </div>
                         <h4 class="font-bold text-sm text-indigo-300 group-hover:text-indigo-200 transition-colors">Gavon</h4>
                         <p class="text-xs font-semibold text-indigo-300/80">Wannabe Hero</p>
                     </div>
                     <!-- 3. Stella -->
                     <div onclick="showCharacter('stella')" class="cursor-pointer character-card card-stella p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
-                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-pink-500/50">
-                            <img src="Stella.jpg" alt="Stella" class="w-full h-full object-cover">
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-pink-500/50 bg-slate-800">
+                            <img src="Stella.jpg" alt="Stella" class="w-full h-full face-portrait">
                         </div>
                         <h4 class="font-bold text-sm text-pink-300 group-hover:text-pink-200 transition-colors">Stella</h4>
                         <p class="text-xs font-semibold text-pink-300/80">Heroine</p>
                     </div>
                     <!-- 4. Lucia -->
                     <div onclick="showCharacter('lucia')" class="cursor-pointer character-card card-lucia p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
-                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-orange-500/50">
-                            <img src="Lucia.jpg" alt="Lucia" class="w-full h-full object-cover">
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-orange-500/50 bg-slate-800">
+                            <img src="Lucia.jpg" alt="Lucia" class="w-full h-full face-portrait">
                         </div>
                         <h4 class="font-bold text-sm text-orange-400 group-hover:text-orange-300 transition-colors">Lucia</h4>
                         <p class="text-xs font-semibold text-orange-400/80">Telekinetic Child</p>
                     </div>
                     <!-- 5. Marin -->
                     <div onclick="showCharacter('marin')" class="cursor-pointer character-card card-marin p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
-                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-cyan-500/50">
-                            <img src="Marin.jpg" alt="Marin" class="w-full h-full object-cover">
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-cyan-500/50 bg-slate-800">
+                            <img src="Marin.jpg" alt="Marin" class="w-full h-full face-portrait">
                         </div>
                         <h4 class="font-bold text-sm text-cyan-300 group-hover:text-cyan-200 transition-colors">Marin</h4>
                         <p class="text-xs font-semibold text-cyan-300/80">Water Spirit Warrior</p>
                     </div>
                     <!-- 6. Lumio -->
                     <div onclick="showCharacter('lumio')" class="cursor-pointer character-card card-lumio p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
-                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-yellow-500/50">
-                            <img src="Lumio.jpg" alt="Lumio" class="w-full h-full object-cover">
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-yellow-500/50 bg-slate-800">
+                            <img src="Lumio.jpg" alt="Lumio" class="w-full h-full face-portrait">
                         </div>
                         <h4 class="font-bold text-sm text-yellow-300 group-hover:text-yellow-200 transition-colors">Lumio</h4>
                         <p class="text-xs font-semibold text-yellow-300/80">Light Spirit Warrior</p>
                     </div>
                     <!-- 7. Jaya -->
                     <div onclick="showCharacter('jaya')" class="cursor-pointer character-card card-jaya p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
-                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-amber-600/50">
-                            <img src="Jaya.jpg" alt="Jaya" class="w-full h-full object-cover">
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-amber-600/50 bg-slate-800">
+                            <img src="Jaya.jpg" alt="Jaya" class="w-full h-full face-portrait">
                         </div>
                         <h4 class="font-bold text-sm text-amber-600 group-hover:text-amber-500 transition-colors">Jaya</h4>
                         <p class="text-xs font-semibold text-amber-600/80">Earth Spirit Warrior</p>
                     </div>
                     <!-- 8. Surtur -->
                     <div onclick="showCharacter('surtur')" class="cursor-pointer character-card card-surtur p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
-                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-red-500/50">
-                            <img src="Surtur.jpg" alt="Surtur" class="w-full h-full object-cover">
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-red-500/50 bg-slate-800">
+                            <img src="Surtur.jpg" alt="Surtur" class="w-full h-full face-portrait">
                         </div>
                         <h4 class="font-bold text-sm text-red-500 group-hover:text-red-400 transition-colors">Surtur</h4>
                         <p class="text-xs font-semibold text-red-500/80">Flame Spirit Warrior</p>
                     </div>
                     <!-- 9. Ariel -->
                     <div onclick="showCharacter('ariel')" class="cursor-pointer character-card card-ariel p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
-                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-emerald-500/50">
-                            <img src="Ariel.jpg" alt="Ariel" class="w-full h-full object-cover">
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-emerald-500/50 bg-slate-800">
+                            <img src="Ariel.jpg" alt="Ariel" class="w-full h-full face-portrait">
                         </div>
                         <h4 class="font-bold text-sm text-emerald-400 group-hover:text-emerald-300 transition-colors">Ariel</h4>
                         <p class="text-xs font-semibold text-emerald-400/80">Wind Spirit Warrior</p>
@@ -266,7 +273,7 @@
 
             <div class="flex items-center space-x-6">
                 <div class="w-28 h-28 bg-slate-800 rounded-full overflow-hidden flex items-center justify-center text-sm text-gray-400 flex-shrink-0 shadow-inner border border-slate-700">
-                    <img id="modal-char-img" src="" alt="Character Image" class="w-full h-full object-cover">
+                    <img id="modal-char-img" src="" alt="Character Image" class="w-full h-full face-portrait">
                 </div>
                 <div class="space-y-1 text-xs text-slate-300 flex-grow">
                     <p><strong>Age:</strong> <span id="modal-char-age"></span></p>
