@@ -55,22 +55,23 @@
         .card-ariel { border-left: 3px solid rgba(34, 197, 94, 0.6); }
         .card-ariel:hover { border-color: rgba(34, 197, 94, 0.9); box-shadow: 0 0 25px rgba(34, 197, 94, 0.35), inset 0 0 10px rgba(34, 197, 94, 0.1); }
         
-        /* Precise Face Portrait Framing */
+        /* Balanced Face Portrait Framing */
         .face-portrait {
             object-fit: cover;
             width: 100%;
             height: 100%;
+            transform: scale(1.6);
         }
-        /* Custom zoom levels and alignments calibrated specifically to each character's source image */
-        .pos-yato { transform: scale(3.4); object-position: center 10%; }
-        .pos-gavon { transform: scale(2.4); object-position: center 13%; }
-        .pos-stella { transform: scale(2.4); object-position: center 15%; }
-        .pos-lucia { transform: scale(3.5); object-position: center 9%; }
-        .pos-marin { transform: scale(2.2); object-position: center 20%; }
-        .pos-lumio { transform: scale(2.4); object-position: center 15%; }
-        .pos-jaya { transform: scale(2.5); object-position: center 15%; }
-        .pos-surtur { transform: scale(2.3); object-position: center 15%; }
-        .pos-ariel { transform: scale(2.4); object-position: center 18%; }
+        /* Calibrated face positions */
+        .pos-yato { object-position: center 12%; }
+        .pos-gavon { object-position: center 15%; }
+        .pos-stella { object-position: center 15%; }
+        .pos-lucia { object-position: center 12%; }
+        .pos-marin { object-position: center 18%; }
+        .pos-lumio { object-position: center 15%; }
+        .pos-jaya { object-position: center 15%; }
+        .pos-surtur { object-position: center 15%; }
+        .pos-ariel { object-position: center 15%; }
     </style>
 </head>
 <body class="bg-[#090d16] text-gray-100 min-h-screen flex flex-col items-center p-4" onkeydown="handleGlobalKey(event)">
