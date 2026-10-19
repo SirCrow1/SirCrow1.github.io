@@ -17,54 +17,52 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         .magical-box {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(209, 213, 219, 0.8);
-            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-        }
-        .dark .magical-box {
             background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
             border: 1px solid rgba(56, 189, 248, 0.25);
             box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(56, 189, 248, 0.08);
         }
         .character-card {
-            background: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(209, 213, 219, 0.8);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .dark .character-card {
             background: linear-gradient(145deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
             border: 1px solid rgba(148, 163, 184, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        /* Unique Character Hover Glow Effects with Corrected Colors */
-        .dark .card-yato:hover { border-color: rgba(168, 85, 247, 0.7); box-shadow: 0 0 25px rgba(168, 85, 247, 0.35), inset 0 0 10px rgba(168, 85, 247, 0.1); }
-        .dark .card-gavon:hover { border-color: rgba(59, 130, 246, 0.7); box-shadow: 0 0 25px rgba(59, 130, 246, 0.35), inset 0 0 10px rgba(59, 130, 246, 0.1); }
-        .dark .card-stella:hover { border-color: rgba(236, 72, 153, 0.7); box-shadow: 0 0 25px rgba(236, 72, 153, 0.35), inset 0 0 10px rgba(236, 72, 153, 0.1); }
-        .dark .card-lucia:hover { border-color: rgba(249, 115, 22, 0.7); box-shadow: 0 0 25px rgba(249, 115, 22, 0.35), inset 0 0 10px rgba(249, 115, 22, 0.1); }
-        .dark .card-marin:hover { border-color: rgba(56, 189, 248, 0.7); box-shadow: 0 0 25px rgba(56, 189, 248, 0.35), inset 0 0 10px rgba(56, 189, 248, 0.1); }
-        .dark .card-lumio:hover { border-color: rgba(250, 204, 21, 0.7); box-shadow: 0 0 25px rgba(250, 204, 21, 0.35), inset 0 0 10px rgba(250, 204, 21, 0.1); }
-        .dark .card-jaya:hover { border-color: rgba(217, 119, 6, 0.7); box-shadow: 0 0 25px rgba(217, 119, 6, 0.35), inset 0 0 10px rgba(217, 119, 6, 0.1); }
-        .dark .card-surtur:hover { border-color: rgba(239, 68, 68, 0.7); box-shadow: 0 0 25px rgba(239, 68, 68, 0.35), inset 0 0 10px rgba(239, 68, 68, 0.1); }
-        .dark .card-ariel:hover { border-color: rgba(34, 197, 94, 0.7); box-shadow: 0 0 25px rgba(34, 197, 94, 0.35), inset 0 0 10px rgba(34, 197, 94, 0.1); }
+        /* Unique Character Hover Glow Effects & Permanent Character Accent Borders */
+        .card-yato { border-left: 3px solid rgba(168, 85, 247, 0.6); }
+        .card-yato:hover { border-color: rgba(168, 85, 247, 0.9); box-shadow: 0 0 25px rgba(168, 85, 247, 0.35), inset 0 0 10px rgba(168, 85, 247, 0.1); }
+
+        .card-gavon { border-left: 3px solid rgba(59, 130, 246, 0.6); }
+        .card-gavon:hover { border-color: rgba(59, 130, 246, 0.9); box-shadow: 0 0 25px rgba(59, 130, 246, 0.35), inset 0 0 10px rgba(59, 130, 246, 0.1); }
+
+        .card-stella { border-left: 3px solid rgba(236, 72, 153, 0.6); }
+        .card-stella:hover { border-color: rgba(236, 72, 153, 0.9); box-shadow: 0 0 25px rgba(236, 72, 153, 0.35), inset 0 0 10px rgba(236, 72, 153, 0.1); }
+
+        .card-lucia { border-left: 3px solid rgba(249, 115, 22, 0.6); }
+        .card-lucia:hover { border-color: rgba(249, 115, 22, 0.9); box-shadow: 0 0 25px rgba(249, 115, 22, 0.35), inset 0 0 10px rgba(249, 115, 22, 0.1); }
+
+        .card-marin { border-left: 3px solid rgba(56, 189, 248, 0.6); }
+        .card-marin:hover { border-color: rgba(56, 189, 248, 0.9); box-shadow: 0 0 25px rgba(56, 189, 248, 0.35), inset 0 0 10px rgba(56, 189, 248, 0.1); }
+
+        .card-lumio { border-left: 3px solid rgba(250, 204, 21, 0.6); }
+        .card-lumio:hover { border-color: rgba(250, 204, 21, 0.9); box-shadow: 0 0 25px rgba(250, 204, 21, 0.35), inset 0 0 10px rgba(250, 204, 21, 0.1); }
+
+        .card-jaya { border-left: 3px solid rgba(217, 119, 6, 0.6); }
+        .card-jaya:hover { border-color: rgba(217, 119, 6, 0.9); box-shadow: 0 0 25px rgba(217, 119, 6, 0.35), inset 0 0 10px rgba(217, 119, 6, 0.1); }
+
+        .card-surtur { border-left: 3px solid rgba(239, 68, 68, 0.6); }
+        .card-surtur:hover { border-color: rgba(239, 68, 68, 0.9); box-shadow: 0 0 25px rgba(239, 68, 68, 0.35), inset 0 0 10px rgba(239, 68, 68, 0.1); }
+
+        .card-ariel { border-left: 3px solid rgba(34, 197, 94, 0.6); }
+        .card-ariel:hover { border-color: rgba(34, 197, 94, 0.9); box-shadow: 0 0 25px rgba(34, 197, 94, 0.35), inset 0 0 10px rgba(34, 197, 94, 0.1); }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-[#090d16] text-gray-800 dark:text-gray-100 min-h-screen flex flex-col items-center p-4 transition-colors duration-200" onkeydown="handleGlobalKey(event)">
+<body class="bg-[#090d16] text-gray-100 min-h-screen flex flex-col items-center p-4" onkeydown="handleGlobalKey(event)">
 
-    <header class="w-full max-w-4xl bg-white/90 dark:bg-[#111827]/95 shadow-xl rounded-2xl p-6 mb-6 text-center transition-colors duration-200 border border-gray-200 dark:border-slate-700/80 relative overflow-hidden backdrop-blur-md">
+    <header class="w-full max-w-4xl bg-[#111827]/95 shadow-xl rounded-2xl p-6 mb-6 text-center border border-slate-700/80 relative overflow-hidden backdrop-blur-md">
         
         <!-- Vibrant Ambient Glow Background Effects -->
-        <div class="absolute -top-24 -left-24 w-64 h-64 bg-cyan-500/10 dark:bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -top-24 -right-24 w-64 h-64 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl pointer-events-none"></div>
-
-        <!-- Top bar with Theme Toggle -->
-        <div class="flex justify-between items-center mb-4 relative z-10">
-            <div id="header-left-slot" class="w-36"></div>
-            <div></div>
-            <button onclick="toggleTheme()" class="px-3.5 py-1.5 bg-gray-100 dark:bg-slate-800 text-sm rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition shadow-sm border border-gray-300 dark:border-slate-600 font-medium">
-                🌙 / ☀️ Mode
-            </button>
-        </div>
+        <div class="absolute -top-24 -left-24 w-64 h-64 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -top-24 -right-24 w-64 h-64 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none"></div>
 
         <!-- Centered Large Logo Image -->
         <div class="flex justify-center items-center my-6 relative z-10">
@@ -79,14 +77,14 @@
             <div class="magical-box p-5 rounded-xl text-left space-y-3">
                 <div class="flex items-center gap-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]"></span>
-                    <h2 class="text-sm font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider">Introduction</h2>
+                    <h2 class="text-sm font-bold text-cyan-400 uppercase tracking-wider">Introduction</h2>
                 </div>
-                <p class="text-sm text-gray-600 dark:text-slate-300 leading-relaxed font-light">
+                <p class="text-sm text-slate-300 leading-relaxed font-light">
                     Welcome to the world of Spirit Warrior. Dive into an epic journey of martial arts, ancient mysticism, and fierce battles as heroes rise to conquer the darkness threatening the realm. Choose a volume below to start reading!
                 </p>
                 <!-- Quick Resume -->
-                <div id="resume-banner" class="hidden pt-3 border-t border-gray-200 dark:border-slate-700/80 flex items-center justify-between">
-                    <span id="resume-text" class="text-xs text-cyan-500 dark:text-cyan-400 font-semibold"></span>
+                <div id="resume-banner" class="hidden pt-3 border-t border-slate-700/80 flex items-center justify-between">
+                    <span id="resume-text" class="text-xs text-cyan-400 font-semibold"></span>
                     <button onclick="resumeLastBook()" class="px-3 py-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-xs rounded-lg hover:from-cyan-500 hover:to-blue-500 transition shadow-md font-medium">Resume Reading</button>
                 </div>
             </div>
@@ -94,7 +92,7 @@
             <!-- Volume Selection & Glossary Section Boxes -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="magical-box p-4 rounded-xl text-left">
-                    <h3 class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-3">Select Volume</h3>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Select Volume</h3>
                     <div class="flex flex-wrap gap-2">
                         <button onclick="loadBook('pdf/vol1.pdf', 'Vol 1')" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-500 hover:to-cyan-500 transition text-sm shadow-md font-medium">Vol 1</button>
                         <button onclick="loadBook('pdf/vol2.pdf', 'Vol 2')" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-500 hover:to-cyan-500 transition text-sm shadow-md font-medium">Vol 2</button>
@@ -102,92 +100,110 @@
                     </div>
                 </div>
                 <div class="magical-box p-4 rounded-xl text-left flex flex-col justify-between">
-                    <h3 class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-3">World Lore</h3>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">World Lore</h3>
                     <button onclick="openGlossary()" class="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm rounded-lg hover:from-purple-500 hover:to-indigo-500 transition flex items-center justify-center gap-2 shadow-md font-medium">📖 World Glossary</button>
                 </div>
             </div>
 
-            <!-- Character Grid (9 Characters in Order with Corrected Character Colors) -->
-            <div class="border-t border-gray-200 dark:border-slate-700/80 pt-6">
+            <!-- Character Grid -->
+            <div class="border-t border-slate-700/80 pt-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-md font-bold text-gray-700 dark:text-slate-200 flex items-center gap-2">
+                    <h3 class="text-md font-bold text-slate-200 flex items-center gap-2">
                         <span>✨ Meet the Characters</span>
                     </h3>
-                    <span class="text-xs text-gray-400 dark:text-slate-400 font-light">Click a card for lore & abilities</span>
+                    <span class="text-xs text-slate-400 font-light">Click a card for lore & abilities</span>
                 </div>
                 
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <!-- 1. Yato -->
                     <div onclick="showCharacter('yato')" class="cursor-pointer character-card card-yato p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
-                        <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
-                        <h4 class="font-bold text-sm text-[#79529c] dark:text-purple-300 group-hover:text-purple-400 transition-colors">Yato</h4>
-                        <p class="text-xs font-semibold text-[#79529c]/80 dark:text-purple-400/80">Shadow Spirit Warrior</p>
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-purple-500/50">
+                            <img src="Yato.jpg" alt="Yato" class="w-full h-full object-cover">
+                        </div>
+                        <h4 class="font-bold text-sm text-purple-300 group-hover:text-purple-400 transition-colors">Yato</h4>
+                        <p class="text-xs font-semibold text-purple-400/80">Shadow Spirit Warrior</p>
                     </div>
                     <!-- 2. Gavon -->
                     <div onclick="showCharacter('gavon')" class="cursor-pointer character-card card-gavon p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
-                        <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
-                        <h4 class="font-bold text-sm text-purple-400 dark:text-indigo-300 group-hover:text-indigo-200 transition-colors">Gavon</h4>
-                        <p class="text-xs font-semibold text-purple-400/80 dark:text-indigo-300/80">Wannabe Hero</p>
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-indigo-500/50">
+                            <img src="Gavon.jpg" alt="Gavon" class="w-full h-full object-cover">
+                        </div>
+                        <h4 class="font-bold text-sm text-indigo-300 group-hover:text-indigo-200 transition-colors">Gavon</h4>
+                        <p class="text-xs font-semibold text-indigo-300/80">Wannabe Hero</p>
                     </div>
                     <!-- 3. Stella -->
                     <div onclick="showCharacter('stella')" class="cursor-pointer character-card card-stella p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
-                        <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
-                        <h4 class="font-bold text-sm text-pink-400 dark:text-pink-300 group-hover:text-pink-200 transition-colors">Stella</h4>
-                        <p class="text-xs font-semibold text-pink-400/80 dark:text-pink-300/80">Heroine</p>
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-pink-500/50">
+                            <img src="Stella.jpg" alt="Stella" class="w-full h-full object-cover">
+                        </div>
+                        <h4 class="font-bold text-sm text-pink-300 group-hover:text-pink-200 transition-colors">Stella</h4>
+                        <p class="text-xs font-semibold text-pink-300/80">Heroine</p>
                     </div>
-                    <!-- 4. Lucia (Orange) -->
+                    <!-- 4. Lucia -->
                     <div onclick="showCharacter('lucia')" class="cursor-pointer character-card card-lucia p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
-                        <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
-                        <h4 class="font-bold text-sm text-orange-500 dark:text-orange-400 group-hover:text-orange-400 transition-colors">Lucia</h4>
-                        <p class="text-xs font-semibold text-orange-500/80 dark:text-orange-400/80">Telekinetic Child</p>
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-orange-500/50">
+                            <img src="Lucia.jpg" alt="Lucia" class="w-full h-full object-cover">
+                        </div>
+                        <h4 class="font-bold text-sm text-orange-400 group-hover:text-orange-300 transition-colors">Lucia</h4>
+                        <p class="text-xs font-semibold text-orange-400/80">Telekinetic Child</p>
                     </div>
                     <!-- 5. Marin -->
                     <div onclick="showCharacter('marin')" class="cursor-pointer character-card card-marin p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
-                        <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
-                        <h4 class="font-bold text-sm text-sky-400 dark:text-cyan-300 group-hover:text-cyan-200 transition-colors">Marin</h4>
-                        <p class="text-xs font-semibold text-sky-400/80 dark:text-cyan-300/80">Water Spirit Warrior</p>
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-cyan-500/50">
+                            <img src="Marin.jpg" alt="Marin" class="w-full h-full object-cover">
+                        </div>
+                        <h4 class="font-bold text-sm text-cyan-300 group-hover:text-cyan-200 transition-colors">Marin</h4>
+                        <p class="text-xs font-semibold text-cyan-300/80">Water Spirit Warrior</p>
                     </div>
                     <!-- 6. Lumio -->
                     <div onclick="showCharacter('lumio')" class="cursor-pointer character-card card-lumio p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
-                        <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
-                        <h4 class="font-bold text-sm text-amber-400 dark:text-yellow-300 group-hover:text-yellow-200 transition-colors">Lumio</h4>
-                        <p class="text-xs font-semibold text-amber-400/80 dark:text-yellow-300/80">Light Spirit Warrior</p>
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-yellow-500/50">
+                            <img src="Lumio.jpg" alt="Lumio" class="w-full h-full object-cover">
+                        </div>
+                        <h4 class="font-bold text-sm text-yellow-300 group-hover:text-yellow-200 transition-colors">Lumio</h4>
+                        <p class="text-xs font-semibold text-yellow-300/80">Light Spirit Warrior</p>
                     </div>
-                    <!-- 7. Jaya (Brownish Orange) -->
+                    <!-- 7. Jaya -->
                     <div onclick="showCharacter('jaya')" class="cursor-pointer character-card card-jaya p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
-                        <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
-                        <h4 class="font-bold text-sm text-[#c05621] dark:text-amber-700 group-hover:text-amber-600 transition-colors">Jaya</h4>
-                        <p class="text-xs font-semibold text-[#c05621]/80 dark:text-amber-700/80">Earth Spirit Warrior</p>
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-amber-600/50">
+                            <img src="Jaya.jpg" alt="Jaya" class="w-full h-full object-cover">
+                        </div>
+                        <h4 class="font-bold text-sm text-amber-600 group-hover:text-amber-500 transition-colors">Jaya</h4>
+                        <p class="text-xs font-semibold text-amber-600/80">Earth Spirit Warrior</p>
                     </div>
-                    <!-- 8. Surtur (Red) -->
+                    <!-- 8. Surtur -->
                     <div onclick="showCharacter('surtur')" class="cursor-pointer character-card card-surtur p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
-                        <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
-                        <h4 class="font-bold text-sm text-red-600 dark:text-red-500 group-hover:text-red-500 transition-colors">Surtur</h4>
-                        <p class="text-xs font-semibold text-red-600/80 dark:text-red-500/80">Flame Spirit Warrior</p>
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-red-500/50">
+                            <img src="Surtur.jpg" alt="Surtur" class="w-full h-full object-cover">
+                        </div>
+                        <h4 class="font-bold text-sm text-red-500 group-hover:text-red-400 transition-colors">Surtur</h4>
+                        <p class="text-xs font-semibold text-red-500/80">Flame Spirit Warrior</p>
                     </div>
                     <!-- 9. Ariel -->
                     <div onclick="showCharacter('ariel')" class="cursor-pointer character-card card-ariel p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
-                        <div class="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-full flex items-center justify-center text-xs text-gray-400 shadow-inner group-hover:scale-105 transition-transform border border-gray-300 dark:border-slate-700">Image</div>
-                        <h4 class="font-bold text-sm text-green-500 dark:text-emerald-400 group-hover:text-emerald-300 transition-colors">Ariel</h4>
-                        <p class="text-xs font-semibold text-green-500/80 dark:text-emerald-400/80">Wind Spirit Warrior</p>
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-emerald-500/50">
+                            <img src="Ariel.jpg" alt="Ariel" class="w-full h-full object-cover">
+                        </div>
+                        <h4 class="font-bold text-sm text-emerald-400 group-hover:text-emerald-300 transition-colors">Ariel</h4>
+                        <p class="text-xs font-semibold text-emerald-400/80">Wind Spirit Warrior</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Reader Controls -->
-        <div id="reader-controls" class="hidden flex flex-wrap justify-between items-center gap-3 mt-6 pt-4 border-t dark:border-slate-700">
+        <div id="reader-controls" class="hidden flex flex-wrap justify-between items-center gap-3 mt-6 pt-4 border-t border-slate-700">
             <button onclick="goBack()" class="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition text-sm">← Back</button>
             
             <!-- Zoom Controls -->
-            <div class="flex items-center space-x-1 bg-gray-100 dark:bg-slate-700 px-2 py-1 rounded">
-                <span class="text-xs text-gray-500 dark:text-slate-300 mr-1">Zoom:</span>
-                <button onclick="changeZoom(-0.2)" class="px-2 py-0.5 bg-gray-200 dark:bg-slate-600 rounded text-xs hover:bg-gray-300">-</button>
-                <button onclick="changeZoom(0.2)" class="px-2 py-0.5 bg-gray-200 dark:bg-slate-600 rounded text-xs hover:bg-gray-300">+</button>
+            <div class="flex items-center space-x-1 bg-slate-700 px-2 py-1 rounded">
+                <span class="text-xs text-slate-300 mr-1">Zoom:</span>
+                <button onclick="changeZoom(-0.2)" class="px-2 py-0.5 bg-slate-600 rounded text-xs hover:bg-slate-500">-</button>
+                <button onclick="changeZoom(0.2)" class="px-2 py-0.5 bg-slate-600 rounded text-xs hover:bg-slate-500">+</button>
             </div>
 
             <!-- Chapter Quick-Jump -->
-            <select id="chapter-select" onchange="jumpToChapter(this.value)" class="border dark:border-slate-700 bg-gray-50 dark:bg-slate-700 rounded px-2 py-1 text-sm focus:outline-none">
+            <select id="chapter-select" onchange="jumpToChapter(this.value)" class="border border-slate-700 bg-slate-700 rounded px-2 py-1 text-sm focus:outline-none">
                 <option value="">Jump to Chapter...</option>
                 <option value="1">Chapter 1 (Page 1)</option>
                 <option value="10">Chapter 2 (Page 10)</option>
@@ -196,8 +212,8 @@
 
             <div class="flex items-center space-x-2">
                 <button id="prev" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm">Previous</button>
-                <span class="text-sm text-gray-600 dark:text-slate-400 flex items-center gap-1">
-                    <input type="number" id="page-jump-input" min="1" onkeydown="handlePageJump(event)" class="w-12 border dark:border-slate-700 bg-transparent rounded px-1 text-center text-sm" title="Type page & hit Enter"> 
+                <span class="text-sm text-slate-400 flex items-center gap-1">
+                    <input type="number" id="page-jump-input" min="1" onkeydown="handlePageJump(event)" class="w-12 border border-slate-700 bg-transparent rounded px-1 text-center text-sm" title="Type page & hit Enter"> 
                     / <span id="page-count">1</span>
                 </span>
                 <button id="next" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm">Next</button>
@@ -211,29 +227,29 @@
     </header>
 
     <!-- Canvas Viewer -->
-    <main id="viewer-container" class="hidden w-full max-w-4xl flex flex-col items-center bg-white/90 dark:bg-[#111827]/95 shadow-xl rounded-2xl p-4 overflow-auto mb-6 transition-colors duration-200 border border-gray-200 dark:border-slate-700/80 backdrop-blur-md">
+    <main id="viewer-container" class="hidden w-full max-w-4xl flex flex-col items-center bg-[#111827]/95 shadow-xl rounded-2xl p-4 overflow-auto mb-6 border border-slate-700/80 backdrop-blur-md">
         <canvas id="pdf-render" class="max-w-full h-auto shadow mb-4"></canvas>
         
         <!-- Live Stats & Likes Footer -->
-        <div class="w-full flex justify-between items-center border-t dark:border-slate-700/80 pt-3 px-2 text-xs text-gray-500 dark:text-slate-400">
+        <div class="w-full flex justify-between items-center border-t border-slate-700/80 pt-3 px-2 text-xs text-slate-400">
             <span id="live-readers-counter">🔥 Active Readers: 1</span>
-            <button onclick="likeCurrentPage()" id="like-btn" class="flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-slate-800 hover:bg-pink-100 dark:hover:bg-slate-700 rounded transition text-pink-500 font-semibold border border-gray-200 dark:border-slate-700">
+            <button onclick="likeCurrentPage()" id="like-btn" class="flex items-center gap-1 px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded transition text-pink-500 font-semibold border border-slate-700">
                 ❤️ Like Page (<span id="like-count">0</span>)
             </button>
         </div>
     </main>
 
     <!-- Comments Section -->
-    <section id="comments-section" class="hidden w-full max-w-4xl bg-white/90 dark:bg-[#111827]/95 shadow-xl rounded-2xl p-6 transition-colors duration-200 mb-6 border border-gray-200 dark:border-slate-700/80 backdrop-blur-md">
+    <section id="comments-section" class="hidden w-full max-w-4xl bg-[#111827]/95 shadow-xl rounded-2xl p-6 mb-6 border border-slate-700/80 backdrop-blur-md">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-lg font-bold">Page Comments</h2>
-            <button onclick="toggleAdmin()" id="admin-btn" class="text-xs text-gray-400 dark:text-slate-300 underline">Admin Login</button>
+            <button onclick="toggleAdmin()" id="admin-btn" class="text-xs text-slate-300 underline">Admin Login</button>
         </div>
 
         <div class="flex flex-col gap-2 mb-4">
-            <input type="text" id="username-input" placeholder="Your name (optional)..." class="border dark:border-slate-700 bg-transparent rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 w-1/3">
+            <input type="text" id="username-input" placeholder="Your name (optional)..." class="border border-slate-700 bg-transparent rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 w-1/3">
             <div class="flex gap-2">
-                <input type="text" id="comment-input" placeholder="Write a comment..." class="flex-grow border dark:border-slate-700 bg-transparent rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                <input type="text" id="comment-input" placeholder="Write a comment..." class="flex-grow border border-slate-700 bg-transparent rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500">
                 <button onclick="addComment()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition font-medium">Post</button>
             </div>
         </div>
@@ -242,15 +258,17 @@
 
     <!-- Full-Screen Centered Character Modal -->
     <div id="character-modal" onclick="closeModalDirect()" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div id="modal-card-container" onclick="event.stopPropagation()" class="bg-white dark:bg-slate-900 border border-cyan-500/50 dark:border-cyan-500/40 max-w-lg w-full rounded-2xl p-6 shadow-2xl relative space-y-4 text-left transition-colors duration-300">
-            <div class="flex justify-between items-center border-b border-gray-200 dark:border-slate-800 pb-3">
+        <div id="modal-card-container" onclick="event.stopPropagation()" class="bg-slate-900 border max-w-lg w-full rounded-2xl p-6 shadow-2xl relative space-y-4 text-left transition-colors duration-300">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                 <h3 id="modal-char-title" class="text-xl font-bold transition-colors duration-300"></h3>
-                <button onclick="closeModalDirect()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm font-bold px-2.5 py-1 bg-gray-100 dark:bg-slate-800 rounded-lg">✕ Close</button>
+                <button onclick="closeModalDirect()" class="text-gray-400 hover:text-gray-200 text-sm font-bold px-2.5 py-1 bg-slate-800 rounded-lg">✕ Close</button>
             </div>
 
             <div class="flex items-center space-x-6">
-                <div class="w-28 h-28 bg-gray-200 dark:bg-slate-800 rounded-full flex items-center justify-center text-sm text-gray-400 flex-shrink-0 shadow-inner border border-gray-300 dark:border-slate-700">Image</div>
-                <div class="space-y-1 text-xs text-gray-600 dark:text-slate-300 flex-grow">
+                <div class="w-28 h-28 bg-slate-800 rounded-full overflow-hidden flex items-center justify-center text-sm text-gray-400 flex-shrink-0 shadow-inner border border-slate-700">
+                    <img id="modal-char-img" src="" alt="Character Image" class="w-full h-full object-cover">
+                </div>
+                <div class="space-y-1 text-xs text-slate-300 flex-grow">
                     <p><strong>Age:</strong> <span id="modal-char-age"></span></p>
                     <p><strong>Birthdate:</strong> <span id="modal-char-birth"></span></p>
                     <p><strong>Favourite Food:</strong> <span id="modal-char-food"></span></p>
@@ -259,36 +277,36 @@
                 </div>
             </div>
 
-            <div class="bg-gray-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-gray-200 dark:border-slate-700/50">
-                <p class="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-1">Abilities & Powers:</p>
-                <div id="modal-char-ability" class="text-xs text-gray-600 dark:text-slate-300 space-y-1"></div>
+            <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/50">
+                <p class="text-xs font-semibold text-slate-200 mb-1">Abilities & Powers:</p>
+                <div id="modal-char-ability" class="text-xs text-slate-300 space-y-1"></div>
             </div>
 
-            <div class="bg-gray-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-gray-200 dark:border-slate-700/50">
-                <p class="text-xs font-semibold text-gray-700 dark:text-slate-200">General Description:</p>
-                <p id="modal-char-general" class="text-xs text-gray-600 dark:text-slate-300 mt-1 leading-relaxed"></p>
+            <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/50">
+                <p class="text-xs font-semibold text-slate-200">General Description:</p>
+                <p id="modal-char-general" class="text-xs text-slate-300 mt-1 leading-relaxed"></p>
             </div>
 
-            <div class="bg-gray-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-gray-200 dark:border-slate-700/50">
-                <p class="text-xs font-semibold text-gray-700 dark:text-slate-200">Novel Description & Role:</p>
-                <p id="modal-char-novel" class="text-xs text-gray-600 dark:text-slate-300 mt-1 leading-relaxed"></p>
+            <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/50">
+                <p class="text-xs font-semibold text-slate-200">Novel Description & Role:</p>
+                <p id="modal-char-novel" class="text-xs text-slate-300 mt-1 leading-relaxed"></p>
             </div>
         </div>
     </div>
 
     <!-- World Glossary Modal -->
     <div id="glossary-modal" onclick="closeGlossary()" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div onclick="event.stopPropagation()" class="bg-white dark:bg-slate-900 border border-purple-500/50 max-w-lg w-full rounded-2xl p-6 shadow-2xl relative space-y-4 text-left">
-            <div class="flex justify-between items-center border-b border-gray-200 dark:border-slate-800 pb-3">
-                <h3 class="text-xl font-bold text-purple-600 dark:text-purple-400">📖 World Glossary & Power Systems</h3>
-                <button onclick="closeGlossary()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm font-bold px-2.5 py-1 bg-gray-100 dark:bg-slate-800 rounded-lg">✕ Close</button>
+        <div onclick="event.stopPropagation()" class="bg-slate-900 border border-purple-500/50 max-w-lg w-full rounded-2xl p-6 shadow-2xl relative space-y-4 text-left">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-xl font-bold text-purple-400">📖 World Glossary & Power Systems</h3>
+                <button onclick="closeGlossary()" class="text-gray-400 hover:text-gray-200 text-sm font-bold px-2.5 py-1 bg-slate-800 rounded-lg">✕ Close</button>
             </div>
-            <div class="space-y-3 text-xs text-gray-600 dark:text-slate-300 leading-relaxed max-h-96 overflow-y-auto pr-1">
-                <div class="bg-gray-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-gray-200 dark:border-slate-700/50">
+            <div class="space-y-3 text-xs text-slate-300 leading-relaxed max-h-96 overflow-y-auto pr-1">
+                <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/50">
                     <h4 class="font-bold text-purple-400 mb-1">Spirit Energy</h4>
                     <p>An innate spiritual force bound to an individual's soul, manifesting through nature elements like Shadow, Flame, Water, Wind, Earth, and Light.</p>
                 </div>
-                <div class="bg-gray-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-gray-200 dark:border-slate-700/50">
+                <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/50">
                     <h4 class="font-bold text-purple-400 mb-1">Astro Energy</h4>
                     <p>A mysterious cosmic energy reserve that acts as a multiplier to combat mastery and physical endurance. Rare individuals possess cosmic affinity.</p>
                 </div>
@@ -298,28 +316,28 @@
 
     <script>
         const characters = {
-            yato: { name: "Yato", colorClass: "text-purple-400", borderClass: "border-purple-500/50", age: "24", birth: "November 2", food: "Donuts", hobby: "Painting, drawing, and picking flowers", weapon: "Dual Katanas", abilities: ["Spirit Energy: Shadow", "Astro Ability: Unknown", "Shadow Manipulation", "Master Swordsmanship", "Expert Hand-to-Hand Combat", "Expert at Astro Energy"], general: "A gloomy young man with long black hair and purple eyes. He hates violence, loves drawing even though he's terrible at it, and enjoys picking flowers.", novel: "Main character and leader of the group, balancing hard fights with looking after young Lucia." },
-            gavon: { name: "Gavon", colorClass: "text-indigo-400", borderClass: "border-indigo-500/50", age: "20", birth: "September 28", food: "Fried chicken", hobby: "Heavy combat training", weapon: "Unknown", abilities: ["Astro Ability: Novice Astro Energy", "Average Swordsmanship", "Novice Hand-to-Hand Combat"], general: "A loud, energetic guy with short purple hair and Stella's twin brother. He dreams of becoming a true hero and spends all his time training.", novel: "Wannabe hero who joins the group alongside his twin sister to find their missing parents and achieve his dream of becoming a true hero." },
-            stella: { name: "Stella", colorClass: "text-pink-400", borderClass: "border-pink-500/50", age: "20", birth: "September 28", food: "Strawberry shortcake", hobby: "Studying medicine", weapon: "Unknown", abilities: ["Astro Ability: Novice Astro Energy", "No Hand-to-Hand Combat", "Novice Fighting Ability"], general: "A kind young woman with bright pink hair and Gavon's twin sister. She wants to become a great doctor, track down her parents, and support Yato.", novel: "Wannabe doctor who handles chores and helps with important information for the group behind the scenes alongside her twin brother." },
-            lucia: { name: "Lucia", colorClass: "text-orange-400", borderClass: "border-orange-500/50", age: "11", birth: "December 5", food: "Pink cotton candy", hobby: "Watching Yato draw & eating sweets", weapon: "Unknown", abilities: ["Astro Ability: Unknown", "Telekinesis", "Novice Astro Energy"], general: "A quiet, fragile kid with white hair, red eyes, and an oversized coat.", novel: "Yato's daughter, living with him and bringing quiet warmth and comfort to his daily life." },
-            marin: { name: "Marin", colorClass: "text-cyan-400", borderClass: "border-cyan-500/50", age: "26", birth: "May 8", food: "Vanilla ice cream", hobby: "Helping at food banks & giving free healthcare", weapon: "Lifeline Suture Threads", abilities: ["Spirit Energy: Water & Ice", "Astro Ability: Unknown", "Expert Hand-to-Hand Combat", "World-Class Master at Astro Energy"], general: "A gentle girl with long blue hair and a French cap. She spends her free time healing people and helping the needy.", novel: "Acts as the main healer for the group, using her water powers and surgical threads to patch up injuries in battle." },
-            lumio: { name: "Lumio", colorClass: "text-yellow-300", borderClass: "border-yellow-500/50", age: "Unknown", birth: "Unknown", food: "Unknown", hobby: "Unknown", weapon: "Light Piercing Blade", abilities: ["Spirit Energy: Light", "Astro Ability: Unknown", "Light Aura Burst", "Enhanced Reflexes"], general: "A mysterious companion whose birthday is unknown, wielding powerful light energy.", novel: "A core member of the light faction supporting the team against darkness." },
-            jaya: { name: "Jaya", colorClass: "text-amber-600", borderClass: "border-amber-600/50", age: "23", birth: "July 22", food: "Aged liquor", hobby: "Training, drinking, freeing slaves, and helping orphans", weapon: "Tectonic Brass Knuckles", abilities: ["Spirit Energy: Earth", "Astro Ability: Unknown", "World-Class Grandmaster Hand-to-Hand Combat", "World Class All-Forms Combat Mastery", "No Astro Energy"], general: "A tough warrior with brown skin, brown hair, and an intense presence. She lives for a good fight, but has a huge heart spending her time freeing slaves and taking care of orphans.", novel: "Uses raw earth power and world-class martial arts skills to smash enemy lines and protect the innocent and always looking for a challenge." },
-            surtur: { name: "Surtur", colorClass: "text-red-500", borderClass: "border-red-500/50", age: "Unknown", birth: "March 20", food: "Spicy vegan curry", hobby: "Making friends", weapon: "Monkey Staff (Ancient artifact)", abilities: ["Spirit Energy: Flame", "Astro Ability: Unknown", "Absolute Pinnacle Spirit Energy & Astro Energy", "Master Bo Staff Combat", "Novice Hand-to-Hand Combat"], general: "A wildly energetic guy with reddish-yellow hair who holds the largest energy reserve in the world. Despite his massive talent, he physically cannot bring himself to hurt people and just wants to make friends.", novel: "Uses his ancient staff and flame powers to break through enemy barriers without causing needless harm." },
-            ariel: { name: "Ariel", colorClass: "text-emerald-400", borderClass: "border-emerald-500/50", age: "22", birth: "March 4", food: "Natural wild berries", hobby: "Punishing evil at night & lone patrols", weapon: "Anti-Material Sniper Rifle", abilities: ["Spirit Energy: Wind", "Astro Ability: Unknown", "World-Class Master Sniper Proficiency", "World-Class Sensory Ability", "Master Hand-to-Hand Combat", "Master at Astro Energy"], general: "A sharp-tongued marksman who hates humans due to past trouble. She spends her nights hunting down and punishing evil, though she keeps deep loyalty to one single person.", novel: "Provides world-class long-range wind-boosted sniper cover to protect the team from far away." }
+            yato: { name: "Yato", img: "Yato.jpg", colorClass: "text-purple-400", borderClass: "border-purple-500/50", age: "24", birth: "November 2", food: "Donuts", hobby: "Painting, drawing, and picking flowers", weapon: "Dual Katanas", abilities: ["Spirit Energy: Shadow", "Astro Ability: Unknown", "Shadow Manipulation", "Master Swordsmanship", "Expert Hand-to-Hand Combat", "Expert at Astro Energy"], general: "A gloomy young man with long black hair and purple eyes. He hates violence, loves drawing even though he's terrible at it, and enjoys picking flowers.", novel: "Main character and leader of the group, balancing hard fights with looking after young Lucia." },
+            gavon: { name: "Gavon", img: "Gavon.jpg", colorClass: "text-indigo-300", borderClass: "border-indigo-500/50", age: "20", birth: "September 28", food: "Fried chicken", hobby: "Heavy combat training", weapon: "Unknown", abilities: ["Astro Ability: Novice Astro Energy", "Average Swordsmanship", "Novice Hand-to-Hand Combat"], general: "A loud, energetic guy with short purple hair and Stella's twin brother. He dreams of becoming a true hero and spends all his time training.", novel: "Wannabe hero who joins the group alongside his twin sister to find their missing parents and achieve his dream of becoming a true hero." },
+            stella: { name: "Stella", img: "Stella.jpg", colorClass: "text-pink-300", borderClass: "border-pink-500/50", age: "20", birth: "September 28", food: "Strawberry shortcake", hobby: "Studying medicine", weapon: "Unknown", abilities: ["Astro Ability: Novice Astro Energy", "No Hand-to-Hand Combat", "Novice Fighting Ability"], general: "A kind young woman with bright pink hair and Gavon's twin sister. She wants to become a great doctor, track down her parents, and support Yato.", novel: "Wannabe doctor who handles chores and helps with important information for the group behind the scenes alongside her twin brother." },
+            lucia: { name: "Lucia", img: "Lucia.jpg", colorClass: "text-orange-400", borderClass: "border-orange-500/50", age: "11", birth: "December 5", food: "Pink cotton candy", hobby: "Watching Yato draw & eating sweets", weapon: "Unknown", abilities: ["Astro Ability: Unknown", "Telekinesis", "Novice Astro Energy"], general: "A quiet, fragile kid with white hair, red eyes, and an oversized coat.", novel: "Yato's daughter, living with him and bringing quiet warmth and comfort to his daily life." },
+            marin: { name: "Marin", img: "Marin.jpg", colorClass: "text-cyan-300", borderClass: "border-cyan-500/50", age: "26", birth: "May 8", food: "Vanilla ice cream", hobby: "Helping at food banks & giving free healthcare", weapon: "Lifeline Suture Threads", abilities: ["Spirit Energy: Water & Ice", "Astro Ability: Unknown", "Expert Hand-to-Hand Combat", "World-Class Master at Astro Energy"], general: "A gentle girl with long blue hair and a French cap. She spends her free time healing people and helping the needy.", novel: "Acts as the main healer for the group, using her water powers and surgical threads to patch up injuries in battle." },
+            lumio: { name: "Lumio", img: "Lumio.jpg", colorClass: "text-yellow-300", borderClass: "border-yellow-500/50", age: "Unknown", birth: "Unknown", food: "Unknown", hobby: "Unknown", weapon: "Light Piercing Blade", abilities: ["Spirit Energy: Light", "Astro Ability: Unknown", "Light Aura Burst", "Enhanced Reflexes"], general: "A mysterious companion whose birthday is unknown, wielding powerful light energy.", novel: "A core member of the light faction supporting the team against darkness." },
+            jaya: { name: "Jaya", img: "Jaya.jpg", colorClass: "text-amber-600", borderClass: "border-amber-600/50", age: "23", birth: "July 22", food: "Aged liquor", hobby: "Training, drinking, freeing slaves, and helping orphans", weapon: "Tectonic Brass Knuckles", abilities: ["Spirit Energy: Earth", "Astro Ability: Unknown", "World-Class Grandmaster Hand-to-Hand Combat", "World Class All-Forms Combat Mastery", "No Astro Energy"], general: "A tough warrior with brown skin, brown hair, and an intense presence. She lives for a good fight, but has a huge heart spending her time freeing slaves and taking care of orphans.", novel: "Uses raw earth power and world-class martial arts skills to smash enemy lines and protect the innocent and always looking for a challenge." },
+            surtur: { name: "Surtur", img: "Surtur.jpg", colorClass: "text-red-500", borderClass: "border-red-500/50", age: "Unknown", birth: "March 20", food: "Spicy vegan curry", hobby: "Making friends", weapon: "Monkey Staff (Ancient artifact)", abilities: ["Spirit Energy: Flame", "Astro Ability: Unknown", "Absolute Pinnacle Spirit Energy & Astro Energy", "Master Bo Staff Combat", "Novice Hand-to-Hand Combat"], general: "A wildly energetic guy with reddish-yellow hair who holds the largest energy reserve in the world. Despite his massive talent, he physically cannot bring himself to hurt people and just wants to make friends.", novel: "Uses his ancient staff and flame powers to break through enemy barriers without causing needless harm." },
+            ariel: { name: "Ariel", img: "Ariel.jpg", colorClass: "text-emerald-400", borderClass: "border-emerald-500/50", age: "22", birth: "March 4", food: "Natural wild berries", hobby: "Punishing evil at night & lone patrols", weapon: "Anti-Material Sniper Rifle", abilities: ["Spirit Energy: Wind", "Astro Ability: Unknown", "World-Class Master Sniper Proficiency", "World-Class Sensory Ability", "Master Hand-to-Hand Combat", "Master at Astro Energy"], general: "A sharp-tongued marksman who hates humans due to past trouble. She spends her nights hunting down and punishing evil, though she keeps deep loyalty to one single person.", novel: "Provides world-class long-range wind-boosted sniper cover to protect the team from far away." }
         };
 
         function showCharacter(key) {
             let char = characters[key];
             
-            // Modal Title & Color Dynamic Binding
             let titleElem = document.getElementById('modal-char-title');
             titleElem.textContent = char.name;
             titleElem.className = `text-xl font-bold ${char.colorClass}`;
 
             let cardContainer = document.getElementById('modal-card-container');
-            cardContainer.className = `bg-white dark:bg-slate-900 border ${char.borderClass} max-w-lg w-full rounded-2xl p-6 shadow-2xl relative space-y-4 text-left transition-colors duration-300`;
+            cardContainer.className = `bg-slate-900 border ${char.borderClass} max-w-lg w-full rounded-2xl p-6 shadow-2xl relative space-y-4 text-left transition-colors duration-300`;
 
+            document.getElementById('modal-char-img').src = char.img;
             document.getElementById('modal-char-age').textContent = char.age;
             document.getElementById('modal-char-birth').textContent = char.birth;
             document.getElementById('modal-char-food').textContent = char.food;
@@ -342,19 +360,6 @@
         function closeModalDirect() { document.getElementById('character-modal').classList.add('hidden'); }
         function openGlossary() { document.getElementById('glossary-modal').classList.remove('hidden'); }
         function closeGlossary() { document.getElementById('glossary-modal').classList.add('hidden'); }
-
-        if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
-        else document.documentElement.classList.add('dark');
-
-        function toggleTheme() {
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            }
-        }
 
         // Supabase configuration
         const SUPABASE_URL = 'https://rhnceiumgsnbzkssbrnh.supabase.co';
@@ -601,7 +606,7 @@
 
         async function fetchComments() {
             let list = document.getElementById('comments-list');
-            list.innerHTML = '<p class="text-sm text-gray-400">Loading comments...</p>';
+            list.innerHTML = '<p class="text-sm text-slate-400">Loading comments...</p>';
 
             const { data: comments, error } = await supabaseClient
                 .from('comments')
@@ -613,20 +618,20 @@
 
             list.innerHTML = '';
             if (error || !comments || comments.length === 0) {
-                list.innerHTML = '<p class="text-sm text-gray-400">No comments for this page yet.</p>';
+                list.innerHTML = '<p class="text-sm text-slate-400">No comments for this page yet.</p>';
                 return;
             }
 
             comments.forEach(c => {
                 let div = document.createElement('div');
-                div.className = 'bg-gray-50 dark:bg-slate-800 border dark:border-slate-700 p-3 rounded-xl text-sm flex justify-between items-center';
+                div.className = 'bg-slate-800 border border-slate-700 p-3 rounded-xl text-sm flex justify-between items-center';
                 let canDelete = isAdmin || (c.user_id === userId);
                 let deleteBtnHtml = canDelete ? `<button onclick="deleteComment(${c.id})" class="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1 ml-2">✕</button>` : '';
 
                 div.innerHTML = `
                     <div>
-                        <span class="font-bold text-cyan-600 dark:text-cyan-400">${c.username || 'Anonymous'}:</span> 
-                        <span class="text-gray-700 dark:text-slate-200">${c.text}</span>
+                        <span class="font-bold text-cyan-400">${c.username || 'Anonymous'}:</span> 
+                        <span class="text-slate-200">${c.text}</span>
                     </div>
                     ${deleteBtnHtml}
                 `;
