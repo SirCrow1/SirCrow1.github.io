@@ -60,22 +60,19 @@
             object-fit: cover;
             width: 100%;
             height: 100%;
+            transform: scale(1.4);
         }
         
-        /* 
-           PERFECTED SCALES & POSITIONS:
-           - Higher scale (2.8) zooms right into the face.
-           - Adjust percentage to move face up/down.
-        */
-        .pos-yato { transform: scale(2.8); object-position: center 30%; }
-        .pos-lucia { transform: scale(2.8); object-position: center 30%; }
-        .pos-gavon { transform: scale(2.8); object-position: center 30%; }
-        .pos-stella { transform: scale(2.8); object-position: center 30%; }
-        .pos-marin { transform: scale(2.8); object-position: center 30%; }
-        .pos-lumio { transform: scale(2.8); object-position: center 30%; }
-        .pos-jaya { transform: scale(2.8); object-position: center 30%; }
-        .pos-surtur { transform: scale(2.8); object-position: center 30%; }
-        .pos-ariel { transform: scale(2.8); object-position: center 30%; }
+        /* Perfected centering so entire faces show clearly */
+        .pos-yato { object-position: center 15%; }
+        .pos-gavon { object-position: center 15%; }
+        .pos-stella { object-position: center 15%; }
+        .pos-lucia { object-position: center 15%; }
+        .pos-marin { object-position: center 15%; }
+        .pos-lumio { object-position: center 15%; }
+        .pos-jaya { object-position: center 15%; }
+        .pos-surtur { object-position: center 15%; }
+        .pos-ariel { object-position: center 15%; }
     </style>
 </head>
 <body class="bg-[#090d16] text-gray-100 min-h-screen flex flex-col items-center p-4" onkeydown="handleGlobalKey(event)">
