@@ -60,17 +60,24 @@
             object-fit: cover;
             width: 100%;
             height: 100%;
+            transform: scale(1.8); /* Clean, natural zoom for the new image */
         }
-        /* Further shifted downward for everyone */
-        .pos-yato { transform: scale(5.5); object-position: center 25%; }
-        .pos-lucia { transform: scale(5.0); object-position: center 22%; }
-        .pos-gavon { transform: scale(1.6); object-position: center 40%; }
-        .pos-stella { transform: scale(1.6); object-position: center 40%; }
-        .pos-marin { transform: scale(1.6); object-position: center 43%; }
-        .pos-lumio { transform: scale(1.6); object-position: center 40%; }
-        .pos-jaya { transform: scale(1.6); object-position: center 40%; }
-        .pos-surtur { transform: scale(1.6); object-position: center 40%; }
-        .pos-ariel { transform: scale(1.6); object-position: center 40%; }
+        
+        /* 
+           HOW TO ADJUST UP/DOWN:
+           Change the percentage at the end of each line!
+           - Higher percentage = moves image DOWN
+           - Lower percentage = moves image UP
+        */
+        .pos-yato { object-position: center 22%; }
+        .pos-lucia { object-position: center 45%; }
+        .pos-gavon { object-position: center 30%; }
+        .pos-stella { object-position: center 30%; }
+        .pos-marin { object-position: center 33%; }
+        .pos-lumio { object-position: center 30%; }
+        .pos-jaya { object-position: center 30%; }
+        .pos-surtur { object-position: center 30%; }
+        .pos-ariel { object-position: center 30%; }
     </style>
 </head>
 <body class="bg-[#090d16] text-gray-100 min-h-screen flex flex-col items-center p-4" onkeydown="handleGlobalKey(event)">
@@ -132,10 +139,10 @@
                 </div>
                 
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <!-- 1. Yato -->
+                    <!-- 1. Yato (Using Yato_2.jpg) -->
                     <div onclick="showCharacter('yato')" class="cursor-pointer character-card card-yato p-4 rounded-xl text-center flex flex-col items-center group shadow-sm">
                         <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-purple-500/50 bg-slate-800">
-                            <img src="Yato.jpg" alt="Yato" class="face-portrait pos-yato">
+                            <img src="Yato_2.jpg" alt="Yato" class="face-portrait pos-yato">
                         </div>
                         <h4 class="font-bold text-sm text-purple-300 group-hover:text-purple-400 transition-colors">Yato</h4>
                         <p class="text-xs font-semibold text-purple-400/80">Shadow Spirit Warrior</p>
@@ -333,7 +340,7 @@
 
     <script>
         const characters = {
-            yato: { name: "Yato", img: "Yato.jpg", posClass: "pos-yato", colorClass: "text-purple-400", borderClass: "border-purple-500/50", age: "24", birth: "November 2", food: "Donuts", hobby: "Painting, drawing, and picking flowers", weapon: "Dual Katanas", abilities: ["Spirit Energy: Shadow", "Astro Ability: Unknown", "Shadow Manipulation", "Master Swordsmanship", "Expert Hand-to-Hand Combat", "Expert at Astro Energy"], general: "A gloomy young man with long black hair and purple eyes. He hates violence, loves drawing even though he's terrible at it, and enjoys picking flowers.", novel: "Main character and leader of the group, balancing hard fights with looking after young Lucia." },
+            yato: { name: "Yato", img: "Yato_2.jpg", posClass: "pos-yato", colorClass: "text-purple-400", borderClass: "border-purple-500/50", age: "24", birth: "November 2", food: "Donuts", hobby: "Painting, drawing, and picking flowers", weapon: "Dual Katanas", abilities: ["Spirit Energy: Shadow", "Astro Ability: Unknown", "Shadow Manipulation", "Master Swordsmanship", "Expert Hand-to-Hand Combat", "Expert at Astro Energy"], general: "A gloomy young man with long black hair and purple eyes. He hates violence, loves drawing even though he's terrible at it, and enjoys picking flowers.", novel: "Main character and leader of the group, balancing hard fights with looking after young Lucia." },
             gavon: { name: "Gavon", img: "Gavon.jpg", posClass: "pos-gavon", colorClass: "text-indigo-300", borderClass: "border-indigo-500/50", age: "20", birth: "September 28", food: "Fried chicken", hobby: "Heavy combat training", weapon: "Unknown", abilities: ["Astro Ability: Novice Astro Energy", "Average Swordsmanship", "Novice Hand-to-Hand Combat"], general: "A loud, energetic guy with short purple hair and Stella's twin brother. He dreams of becoming a true hero and spends all his time training.", novel: "Wannabe hero who joins the group alongside his twin sister to find their missing parents and achieve his dream of becoming a true hero." },
             stella: { name: "Stella", img: "Stella.jpg", posClass: "pos-stella", colorClass: "text-pink-300", borderClass: "border-pink-500/50", age: "20", birth: "September 28", food: "Strawberry shortcake", hobby: "Studying medicine", weapon: "Unknown", abilities: ["Astro Ability: Novice Astro Energy", "No Hand-to-Hand Combat", "Novice Fighting Ability"], general: "A kind young woman with bright pink hair and Gavon's twin sister. She wants to become a great doctor, track down her parents, and support Yato.", novel: "Wannabe doctor who handles chores and helps with important information for the group behind the scenes alongside her twin brother." },
             lucia: { name: "Lucia", img: "Lucia.jpg", posClass: "pos-lucia", colorClass: "text-orange-400", borderClass: "border-orange-500/50", age: "11", birth: "December 5", food: "Pink cotton candy", hobby: "Watching Yato draw & eating sweets", weapon: "Unknown", abilities: ["Astro Ability: Unknown", "Telekinesis", "Novice Astro Energy"], general: "A quiet, fragile kid with white hair, red eyes, and an oversized coat.", novel: "Yato's daughter, living with him and bringing quiet warmth and comfort to his daily life." },
