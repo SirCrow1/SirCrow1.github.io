@@ -63,12 +63,12 @@
         }
         
         /* Individual Fine-Tuned Scales & Positions */
-        .pos-yato { transform: scale(1.3); object-position: center 20%; } /* Shifted down slightly more */
+        .pos-yato { transform: scale(1.3); object-position: center 20%; }
         .pos-gavon { transform: scale(1.4); object-position: center 1%; }
         .pos-stella { transform: scale(1.3); object-position: center 1%; }
-        .pos-lucia { transform: scale(1.4); object-position: center 1%; } /* Zoomed in tight on Lucia's face */
+        .pos-lucia { transform: scale(1.4); object-position: center 1%; }
         .pos-marin { transform: scale(1.4); object-position: center 1%; }
-        .pos-lumio { transform: scale(1.4); object-position: center 1%; } /* Shifted down slightly more */
+        .pos-lumio { transform: scale(1.4); object-position: center 1%; }
         .pos-jaya { transform: scale(1.4); object-position: center 1%; }
         .pos-surtur { transform: scale(1.4); object-position: center 1%; }
         .pos-ariel { transform: scale(1.2); object-position: center 1%; }
@@ -274,41 +274,63 @@
         <div id="comments-list" class="space-y-3"></div>
     </section>
 
-    <!-- Full-Screen Centered Character Modal -->
-    <div id="character-modal" onclick="closeModalDirect()" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div id="modal-card-container" onclick="event.stopPropagation()" class="bg-slate-900 border max-w-lg w-full rounded-2xl p-6 shadow-2xl relative space-y-4 text-left transition-colors duration-300">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                <h3 id="modal-char-title" class="text-xl font-bold transition-colors duration-300"></h3>
-                <button onclick="closeModalDirect()" class="text-gray-400 hover:text-gray-200 text-sm font-bold px-2.5 py-1 bg-slate-800 rounded-lg">✕ Close</button>
-            </div>
+    <!-- Full-Screen Centered Character Modal with Navigation Arrows & Enlarged Profile -->
+    <div id="character-modal" onclick="closeModalDirect()" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        
+        <!-- Modal Navigation Container -->
+        <div class="relative w-full max-w-2xl flex items-center justify-center">
+            
+            <!-- Left Arrow Button -->
+            <button onclick="navigateCharacter(-1); event.stopPropagation();" class="absolute -left-12 sm:-left-16 text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-600 rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center shadow-lg transition-transform hover:scale-110 z-20 text-xl font-bold" title="Previous Character (Left Arrow)">
+                ◀
+            </button>
 
-            <div class="flex items-center space-x-6">
-                <div class="w-28 h-28 bg-slate-800 rounded-full overflow-hidden flex items-center justify-center text-sm text-gray-400 flex-shrink-0 shadow-inner border border-slate-700">
-                    <img id="modal-char-img" src="" alt="Character Image" class="face-portrait">
+            <!-- Main Modal Card -->
+            <div id="modal-card-container" onclick="event.stopPropagation()" class="bg-[#0d1322] border max-w-2xl w-full rounded-2xl p-6 sm:p-8 shadow-2xl relative space-y-5 text-left transition-all duration-300 max-h-[90vh] overflow-y-auto">
+                
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <h3 id="modal-char-title" class="text-2xl sm:text-3xl font-extrabold transition-colors duration-300"></h3>
+                    <button onclick="closeModalDirect()" class="text-gray-400 hover:text-white text-sm font-bold px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition">✕ Close</button>
                 </div>
-                <div class="space-y-1 text-xs text-slate-300 flex-grow">
-                    <p><strong>Age:</strong> <span id="modal-char-age"></span></p>
-                    <p><strong>Birthdate:</strong> <span id="modal-char-birth"></span></p>
-                    <p><strong>Favourite Food:</strong> <span id="modal-char-food"></span></p>
-                    <p><strong>Hobby:</strong> <span id="modal-char-hobby"></span></p>
-                    <p><strong>Weapon:</strong> <span id="modal-char-weapon"></span></p>
+
+                <!-- Enlarged Profile Top Section -->
+                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                    <div class="w-36 h-36 bg-slate-800 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 shadow-2xl border-2 border-slate-700 ring-4 ring-slate-800/50">
+                        <img id="modal-char-img" src="" alt="Character Image" class="face-portrait">
+                    </div>
+                    <div class="space-y-2 text-sm text-slate-200 flex-grow font-medium leading-relaxed">
+                        <p><strong class="text-slate-400 font-semibold">Age:</strong> <span id="modal-char-age"></span></p>
+                        <p><strong class="text-slate-400 font-semibold">Birthdate:</strong> <span id="modal-char-birth"></span></p>
+                        <p><strong class="text-slate-400 font-semibold">Favourite Food:</strong> <span id="modal-char-food"></span></p>
+                        <p><strong class="text-slate-400 font-semibold">Hobby:</strong> <span id="modal-char-hobby"></span></p>
+                        <p><strong class="text-slate-400 font-semibold">Weapon:</strong> <span id="modal-char-weapon"></span></p>
+                    </div>
+                </div>
+
+                <!-- Abilities Box -->
+                <div class="bg-slate-800/60 p-4 sm:p-5 rounded-xl border border-slate-700/60 shadow-inner">
+                    <p class="text-sm font-bold text-slate-100 mb-2 tracking-wide uppercase">Abilities & Powers:</p>
+                    <div id="modal-char-ability" class="text-sm text-slate-300 space-y-1.5"></div>
+                </div>
+
+                <!-- General Description Box -->
+                <div class="bg-slate-800/60 p-4 sm:p-5 rounded-xl border border-slate-700/60 shadow-inner">
+                    <p class="text-sm font-bold text-slate-100 tracking-wide uppercase">General Description:</p>
+                    <p id="modal-char-general" class="text-sm text-slate-300 mt-1.5 leading-relaxed font-light"></p>
+                </div>
+
+                <!-- Novel Description Box -->
+                <div class="bg-slate-800/60 p-4 sm:p-5 rounded-xl border border-slate-700/60 shadow-inner">
+                    <p class="text-sm font-bold text-slate-100 tracking-wide uppercase">Novel Description & Role:</p>
+                    <p id="modal-char-novel" class="text-sm text-slate-300 mt-1.5 leading-relaxed font-light"></p>
                 </div>
             </div>
 
-            <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/50">
-                <p class="text-xs font-semibold text-slate-200 mb-1">Abilities & Powers:</p>
-                <div id="modal-char-ability" class="text-xs text-slate-300 space-y-1"></div>
-            </div>
-
-            <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/50">
-                <p class="text-xs font-semibold text-slate-200">General Description:</p>
-                <p id="modal-char-general" class="text-xs text-slate-300 mt-1 leading-relaxed"></p>
-            </div>
-
-            <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/50">
-                <p class="text-xs font-semibold text-slate-200">Novel Description & Role:</p>
-                <p id="modal-char-novel" class="text-xs text-slate-300 mt-1 leading-relaxed"></p>
-            </div>
+            <!-- Right Arrow Button -->
+            <button onclick="navigateCharacter(1); event.stopPropagation();" class="absolute -right-12 sm:-right-16 text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-600 rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center shadow-lg transition-transform hover:scale-110 z-20 text-xl font-bold" title="Next Character (Right Arrow)">
+                ▶
+            </button>
         </div>
     </div>
 
@@ -333,6 +355,9 @@
     </div>
 
     <script>
+        const characterKeys = ['yato', 'gavon', 'stella', 'lucia', 'marin', 'lumio', 'jaya', 'surtur', 'ariel'];
+        let currentCharacterIndex = 0;
+
         const characters = {
             yato: { name: "Yato", img: "Yato.jpg", posClass: "pos-yato", colorClass: "text-purple-400", borderClass: "border-purple-500/50", age: "24", birth: "November 2", food: "Donuts", hobby: "Painting, drawing, and picking flowers", weapon: "Dual Katanas", abilities: ["Spirit Energy: Shadow", "Astro Ability: Unknown", "Shadow Manipulation", "Master Swordsmanship", "Expert Hand-to-Hand Combat", "Expert at Astro Energy"], general: "A gloomy young man with long black hair and purple eyes. He hates violence, loves drawing even though he's terrible at it, and enjoys picking flowers.", novel: "Main character and leader of the group, balancing hard fights with looking after young Lucia." },
             gavon: { name: "Gavon", img: "Gavon.jpg", posClass: "pos-gavon", colorClass: "text-indigo-300", borderClass: "border-indigo-500/50", age: "20", birth: "September 28", food: "Fried chicken", hobby: "Heavy combat training", weapon: "Unknown", abilities: ["Astro Ability: Novice Astro Energy", "Average Swordsmanship", "Novice Hand-to-Hand Combat"], general: "A loud, energetic guy with short purple hair and Stella's twin brother. He dreams of becoming a true hero and spends all his time training.", novel: "Wannabe hero who joins the group alongside his twin sister to find their missing parents and achieve his dream of becoming a true hero." },
@@ -346,14 +371,17 @@
         };
 
         function showCharacter(key) {
+            let idx = characterKeys.indexOf(key);
+            if (idx !== -1) currentCharacterIndex = idx;
+
             let char = characters[key];
             
             let titleElem = document.getElementById('modal-char-title');
             titleElem.textContent = char.name;
-            titleElem.className = `text-xl font-bold ${char.colorClass}`;
+            titleElem.className = `text-2xl sm:text-3xl font-extrabold ${char.colorClass}`;
 
             let cardContainer = document.getElementById('modal-card-container');
-            cardContainer.className = `bg-slate-900 border ${char.borderClass} max-w-lg w-full rounded-2xl p-6 shadow-2xl relative space-y-4 text-left transition-colors duration-300`;
+            cardContainer.className = `bg-[#0d1322] border ${char.borderClass} max-w-2xl w-full rounded-2xl p-6 sm:p-8 shadow-2xl relative space-y-5 text-left transition-all duration-300 max-h-[90vh] overflow-y-auto`;
 
             let imgElem = document.getElementById('modal-char-img');
             imgElem.src = char.img;
@@ -370,12 +398,17 @@
             char.abilities.forEach(ability => {
                 let p = document.createElement('p');
                 p.className = 'flex items-start';
-                p.innerHTML = `<span class="mr-2 ${char.colorClass}">•</span> <span>${ability}</span>`;
+                p.innerHTML = `<span class="mr-2 font-bold ${char.colorClass}">•</span> <span>${ability}</span>`;
                 abilityContainer.appendChild(p);
             });
             document.getElementById('modal-char-general').textContent = char.general;
             document.getElementById('modal-char-novel').textContent = char.novel;
             document.getElementById('character-modal').classList.remove('hidden');
+        }
+
+        function navigateCharacter(direction) {
+            currentCharacterIndex = (currentCharacterIndex + direction + characterKeys.length) % characterKeys.length;
+            showCharacter(characterKeys[currentCharacterIndex]);
         }
 
         function closeModalDirect() { document.getElementById('character-modal').classList.add('hidden'); }
@@ -521,6 +554,16 @@
 
         function handleGlobalKey(e) {
             if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+            
+            // Handle arrow keys when character modal is open
+            const charModal = document.getElementById('character-modal');
+            if (charModal && !charModal.classList.contains('hidden')) {
+                if (e.key === 'ArrowLeft') navigateCharacter(-1);
+                if (e.key === 'ArrowRight') navigateCharacter(1);
+                if (e.key === 'Escape') closeModalDirect();
+                return;
+            }
+
             if (e.key === 'ArrowLeft') document.getElementById('prev').click();
             if (e.key === 'ArrowRight') document.getElementById('next').click();
         }
