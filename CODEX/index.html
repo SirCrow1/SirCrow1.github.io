@@ -19,9 +19,6 @@
 body{margin:0;background:radial-gradient(1200px 700px at 78% 8%,#2a1160 0%,transparent 60%),radial-gradient(900px 600px at 0% 100%,#1a0c3f 0%,transparent 55%),var(--void);
 color:var(--ice);font:16px/1.6 var(--head);min-height:100vh}
 a{color:var(--hot)}
-.bar{display:flex;align-items:center;gap:14px;padding:10px clamp(16px,4vw,48px);border-bottom:1px solid var(--line);font:12px var(--mono);color:var(--dim)}
-.bar i{flex:1;height:6px;background:linear-gradient(90deg,var(--glow),transparent);opacity:.5}
-.bar b{color:var(--hot);font-weight:500}
 main{max-width:1120px;margin:0 auto;padding:0 clamp(16px,4vw,48px)}
 .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding:72px 0 56px}
 h1{font-size:clamp(44px,8vw,92px);line-height:.95;margin:0 0 18px;letter-spacing:.02em;font-weight:700;text-shadow:0 0 38px rgba(139,92,246,.7)}
@@ -59,12 +56,11 @@ ol li:before{content:counter(s);position:absolute;left:0;top:0;width:38px;height
 code{font-family:var(--mono);font-size:.9em;background:#1b1040;padding:2px 7px;color:var(--ice)}
 .note{font-size:14px;color:var(--dim);margin-top:28px;line-height:1.6;border-top:1px dashed var(--line);padding-top:16px}
 
-footer{margin-top:40px;border-top:1px solid var(--line);padding:26px 0 48px;font:13px var(--mono);color:var(--dim);display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px}
+footer{margin-top:40px;border-top:1px solid var(--line);padding:26px 0 48px;font:13px var(--mono);color:var(--dim);display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px}
 @media(max-width:820px){.hero{grid-template-columns:1fr;padding-top:44px}.grid{grid-template-columns:1fr}.hud-wrapper{max-width:320px;height:320px;order:-1}}
 </style>
 </head>
 <body>
-<div class="bar"><b>codex</b><span>status: online</span><i></i><span>v1.0.2</span></div>
 <main>
 <div class="hero">
   <div>
@@ -131,7 +127,7 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding:26px 0 48px;font
   </div>
 </section>
 
-<footer><span>C.O.D.E.X v1.0.2</span><span>Not affiliated with any chat provider.</span></footer>
+<footer><span>Not affiliated with any chat provider.</span></footer>
 </main>
 
 <script>
