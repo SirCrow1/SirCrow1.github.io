@@ -37,7 +37,7 @@ clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(1
 .badge-free-lg{font-size:1.1em;padding:4px 12px}
 
 /* 3D Canvas Viewport Box */
-.hud-wrapper{position:relative;width:100%;max-width:480px;height:480px;justify-self:center;filter:drop-shadow(0 0 60px rgba(168,85,247,.9));cursor:grab}
+.hud-wrapper{position:relative;width:100%;max-width:480px;height:480px;justify-self:center;filter:drop-shadow(0 0 60px rgba(139,92,246,.95));cursor:grab}
 .hud-wrapper:active{cursor:grabbing}
 #webgl-canvas{width:100%;height:100%;display:block}
 
@@ -134,7 +134,152 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding:26px 0 48px;font
 </main>
 
 <script>
-// THREE.JS REAL 3D ICOSAHEDRON CRYSTAL CORE WITH DRAG CONTROL & DENSE PARTICLES
+// THREE.JS REAL 3D ICOSAHEDRON CRYSTAL CORE WITH DRAG CONTROL & DEEP PURPLE PALETTE
+const container = document.querySelector('.hud-wrapper');
+const canvas = documentMy Liege, I see it! The crystal mesh color was skewing too bright pink in the lighting[cite: 11]. 
+
+I have updated the colors in the material, emissive base, inner core, and point lights to a **deep vibrant royal purple** (`#7e22ce` / `#581c87`), shifting the glow completely away from pink[cite: 11].
+
+Here is your updated `index.html` code[cite: 8]:
+
+```html
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C.O.D.E.X: Chat Output & Document Export Xchange</title>
+<meta name="description" content="Free browser extension. Pick messages from your AI chats and save them as a clean PDF or Word file.">
+<meta property="og:title" content="C.O.D.E.X: Chat Output & Document Export Xchange">
+<meta property="og:description" content="Pick messages from your AI chats and save them as a clean PDF or Word file.">
+<link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
+<link rel="preconnect" href="[https://fonts.gstatic.com](https://fonts.gstatic.com)" crossorigin>
+<link href="[https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap](https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap)" rel="stylesheet">
+<script src="[https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js](https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js)"></script>
+<style>
+:root{--void:#07050f;--deep:#120a2a;--panel:#0d0820;--line:#3b2a78;--glow:#8b5cf6;--hot:#b79cff;--ice:#ece7ff;--dim:#9b90c9;
+--head:"Chakra Petch","Segoe UI",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(1200px 700px at 78% 8%,#2a1160 0%,transparent 60%),radial-gradient(900px 600px at 0% 100%,#1a0c3f 0%,transparent 55%),var(--void);
+color:var(--ice);font:16px/1.6 var(--head);min-height:100vh}
+a{color:var(--hot)}
+.bar{display:flex;align-items:center;gap:14px;padding:10px clamp(16px,4vw,48px);border-bottom:1px solid var(--line);font:12px var(--mono);color:var(--dim)}
+.bar i{flex:1;height:6px;background:linear-gradient(90deg,var(--glow),transparent);opacity:.5}
+.bar b{color:var(--hot);font-weight:500}
+main{max-width:1120px;margin:0 auto;padding:0 clamp(16px,4vw,48px)}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding:72px 0 56px}
+h1{font-size:clamp(44px,8vw,92px);line-height:.95;margin:0 0 18px;letter-spacing:.02em;font-weight:700;text-shadow:0 0 38px rgba(139,92,246,.7)}
+.sub{font:15px var(--mono);color:var(--hot);margin:0 0 20px}
+.lead{max-width:46ch;color:#cfc6f5;margin:0 0 30px;font-size:18px}
+.cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.btn{display:inline-block;padding:14px 26px;background:var(--glow);color:#0b0618;font-weight:700;text-decoration:none;font-size:17px;
+clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));box-shadow:0 0 30px rgba(139,92,246,.6);transition:background .15s}
+.btn:hover{background:#a888ff}.btn:focus-visible,a:focus-visible{outline:2px solid var(--ice);outline-offset:3px}
+.meta{font:13px var(--mono);color:var(--dim)}
+
+/* Emphasized FREE badges */
+.badge-free{background:var(--glow);color:#07050f;font-weight:800;padding:3px 10px;border-radius:4px;letter-spacing:.05em;text-transform:uppercase;box-shadow:0 0 14px rgba(139,92,246,.8)}
+.badge-free-lg{font-size:1.1em;padding:4px 12px}
+
+/* 3D Canvas Viewport Box */
+.hud-wrapper{position:relative;width:100%;max-width:480px;height:480px;justify-self:center;filter:drop-shadow(0 0 60px rgba(126,34,206,.95));cursor:grab}
+.hud-wrapper:active{cursor:grabbing}
+#webgl-canvas{width:100%;height:100%;display:block}
+
+.panel{position:relative;background:linear-gradient(180deg,rgba(24,12,56,.7),rgba(10,6,24,.8));border:1px solid var(--line);padding:26px 28px}
+.panel:before,.panel:after{content:"";position:absolute;width:16px;height:16px;border:2px solid var(--hot)}
+.panel:before{top:-1px;left:-1px;border-right:0;border-bottom:0}.panel:after{right:-1px;bottom:-1px;border-left:0;border-top:0}
+section{padding:36px 0}
+h2{font-size:30px;margin:0 0 22px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.panel h3{margin:0 0 8px;font-size:19px;color:var(--hot);font-weight:600}.panel p{margin:0;color:#cfc6f5;font-size:15px}
+.nodes{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;font:14px var(--mono)}
+.nodes div{border:1px solid var(--line);padding:12px 14px;background:rgba(13,8,32,.7)}
+.nodes span{color:var(--glow)}.nodes em{display:block;color:var(--dim);font-style:normal;font-size:12px;margin-top:2px}
+
+ol{margin:0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:20px}
+ol li{counter-increment:s;padding-left:56px;position:relative;min-height:38px;line-height:1.5;display:block}
+ol li:before{content:counter(s);position:absolute;left:0;top:0;width:38px;height:38px;display:flex;align-items:center;justify-content:center;border:1px solid var(--hot);color:var(--hot);font:500 15px var(--mono)}
+code{font-family:var(--mono);font-size:.9em;background:#1b1040;padding:2px 7px;color:var(--ice)}
+.note{font-size:14px;color:var(--dim);margin-top:28px;line-height:1.6;border-top:1px dashed var(--line);padding-top:16px}
+
+footer{margin-top:40px;border-top:1px solid var(--line);padding:26px 0 48px;font:13px var(--mono);color:var(--dim);display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px}
+@media(max-width:820px){.hero{grid-template-columns:1fr;padding-top:44px}.grid{grid-template-columns:1fr}.hud-wrapper{max-width:320px;height:320px;order:-1}}
+</style>
+</head>
+<body>
+<div class="bar"><b>codex</b><span>status: online</span><i></i><span>v1.0.2</span></div>
+<main>
+<div class="hero">
+  <div>
+    <h1>C.O.D.E.X</h1>
+    <p class="sub">Chat Output &amp; Document Export Xchange</p>
+    <p class="lead">Pick the messages you want from an AI chat, then save them as a clean PDF or Word file. No account, no servers, nothing uploaded.</p>
+    <div class="cta">
+      <a class="btn" href="downloads/codex-extension.zip" download>Download extension</a>
+      <span class="meta"><strong class="badge-free">100% FREE</strong> &middot; works in Google, Edge &amp; Brave</span>
+    </div>
+  </div>
+
+  <div class="hud-wrapper" title="Click & Drag to rotate 3D core">
+    <canvas id="webgl-canvas"></canvas>
+  </div>
+</div>
+
+<section>
+  <h2><span class="badge-free badge-free-lg">100% FREE</span> &amp; Open</h2>
+  <div class="panel">
+    <h3>No subscriptions, no hidden limits</h3>
+    <p>C.O.D.E.X is completely free to use with zero paywalls, premium subscriptions, or user tracking. Download it once, keep it forever, and export as many chats as you want.</p>
+  </div>
+</section>
+
+<section>
+  <h2>What it does</h2>
+  <div class="grid">
+    <div class="panel"><h3>Choose messages</h3><p>The popup lists every prompt and reply on the page. Tick the ones you want, skip the rest.</p></div>
+    <div class="panel"><h3>PDF or Word</h3><p>Headings, lists, code blocks and tables are kept. Word files have real, editable text.</p></div>
+    <div class="panel"><h3>Clean output</h3><p>No date stamp, no author labels, no branding. Your prompts sit in a shaded box, replies stay plain.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Supported chats</h2>
+  <div class="nodes">
+    <div><span>01</span> Gemini<em>gemini.google.com</em></div>
+    <div><span>02</span> ChatGPT<em>chatgpt.com</em></div>
+    <div><span>03</span> Claude<em>claude.ai</em></div>
+    <div><span>04</span> Copilot<em>copilot.microsoft.com</em></div>
+    <div><span>05</span> DeepSeek<em>chat.deepseek.com</em></div>
+    <div><span>06</span> Grok<em>grok.com</em></div>
+  </div>
+</section>
+
+<section>
+  <h2>Install in four steps</h2>
+  <div class="panel">
+    <ol>
+      <li>Download the zip above and unzip it. Keep the folder somewhere permanent.</li>
+      <li>Open <code>chrome://extensions</code> (or <code>edge://extensions</code> / <code>brave://extensions</code>) and turn on <strong>Developer mode</strong>.</li>
+      <li>Click <strong>Load unpacked</strong> and choose the unzipped folder.</li>
+      <li>Open a chat, click the C.O.D.E.X icon, tick your messages, and press <strong>PDF</strong> or <strong>Word</strong>.</li>
+    </ol>
+    <p class="note">Long chats load in pieces. Scroll to the top first, then press <strong>Rescan</strong> in the popup.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Privacy</h2>
+  <div class="panel">
+    <p>It doesn't look at your chats—it just converts them into PDF and Word files locally on your computer.</p>
+  </div>
+</section>
+
+<footer><span>C.O.D.E.X v1.0.2</span><span>Not affiliated with any chat provider.</span></footer>
+</main>
+
+<script>
+// THREE.JS REAL 3D ICOSAHEDRON CRYSTAL CORE WITH DRAG CONTROL & DEEP PURPLE PALETTE
 const container = document.querySelector('.hud-wrapper');
 const canvas = document.getElementById('webgl-canvas');
 
@@ -150,16 +295,16 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 const coreGroup = new THREE.Group();
 scene.add(coreGroup);
 
-// 1. VIBRANT PURPLE ICOSAHEDRON CRYSTAL
+// 1. DEEP VIBRANT PURPLE ICOSAHEDRON CRYSTAL
 const icoGeo = new THREE.IcosahedronGeometry(1.65, 0);
 
 const crystalMat = new THREE.MeshPhongMaterial({
-  color: 0xa855f7,
-  emissive: 0x6b21a8,
-  specular: 0xf3e8ff,
-  shininess: 100,
+  color: 0x6b21a8,
+  emissive: 0x3b0764,
+  specular: 0xd8b4fe,
+  shininess: 80,
   transparent: true,
-  opacity: 0.9,
+  opacity: 0.92,
   flatShading: true,
   side: THREE.DoubleSide
 });
@@ -168,10 +313,10 @@ coreGroup.add(crystalMesh);
 
 // Outer Wireframe Lattice Lines
 const wireMat = new THREE.MeshBasicMaterial({
-  color: 0xffffff,
+  color: 0xebd5ff,
   wireframe: true,
   transparent: true,
-  opacity: 0.95
+  opacity: 0.9
 });
 const wireMesh = new THREE.Mesh(icoGeo, wireMat);
 wireMesh.scale.setScalar(1.003);
@@ -187,17 +332,17 @@ for (let i = 0; i < posAttr.count; i++) {
   crystalMesh.add(node);
 }
 
-// 2. INNER CORE GLOW SPHERE
+// 2. INNER CORE GLOW SPHERE (PURE PURPLE GLOW)
 const coreGeo = new THREE.SphereGeometry(0.95, 24, 24);
 const coreMat = new THREE.MeshBasicMaterial({
-  color: 0xe9d5ff,
+  color: 0x9333ea,
   transparent: true,
   opacity: 0.75
 });
 const coreMesh = new THREE.Mesh(coreGeo, coreMat);
 coreGroup.add(coreMesh);
 
-// 3. MASSIVE DENSE PURPLE PARTICLE NEBULA (3,500 PARTICLES)
+// 3. DENSE PURPLE PARTICLE NEBULA (3,500 PARTICLES)
 const particleCount = 3500;
 const particleGeo = new THREE.BufferGeometry();
 const positions = new Float32Array(particleCount * 3);
@@ -212,10 +357,10 @@ for (let i = 0; i < particleCount; i++) {
   positions[i * 3 + 1] = radius * Math.sin(phi);
   positions[i * 3 + 2] = radius * Math.sin(theta);
 
-  // Deep to bright vibrant purple shades
-  colors[i * 3] = 0.7 + Math.random() * 0.3;     // R
-  colors[i * 3 + 1] = 0.2 + Math.random() * 0.3; // G
-  colors[i * 3 + 2] = 1.0;                        // B
+  // Deep royal purple particle tones
+  colors[i * 3] = 0.5 + Math.random() * 0.3;     // R
+  colors[i * 3 + 1] = 0.1 + Math.random() * 0.2; // G
+  colors[i * 3 + 2] = 0.9 + Math.random() * 0.1; // B
 }
 
 particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -225,20 +370,20 @@ const particleMat = new THREE.PointsMaterial({
   size: 0.05,
   vertexColors: true,
   transparent: true,
-  opacity: 0.9
+  opacity: 0.85
 });
 const particleSystem = new THREE.Points(particleGeo, particleMat);
 coreGroup.add(particleSystem);
 
-// 4. LIGHTING SETUP
-const ambientLight = new THREE.AmbientLight(0x7e22ce, 2.5);
+// 4. LIGHTING SETUP (DEEP VIOLET & PURPLE LIGHTING)
+const ambientLight = new THREE.AmbientLight(0x581c87, 2.5);
 scene.add(ambientLight);
 
-const pointLight1 = new THREE.PointLight(0xd8b4fe, 3.5, 20);
+const pointLight1 = new THREE.PointLight(0xa855f7, 3.5, 20);
 pointLight1.position.set(4, 4, 5);
 scene.add(pointLight1);
 
-const pointLight2 = new THREE.PointLight(0xa855f7, 3.0, 20);
+const pointLight2 = new THREE.PointLight(0x6b21a8, 3.0, 20);
 pointLight2.position.set(-4, -4, -3);
 scene.add(pointLight2);
 
