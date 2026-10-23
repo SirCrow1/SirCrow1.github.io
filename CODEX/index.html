@@ -35,38 +35,42 @@ clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(1
 .badge-free{background:var(--glow);color:#07050f;font-weight:800;padding:3px 10px;border-radius:4px;letter-spacing:.05em;text-transform:uppercase;box-shadow:0 0 14px rgba(139,92,246,.8)}
 .badge-free-lg{font-size:1.1em;padding:4px 12px}
 
-.orb{width:100%;max-width:440px;justify-self:center;filter:drop-shadow(0 0 40px rgba(139,92,246,.55))}
-.r1{transform-origin:200px 200px;animation:spin 60s linear infinite}
-.r2{transform-origin:200px 200px;animation:spin 90s linear infinite reverse}
+/* Advanced Sci-Fi HUD Orb Animations */
+.orb{width:100%;max-width:460px;justify-self:center;filter:drop-shadow(0 0 45px rgba(139,92,246,.65))}
 
-/* J.A.R.V.I.S. Middle Element Animations */
+.r1{transform-origin:200px 200px;animation:spin 50s linear infinite}
+.r2{transform-origin:200px 200px;animation:spin 75s linear infinite reverse}
+.r-rune{transform-origin:200px 200px;animation:spin 40s linear infinite}
+.r-data{transform-origin:200px 200px;animation:spin 25s linear infinite reverse}
+.r-arc{transform-origin:200px 200px;animation:spin 12s linear infinite}
+
 .crystal-center {
   transform-origin: 200px 200px;
   animation: jarvis-pulse 3s ease-in-out infinite alternate;
 }
 .crystal-inner-spin {
   transform-origin: 200px 200px;
-  animation: jarvis-spin 35s linear infinite;
+  animation: jarvis-spin 30s linear infinite;
 }
 .core-pulse {
   transform-origin: 200px 200px;
-  animation: core-glow 2s ease-in-out infinite alternate;
+  animation: core-glow 2.5s ease-in-out infinite alternate;
 }
 
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes jarvis-spin{to{transform:rotate(360deg)}}
 
 @keyframes jarvis-pulse {
-  0% { transform: scale(0.96); filter: drop-shadow(0 0 10px rgba(139,92,246,0.4)); }
-  100% { transform: scale(1.08); filter: drop-shadow(0 0 35px rgba(183,156,255,0.9)); }
+  0% { transform: scale(0.95); filter: drop-shadow(0 0 12px rgba(139,92,246,0.5)); }
+  100% { transform: scale(1.08); filter: drop-shadow(0 0 40px rgba(183,156,255,1)); }
 }
 
 @keyframes core-glow {
   0% { opacity: 0.3; transform: scale(0.85); }
-  100% { opacity: 0.8; transform: scale(1.15); }
+  100% { opacity: 0.95; transform: scale(1.2); }
 }
 
-@media (prefers-reduced-motion:reduce){.r1,.r2,.crystal-center,.crystal-inner-spin,.core-pulse{animation:none}}
+@media (prefers-reduced-motion:reduce){.r1,.r2,.r-rune,.r-data,.r-arc,.crystal-center,.crystal-inner-spin,.core-pulse{animation:none}}
 
 .panel{position:relative;background:linear-gradient(180deg,rgba(24,12,56,.7),rgba(10,6,24,.8));border:1px solid var(--line);padding:26px 28px}
 .panel:before,.panel:after{content:"";position:absolute;width:16px;height:16px;border:2px solid var(--hot)}
@@ -103,23 +107,58 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding:26px 0 48px;font
       <span class="meta"><strong class="badge-free">100% FREE</strong> &middot; works in Google, Edge &amp; Brave</span>
     </div>
   </div>
-  <svg class="orb" viewBox="0 0 400 400" role="img" aria-label="Glowing violet crystal inside rotating rings">
+
+  <!-- Detailed Sci-Fi Arc Reactor / Magic Circle HUD -->
+  <svg class="orb" viewBox="0 0 400 400" role="img" aria-label="Detailed animated sci-fi core">
     <defs>
-      <radialGradient id="g" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#8b5cf6" stop-opacity=".55"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
-      <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ece7ff" stop-opacity=".8"/><stop offset="50%" stop-color="#8b5cf6" stop-opacity=".5"/><stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
-      <linearGradient id="c" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e6dcff"/><stop offset=".5" stop-color="#8b5cf6"/><stop offset="1" stop-color="#3a1b8f"/></linearGradient>
+      <radialGradient id="g" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#8b5cf6" stop-opacity=".65"/><stop offset="100%" stop-color="#07050f" stop-opacity="0"/></radialGradient>
+      <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ece7ff" stop-opacity=".9"/><stop offset="45%" stop-color="#8b5cf6" stop-opacity=".6"/><stop offset="100%" stop-color="#3a1b8f" stop-opacity="0"/></radialGradient>
+      <linearGradient id="c" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0eaff"/><stop offset=".5" stop-color="#8b5cf6"/><stop offset="1" stop-color="#2a1160"/></linearGradient>
     </defs>
-    <circle cx="200" cy="200" r="190" fill="url(#g)"/>
-    <g class="r1" fill="none" stroke="#8b5cf6"><circle cx="200" cy="200" r="178" stroke-width="2" stroke-dasharray="3 9"/><circle cx="200" cy="200" r="160" stroke-width="6" stroke-opacity=".45" stroke-dasharray="40 14 8 14"/></g>
-    <g class="r2" fill="none" stroke="#b79cff"><circle cx="200" cy="200" r="132" stroke-width="1.5" stroke-dasharray="2 6"/><circle cx="200" cy="200" r="116" stroke-width="3" stroke-dasharray="26 10 4 10"/></g>
+    <circle cx="200" cy="200" r="192" fill="url(#g)"/>
     
-    <!-- Animated J.A.R.V.I.S. Central Core & Crystal -->
+    <!-- Outer HUD Brackets & Crosshairs -->
+    <g stroke="#b79cff" stroke-opacity=".35" fill="none" stroke-width="1">
+      <path d="M20 20 h30 v-30 M380 20 h-30 v-30 M20 380 h30 v30 M380 380 h-30 v30"/>
+      <line x1="200" y1="5" x2="200" y2="25"/><line x1="200" y1="375" x2="200" y2="395"/>
+      <line x1="5" y1="200" x2="25" y2="200"/><line x1="375" y1="200" x2="395" y2="200"/>
+    </g>
+
+    <!-- Outer Rotating Tech Rings -->
+    <g class="r1" fill="none" stroke="#8b5cf6"><circle cx="200" cy="200" r="184" stroke-width="1.5" stroke-dasharray="4 8"/><circle cx="200" cy="200" r="172" stroke-width="5" stroke-opacity=".4" stroke-dasharray="30 10 5 10 50 15"/></g>
+    
+    <!-- Runic / Arcane Glyphs Ring -->
+    <g class="r-rune" fill="none" stroke="#b79cff" stroke-opacity=".6" stroke-width="1.5">
+      <circle cx="200" cy="200" r="154" stroke-dasharray="2 10 18 6 4 12"/>
+      <text x="200" y="52" fill="#b79cff" font-family="monospace" font-size="8" text-anchor="middle" opacity=".7">᚛ ᚜ Ϙ ᚨ ᚩ ᚱ ᚦ ᚷ ᚹ ᚻ ᚾ ᛁ ᛃ ᛈ ᛉ ᛊ ᛋ ᛏ ᛒ ᛖ ᛗ ᛚ ᛟ ᛞ</text>
+      <text x="200" y="354" fill="#b79cff" font-family="monospace" font-size="8" text-anchor="middle" opacity=".7">01100101 01111000 01110000 01101111 01110010 01110100</text>
+    </g>
+
+    <!-- Counter-Rotating Data Ring -->
+    <g class="r-data" fill="none" stroke="#8b5cf6">
+      <circle cx="200" cy="200" r="138" stroke-width="2" stroke-dasharray="100 12 40 8 15 8"/>
+      <circle cx="200" cy="200" r="126" stroke-width="1" stroke-dasharray="2 6"/>
+    </g>
+
+    <!-- Fast Orbiting Tech Arcs -->
+    <g class="r-arc" fill="none" stroke="#ece7ff" stroke-width="2.5" stroke-opacity=".8">
+      <circle cx="200" cy="200" r="104" stroke-dasharray="25 175"/>
+      <circle cx="200" cy="200" r="104" stroke-dasharray="15 185" transform="rotate(120 200 200)"/>
+      <circle cx="200" cy="200" r="104" stroke-dasharray="35 165" transform="rotate(240 200 200)"/>
+    </g>
+
+    <!-- Inner Rotating Ring -->
+    <g class="r2" fill="none" stroke="#b79cff">
+      <circle cx="200" cy="200" r="88" stroke-width="2" stroke-dasharray="12 6 4 6"/>
+    </g>
+    
+    <!-- Central J.A.R.V.I.S Crystal & Core -->
     <g class="crystal-center">
-      <circle class="core-pulse" cx="200" cy="200" r="60" fill="url(#coreGlow)"/>
+      <circle class="core-pulse" cx="200" cy="200" r="68" fill="url(#coreGlow)"/>
       <g class="crystal-inner-spin">
-        <polygon points="200,118 262,152 276,222 228,282 168,282 124,222 138,152" fill="url(#c)" stroke="#ece7ff" stroke-opacity=".7"/>
-        <g stroke="#ece7ff" stroke-opacity=".45" fill="none"><path d="M200 118 168 282M200 118 228 282M138 152 262 152M124 222 276 222M138 152 228 282M262 152 168 282"/></g>
-        <g fill="#fff"><circle cx="200" cy="118" r="3"/><circle cx="262" cy="152" r="3"/><circle cx="276" cy="222" r="3"/><circle cx="228" cy="282" r="3"/><circle cx="168" cy="282" r="3"/><circle cx="124" cy="222" r="3"/><circle cx="138" cy="152" r="3"/></g>
+        <polygon points="200,118 262,152 276,222 228,282 168,282 124,222 138,152" fill="url(#c)" stroke="#ece7ff" stroke-opacity=".85" stroke-width="1.5"/>
+        <g stroke="#ece7ff" stroke-opacity=".5" fill="none" stroke-width="1"><path d="M200 118 168 282M200 118 228 282M138 152 262 152M124 222 276 222M138 152 228 282M262 152 168 282"/></g>
+        <g fill="#fff"><circle cx="200" cy="118" r="3.5"/><circle cx="262" cy="152" r="3.5"/><circle cx="276" cy="222" r="3.5"/><circle cx="228" cy="282" r="3.5"/><circle cx="168" cy="282" r="3.5"/><circle cx="124" cy="222" r="3.5"/><circle cx="138" cy="152" r="3.5"/></g>
       </g>
     </g>
   </svg>
