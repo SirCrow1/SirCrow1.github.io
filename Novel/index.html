@@ -300,30 +300,30 @@
                         <img id="modal-char-img" src="" alt="Character Image" class="face-portrait">
                     </div>
                     <div class="space-y-2 text-sm flex-grow font-medium leading-relaxed">
-                        <p><strong id="lbl-age" class="font-semibold text-slate-300">Age:</strong> <span id="modal-char-age" class="font-bold"></span></p>
-                        <p><strong id="lbl-birth" class="font-semibold text-slate-300">Birthdate:</strong> <span id="modal-char-birth" class="font-bold"></span></p>
-                        <p><strong id="lbl-food" class="font-semibold text-slate-300">Favourite Food:</strong> <span id="modal-char-food" class="font-bold"></span></p>
-                        <p><strong id="lbl-hobby" class="font-semibold text-slate-300">Hobby:</strong> <span id="modal-char-hobby" class="font-bold"></span></p>
-                        <p><strong id="lbl-weapon" class="font-semibold text-slate-300">Weapon:</strong> <span id="modal-char-weapon" class="font-bold"></span></p>
+                        <p><strong id="lbl-age" class="font-semibold">Age:</strong> <span id="modal-char-age" class="font-bold"></span></p>
+                        <p><strong id="lbl-birth" class="font-semibold">Birthdate:</strong> <span id="modal-char-birth" class="font-bold"></span></p>
+                        <p><strong id="lbl-food" class="font-semibold">Favourite Food:</strong> <span id="modal-char-food" class="font-bold"></span></p>
+                        <p><strong id="lbl-hobby" class="font-semibold">Hobby:</strong> <span id="modal-char-hobby" class="font-bold"></span></p>
+                        <p><strong id="lbl-weapon" class="font-semibold">Weapon:</strong> <span id="modal-char-weapon" class="font-bold"></span></p>
                     </div>
                 </div>
 
                 <!-- Abilities Box -->
                 <div class="bg-slate-800/60 p-4 sm:p-5 rounded-xl border border-slate-700/60 shadow-inner">
-                    <p id="lbl-abilities-title" class="text-sm font-bold mb-2 tracking-wide uppercase text-slate-200">Abilities & Powers:</p>
+                    <p id="lbl-abilities-title" class="text-sm font-bold mb-2 tracking-wide uppercase">Abilities & Powers:</p>
                     <div id="modal-char-ability" class="text-sm space-y-1.5"></div>
                 </div>
 
                 <!-- General Description Box -->
                 <div class="bg-slate-800/60 p-4 sm:p-5 rounded-xl border border-slate-700/60 shadow-inner">
-                    <p id="lbl-general-title" class="text-sm font-bold tracking-wide uppercase text-slate-200">General Description:</p>
-                    <p id="modal-char-general" class="text-sm mt-1.5 leading-relaxed font-medium text-slate-300"></p>
+                    <p id="lbl-general-title" class="text-sm font-bold tracking-wide uppercase">General Description:</p>
+                    <p id="modal-char-general" class="text-sm mt-1.5 leading-relaxed font-medium"></p>
                 </div>
 
                 <!-- Novel Description Box -->
                 <div class="bg-slate-800/60 p-4 sm:p-5 rounded-xl border border-slate-700/60 shadow-inner">
-                    <p id="lbl-novel-title" class="text-sm font-bold tracking-wide uppercase text-slate-200">Novel Description & Role:</p>
-                    <p id="modal-char-novel" class="text-sm mt-1.5 leading-relaxed font-medium text-slate-300"></p>
+                    <p id="lbl-novel-title" class="text-sm font-bold tracking-wide uppercase">Novel Description & Role:</p>
+                    <p id="modal-char-novel" class="text-sm mt-1.5 leading-relaxed font-medium"></p>
                 </div>
             </div>
 
@@ -387,7 +387,11 @@
             imgElem.src = char.img;
             imgElem.className = `face-portrait ${char.posClass}`;
 
-            // Apply character's theme color specifically to the values while keeping labels readable
+            // Apply character's color class to all labels and values
+            ['lbl-age', 'lbl-birth', 'lbl-food', 'lbl-hobby', 'lbl-weapon', 'lbl-abilities-title', 'lbl-general-title', 'lbl-novel-title'].forEach(id => {
+                document.getElementById(id).className = `font-semibold ${char.colorClass}`;
+            });
+
             document.getElementById('modal-char-age').textContent = char.age;
             document.getElementById('modal-char-age').className = `font-bold ${char.colorClass}`;
 
@@ -403,14 +407,19 @@
             document.getElementById('modal-char-weapon').textContent = char.weapon;
             document.getElementById('modal-char-weapon').className = `font-bold ${char.colorClass}`;
 
-            document.getElementById('modal-char-general').textContent = char.general;
-            document.getElementById('modal-char-novel').textContent = char.novel;
+            let generalElem = document.getElementById('modal-char-general');
+            generalElem.className = `text-sm mt-1.5 leading-relaxed font-medium ${char.colorClass}`;
+            generalElem.textContent = char.general;
+
+            let novelElem = document.getElementById('modal-char-novel');
+            novelElem.className = `text-sm mt-1.5 leading-relaxed font-medium ${char.colorClass}`;
+            novelElem.textContent = char.novel;
 
             let abilityContainer = document.getElementById('modal-char-ability');
             abilityContainer.innerHTML = '';
             char.abilities.forEach(ability => {
                 let p = document.createElement('p');
-                p.className = `flex items-start font-medium text-slate-300`;
+                p.className = `flex items-start font-medium ${char.colorClass}`;
                 p.innerHTML = `<span class="mr-2 font-bold ${char.colorClass}">•</span> <span>${ability}</span>`;
                 abilityContainer.appendChild(p);
             });
