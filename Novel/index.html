@@ -43,17 +43,17 @@
         .card-marin { border-left: 4px solid rgba(34, 211, 238, 0.7); }
         .card-marin:hover { border-color: rgba(34, 211, 238, 0.95); box-shadow: 0 0 25px rgba(34, 211, 238, 0.35), inset 0 0 10px rgba(34, 211, 238, 0.1); }
 
-        .card-lumio { border-left: 4px solid rgba(250, 204, 21, 0.6); }
-        .card-lumio:hover { border-color: rgba(250, 204, 21, 0.9); box-shadow: 0 0 25px rgba(250, 204, 21, 0.35), inset 0 0 10px rgba(250, 204, 21, 0.1); }
+        .card-lumio { border-left: 4px solid rgba(253, 224, 71, 0.6); }
+        .card-lumio:hover { border-color: rgba(253, 224, 71, 0.9); box-shadow: 0 0 25px rgba(253, 224, 71, 0.35), inset 0 0 10px rgba(253, 224, 71, 0.1); }
 
-        .card-jaya { border-left: 4px solid rgba(180, 83, 9, 0.8); }
-        .card-jaya:hover { border-color: rgba(180, 83, 9, 1); box-shadow: 0 0 25px rgba(180, 83, 9, 0.4), inset 0 0 10px rgba(180, 83, 9, 0.15); }
+        .card-jaya { border-left: 4px solid rgba(217, 119, 6, 0.7); }
+        .card-jaya:hover { border-color: rgba(217, 119, 6, 1); box-shadow: 0 0 25px rgba(217, 119, 6, 0.4), inset 0 0 10px rgba(217, 119, 6, 0.15); }
 
         .card-surtur { border-left: 4px solid rgba(239, 68, 68, 0.6); }
         .card-surtur:hover { border-color: rgba(239, 68, 68, 0.9); box-shadow: 0 0 25px rgba(239, 68, 68, 0.35), inset 0 0 10px rgba(239, 68, 68, 0.1); }
 
-        .card-ariel { border-left: 4px solid rgba(34, 197, 94, 0.6); }
-        .card-ariel:hover { border-color: rgba(34, 197, 94, 0.9); box-shadow: 0 0 25px rgba(34, 197, 94, 0.35), inset 0 0 10px rgba(34, 197, 94, 0.1); }
+        .card-ariel { border-left: 4px solid rgba(52, 211, 153, 0.6); }
+        .card-ariel:hover { border-color: rgba(52, 211, 153, 0.9); box-shadow: 0 0 25px rgba(52, 211, 153, 0.35), inset 0 0 10px rgba(52, 211, 153, 0.1); }
         
         /* Base Portrait Style */
         .face-portrait {
@@ -300,29 +300,29 @@
                         <img id="modal-char-img" src="" alt="Character Image" class="face-portrait">
                     </div>
                     <div class="space-y-2 text-sm flex-grow font-medium leading-relaxed">
-                        <p><strong class="font-semibold text-slate-300">Age:</strong> <span id="modal-char-age" class="font-bold"></span></p>
-                        <p><strong class="font-semibold text-slate-300">Birthdate:</strong> <span id="modal-char-birth" class="font-bold"></span></p>
-                        <p><strong class="font-semibold text-slate-300">Favourite Food:</strong> <span id="modal-char-food" class="font-bold"></span></p>
-                        <p><strong class="font-semibold text-slate-300">Hobby:</strong> <span id="modal-char-hobby" class="font-bold"></span></p>
-                        <p><strong class="font-semibold text-slate-300">Weapon:</strong> <span id="modal-char-weapon" class="font-bold"></span></p>
+                        <p><strong id="lbl-age" class="font-semibold">Age:</strong> <span id="modal-char-age" class="font-bold"></span></p>
+                        <p><strong id="lbl-birth" class="font-semibold">Birthdate:</strong> <span id="modal-char-birth" class="font-bold"></span></p>
+                        <p><strong id="lbl-food" class="font-semibold">Favourite Food:</strong> <span id="modal-char-food" class="font-bold"></span></p>
+                        <p><strong id="lbl-hobby" class="font-semibold">Hobby:</strong> <span id="modal-char-hobby" class="font-bold"></span></p>
+                        <p><strong id="lbl-weapon" class="font-semibold">Weapon:</strong> <span id="modal-char-weapon" class="font-bold"></span></p>
                     </div>
                 </div>
 
                 <!-- Abilities Box -->
                 <div class="bg-slate-800/60 p-4 sm:p-5 rounded-xl border border-slate-700/60 shadow-inner">
-                    <p class="text-sm font-bold mb-2 tracking-wide uppercase text-slate-200">Abilities & Powers:</p>
+                    <p id="lbl-abilities-title" class="text-sm font-bold mb-2 tracking-wide uppercase">Abilities & Powers:</p>
                     <div id="modal-char-ability" class="text-sm space-y-1.5"></div>
                 </div>
 
                 <!-- General Description Box -->
                 <div class="bg-slate-800/60 p-4 sm:p-5 rounded-xl border border-slate-700/60 shadow-inner">
-                    <p class="text-sm font-bold tracking-wide uppercase text-slate-200">General Description:</p>
+                    <p id="lbl-general-title" class="text-sm font-bold tracking-wide uppercase">General Description:</p>
                     <p id="modal-char-general" class="text-sm mt-1.5 leading-relaxed font-medium"></p>
                 </div>
 
                 <!-- Novel Description Box -->
                 <div class="bg-slate-800/60 p-4 sm:p-5 rounded-xl border border-slate-700/60 shadow-inner">
-                    <p class="text-sm font-bold tracking-wide uppercase text-slate-200">Novel Description & Role:</p>
+                    <p id="lbl-novel-title" class="text-sm font-bold tracking-wide uppercase">Novel Description & Role:</p>
                     <p id="modal-char-novel" class="text-sm mt-1.5 leading-relaxed font-medium"></p>
                 </div>
             </div>
@@ -386,6 +386,11 @@
             let imgElem = document.getElementById('modal-char-img');
             imgElem.src = char.img;
             imgElem.className = `face-portrait ${char.posClass}`;
+
+            // Apply character's color to all field labels
+            ['lbl-age', 'lbl-birth', 'lbl-food', 'lbl-hobby', 'lbl-weapon', 'lbl-abilities-title', 'lbl-general-title', 'lbl-novel-title'].forEach(id => {
+                document.getElementById(id).style.color = char.color;
+            });
 
             let ageElem = document.getElementById('modal-char-age');
             ageElem.textContent = char.age;
