@@ -50,7 +50,6 @@
   </script>
 
   <style>
-    /* Custom Scrollbar */
     ::-webkit-scrollbar {
       width: 8px;
     }
@@ -66,7 +65,6 @@
       background: #ff2a2a;
     }
 
-    /* Grid overlay background */
     .bg-grid-pattern {
       background-size: 36px 36px;
       background-image: 
@@ -74,7 +72,6 @@
         linear-gradient(to bottom, rgba(255, 42, 42, 0.05) 1px, transparent 1px);
     }
 
-    /* Cyber HUD border style */
     .cyber-border {
       position: relative;
       background: #0c0709;
@@ -103,7 +100,6 @@
       pointer-events: none;
     }
 
-    /* HUD Corner Accents */
     .hud-corner-tr {
       position: absolute;
       top: 6px;
@@ -125,7 +121,6 @@
       opacity: 0.6;
     }
 
-    /* Canvas radial blend */
     .canvas-overlay {
       background: radial-gradient(circle at center, transparent 35%, #050304 88%);
     }
@@ -138,16 +133,16 @@
 </head>
 <body class="bg-necron-black text-gray-200 font-sans antialiased selection:bg-necron-ruby selection:text-white relative overflow-x-hidden min-h-screen">
 
-  <!-- Background Cyber Grid & Red Ambient Glows -->
   <div class="fixed inset-0 bg-grid-pattern pointer-events-none z-0"></div>
   <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[900px] h-[380px] bg-necron-red/10 blur-[160px] pointer-events-none z-0 rounded-full"></div>
 
-  <!-- NAVIGATION HEADER (Eye Logo Removed) -->
+  <!-- NAVIGATION HEADER -->
   <header class="sticky top-0 z-50 backdrop-blur-md bg-necron-black/90 border-b border-necron-border">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       
-      <!-- Logo Text Only -->
+      <!-- Brand Logo Image -->
       <a href="#" class="flex items-center gap-3 group">
+        <img src="Necron.jpg" alt="NECRON" class="h-9 w-auto rounded border border-necron-border shadow-glow-red object-cover">
         <span class="font-black text-2xl tracking-[0.3em] text-necron-red drop-shadow-[0_0_12px_rgba(255,42,42,0.6)]">
           NECRON
         </span>
@@ -163,7 +158,7 @@
 
       <!-- CTA Button -->
       <div class="flex items-center gap-3">
-        <a href="downloads/necron-extension.zip" download class="px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider text-white bg-necron-red border border-necron-red rounded shadow-glow-red hover:bg-necron-crimson hover:shadow-glow-red-lg transition-all duration-300 flex items-center gap-2">
+        <a href="downloads/necron.zip" download class="px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider text-white bg-necron-red border border-necron-red rounded shadow-glow-red hover:bg-necron-crimson hover:shadow-glow-red-lg transition-all duration-300 flex items-center gap-2">
           <i class="fa-solid fa-file-zipper text-xs"></i>
           <span>Download Zip</span>
         </a>
@@ -171,40 +166,34 @@
     </div>
   </header>
 
-  <!-- HERO SECTION WITH THREE.JS HOLOGRAM -->
+  <!-- HERO SECTION -->
   <section class="relative pt-12 pb-20 lg:pt-20 lg:pb-28 z-10 overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         
-        <!-- Hero Text & Description -->
         <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
           
-          <!-- Compatibility Badge -->
           <div class="inline-flex items-center gap-2 px-3 py-1 bg-necron-red/10 border border-necron-red/40 rounded-full font-mono text-xs text-necron-red">
             <span class="w-2 h-2 rounded-full bg-necron-red animate-pulse"></span>
             <span>Works in Chrome, Edge, Brave & Chromium</span>
           </div>
 
-          <!-- Title -->
           <h1 class="text-5xl sm:text-7xl font-black tracking-tight text-white leading-none">
             <span class="text-transparent bg-clip-text bg-gradient-to-r from-necron-red via-red-500 to-rose-600 drop-shadow-[0_0_20px_rgba(255,42,42,0.4)]">
               NECRON
             </span>
           </h1>
 
-          <!-- Subheadline -->
           <p class="text-xl sm:text-2xl font-bold text-gray-200 tracking-tight">
             Dark Reader Extension
           </p>
 
-          <!-- Description -->
           <p class="text-base sm:text-lg text-necron-dim max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
             NECRON automatically turns bright websites dark as pages load. Designed for smooth, eye-friendly readability with intelligent contrast recoloring that protects photos, images, and video embeds across your favorite sites.
           </p>
 
-          <!-- Action Buttons -->
           <div class="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-            <a href="downloads/necron-extension.zip" download class="w-full sm:w-auto px-8 py-4 text-sm font-mono font-bold uppercase tracking-wider text-white bg-necron-red rounded shadow-glow-red hover:shadow-glow-red-lg hover:bg-necron-crimson transition-all duration-300 flex items-center justify-center gap-3 group">
+            <a href="downloads/necron.zip" download class="w-full sm:w-auto px-8 py-4 text-sm font-mono font-bold uppercase tracking-wider text-white bg-necron-red rounded shadow-glow-red hover:shadow-glow-red-lg hover:bg-necron-crimson transition-all duration-300 flex items-center justify-center gap-3 group">
               <i class="fa-solid fa-file-zipper group-hover:translate-y-0.5 transition-transform"></i>
               <span>Download Extension (.ZIP)</span>
             </a>
@@ -214,7 +203,6 @@
             </a>
           </div>
 
-          <!-- Feature Quick Stats -->
           <div class="pt-8 grid grid-cols-3 gap-4 border-t border-necron-border/80 text-center lg:text-left font-mono">
             <div>
               <div class="text-2xl font-black text-white">100%</div>
@@ -237,27 +225,21 @@
           <div class="relative w-full aspect-square max-w-[440px] lg:max-w-none">
             
             <div id="hud-wrapper" class="w-full h-full cursor-grab active:cursor-grabbing rounded-2xl overflow-hidden relative border border-necron-border bg-necron-black/90 shadow-glow-red cyber-border">
-              
-              <!-- Three.js Canvas -->
               <canvas id="webgl-canvas" class="w-full h-full block"></canvas>
               <div class="canvas-overlay absolute inset-0 pointer-events-none"></div>
 
-              <!-- HUD Overlays -->
               <div class="hud-corner-tr"></div>
               <div class="hud-corner-bl"></div>
 
-              <!-- Canvas Label Badge -->
               <div class="absolute top-4 left-4 pointer-events-none flex items-center gap-2 font-mono text-[10px] text-necron-red bg-necron-black/90 px-2.5 py-1 border border-necron-border rounded">
                 <span class="w-2 h-2 rounded-full bg-necron-red animate-ping"></span>
                 <span class="tracking-widest">3D HOLOGRAM CORE</span>
               </div>
 
-              <!-- Rotation Drag Helper Badge -->
               <div class="absolute bottom-4 right-4 pointer-events-none font-mono text-[10px] text-necron-dim bg-necron-black/90 px-2.5 py-1 border border-necron-border rounded flex items-center gap-1.5">
                 <i class="fa-solid fa-arrows-spin text-necron-red"></i> 
                 <span>DRAG TO ROTATE</span>
               </div>
-
             </div>
 
           </div>
@@ -281,7 +263,6 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         
-        <!-- Feature 1 -->
         <div class="cyber-border p-8 rounded hover:border-necron-red/60 transition-all duration-300 group">
           <div class="hud-corner-tr"></div>
           <div class="w-12 h-12 rounded bg-necron-red/10 border border-necron-red/40 flex items-center justify-center text-necron-red text-xl mb-6 group-hover:scale-110 transition-transform shadow-glow-red">
@@ -293,7 +274,6 @@
           </p>
         </div>
 
-        <!-- Feature 2 -->
         <div class="cyber-border p-8 rounded hover:border-necron-red/60 transition-all duration-300 group">
           <div class="hud-corner-tr"></div>
           <div class="w-12 h-12 rounded bg-necron-red/10 border border-necron-red/40 flex items-center justify-center text-necron-red text-xl mb-6 group-hover:scale-110 transition-transform shadow-glow-red">
@@ -305,7 +285,6 @@
           </p>
         </div>
 
-        <!-- Feature 3 -->
         <div class="cyber-border p-8 rounded hover:border-necron-red/60 transition-all duration-300 group">
           <div class="hud-corner-tr"></div>
           <div class="w-12 h-12 rounded bg-necron-red/10 border border-necron-red/40 flex items-center justify-center text-necron-red text-xl mb-6 group-hover:scale-110 transition-transform shadow-glow-red">
@@ -317,7 +296,6 @@
           </p>
         </div>
 
-        <!-- Feature 4 -->
         <div class="cyber-border p-8 rounded hover:border-necron-red/60 transition-all duration-300 group">
           <div class="hud-corner-tr"></div>
           <div class="w-12 h-12 rounded bg-necron-red/10 border border-necron-red/40 flex items-center justify-center text-necron-red text-xl mb-6 group-hover:scale-110 transition-transform shadow-glow-red">
@@ -347,7 +325,6 @@
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         
-        <!-- Google -->
         <div class="cyber-border p-6 rounded flex flex-col justify-between hover:border-necron-red transition-all">
           <div class="hud-corner-tr"></div>
           <div>
@@ -366,7 +343,6 @@
           </div>
         </div>
 
-        <!-- D2L Brightspace -->
         <div class="cyber-border p-6 rounded flex flex-col justify-between hover:border-necron-red transition-all">
           <div class="hud-corner-tr"></div>
           <div>
@@ -385,7 +361,6 @@
           </div>
         </div>
 
-        <!-- Wikipedia -->
         <div class="cyber-border p-6 rounded flex flex-col justify-between hover:border-necron-red transition-all">
           <div class="hud-corner-tr"></div>
           <div>
@@ -408,13 +383,12 @@
     </div>
   </section>
 
-  <!-- INTERACTIVE POPUP SIMULATOR TABBED INTERFACE -->
+  <!-- INTERACTIVE POPUP SIMULATOR -->
   <section id="demo" class="py-20 relative z-10 border-t border-necron-border bg-necron-card/30">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         
-        <!-- Left Column: Instructions -->
         <div class="lg:col-span-5 space-y-6">
           <p class="text-xs font-mono font-bold uppercase tracking-widest text-necron-red">POPUP SIMULATOR</p>
           <h2 class="text-3xl sm:text-4xl font-black text-white">Interactive Toolbar Preview</h2>
@@ -438,13 +412,11 @@
           </div>
         </div>
 
-        <!-- Right Column: Tabbed Popup Mockup -->
         <div class="lg:col-span-7 flex justify-center">
           
           <div class="w-full max-w-[380px] bg-necron-black text-gray-100 border-2 border-necron-border rounded-xl shadow-glow-red overflow-hidden font-sans select-none cyber-border">
             <div class="hud-corner-tr"></div>
             
-            <!-- Popup Top Header -->
             <div class="px-4 py-3.5 border-b border-necron-border flex items-center justify-between bg-black">
               <div class="flex items-center gap-2">
                 <span class="font-extrabold tracking-[0.25em] text-necron-red text-sm drop-shadow-[0_0_8px_rgba(255,42,42,0.5)]">
@@ -452,14 +424,12 @@
                 </span>
               </div>
               
-              <!-- Master Toggle Switch -->
               <label class="relative inline-block w-11 h-6 cursor-pointer">
                 <input type="checkbox" id="demo-master" checked class="sr-only peer" onchange="toggleDemoMaster(this.checked)">
                 <div class="w-11 h-6 bg-[#2a1114] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#8f8386] after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-necron-red peer-checked:after:bg-[#000]"></div>
               </label>
             </div>
 
-            <!-- Tab Buttons Header -->
             <div class="flex border-b border-necron-border bg-necron-card/80 font-mono text-xs">
               <button id="tab-btn-controls" onclick="switchDemoTab('controls')" class="flex-1 py-2.5 text-center text-necron-red border-b-2 border-necron-red font-bold transition-all">
                 Controls
@@ -469,10 +439,8 @@
               </button>
             </div>
 
-            <!-- TAB 1: CONTROLS PANEL -->
             <div id="tab-content-controls" class="p-4 space-y-4">
               
-              <!-- Extension Status Banner -->
               <div class="flex justify-between items-center pb-3 border-b border-necron-border/80">
                 <div>
                   <div class="text-[10px] uppercase font-mono tracking-widest text-necron-dim">DARK ENGINE</div>
@@ -481,7 +449,6 @@
                 <span id="demo-status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
               </div>
 
-              <!-- Darkness Level Slider -->
               <div class="space-y-2">
                 <div class="flex justify-between items-center text-xs">
                   <span class="text-[10px] uppercase font-mono tracking-widest text-necron-dim">DARKNESS LEVEL</span>
@@ -490,7 +457,6 @@
                 <input type="range" id="demo-brightness" value="35" min="0" max="100" class="w-full accent-necron-red cursor-pointer" oninput="syncDemoBrightness(this.value)">
               </div>
 
-              <!-- Reset Settings Button -->
               <div class="pt-2">
                 <button onclick="resetDemoSettings()" class="w-full py-2.5 bg-necron-card hover:bg-necron-border/60 border border-necron-border text-xs font-mono text-gray-300 font-bold rounded transition-colors flex items-center justify-center gap-2">
                   <i class="fa-solid fa-rotate-left text-necron-red text-[10px]"></i>
@@ -500,7 +466,6 @@
 
             </div>
 
-            <!-- TAB 2: ACTIVE SITES PANEL -->
             <div id="tab-content-sites" class="p-4 space-y-3 hidden font-mono text-xs">
               <div class="text-[10px] uppercase tracking-widest text-necron-dim mb-2">ENABLED DOMAINS</div>
               
@@ -518,7 +483,6 @@
               </div>
             </div>
 
-            <!-- Popup Footer telemetry -->
             <div class="px-4 py-2 bg-black border-t border-necron-border flex items-center justify-between text-[9px] font-mono text-necron-dim">
               <span>MANIFEST V3</span>
               <span class="text-necron-red">LOCAL STORAGE</span>
@@ -533,7 +497,7 @@
     </div>
   </section>
 
-  <!-- STEP-BY-STEP DEVELOPER MODE INSTALLATION GUIDE -->
+  <!-- DEVELOPER MODE INSTALLATION GUIDE -->
   <section id="install" class="py-20 relative z-10 border-t border-necron-border">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       
@@ -547,7 +511,6 @@
 
       <div class="space-y-6">
         
-        <!-- Step 1 -->
         <div class="cyber-border p-6 rounded flex flex-col md:flex-row items-start md:items-center gap-6">
           <div class="hud-corner-tr"></div>
           <div class="w-10 h-10 rounded bg-necron-red/20 border border-necron-red text-necron-red font-mono font-black text-lg flex items-center justify-center shrink-0 shadow-glow-red">
@@ -556,16 +519,15 @@
           <div class="flex-1">
             <h3 class="text-lg font-bold text-white mb-1">Download & Extract Extension (.ZIP)</h3>
             <p class="text-necron-dim text-sm mb-3">
-              Click the button to download <code class="text-white font-mono bg-necron-black px-1.5 py-0.5 rounded border border-necron-border">necron-extension.zip</code> and extract/unzip the folder on your computer.
+              Click the button to download <code class="text-white font-mono bg-necron-black px-1.5 py-0.5 rounded border border-necron-border">necron.zip</code> and extract/unzip the folder on your computer.
             </p>
-            <a href="downloads/necron-extension.zip" download class="inline-flex items-center gap-2 px-4 py-2 bg-necron-red hover:bg-necron-crimson text-white font-mono text-xs font-bold rounded transition-all shadow-glow-red">
+            <a href="downloads/necron.zip" download class="inline-flex items-center gap-2 px-4 py-2 bg-necron-red hover:bg-necron-crimson text-white font-mono text-xs font-bold rounded transition-all shadow-glow-red">
               <i class="fa-solid fa-file-zipper"></i>
               <span>Download NECRON .ZIP</span>
             </a>
           </div>
         </div>
 
-        <!-- Step 2 -->
         <div class="cyber-border p-6 rounded flex flex-col md:flex-row items-start md:items-center gap-6">
           <div class="hud-corner-tr"></div>
           <div class="w-10 h-10 rounded bg-necron-red/20 border border-necron-red text-necron-red font-mono font-black text-lg flex items-center justify-center shrink-0 shadow-glow-red">
@@ -593,7 +555,6 @@
           </div>
         </div>
 
-        <!-- Step 3 -->
         <div class="cyber-border p-6 rounded flex flex-col md:flex-row items-start md:items-center gap-6">
           <div class="hud-corner-tr"></div>
           <div class="w-10 h-10 rounded bg-necron-red/20 border border-necron-red text-necron-red font-mono font-black text-lg flex items-center justify-center shrink-0 shadow-glow-red">
@@ -607,7 +568,6 @@
           </div>
         </div>
 
-        <!-- Step 4 -->
         <div class="cyber-border p-6 rounded flex flex-col md:flex-row items-start md:items-center gap-6">
           <div class="hud-corner-tr"></div>
           <div class="w-10 h-10 rounded bg-necron-red/20 border border-necron-red text-necron-red font-mono font-black text-lg flex items-center justify-center shrink-0 shadow-glow-red">
@@ -626,7 +586,7 @@
     </div>
   </section>
 
-  <!-- CLEAN FOOTER -->
+  <!-- FOOTER -->
   <footer class="border-t border-necron-border bg-black py-8 relative z-10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
       
@@ -647,9 +607,8 @@
     <span id="toast-msg">Copied to clipboard!</span>
   </div>
 
-  <!-- JAVASCRIPT CODE -->
   <script>
-    /* WebGL Three.js Hologram Core with 12,000 Particle Nebula */
+    /* WebGL Three.js Hologram Core */
     (function initHologramCore() {
       const container = document.getElementById('hud-wrapper');
       const canvas = document.getElementById('webgl-canvas');
@@ -667,7 +626,6 @@
       const coreGroup = new THREE.Group();
       scene.add(coreGroup);
 
-      /* 1. Wireframe Icosahedron Core */
       const coreGeo = new THREE.IcosahedronGeometry(1.3, 3);
       const coreMat = new THREE.MeshBasicMaterial({
         color: 0xff2a2a,
@@ -678,7 +636,6 @@
       const wireCore = new THREE.Mesh(coreGeo, coreMat);
       coreGroup.add(wireCore);
 
-      /* 2. Inner Pulsing Core */
       const innerGeo = new THREE.SphereGeometry(0.7, 16, 16);
       const innerMat = new THREE.MeshBasicMaterial({
         color: 0x8a0c1a,
@@ -689,7 +646,6 @@
       const innerSphere = new THREE.Mesh(innerGeo, innerMat);
       coreGroup.add(innerSphere);
 
-      /* 3. Three Counter-Rotating Torus Rings */
       const createRing = (radius, tube, color, rotX, rotY) => {
         const ringGeo = new THREE.TorusGeometry(radius, tube, 16, 100);
         const ringMat = new THREE.MeshBasicMaterial({
@@ -712,7 +668,6 @@
       coreGroup.add(ring2);
       coreGroup.add(ring3);
 
-      /* 4. HIGH DENSITY NEBULA: 12,000 Particle Points */
       const particleCount = 12000;
       const particleGeo = new THREE.BufferGeometry();
       const positions = new Float32Array(particleCount * 3);
@@ -760,7 +715,6 @@
       const particleSystem = new THREE.Points(particleGeo, particleMat);
       coreGroup.add(particleSystem);
 
-      /* 5. Mouse & Touch Drag Controls */
       let isDragging = false;
       let previousMousePosition = { x: 0, y: 0 };
       let targetRotationX = 0;
@@ -806,7 +760,6 @@
         renderer.setSize(w, h);
       });
 
-      /* Animation Loop */
       function animate(time) {
         requestAnimationFrame(animate);
         const t = time * 0.001;
