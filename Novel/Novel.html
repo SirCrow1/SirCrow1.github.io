@@ -1,865 +1,725 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth dark">
+<html lang="en" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NECRON - Dark Reader Extension</title>
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Google Fonts: Inter & JetBrains Mono -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
-  
-  <!-- Three.js for WebGL Hologram -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            necron: {
-              black: '#050304',
-              card: '#0c0709',
-              border: '#2a0c10',
-              red: '#ff2a2a',
-              crimson: '#dc2626',
-              ruby: '#8a0c1a',
-              dim: '#9e8c90'
-            }
-          },
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace']
-          },
-          boxShadow: {
-            'glow-red': '0 0 25px rgba(255, 42, 42, 0.35)',
-            'glow-red-lg': '0 0 50px rgba(255, 42, 42, 0.55)',
-            'hud-panel': '0 10px 40px -10px rgba(5, 3, 4, 0.95)'
-          }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spirit Warrior</title>
+    <!-- Tab Favicon -->
+    <link rel="icon" type="image/png" href="Spirit Warrior.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
         }
-      }
-    }
-  </script>
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .magical-box {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(56, 189, 248, 0.08);
+        }
+        .character-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Unique Character Hover Glow Effects & Permanent Character Accent Borders */
+        .card-yato { border-left: 4px solid rgba(168, 85, 247, 0.6); }
+        .card-yato:hover { border-color: rgba(168, 85, 247, 0.9); box-shadow: 0 0 25px rgba(168, 85, 247, 0.35), inset 0 0 10px rgba(168, 85, 247, 0.1); }
 
-  <style>
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #050304;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #2a0c10;
-      border-radius: 4px;
-      border: 1px solid #ff2a2a;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #ff2a2a;
-    }
+        .card-gavon { border-left: 4px solid rgba(59, 130, 246, 0.6); }
+        .card-gavon:hover { border-color: rgba(59, 130, 246, 0.9); box-shadow: 0 0 25px rgba(59, 130, 246, 0.35), inset 0 0 10px rgba(59, 130, 246, 0.1); }
 
-    .bg-grid-pattern {
-      background-size: 36px 36px;
-      background-image: 
-        linear-gradient(to right, rgba(255, 42, 42, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 42, 42, 0.05) 1px, transparent 1px);
-    }
+        .card-stella { border-left: 4px solid rgba(236, 72, 153, 0.6); }
+        .card-stella:hover { border-color: rgba(236, 72, 153, 0.9); box-shadow: 0 0 25px rgba(236, 72, 153, 0.35), inset 0 0 10px rgba(236, 72, 153, 0.1); }
 
-    .cyber-border {
-      position: relative;
-      background: #0c0709;
-      border: 1px solid #2a0c10;
-    }
-    .cyber-border::before {
-      content: '';
-      position: absolute;
-      top: -1px;
-      left: -1px;
-      width: 12px;
-      height: 12px;
-      border-top: 2px solid #ff2a2a;
-      border-left: 2px solid #ff2a2a;
-      pointer-events: none;
-    }
-    .cyber-border::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      right: -1px;
-      width: 12px;
-      height: 12px;
-      border-bottom: 2px solid #ff2a2a;
-      border-right: 2px solid #ff2a2a;
-      pointer-events: none;
-    }
+        .card-lucia { border-left: 4px solid rgba(249, 115, 22, 0.6); }
+        .card-lucia:hover { border-color: rgba(249, 115, 22, 0.9); box-shadow: 0 0 25px rgba(249, 115, 22, 0.35), inset 0 0 10px rgba(249, 115, 22, 0.1); }
 
-    .hud-corner-tr {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      width: 8px;
-      height: 8px;
-      border-top: 1px solid #ff2a2a;
-      border-right: 1px solid #ff2a2a;
-      opacity: 0.6;
-    }
-    .hud-corner-bl {
-      position: absolute;
-      bottom: 6px;
-      left: 6px;
-      width: 8px;
-      height: 8px;
-      border-bottom: 1px solid #ff2a2a;
-      border-left: 1px solid #ff2a2a;
-      opacity: 0.6;
-    }
+        .card-marin { border-left: 4px solid rgba(34, 211, 238, 0.7); }
+        .card-marin:hover { border-color: rgba(34, 211, 238, 0.95); box-shadow: 0 0 25px rgba(34, 211, 238, 0.35), inset 0 0 10px rgba(34, 211, 238, 0.1); }
 
-    .canvas-overlay {
-      background: radial-gradient(circle at center, transparent 35%, #050304 88%);
-    }
+        .card-lumio { border-left: 4px solid rgba(250, 204, 21, 0.6); }
+        .card-lumio:hover { border-color: rgba(250, 204, 21, 0.9); box-shadow: 0 0 25px rgba(250, 204, 21, 0.35), inset 0 0 10px rgba(250, 204, 21, 0.1); }
 
-    ::selection {
-      background: #8a0c1a;
-      color: #ffffff;
-    }
-  </style>
+        .card-jaya { border-left: 4px solid rgba(180, 83, 9, 0.8); }
+        .card-jaya:hover { border-color: rgba(180, 83, 9, 1); box-shadow: 0 0 25px rgba(180, 83, 9, 0.4), inset 0 0 10px rgba(180, 83, 9, 0.15); }
+
+        .card-surtur { border-left: 4px solid rgba(239, 68, 68, 0.6); }
+        .card-surtur:hover { border-color: rgba(239, 68, 68, 0.9); box-shadow: 0 0 25px rgba(239, 68, 68, 0.35), inset 0 0 10px rgba(239, 68, 68, 0.1); }
+
+        .card-ariel { border-left: 4px solid rgba(34, 197, 94, 0.6); }
+        .card-ariel:hover { border-color: rgba(34, 197, 94, 0.9); box-shadow: 0 0 25px rgba(34, 197, 94, 0.35), inset 0 0 10px rgba(34, 197, 94, 0.1); }
+        
+        /* Base Portrait Style */
+        .face-portrait {
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Individual Fine-Tuned Scales & Positions */
+        .pos-yato { transform: scale(1.3); object-position: center 20%; }
+        .pos-gavon { transform: scale(1.4); object-position: center 1%; }
+        .pos-stella { transform: scale(1.3); object-position: center 1%; }
+        .pos-lucia { transform: scale(1.4); object-position: center 1%; }
+        .pos-marin { transform: scale(1.4); object-position: center 1%; }
+        .pos-lumio { transform: scale(1.4); object-position: center 1%; }
+        .pos-jaya { transform: scale(1.4); object-position: center 1%; }
+        .pos-surtur { transform: scale(1.4); object-position: center 1%; }
+        .pos-ariel { transform: scale(1.2); object-position: center 1%; }
+    </style>
 </head>
-<body class="bg-necron-black text-gray-200 font-sans antialiased selection:bg-necron-ruby selection:text-white relative overflow-x-hidden min-h-screen">
+<body class="bg-[#090d16] text-gray-100 min-h-screen flex flex-col items-center p-4" onkeydown="handleGlobalKey(event)">
 
-  <div class="fixed inset-0 bg-grid-pattern pointer-events-none z-0"></div>
-  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[900px] h-[380px] bg-necron-red/10 blur-[160px] pointer-events-none z-0 rounded-full"></div>
-
-  <!-- NAVIGATION HEADER -->
-  <header class="sticky top-0 z-50 backdrop-blur-md bg-necron-black/90 border-b border-necron-border">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      
-      <!-- Brand Logo Image -->
-      <a href="#" class="flex items-center gap-3 group">
-        <img src="Necron.jpg" alt="NECRON" class="h-9 w-auto rounded border border-necron-border shadow-glow-red object-cover">
-        <span class="font-black text-2xl tracking-[0.3em] text-necron-red drop-shadow-[0_0_12px_rgba(255,42,42,0.6)]">
-          NECRON
-        </span>
-      </a>
-
-      <!-- Desktop Nav -->
-      <nav class="hidden md:flex items-center gap-8 text-xs font-mono font-medium uppercase tracking-wider text-gray-300">
-        <a href="#features" class="hover:text-necron-red transition-colors">Features</a>
-        <a href="#presets" class="hover:text-necron-red transition-colors">Site Integrations</a>
-        <a href="#demo" class="hover:text-necron-red transition-colors">Simulator</a>
-        <a href="#install" class="hover:text-necron-red transition-colors">Installation</a>
-      </nav>
-
-      <!-- CTA Button -->
-      <div class="flex items-center gap-3">
-        <a href="downloads/necron.zip.zip" download class="px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider text-white bg-necron-red border border-necron-red rounded shadow-glow-red hover:bg-necron-crimson hover:shadow-glow-red-lg transition-all duration-300 flex items-center gap-2">
-          <i class="fa-solid fa-file-zipper text-xs"></i>
-          <span>Download Zip</span>
-        </a>
-      </div>
-    </div>
-  </header>
-
-  <!-- HERO SECTION -->
-  <section class="relative pt-12 pb-20 lg:pt-20 lg:pb-28 z-10 overflow-hidden">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+    <header class="w-full max-w-6xl bg-[#111827]/95 shadow-xl rounded-2xl p-6 mb-6 text-center border border-slate-700/80 relative overflow-hidden backdrop-blur-md">
         
-        <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
-          
-          <div class="inline-flex items-center gap-2 px-3 py-1 bg-necron-red/10 border border-necron-red/40 rounded-full font-mono text-xs text-necron-red">
-            <span class="w-2 h-2 rounded-full bg-necron-red animate-pulse"></span>
-            <span>Works in Chrome, Edge, Brave & Chromium</span>
-          </div>
+        <!-- Vibrant Ambient Glow Background Effects -->
+        <div class="absolute -top-24 -left-24 w-64 h-64 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -top-24 -right-24 w-64 h-64 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none"></div>
 
-          <h1 class="text-5xl sm:text-7xl font-black tracking-tight text-white leading-none">
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-necron-red via-red-500 to-rose-600 drop-shadow-[0_0_20px_rgba(255,42,42,0.4)]">
-              NECRON
-            </span>
-          </h1>
-
-          <p class="text-xl sm:text-2xl font-bold text-gray-200 tracking-tight">
-            Dark Reader Extension
-          </p>
-
-          <p class="text-base sm:text-lg text-necron-dim max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
-            NECRON automatically turns bright websites dark as pages load. Designed for smooth, eye-friendly readability with intelligent contrast recoloring that protects photos, images, and video embeds across your favorite sites.
-          </p>
-
-          <div class="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-            <a href="downloads/necron.zip.zip" download class="w-full sm:w-auto px-8 py-4 text-sm font-mono font-bold uppercase tracking-wider text-white bg-necron-red rounded shadow-glow-red hover:shadow-glow-red-lg hover:bg-necron-crimson transition-all duration-300 flex items-center justify-center gap-3 group">
-              <i class="fa-solid fa-file-zipper group-hover:translate-y-0.5 transition-transform"></i>
-              <span>Download Extension (.ZIP)</span>
-            </a>
-            <a href="#demo" class="w-full sm:w-auto px-6 py-4 text-sm font-mono font-bold uppercase tracking-wider text-gray-300 bg-necron-card border border-necron-border rounded hover:border-necron-red transition-all duration-300 flex items-center justify-center gap-2">
-              <i class="fa-solid fa-sliders text-necron-red"></i>
-              <span>Test Simulator</span>
-            </a>
-          </div>
-
-          <div class="pt-8 grid grid-cols-3 gap-4 border-t border-necron-border/80 text-center lg:text-left font-mono">
-            <div>
-              <div class="text-2xl font-black text-white">100%</div>
-              <div class="text-[11px] text-necron-dim uppercase">AUTO DARKENING</div>
+        <!-- Centered Large Logo Image -->
+        <div class="flex justify-center items-center my-6 relative z-10">
+            <h1 class="cursor-pointer inline-flex items-center justify-center" onclick="goBack()">
+                <img src="Spirit Warrior.png" alt="Spirit Warrior" class="h-40 w-auto object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)]">
+            </h1>
+        </div>
+        
+        <!-- Main Menu Container -->
+        <div id="selector-container" class="space-y-6 relative z-10">
+            <!-- Story Intro & Resume Banner with stylized borders -->
+            <div class="magical-box p-5 rounded-xl text-left space-y-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]"></span>
+                    <h2 class="text-sm font-bold text-cyan-400 uppercase tracking-wider">Introduction</h2>
+                </div>
+                <p class="text-sm text-slate-300 leading-relaxed font-light">
+                    Welcome to the world of Spirit Warrior. Dive into an epic journey of martial arts, ancient mysticism, and fierce battles as heroes rise to conquer the darkness threatening the realm. Choose a volume below to start reading!
+                </p>
+                <!-- Quick Resume -->
+                <div id="resume-banner" class="hidden pt-3 border-t border-slate-700/80 flex items-center justify-between">
+                    <span id="resume-text" class="text-xs text-cyan-400 font-semibold"></span>
+                    <button onclick="resumeLastBook()" class="px-3 py-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-xs rounded-lg hover:from-cyan-500 hover:to-blue-500 transition shadow-md font-medium">Resume Reading</button>
+                </div>
             </div>
-            <div>
-              <div class="text-2xl font-black text-white">0.0s</div>
-              <div class="text-[11px] text-necron-dim uppercase">LATENCY OVERHEAD</div>
-            </div>
-            <div>
-              <div class="text-2xl font-black text-white">100%</div>
-              <div class="text-[11px] text-necron-dim uppercase">LOCAL & PRIVATE</div>
-            </div>
-          </div>
 
+            <!-- Volume Selection & Glossary Section Boxes -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="magical-box p-4 rounded-xl text-left">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Select Volume</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="loadBook('pdf/vol1.pdf', 'Vol 1')" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-500 hover:to-cyan-500 transition text-sm shadow-md font-medium">Vol 1</button>
+                        <button onclick="loadBook('pdf/vol2.pdf', 'Vol 2')" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-500 hover:to-cyan-500 transition text-sm shadow-md font-medium">Vol 2</button>
+                        <button onclick="loadBook('pdf/vol3.pdf', 'Vol 3')" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-500 hover:to-cyan-500 transition text-sm shadow-md font-medium">Vol 3</button>
+                    </div>
+                </div>
+                <div class="magical-box p-4 rounded-xl text-left flex flex-col justify-between">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">World Lore</h3>
+                    <button onclick="openGlossary()" class="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm rounded-lg hover:from-purple-500 hover:to-indigo-500 transition flex items-center justify-center gap-2 shadow-md font-medium">📖 World Glossary</button>
+                </div>
+            </div>
+
+            <!-- Character Grid -->
+            <div class="border-t border-slate-700/80 pt-6">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="text-lg font-bold text-slate-200 flex items-center gap-2">
+                        <span>✨ Meet the Characters</span>
+                    </h3>
+                    <span class="text-xs sm:text-sm text-slate-400 font-light">Click a card for lore & abilities</span>
+                </div>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
+                    <!-- 1. Yato -->
+                    <div onclick="showCharacter('yato')" class="cursor-pointer character-card card-yato p-6 sm:p-7 rounded-2xl text-center flex flex-col items-center group shadow-md hover:scale-[1.02]">
+                        <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-4 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-purple-500/50 bg-slate-800">
+                            <img src="Yato.jpg" alt="Yato" class="face-portrait pos-yato">
+                        </div>
+                        <h4 class="font-bold text-base sm:text-lg text-purple-300 group-hover:text-purple-400 transition-colors">Yato</h4>
+                        <p class="text-xs sm:text-sm font-semibold text-purple-400/80 mt-1">Shadow Spirit Warrior</p>
+                    </div>
+                    <!-- 2. Gavon -->
+                    <div onclick="showCharacter('gavon')" class="cursor-pointer character-card card-gavon p-6 sm:p-7 rounded-2xl text-center flex flex-col items-center group shadow-md hover:scale-[1.02]">
+                        <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-4 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-indigo-500/50 bg-slate-800">
+                            <img src="Gavon.jpg?v=2" alt="Gavon" class="face-portrait pos-gavon">
+                        </div>
+                        <h4 class="font-bold text-base sm:text-lg text-indigo-300 group-hover:text-indigo-200 transition-colors">Gavon</h4>
+                        <p class="text-xs sm:text-sm font-semibold text-indigo-300/80 mt-1">Wannabe Hero</p>
+                    </div>
+                    <!-- 3. Stella -->
+                    <div onclick="showCharacter('stella')" class="cursor-pointer character-card card-stella p-6 sm:p-7 rounded-2xl text-center flex flex-col items-center group shadow-md hover:scale-[1.02]">
+                        <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-4 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-pink-500/50 bg-slate-800">
+                            <img src="Stella.jpg" alt="Stella" class="face-portrait pos-stella">
+                        </div>
+                        <h4 class="font-bold text-base sm:text-lg text-pink-300 group-hover:text-pink-200 transition-colors">Stella</h4>
+                        <p class="text-xs sm:text-sm font-semibold text-pink-300/80 mt-1">Heroine</p>
+                    </div>
+                    <!-- 4. Lucia -->
+                    <div onclick="showCharacter('lucia')" class="cursor-pointer character-card card-lucia p-6 sm:p-7 rounded-2xl text-center flex flex-col items-center group shadow-md hover:scale-[1.02]">
+                        <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-4 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-orange-500/50 bg-slate-800">
+                            <img src="Lucia.jpg" alt="Lucia" class="face-portrait pos-lucia">
+                        </div>
+                        <h4 class="font-bold text-base sm:text-lg text-orange-400 group-hover:text-orange-300 transition-colors">Lucia</h4>
+                        <p class="text-xs sm:text-sm font-semibold text-orange-400/80 mt-1">Telekinetic Child</p>
+                    </div>
+                    <!-- 5. Marin -->
+                    <div onclick="showCharacter('marin')" class="cursor-pointer character-card card-marin p-6 sm:p-7 rounded-2xl text-center flex flex-col items-center group shadow-md hover:scale-[1.02]">
+                        <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-4 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-cyan-400/60 bg-slate-800">
+                            <img src="Marin.jpg" alt="Marin" class="face-portrait pos-marin">
+                        </div>
+                        <h4 class="font-bold text-base sm:text-lg text-cyan-300 group-hover:text-cyan-200 transition-colors">Marin</h4>
+                        <p class="text-xs sm:text-sm font-semibold text-cyan-400 mt-1">Water Spirit Warrior</p>
+                    </div>
+                    <!-- 6. Lumio -->
+                    <div onclick="showCharacter('lumio')" class="cursor-pointer character-card card-lumio p-6 sm:p-7 rounded-2xl text-center flex flex-col items-center group shadow-md hover:scale-[1.02]">
+                        <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-4 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-yellow-500/50 bg-slate-800">
+                            <img src="Lumio.jpg" alt="Lumio" class="face-portrait pos-lumio">
+                        </div>
+                        <h4 class="font-bold text-base sm:text-lg text-yellow-300 group-hover:text-yellow-200 transition-colors">Lumio</h4>
+                        <p class="text-xs sm:text-sm font-semibold text-yellow-300/80 mt-1">Light Spirit Warrior</p>
+                    </div>
+                    <!-- 7. Jaya -->
+                    <div onclick="showCharacter('jaya')" class="cursor-pointer character-card card-jaya p-6 sm:p-7 rounded-2xl text-center flex flex-col items-center group shadow-md hover:scale-[1.02]">
+                        <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-4 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-amber-700/60 bg-slate-800">
+                            <img src="Jaya.jpg" alt="Jaya" class="face-portrait pos-jaya">
+                        </div>
+                        <h4 class="font-bold text-base sm:text-lg text-amber-600 group-hover:text-amber-500 transition-colors">Jaya</h4>
+                        <p class="text-xs sm:text-sm font-semibold text-amber-700 mt-1">Earth Spirit Warrior</p>
+                    </div>
+                    <!-- 8. Surtur -->
+                    <div onclick="showCharacter('surtur')" class="cursor-pointer character-card card-surtur p-6 sm:p-7 rounded-2xl text-center flex flex-col items-center group shadow-md hover:scale-[1.02]">
+                        <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-4 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-red-500/50 bg-slate-800">
+                            <img src="Surtur.jpg" alt="Surtur" class="face-portrait pos-surtur">
+                        </div>
+                        <h4 class="font-bold text-base sm:text-lg text-red-500 group-hover:text-red-400 transition-colors">Surtur</h4>
+                        <p class="text-xs sm:text-sm font-semibold text-red-500/80 mt-1">Flame Spirit Warrior</p>
+                    </div>
+                    <!-- 9. Ariel -->
+                    <div onclick="showCharacter('ariel')" class="cursor-pointer character-card card-ariel p-6 sm:p-7 rounded-2xl text-center flex flex-col items-center group shadow-md hover:scale-[1.02]">
+                        <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-4 rounded-full overflow-hidden flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform border-2 border-emerald-500/50 bg-slate-800">
+                            <img src="Ariel.jpg" alt="Ariel" class="face-portrait pos-ariel">
+                        </div>
+                        <h4 class="font-bold text-base sm:text-lg text-emerald-400 group-hover:text-emerald-300 transition-colors">Ariel</h4>
+                        <p class="text-xs sm:text-sm font-semibold text-emerald-400/80 mt-1">Wind Spirit Warrior</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- 3D WEBGL HOLOGRAM DISPLAY -->
-        <div class="lg:col-span-5 relative flex items-center justify-center">
-          <div class="relative w-full aspect-square max-w-[440px] lg:max-w-none">
+        <!-- Reader Controls -->
+        <div id="reader-controls" class="hidden flex flex-wrap justify-between items-center gap-3 mt-6 pt-4 border-t border-slate-700">
+            <button onclick="goBack()" class="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition text-sm">← Back</button>
             
-            <div id="hud-wrapper" class="w-full h-full cursor-grab active:cursor-grabbing rounded-2xl overflow-hidden relative border border-necron-border bg-necron-black/90 shadow-glow-red cyber-border">
-              <canvas id="webgl-canvas" class="w-full h-full block"></canvas>
-              <div class="canvas-overlay absolute inset-0 pointer-events-none"></div>
-
-              <div class="hud-corner-tr"></div>
-              <div class="hud-corner-bl"></div>
-
-              <div class="absolute top-4 left-4 pointer-events-none flex items-center gap-2 font-mono text-[10px] text-necron-red bg-necron-black/90 px-2.5 py-1 border border-necron-border rounded">
-                <span class="w-2 h-2 rounded-full bg-necron-red animate-ping"></span>
-                <span class="tracking-widest">3D HOLOGRAM CORE</span>
-              </div>
-
-              <div class="absolute bottom-4 right-4 pointer-events-none font-mono text-[10px] text-necron-dim bg-necron-black/90 px-2.5 py-1 border border-necron-border rounded flex items-center gap-1.5">
-                <i class="fa-solid fa-arrows-spin text-necron-red"></i> 
-                <span>DRAG TO ROTATE</span>
-              </div>
+            <!-- Zoom Controls -->
+            <div class="flex items-center space-x-1 bg-slate-700 px-2 py-1 rounded">
+                <span class="text-xs text-slate-300 mr-1">Zoom:</span>
+                <button onclick="changeZoom(-0.2)" class="px-2 py-0.5 bg-slate-600 rounded text-xs hover:bg-slate-500">-</button>
+                <button onclick="changeZoom(0.2)" class="px-2 py-0.5 bg-slate-600 rounded text-xs hover:bg-slate-500">+</button>
             </div>
 
-          </div>
-        </div>
+            <!-- Chapter Quick-Jump -->
+            <select id="chapter-select" onchange="jumpToChapter(this.value)" class="border border-slate-700 bg-slate-700 rounded px-2 py-1 text-sm focus:outline-none">
+                <option value="">Jump to Chapter...</option>
+                <option value="1">Chapter 1 (Page 1)</option>
+                <option value="10">Chapter 2 (Page 10)</option>
+                <option value="25">Chapter 3 (Page 25)</option>
+            </select>
 
-      </div>
-    </div>
-  </section>
-
-  <!-- FEATURES SECTION -->
-  <section id="features" class="py-20 relative z-10 border-t border-necron-border/80 bg-necron-card/40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
-        <p class="text-xs font-mono font-bold uppercase tracking-widest text-necron-red">ARCHITECTURE</p>
-        <h2 class="text-3xl sm:text-4xl font-black text-white">Engineered for Automated Darkening</h2>
-        <p class="text-necron-dim text-sm sm:text-base">
-          NECRON runs silently in the background, transforming page themes automatically across all active tabs.
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        
-        <div class="cyber-border p-8 rounded hover:border-necron-red/60 transition-all duration-300 group">
-          <div class="hud-corner-tr"></div>
-          <div class="w-12 h-12 rounded bg-necron-red/10 border border-necron-red/40 flex items-center justify-center text-necron-red text-xl mb-6 group-hover:scale-110 transition-transform shadow-glow-red">
-            <i class="fa-solid fa-bolt"></i>
-          </div>
-          <h3 class="text-xl font-bold text-white mb-2">Instant Load Darkening</h3>
-          <p class="text-necron-dim text-sm leading-relaxed">
-            Dark theme applies instantly as web pages load, preventing high-brightness white flashes before rendering.
-          </p>
-        </div>
-
-        <div class="cyber-border p-8 rounded hover:border-necron-red/60 transition-all duration-300 group">
-          <div class="hud-corner-tr"></div>
-          <div class="w-12 h-12 rounded bg-necron-red/10 border border-necron-red/40 flex items-center justify-center text-necron-red text-xl mb-6 group-hover:scale-110 transition-transform shadow-glow-red">
-            <i class="fa-solid fa-image"></i>
-          </div>
-          <h3 class="text-xl font-bold text-white mb-2">Media Protection</h3>
-          <p class="text-necron-dim text-sm leading-relaxed">
-            Preserves color fidelity for images, SVGs, canvas renders, and video embeds without inverted or washed-out visuals.
-          </p>
-        </div>
-
-        <div class="cyber-border p-8 rounded hover:border-necron-red/60 transition-all duration-300 group">
-          <div class="hud-corner-tr"></div>
-          <div class="w-12 h-12 rounded bg-necron-red/10 border border-necron-red/40 flex items-center justify-center text-necron-red text-xl mb-6 group-hover:scale-110 transition-transform shadow-glow-red">
-            <i class="fa-solid fa-sliders"></i>
-          </div>
-          <h3 class="text-xl font-bold text-white mb-2">Custom Darkness Control</h3>
-          <p class="text-necron-dim text-sm leading-relaxed">
-            Adjust global darkness levels from 0% to 100% using the toolbar popup to match your room lighting.
-          </p>
-        </div>
-
-        <div class="cyber-border p-8 rounded hover:border-necron-red/60 transition-all duration-300 group">
-          <div class="hud-corner-tr"></div>
-          <div class="w-12 h-12 rounded bg-necron-red/10 border border-necron-red/40 flex items-center justify-center text-necron-red text-xl mb-6 group-hover:scale-110 transition-transform shadow-glow-red">
-            <i class="fa-solid fa-user-shield"></i>
-          </div>
-          <h3 class="text-xl font-bold text-white mb-2">Private Local Processing</h3>
-          <p class="text-necron-dim text-sm leading-relaxed">
-            Runs 100% locally on your computer with zero external server tracking or telemetry. Your browsing data never leaves your device.
-          </p>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- SPECIALIZED SITE INTEGRATIONS SECTION -->
-  <section id="presets" class="py-20 relative z-10 border-t border-necron-border">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
-        <p class="text-xs font-mono font-bold uppercase tracking-widest text-necron-red">WEB PLATFORM SUPPORT</p>
-        <h2 class="text-3xl sm:text-4xl font-black text-white">Targeted Platform Support</h2>
-        <p class="text-necron-dim text-sm sm:text-base">
-          Specialized engine compatibility for complex search portals, academic portals, and dense reference platforms.
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        
-        <div class="cyber-border p-6 rounded flex flex-col justify-between hover:border-necron-red transition-all">
-          <div class="hud-corner-tr"></div>
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-[10px] font-mono uppercase tracking-widest px-2.5 py-1 bg-necron-red/20 text-necron-red border border-necron-red/40 rounded font-bold">SEARCH & WEB APPS</span>
-              <i class="fa-brands fa-google text-2xl text-necron-red"></i>
-            </div>
-            <h3 class="text-xl font-bold text-white mb-2">Google Services</h3>
-            <p class="text-necron-dim text-sm mb-4 leading-relaxed">
-              Transforms stark white Google Search interfaces, Knowledge Panels, and web app portals into seamless, eye-friendly dark layouts.
-            </p>
-          </div>
-          <div class="pt-4 border-t border-necron-border/60 font-mono text-xs text-necron-dim flex justify-between items-center">
-            <span>Google Platform Support</span>
-            <span class="text-emerald-400 font-bold"><i class="fa-solid fa-check mr-1"></i>Active</span>
-          </div>
-        </div>
-
-        <div class="cyber-border p-6 rounded flex flex-col justify-between hover:border-necron-red transition-all">
-          <div class="hud-corner-tr"></div>
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-[10px] font-mono uppercase tracking-widest px-2.5 py-1 bg-necron-red/20 text-necron-red border border-necron-red/40 rounded font-bold">LMS PORTAL</span>
-              <i class="fa-solid fa-graduation-cap text-2xl text-necron-red"></i>
-            </div>
-            <h3 class="text-xl font-bold text-white mb-2">D2L Brightspace LMS</h3>
-            <p class="text-necron-dim text-sm mb-4 leading-relaxed">
-              Provides complete dark mode overrides across D2L course portals, quiz modules, assignment dropboxes, and discussion boards.
-            </p>
-          </div>
-          <div class="pt-4 border-t border-necron-border/60 font-mono text-xs text-necron-dim flex justify-between items-center">
-            <span>Course Overrides</span>
-            <span class="text-emerald-400 font-bold"><i class="fa-solid fa-check mr-1"></i>Active</span>
-          </div>
-        </div>
-
-        <div class="cyber-border p-6 rounded flex flex-col justify-between hover:border-necron-red transition-all">
-          <div class="hud-corner-tr"></div>
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-[10px] font-mono uppercase tracking-widest px-2.5 py-1 bg-necron-red/20 text-necron-red border border-necron-red/40 rounded font-bold">KNOWLEDGE BASE</span>
-              <i class="fa-brands fa-wikipedia-w text-2xl text-necron-red"></i>
-            </div>
-            <h3 class="text-xl font-bold text-white mb-2">Wikipedia</h3>
-            <p class="text-necron-dim text-sm mb-4 leading-relaxed">
-              Protects eye comfort during late-night research by converting bright white article pages, tables, and references into dark contrast.
-            </p>
-          </div>
-          <div class="pt-4 border-t border-necron-border/60 font-mono text-xs text-necron-dim flex justify-between items-center">
-            <span>Article Support</span>
-            <span class="text-emerald-400 font-bold"><i class="fa-solid fa-check mr-1"></i>Active</span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- INTERACTIVE POPUP SIMULATOR -->
-  <section id="demo" class="py-20 relative z-10 border-t border-necron-border bg-necron-card/30">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-        
-        <div class="lg:col-span-5 space-y-6">
-          <p class="text-xs font-mono font-bold uppercase tracking-widest text-necron-red">POPUP SIMULATOR</p>
-          <h2 class="text-3xl sm:text-4xl font-black text-white">Interactive Toolbar Preview</h2>
-          <p class="text-necron-dim text-sm leading-relaxed">
-            Test the extension settings in real time using this interactive simulator. Switch between preview tabs and modify brightness levels directly.
-          </p>
-
-          <div class="space-y-3 font-mono text-xs text-gray-300">
-            <div class="flex items-center gap-3 p-3 bg-necron-black border border-necron-border rounded">
-              <i class="fa-solid fa-toggle-on text-necron-red text-base"></i>
-              <span>Global Master Enable Toggle</span>
-            </div>
-            <div class="flex items-center gap-3 p-3 bg-necron-black border border-necron-border rounded">
-              <i class="fa-solid fa-sliders text-necron-red text-base"></i>
-              <span>Live Darkness Slider Adjustment</span>
-            </div>
-            <div class="flex items-center gap-3 p-3 bg-necron-black border border-necron-border rounded">
-              <i class="fa-solid fa-rotate-left text-necron-red text-base"></i>
-              <span>Instant Settings Reset Button</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="lg:col-span-7 flex justify-center">
-          
-          <div class="w-full max-w-[380px] bg-necron-black text-gray-100 border-2 border-necron-border rounded-xl shadow-glow-red overflow-hidden font-sans select-none cyber-border">
-            <div class="hud-corner-tr"></div>
-            
-            <div class="px-4 py-3.5 border-b border-necron-border flex items-center justify-between bg-black">
-              <div class="flex items-center gap-2">
-                <span class="font-extrabold tracking-[0.25em] text-necron-red text-sm drop-shadow-[0_0_8px_rgba(255,42,42,0.5)]">
-                  NECRON
+            <div class="flex items-center space-x-2">
+                <button id="prev" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm">Previous</button>
+                <span class="text-sm text-slate-400 flex items-center gap-1">
+                    <input type="number" id="page-jump-input" min="1" onkeydown="handlePageJump(event)" class="w-12 border border-slate-700 bg-transparent rounded px-1 text-center text-sm" title="Type page & hit Enter"> 
+                    / <span id="page-count">1</span>
                 </span>
-              </div>
-              
-              <label class="relative inline-block w-11 h-6 cursor-pointer">
-                <input type="checkbox" id="demo-master" checked class="sr-only peer" onchange="toggleDemoMaster(this.checked)">
-                <div class="w-11 h-6 bg-[#2a1114] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#8f8386] after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-necron-red peer-checked:after:bg-[#000]"></div>
-              </label>
+                <button id="next" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm">Next</button>
             </div>
 
-            <div class="flex border-b border-necron-border bg-necron-card/80 font-mono text-xs">
-              <button id="tab-btn-controls" onclick="switchDemoTab('controls')" class="flex-1 py-2.5 text-center text-necron-red border-b-2 border-necron-red font-bold transition-all">
-                Controls
-              </button>
-              <button id="tab-btn-sites" onclick="switchDemoTab('sites')" class="flex-1 py-2.5 text-center text-necron-dim border-b-2 border-transparent font-medium hover:text-white transition-all">
-                Active Sites
-              </button>
+            <div class="flex items-center gap-2">
+                <button id="tts-btn" onclick="toggleSpeech()" class="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 transition text-sm flex items-center gap-1">🔊 Read</button>
+                <button onclick="toggleComments()" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition text-sm flex items-center gap-1">💬 Comments</button>
             </div>
-
-            <div id="tab-content-controls" class="p-4 space-y-4">
-              
-              <div class="flex justify-between items-center pb-3 border-b border-necron-border/80">
-                <div>
-                  <div class="text-[10px] uppercase font-mono tracking-widest text-necron-dim">DARK ENGINE</div>
-                  <div id="demo-status-text" class="text-xs font-mono font-bold text-emerald-400">ACTIVE</div>
-                </div>
-                <span id="demo-status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              </div>
-
-              <div class="space-y-2">
-                <div class="flex justify-between items-center text-xs">
-                  <span class="text-[10px] uppercase font-mono tracking-widest text-necron-dim">DARKNESS LEVEL</span>
-                  <input type="number" id="demo-bnum" value="35" min="0" max="100" class="w-12 bg-black border border-necron-border text-center text-white text-xs rounded py-0.5 font-mono" onchange="syncDemoBrightness(this.value)">
-                </div>
-                <input type="range" id="demo-brightness" value="35" min="0" max="100" class="w-full accent-necron-red cursor-pointer" oninput="syncDemoBrightness(this.value)">
-              </div>
-
-              <div class="pt-2">
-                <button onclick="resetDemoSettings()" class="w-full py-2.5 bg-necron-card hover:bg-necron-border/60 border border-necron-border text-xs font-mono text-gray-300 font-bold rounded transition-colors flex items-center justify-center gap-2">
-                  <i class="fa-solid fa-rotate-left text-necron-red text-[10px]"></i>
-                  <span>RESET TO DEFAULTS</span>
-                </button>
-              </div>
-
-            </div>
-
-            <div id="tab-content-sites" class="p-4 space-y-3 hidden font-mono text-xs">
-              <div class="text-[10px] uppercase tracking-widest text-necron-dim mb-2">ENABLED DOMAINS</div>
-              
-              <div class="flex items-center justify-between p-2 bg-black border border-necron-border rounded">
-                <span class="text-gray-300">google.com</span>
-                <span class="text-emerald-400 text-[10px] font-bold">ACTIVE</span>
-              </div>
-              <div class="flex items-center justify-between p-2 bg-black border border-necron-border rounded">
-                <span class="text-gray-300">brightspace.com</span>
-                <span class="text-emerald-400 text-[10px] font-bold">ACTIVE</span>
-              </div>
-              <div class="flex items-center justify-between p-2 bg-black border border-necron-border rounded">
-                <span class="text-gray-300">wikipedia.org</span>
-                <span class="text-emerald-400 text-[10px] font-bold">ACTIVE</span>
-              </div>
-            </div>
-
-            <div class="px-4 py-2 bg-black border-t border-necron-border flex items-center justify-between text-[9px] font-mono text-necron-dim">
-              <span>MANIFEST V3</span>
-              <span class="text-necron-red">LOCAL STORAGE</span>
-            </div>
-
-          </div>
-
         </div>
+    </header>
 
-      </div>
-
-    </div>
-  </section>
-
-  <!-- DEVELOPER MODE INSTALLATION GUIDE -->
-  <section id="install" class="py-20 relative z-10 border-t border-necron-border">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
-        <p class="text-xs font-mono font-bold uppercase tracking-widest text-necron-red">DEVELOPER MODE</p>
-        <h2 class="text-3xl sm:text-4xl font-black text-white">4-Step Unpacked Installation</h2>
-        <p class="text-necron-dim text-sm sm:text-base">
-          Install NECRON directly into Chrome, Brave, Edge, or Chromium browsers in under 60 seconds.
-        </p>
-      </div>
-
-      <div class="space-y-6">
+    <!-- Canvas Viewer -->
+    <main id="viewer-container" class="hidden w-full max-w-6xl flex flex-col items-center bg-[#111827]/95 shadow-xl rounded-2xl p-4 overflow-auto mb-6 border border-slate-700/80 backdrop-blur-md">
+        <canvas id="pdf-render" class="max-w-full h-auto shadow mb-4"></canvas>
         
-        <div class="cyber-border p-6 rounded flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div class="hud-corner-tr"></div>
-          <div class="w-10 h-10 rounded bg-necron-red/20 border border-necron-red text-necron-red font-mono font-black text-lg flex items-center justify-center shrink-0 shadow-glow-red">
-            01
-          </div>
-          <div class="flex-1">
-            <h3 class="text-lg font-bold text-white mb-1">Download & Extract Extension (.ZIP)</h3>
-            <p class="text-necron-dim text-sm mb-3">
-              Click the button to download <code class="text-white font-mono bg-necron-black px-1.5 py-0.5 rounded border border-necron-border">necron.zip</code> and extract/unzip the folder on your computer.
-            </p>
-            <a href="downloads/necron.zip.zip" download class="inline-flex items-center gap-2 px-4 py-2 bg-necron-red hover:bg-necron-crimson text-white font-mono text-xs font-bold rounded transition-all shadow-glow-red">
-              <i class="fa-solid fa-file-zipper"></i>
-              <span>Download NECRON .ZIP</span>
-            </a>
-          </div>
+        <!-- Live Stats & Likes Footer -->
+        <div class="w-full flex justify-between items-center border-t border-slate-700/80 pt-3 px-2 text-xs text-slate-400">
+            <span id="live-readers-counter">🔥 Active Readers: 1</span>
+            <button onclick="likeCurrentPage()" id="like-btn" class="flex items-center gap-1 px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded transition text-pink-500 font-semibold border border-slate-700">
+                ❤️ Like Page (<span id="like-count">0</span>)
+            </button>
+        </div>
+    </main>
+
+    <!-- Comments Section -->
+    <section id="comments-section" class="hidden w-full max-w-6xl bg-[#111827]/95 shadow-xl rounded-2xl p-6 mb-6 border border-slate-700/80 backdrop-blur-md">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-bold">Page Comments</h2>
+            <button onclick="toggleAdmin()" id="admin-btn" class="text-xs text-slate-300 underline">Admin Login</button>
         </div>
 
-        <div class="cyber-border p-6 rounded flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div class="hud-corner-tr"></div>
-          <div class="w-10 h-10 rounded bg-necron-red/20 border border-necron-red text-necron-red font-mono font-black text-lg flex items-center justify-center shrink-0 shadow-glow-red">
-            02
-          </div>
-          <div class="flex-1">
-            <h3 class="text-lg font-bold text-white mb-1">Open Extensions Page</h3>
-            <p class="text-necron-dim text-sm mb-3">
-              Navigate to <code class="text-white font-mono bg-necron-black px-1.5 py-0.5 rounded border border-necron-border">chrome://extensions</code>, <code class="text-white font-mono bg-necron-black px-1.5 py-0.5 rounded border border-necron-border">edge://extensions</code>, or <code class="text-white font-mono bg-necron-black px-1.5 py-0.5 rounded border border-necron-border">brave://extensions</code> in your browser address bar:
-            </p>
-            <div class="flex flex-wrap gap-2">
-              <button onclick="copyToClipboard('chrome://extensions')" class="px-3 py-1.5 bg-necron-black border border-necron-border hover:border-necron-red rounded font-mono text-xs text-gray-300 flex items-center gap-2 transition-colors">
-                <span>chrome://extensions</span>
-                <i class="fa-solid fa-copy text-necron-red text-[10px]"></i>
-              </button>
-              <button onclick="copyToClipboard('edge://extensions')" class="px-3 py-1.5 bg-necron-black border border-necron-border hover:border-necron-red rounded font-mono text-xs text-gray-300 flex items-center gap-2 transition-colors">
-                <span>edge://extensions</span>
-                <i class="fa-solid fa-copy text-necron-red text-[10px]"></i>
-              </button>
-              <button onclick="copyToClipboard('brave://extensions')" class="px-3 py-1.5 bg-necron-black border border-necron-border hover:border-necron-red rounded font-mono text-xs text-gray-300 flex items-center gap-2 transition-colors">
-                <span>brave://extensions</span>
-                <i class="fa-solid fa-copy text-necron-red text-[10px]"></i>
-              </button>
+        <div class="flex flex-col gap-2 mb-4">
+            <input type="text" id="username-input" placeholder="Your name (optional)..." class="border border-slate-700 bg-transparent rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 w-1/3">
+            <div class="flex gap-2">
+                <input type="text" id="comment-input" placeholder="Write a comment..." class="flex-grow border border-slate-700 bg-transparent rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                <button onclick="addComment()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition font-medium">Post</button>
             </div>
-          </div>
         </div>
+        <div id="comments-list" class="space-y-3"></div>
+    </section>
 
-        <div class="cyber-border p-6 rounded flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div class="hud-corner-tr"></div>
-          <div class="w-10 h-10 rounded bg-necron-red/20 border border-necron-red text-necron-red font-mono font-black text-lg flex items-center justify-center shrink-0 shadow-glow-red">
-            03
-          </div>
-          <div class="flex-1">
-            <h3 class="text-lg font-bold text-white mb-1">Enable Developer Mode</h3>
-            <p class="text-necron-dim text-sm">
-              Toggle the <strong class="text-white font-mono">Developer mode</strong> switch in the top-right corner of the Extensions page.
-            </p>
-          </div>
+    <!-- Full-Screen Centered Character Modal with Navigation Arrows & Enlarged Profile -->
+    <div id="character-modal" onclick="closeModalDirect()" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        
+        <!-- Modal Navigation Container -->
+        <div class="relative w-full max-w-2xl flex items-center justify-center">
+            
+            <!-- Left Arrow Button -->
+            <button onclick="navigateCharacter(-1); event.stopPropagation();" class="absolute -left-12 sm:-left-16 text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-600 rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center shadow-lg transition-transform hover:scale-110 z-20 text-xl font-bold" title="Previous Character (Left Arrow)">
+                ◀
+            </button>
+
+            <!-- Main Modal Card -->
+            <div id="modal-card-container" onclick="event.stopPropagation()" class="bg-[#0d1322] border max-w-2xl w-full rounded-2xl p-6 sm:p-8 shadow-2xl relative space-y-5 text-left transition-all duration-300 max-h-[90vh] overflow-y-auto">
+                
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <h3 id="modal-char-title" class="text-2xl sm:text-3xl font-extrabold transition-colors duration-300"></h3>
+                    <button onclick="closeModalDirect()" class="text-gray-400 hover:text-white text-sm font-bold px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition">✕ Close</button>
+                </div>
+
+                <!-- Enlarged Profile Top Section -->
+                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                    <div class="w-36 h-36 bg-slate-800 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 shadow-2xl border-2 border-slate-700 ring-4 ring-slate-800/50">
+                        <img id="modal-char-img" src="" alt="Character Image" class="face-portrait">
+                    </div>
+                    <div class="space-y-2 text-sm flex-grow font-medium leading-relaxed">
+                        <p><strong class="font-semibold text-slate-300">Age:</strong> <span id="modal-char-age" class="font-bold"></span></p>
+                        <p><strong class="font-semibold text-slate-300">Birthdate:</strong> <span id="modal-char-birth" class="font-bold"></span></p>
+                        <p><strong class="font-semibold text-slate-300">Favourite Food:</strong> <span id="modal-char-food" class="font-bold"></span></p>
+                        <p><strong class="font-semibold text-slate-300">Hobby:</strong> <span id="modal-char-hobby" class="font-bold"></span></p>
+                        <p><strong class="font-semibold text-slate-300">Weapon:</strong> <span id="modal-char-weapon" class="font-bold"></span></p>
+                    </div>
+                </div>
+
+                <!-- Abilities Box -->
+                <div class="bg-slate-800/60 p-4 sm:p-5 rounded-xl border border-slate-700/60 shadow-inner">
+                    <p class="text-sm font-bold mb-2 tracking-wide uppercase text-slate-200">Abilities & Powers:</p>
+                    <div id="modal-char-ability" class="text-sm space-y-1.5"></div>
+                </div>
+
+                <!-- General Description Box -->
+                <div class="bg-slate-800/60 p-4 sm:p-5 rounded-xl border border-slate-700/60 shadow-inner">
+                    <p class="text-sm font-bold tracking-wide uppercase text-slate-200">General Description:</p>
+                    <p id="modal-char-general" class="text-sm mt-1.5 leading-relaxed font-medium"></p>
+                </div>
+
+                <!-- Novel Description Box -->
+                <div class="bg-slate-800/60 p-4 sm:p-5 rounded-xl border border-slate-700/60 shadow-inner">
+                    <p class="text-sm font-bold tracking-wide uppercase text-slate-200">Novel Description & Role:</p>
+                    <p id="modal-char-novel" class="text-sm mt-1.5 leading-relaxed font-medium"></p>
+                </div>
+            </div>
+
+            <!-- Right Arrow Button -->
+            <button onclick="navigateCharacter(1); event.stopPropagation();" class="absolute -right-12 sm:-right-16 text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-600 rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center shadow-lg transition-transform hover:scale-110 z-20 text-xl font-bold" title="Next Character (Right Arrow)">
+                ▶
+            </button>
         </div>
-
-        <div class="cyber-border p-6 rounded flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div class="hud-corner-tr"></div>
-          <div class="w-10 h-10 rounded bg-necron-red/20 border border-necron-red text-necron-red font-mono font-black text-lg flex items-center justify-center shrink-0 shadow-glow-red">
-            04
-          </div>
-          <div class="flex-1">
-            <h3 class="text-lg font-bold text-white mb-1">Load Unpacked</h3>
-            <p class="text-necron-dim text-sm">
-              Click <strong class="text-white font-mono">"Load unpacked"</strong> and select the unzipped extension folder.
-            </p>
-          </div>
-        </div>
-
-      </div>
-
     </div>
-  </section>
 
-  <!-- FOOTER -->
-  <footer class="border-t border-necron-border bg-black py-8 relative z-10">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-      
-      <div class="flex items-center gap-2">
-        <span class="font-black tracking-[0.25em] text-necron-red text-sm">NECRON</span>
-      </div>
-
-      <p class="text-xs font-mono text-necron-dim text-center">
-        Automated Dark Reader Extension
-      </p>
-
+    <!-- World Glossary Modal -->
+    <div id="glossary-modal" onclick="closeGlossary()" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div onclick="event.stopPropagation()" class="bg-slate-900 border border-purple-500/50 max-w-lg w-full rounded-2xl p-6 shadow-2xl relative space-y-4 text-left">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-xl font-bold text-purple-400">📖 World Glossary & Power Systems</h3>
+                <button onclick="closeGlossary()" class="text-gray-400 hover:text-gray-200 text-sm font-bold px-2.5 py-1 bg-slate-800 rounded-lg">✕ Close</button>
+            </div>
+            <div class="space-y-3 text-xs text-slate-300 leading-relaxed max-h-96 overflow-y-auto pr-1">
+                <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/50">
+                    <h4 class="font-bold text-purple-400 mb-1">Spirit Energy</h4>
+                    <p>An innate spiritual force bound to an individual's soul, manifesting through nature elements like Shadow, Flame, Water, Wind, Earth, and Light.</p>
+                </div>
+                <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/50">
+                    <h4 class="font-bold text-purple-400 mb-1">Astro Energy</h4>
+                    <p>A mysterious cosmic energy reserve that acts as a multiplier to combat mastery and physical endurance. Rare individuals possess cosmic affinity.</p>
+                </div>
+            </div>
+        </div>
     </div>
-  </footer>
 
-  <!-- Notification Toast -->
-  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-necron-card border border-necron-red text-white text-xs font-mono px-4 py-3 rounded shadow-glow-red opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2">
-    <i class="fa-solid fa-circle-check text-necron-red"></i>
-    <span id="toast-msg">Copied to clipboard!</span>
-  </div>
+    <script>
+        const characterKeys = ['yato', 'gavon', 'stella', 'lucia', 'marin', 'lumio', 'jaya', 'surtur', 'ariel'];
+        let currentCharacterIndex = 0;
 
-  <script>
-    /* WebGL Three.js Hologram Core */
-    (function initHologramCore() {
-      const container = document.getElementById('hud-wrapper');
-      const canvas = document.getElementById('webgl-canvas');
+        const characters = {
+            yato: { name: "Yato", img: "Yato.jpg", posClass: "pos-yato", colorClass: "text-purple-400", borderClass: "border-purple-500/50", age: "24", birth: "November 2", food: "Donuts", hobby: "Painting, drawing, and picking flowers", weapon: "Erebus and  Erasus ", abilities: ["Spirit Energy: Shadow", "Astro Ability: Unknown", "World Class Swordsmen", "Expert Hand-to-Hand Combat", "Expert at Astro Energy"], general: "A gloomy young man with long black hair and purple eyes. He hates violence, loves drawing even though he's terrible at it, and enjoys picking flowers.", novel: "Main character and leader of the group, balancing hard fights with looking after young Lucia." },
+            gavon: { name: "Gavon", img: "Gavon.jpg?v=2", posClass: "pos-gavon", colorClass: "text-indigo-300", borderClass: "border-indigo-500/50", age: "20", birth: "September 28", food: "Fried Chicken", hobby: "Heavy combat training", weapon: "Hammer", abilities: ["Astro Ability: Novice Astro Energy", "Novice Warrior", "Novice Hand-to-Hand Combat"], general: "A loud, energetic guy with short purple hair and Stella's twin brother. He dreams of becoming a true hero and spends all his time training.", novel: "Wannabe hero who joins the group alongside his twin sister to find their missing parents and achieve his dream of becoming a true hero." },
+            stella: { name: "Stella", img: "Stella.jpg", posClass: "pos-stella", colorClass: "text-pink-300", borderClass: "border-pink-500/50", age: "20", birth: "September 28", food: "Strawberry Shortcake", hobby: "Hacking", weapon: "Unknown", abilities: ["Astro Ability: Unknown", "World Class Hacker", "Novice Hand to Hand Combat"], general: "A kind young woman with bright pink hair and Gavon's twin sister. She wants to become a great doctor, track down her parents, and support Yato.", novel: "Wannabe doctor who handles chores and helps with important information for the group behind the scenes alongside her twin brother." },
+            lucia: { name: "Lucia", img: "Lucia.jpg", posClass: "pos-lucia", colorClass: "text-orange-400", borderClass: "border-orange-500/50", age: "11", birth: "December 5", food: "Pink cotton candy", hobby: "Watching Yato draw & Eating Sweets", weapon: "Unknown", abilities: ["Astro Ability: Unknown", "Telekinesis", "Novice Astro Energy"], general: "A quiet, fragile kid with white hair, red eyes, and an oversized coat.", novel: "Yato's daughter, living with him and bringing quiet warmth and comfort to his daily life." },
+            marin: { name: "Marin", img: "Marin.jpg", posClass: "pos-marin", colorClass: "text-cyan-400", borderClass: "border-cyan-500/50", age: "26", birth: "May 8", food: "Ice cream", hobby: "Nursing", weapon: "Kraken Threads", abilities: ["Spirit Energy: Water/Ice", "Astro Ability: Unknown", "World Class Doctor", "World Class Astro Energy"], general: "A gentle girl with long blue hair and a French cap. She spends her free time healing people and helping the needy.", novel: "Acts as the main healer for the group, using her water powers and surgical threads to patch up injuries in battle." },
+            lumio: { name: "Lumio", img: "Lumio.jpg", posClass: "pos-lumio", colorClass: "text-yellow-300", borderClass: "border-yellow-500/50", age: "Unknown", birth: "Unknown", food: "Beef Brisket", hobby: "Science Experiments", weapon: "Light Piercing Blade", abilities: ["Spirit Energy: Light", "Astro Ability: Unknown", "World Class Scientist", "World Class Astro Energy", "World Class Swordsmen"], general: "A mysterious companion whose birthday is unknown, wielding powerful light energy.", novel: "A core member of the light faction supporting the team against darkness." },
+            jaya: { name: "Jaya", img: "Jaya.jpg", posClass: "pos-jaya", colorClass: "text-amber-600", borderClass: "border-amber-700/60", age: "28", birth: "July 22", food: "Liquor", hobby: "Fighting, Training, Drinking, and helping orphans", weapon: "Atlas Gauntlets", abilities: ["Spirit Energy: Earth", "Astro Ability: N/A", "World-Class Hand-to-Hand Combat", "World Class All-Forms Martial Arts", "No Astro Energy"], general: "A tough warrior with brown skin, brown hair, and an intense presence. She lives for a good fight, but has a huge heart spending her time freeing slaves and taking care of orphans.", novel: "Uses raw earth power and world-class martial arts skills to smash enemy lines and protect the innocent and always looking for a challenge." },
+            surtur: { name: "Surtur", img: "Surtur.jpg", posClass: "pos-surtur", colorClass: "text-red-500", borderClass: "border-red-500/50", age: "Unknown", birth: "March 20", food: "Spicy vegan curry", hobby: "Making friends", weapon: "Monkey Staff", abilities: ["Spirit Energy: Flame", "Astro Ability: Unknown", "Highest Spirit Energy & Astro Energy Ever Recorded", "Master Bo Staff Combat", "World Class Prodigy"], general: "A wildly energetic guy with reddish-yellow hair who holds the largest energy reserve in the world. Despite his massive talent, he physically cannot bring himself to hurt people and just wants to make friends.", novel: "Uses his ancient staff and flame powers to break through enemy barriers without causing needless harm." },
+            ariel: { name: "Ariel", img: "Ariel.jpg", posClass: "pos-ariel", colorClass: "text-emerald-400", borderClass: "border-emerald-500/50", age: "Unknown", birth: "March 4", food: "Natural wild berries", hobby: "Playing and Singing Music", weapon: "Aeolus Rifle", abilities: ["Spirit Energy: Wind", "Astro Ability: Unknown", "World-Class Master Sniper", "World-Class Sensor", "World Class Marksmen", "Master at Astro Energy"], general: "A sharp-tongued marksman who hates humans due to past trouble. She spends her nights hunting down and punishing evil, though she keeps deep loyalty to one single person.", novel: "Provides world-class long-range wind-boosted sniper cover to protect the team from far away." }
+        };
 
-      if (!container || !canvas || typeof THREE === 'undefined') return;
+        function showCharacter(key) {
+            let idx = characterKeys.indexOf(key);
+            if (idx !== -1) currentCharacterIndex = idx;
 
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-      camera.position.z = 7.5;
+            let char = characters[key];
+            
+            let titleElem = document.getElementById('modal-char-title');
+            titleElem.textContent = char.name;
+            titleElem.className = `text-2xl sm:text-3xl font-extrabold ${char.colorClass}`;
 
-      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-      renderer.setSize(container.clientWidth, container.clientHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            let cardContainer = document.getElementById('modal-card-container');
+            cardContainer.className = `bg-[#0d1322] border ${char.borderClass} max-w-2xl w-full rounded-2xl p-6 sm:p-8 shadow-2xl relative space-y-5 text-left transition-all duration-300 max-h-[90vh] overflow-y-auto`;
 
-      const coreGroup = new THREE.Group();
-      scene.add(coreGroup);
+            let imgElem = document.getElementById('modal-char-img');
+            imgElem.src = char.img;
+            imgElem.className = `face-portrait ${char.posClass}`;
 
-      const coreGeo = new THREE.IcosahedronGeometry(1.3, 3);
-      const coreMat = new THREE.MeshBasicMaterial({
-        color: 0xff2a2a,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.8
-      });
-      const wireCore = new THREE.Mesh(coreGeo, coreMat);
-      coreGroup.add(wireCore);
+            // Restore character-specific colors for attribute values and descriptions
+            document.getElementById('modal-char-age').textContent = char.age;
+            document.getElementById('modal-char-age').className = `font-bold ${char.colorClass}`;
 
-      const innerGeo = new THREE.SphereGeometry(0.7, 16, 16);
-      const innerMat = new THREE.MeshBasicMaterial({
-        color: 0x8a0c1a,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.5
-      });
-      const innerSphere = new THREE.Mesh(innerGeo, innerMat);
-      coreGroup.add(innerSphere);
+            document.getElementById('modal-char-birth').textContent = char.birth;
+            document.getElementById('modal-char-birth').className = `font-bold ${char.colorClass}`;
 
-      const createRing = (radius, tube, color, rotX, rotY) => {
-        const ringGeo = new THREE.TorusGeometry(radius, tube, 16, 100);
-        const ringMat = new THREE.MeshBasicMaterial({
-          color,
-          wireframe: true,
-          transparent: true,
-          opacity: 0.7
+            document.getElementById('modal-char-food').textContent = char.food;
+            document.getElementById('modal-char-food').className = `font-bold ${char.colorClass}`;
+
+            document.getElementById('modal-char-hobby').textContent = char.hobby;
+            document.getElementById('modal-char-hobby').className = `font-bold ${char.colorClass}`;
+
+            document.getElementById('modal-char-weapon').textContent = char.weapon;
+            document.getElementById('modal-char-weapon').className = `font-bold ${char.colorClass}`;
+
+            let generalElem = document.getElementById('modal-char-general');
+            generalElem.className = `text-sm mt-1.5 leading-relaxed font-medium ${char.colorClass}`;
+            generalElem.textContent = char.general;
+
+            let novelElem = document.getElementById('modal-char-novel');
+            novelElem.className = `text-sm mt-1.5 leading-relaxed font-medium ${char.colorClass}`;
+            novelElem.textContent = char.novel;
+
+            let abilityContainer = document.getElementById('modal-char-ability');
+            abilityContainer.innerHTML = '';
+            char.abilities.forEach(ability => {
+                let p = document.createElement('p');
+                p.className = `flex items-start font-medium ${char.colorClass}`;
+                p.innerHTML = `<span class="mr-2 font-bold ${char.colorClass}">•</span> <span>${ability}</span>`;
+                abilityContainer.appendChild(p);
+            });
+
+            document.getElementById('character-modal').classList.remove('hidden');
+        }
+
+        function navigateCharacter(direction) {
+            currentCharacterIndex = (currentCharacterIndex + direction + characterKeys.length) % characterKeys.length;
+            showCharacter(characterKeys[currentCharacterIndex]);
+        }
+
+        function closeModalDirect() { document.getElementById('character-modal').classList.add('hidden'); }
+        function openGlossary() { document.getElementById('glossary-modal').classList.remove('hidden'); }
+        function closeGlossary() { document.getElementById('glossary-modal').classList.add('hidden'); }
+
+        // Supabase configuration
+        const SUPABASE_URL = 'https://rhnceiumgsnbzkssbrnh.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Mcs4utHHAnFEE5P3UGOMVw_43WYbkt5';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let userId = localStorage.getItem('novel_user_id');
+        if (!userId) {
+            userId = 'user_' + Math.random().toString(36).substring(2, 15);
+            localStorage.setItem('novel_user_id', userId);
+        }
+
+        let isAdmin = localStorage.getItem('novel_is_admin') === 'true';
+
+        function toggleAdmin() {
+            if (isAdmin) {
+                localStorage.setItem('novel_is_admin', 'false');
+                isAdmin = false;
+                alert('Logged out of Admin mode.');
+            } else {
+                let pass = prompt('Enter admin password:');
+                if (pass === 'admin123') {
+                    localStorage.setItem('novel_is_admin', 'true');
+                    isAdmin = true;
+                    alert('Admin mode enabled!');
+                } else if (pass !== null) {
+                    alert('Incorrect password.');
+                }
+            }
+            fetchComments();
+        }
+
+        let pdfDoc = null, pageNum = 1, pageRendering = false, pageNumPending = null, scale = 1.2;
+        let canvas = document.getElementById('pdf-render'), ctx = canvas.getContext('2d'), currentUrl = '', currentVolTitle = '';
+        let isSpeaking = false, synth = window.speechSynthesis;
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        function checkResume() {
+            let lastBook = localStorage.getItem('last_read_url');
+            let lastTitle = localStorage.getItem('last_read_title');
+            let lastPage = localStorage.getItem('bookmark_' + lastBook);
+            if (lastBook && lastPage) {
+                document.getElementById('resume-banner').classList.remove('hidden');
+                document.getElementById('resume-text').textContent = `📍 You left off at ${lastTitle || 'Novel'}, Page ${lastPage}`;
+            }
+        }
+        checkResume();
+
+        function resumeLastBook() {
+            let lastBook = localStorage.getItem('last_read_url');
+            let lastTitle = localStorage.getItem('last_read_title');
+            if (lastBook) loadBook(lastBook, lastTitle);
+        }
+
+        function loadBook(url, title) {
+            currentUrl = url;
+            currentVolTitle = title || 'Novel';
+            localStorage.setItem('last_read_url', url);
+            localStorage.setItem('last_read_title', currentVolTitle);
+
+            document.getElementById('selector-container').classList.add('hidden');
+            document.getElementById('reader-controls').classList.remove('hidden');
+            document.getElementById('viewer-container').classList.remove('hidden');
+
+            let savedPage = parseInt(localStorage.getItem('bookmark_' + url)) || 1;
+            pageNum = savedPage;
+
+            pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
+                pdfDoc = pdfDoc_;
+                document.getElementById('page-count').textContent = pdfDoc.numPages;
+                if (pageNum > pdfDoc.numPages) pageNum = pdfDoc.numPages;
+                renderPage(pageNum);
+            }).catch(function() {
+                document.getElementById('page-count').textContent = '1';
+                fetchComments();
+            });
+        }
+
+        function goBack() {
+            stopSpeech();
+            document.getElementById('selector-container').classList.remove('hidden');
+            document.getElementById('reader-controls').classList.add('hidden');
+            document.getElementById('viewer-container').classList.add('hidden');
+            document.getElementById('comments-section').classList.add('hidden');
+            pdfDoc = null;
+            checkResume();
+        }
+
+        function toggleComments() {
+            document.getElementById('comments-section').classList.toggle('hidden');
+        }
+
+        function renderPage(num) {
+            if (!pdfDoc) return;
+            stopSpeech();
+            pageRendering = true;
+            pdfDoc.getPage(num).then(function(page) {
+                let viewport = page.getViewport({ scale: scale });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                let renderContext = { canvasContext: ctx, viewport: viewport };
+                let renderTask = page.render(renderContext);
+
+                renderTask.promise.then(function() {
+                    pageRendering = false;
+                    if (pageNumPending !== null) {
+                        renderPage(pageNumPending);
+                        pageNumPending = null;
+                    }
+                });
+            });
+
+            pageNum = num;
+            document.getElementById('page-jump-input').value = num;
+            localStorage.setItem('bookmark_' + currentUrl, num);
+            fetchComments();
+            fetchPageLikes();
+        }
+
+        function queueRenderPage(num) {
+            if (pageRendering) pageNumPending = num;
+            else renderPage(num);
+        }
+
+        document.getElementById('prev').addEventListener('click', () => {
+            if (pageNum <= 1) return;
+            pageNum--;
+            if (pdfDoc) queueRenderPage(pageNum);
         });
-        const ring = new THREE.Mesh(ringGeo, ringMat);
-        ring.rotation.x = rotX;
-        ring.rotation.y = rotY;
-        return ring;
-      };
 
-      const ring1 = createRing(1.8, 0.015, 0xff2a2a, Math.PI / 3, Math.PI / 6);
-      const ring2 = createRing(2.1, 0.012, 0xdc143c, -Math.PI / 4, Math.PI / 3);
-      const ring3 = createRing(2.4, 0.008, 0x8a0c1a, Math.PI / 2, 0);
+        document.getElementById('next').addEventListener('click', () => {
+            if (pdfDoc && pageNum >= pdfDoc.numPages) return;
+            pageNum++;
+            if (pdfDoc) queueRenderPage(pageNum);
+        });
 
-      coreGroup.add(ring1);
-      coreGroup.add(ring2);
-      coreGroup.add(ring3);
+        function handleGlobalKey(e) {
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+            
+            // Handle arrow keys when character modal is open
+            const charModal = document.getElementById('character-modal');
+            if (charModal && !charModal.classList.contains('hidden')) {
+                if (e.key === 'ArrowLeft') navigateCharacter(-1);
+                if (e.key === 'ArrowRight') navigateCharacter(1);
+                if (e.key === 'Escape') closeModalDirect();
+                return;
+            }
 
-      const particleCount = 12000;
-      const particleGeo = new THREE.BufferGeometry();
-      const positions = new Float32Array(particleCount * 3);
-      const colors = new Float32Array(particleCount * 3);
-
-      for (let i = 0; i < particleCount; i++) {
-        const layer = Math.random();
-        let radius;
-        if (layer < 0.6) {
-          radius = 1.35 + Math.random() * 1.2;
-        } else if (layer < 0.9) {
-          radius = 2.4 + Math.random() * 1.1;
-        } else {
-          radius = 3.5 + Math.random() * 1.5;
+            if (e.key === 'ArrowLeft') document.getElementById('prev').click();
+            if (e.key === 'ArrowRight') document.getElementById('next').click();
         }
 
-        const theta = Math.random() * Math.PI * 2;
-        const phi = (Math.random() - 0.5) * Math.PI;
-
-        positions[i * 3] = radius * Math.cos(theta) * Math.cos(phi);
-        positions[i * 3 + 1] = radius * Math.sin(phi);
-        positions[i * 3 + 2] = radius * Math.sin(theta) * Math.cos(phi);
-
-        const shade = Math.random();
-        if (shade > 0.4) {
-          colors[i * 3] = 1.0;
-          colors[i * 3 + 1] = 0.16 + Math.random() * 0.1;
-          colors[i * 3 + 2] = 0.16 + Math.random() * 0.1;
-        } else {
-          colors[i * 3] = 0.6 + Math.random() * 0.3;
-          colors[i * 3 + 1] = 0.02;
-          colors[i * 3 + 2] = 0.05;
-        }
-      }
-
-      particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      particleGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-      const particleMat = new THREE.PointsMaterial({
-        size: 0.038,
-        vertexColors: true,
-        transparent: true,
-        opacity: 0.82
-      });
-      const particleSystem = new THREE.Points(particleGeo, particleMat);
-      coreGroup.add(particleSystem);
-
-      let isDragging = false;
-      let previousMousePosition = { x: 0, y: 0 };
-      let targetRotationX = 0;
-      let targetRotationY = 0;
-
-      const onPointerDown = (e) => {
-        isDragging = true;
-        const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
-        const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
-        previousMousePosition = { x: clientX, y: clientY };
-      };
-
-      const onPointerMove = (e) => {
-        if (!isDragging) return;
-        const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
-        const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
-
-        const deltaX = clientX - previousMousePosition.x;
-        const deltaY = clientY - previousMousePosition.y;
-
-        targetRotationY += deltaX * 0.008;
-        targetRotationX += deltaY * 0.008;
-
-        previousMousePosition = { x: clientX, y: clientY };
-      };
-
-      const onPointerUp = () => { isDragging = false; };
-
-      container.addEventListener('mousedown', onPointerDown);
-      window.addEventListener('mousemove', onPointerMove);
-      window.addEventListener('mouseup', onPointerUp);
-
-      container.addEventListener('touchstart', onPointerDown, { passive: true });
-      window.addEventListener('touchmove', onPointerMove, { passive: true });
-      window.addEventListener('touchend', onPointerUp);
-
-      window.addEventListener('resize', () => {
-        if (!container) return;
-        const w = container.clientWidth;
-        const h = container.clientHeight;
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
-        renderer.setSize(w, h);
-      });
-
-      function animate(time) {
-        requestAnimationFrame(animate);
-        const t = time * 0.001;
-
-        if (!isDragging) {
-          targetRotationY += 0.004;
-          targetRotationX += 0.0015;
+        function handlePageJump(e) {
+            if (e.key === 'Enter') {
+                let target = parseInt(e.target.value);
+                if (target >= 1 && target <= pdfDoc.numPages) queueRenderPage(target);
+                else alert(`Please enter a page between 1 and ${pdfDoc.numPages}`);
+            }
         }
 
-        coreGroup.rotation.y += (targetRotationY - coreGroup.rotation.y) * 0.08;
-        coreGroup.rotation.x += (targetRotationX - coreGroup.rotation.x) * 0.08;
+        function jumpToChapter(val) {
+            if (!val || !pdfDoc) return;
+            let target = parseInt(val);
+            if (target >= 1 && target <= pdfDoc.numPages) queueRenderPage(target);
+        }
 
-        wireCore.rotation.y = t * 0.25;
-        wireCore.rotation.z = -t * 0.15;
+        function changeZoom(delta) {
+            scale = Math.max(0.6, Math.min(2.5, scale + delta));
+            if (pdfDoc) renderPage(pageNum);
+        }
 
-        ring1.rotation.z = t * 0.35;
-        ring2.rotation.y = -t * 0.45;
-        ring3.rotation.x = t * 0.2;
+        // Text-to-Speech Execution
+        function toggleSpeech() {
+            if (isSpeaking) {
+                stopSpeech();
+            } else {
+                if (!pdfDoc) return;
+                pdfDoc.getPage(pageNum).then(function(page) {
+                    return page.getTextContent();
+                }).then(function(textContent) {
+                    let text = textContent.items.map(s => s.str).join(' ');
+                    if (!text.trim()) { alert("No readable text found on this page."); return; }
+                    let utterance = new SpeechSynthesisUtterance(text);
+                    utterance.onend = () => stopSpeech();
+                    synth.speak(utterance);
+                    isSpeaking = true;
+                    document.getElementById('tts-btn').textContent = '⏹️ Stop';
+                    document.getElementById('tts-btn').classList.replace('bg-purple-600', 'bg-red-600');
+                });
+            }
+        }
 
-        const scale = 1 + Math.sin(t * 4.0) * 0.08;
-        innerSphere.scale.set(scale, scale, scale);
+        function stopSpeech() {
+            if (synth.speaking) synth.cancel();
+            isSpeaking = false;
+            let btn = document.getElementById('tts-btn');
+            if (btn) {
+                btn.textContent = '🔊 Read';
+                btn.classList.replace('bg-red-600', 'bg-purple-600');
+            }
+        }
 
-        particleSystem.rotation.y = t * 0.12;
-        particleSystem.rotation.z = t * 0.05;
+        // Likes & Comments
+        async function likeCurrentPage() {
+            let likedKey = `liked_${currentUrl}_${pageNum}`;
+            if (localStorage.getItem(likedKey)) {
+                alert("You already liked this page!");
+                return;
+            }
+            const { error } = await supabaseClient
+                .from('comments')
+                .insert([{ book_url: currentUrl, page_num: pageNum, username: 'System_Like', text: '❤️ Page Liked', user_id: userId }]);
 
-        renderer.render(scene, camera);
-      }
+            if (!error) {
+                localStorage.setItem(likedKey, 'true');
+                fetchPageLikes();
+            }
+        }
 
-      window.onload = function() {
-        animate(0);
-      };
-    })();
+        async function fetchPageLikes() {
+            const { data } = await supabaseClient
+                .from('comments')
+                .select('id')
+                .eq('book_url', currentUrl)
+                .eq('page_num', pageNum)
+                .eq('username', 'System_Like');
 
-    /* Popup Mockup Tabbed Controls */
-    function switchDemoTab(tabName) {
-      const controlsTab = document.getElementById('tab-content-controls');
-      const sitesTab = document.getElementById('tab-content-sites');
-      const btnControls = document.getElementById('tab-btn-controls');
-      const btnSites = document.getElementById('tab-btn-sites');
+            document.getElementById('like-count').textContent = data ? data.length : 0;
+        }
 
-      if (tabName === 'controls') {
-        controlsTab.classList.remove('hidden');
-        sitesTab.classList.add('hidden');
-        btnControls.className = "flex-1 py-2.5 text-center text-necron-red border-b-2 border-necron-red font-bold transition-all";
-        btnSites.className = "flex-1 py-2.5 text-center text-necron-dim border-b-2 border-transparent font-medium hover:text-white transition-all";
-      } else {
-        controlsTab.classList.add('hidden');
-        sitesTab.classList.remove('hidden');
-        btnSites.className = "flex-1 py-2.5 text-center text-necron-red border-b-2 border-necron-red font-bold transition-all";
-        btnControls.className = "flex-1 py-2.5 text-center text-necron-dim border-b-2 border-transparent font-medium hover:text-white transition-all";
-      }
-    }
+        async function addComment() {
+            let usernameInput = document.getElementById('username-input');
+            let commentInput = document.getElementById('comment-input');
+            let username = usernameInput.value.trim() || 'Anonymous';
+            let text = commentInput.value.trim();
+            if (!text) return;
 
-    function syncDemoBrightness(val) {
-      document.getElementById('demo-brightness').value = val;
-      document.getElementById('demo-bnum').value = val;
-    }
+            const { error } = await supabaseClient
+                .from('comments')
+                .insert([{ book_url: currentUrl, page_num: pageNum, username: username, text: text, user_id: userId }]);
 
-    function toggleDemoMaster(enabled) {
-      const statusText = document.getElementById('demo-status-text');
-      const statusDot = document.getElementById('demo-status-dot');
+            if (!error) {
+                commentInput.value = '';
+                fetchComments();
+            }
+        }
 
-      if (enabled) {
-        statusText.textContent = "ACTIVE";
-        statusText.className = "text-xs font-mono font-bold text-emerald-400";
-        statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
-      } else {
-        statusText.textContent = "DISABLED";
-        statusText.className = "text-xs font-mono font-bold text-necron-red";
-        statusDot.className = "w-2.5 h-2.5 rounded-full bg-necron-red";
-      }
-    }
+        async function deleteComment(id) {
+            const { error } = await supabaseClient.from('comments').delete().eq('id', id);
+            if (!error) fetchComments();
+        }
 
-    function resetDemoSettings() {
-      document.getElementById('demo-master').checked = true;
-      toggleDemoMaster(true);
-      syncDemoBrightness(35);
-      showToast("Settings reset to defaults");
-    }
+        async function fetchComments() {
+            let list = document.getElementById('comments-list');
+            list.innerHTML = '<p class="text-sm text-slate-400">Loading comments...</p>';
 
-    /* Copy Utility */
-    function copyToClipboard(text) {
-      const dummy = document.createElement('textarea');
-      document.body.appendChild(dummy);
-      dummy.value = text;
-      dummy.select();
-      document.execCommand('copy');
-      document.body.removeChild(dummy);
-      showToast(`Copied "${text}" to clipboard`);
-    }
+            const { data: comments, error } = await supabaseClient
+                .from('comments')
+                .select('*')
+                .eq('book_url', currentUrl)
+                .eq('page_num', pageNum)
+                .neq('username', 'System_Like')
+                .order('created_at', { ascending: true });
 
-    function showToast(message) {
-      const toast = document.getElementById('toast');
-      const toastMsg = document.getElementById('toast-msg');
-      toastMsg.textContent = message;
-      toast.classList.remove('opacity-0', 'pointer-events-none');
-      setTimeout(() => {
-        toast.classList.add('opacity-0', 'pointer-events-none');
-      }, 2500);
-    }
-  </script>
+            list.innerHTML = '';
+            if (error || !comments || comments.length === 0) {
+                list.innerHTML = '<p class="text-sm text-slate-400">No comments for this page yet.</p>';
+                return;
+            }
+
+            comments.forEach(c => {
+                let div = document.createElement('div');
+                div.className = 'bg-slate-800 border border-slate-700 p-3 rounded-xl text-sm flex justify-between items-center';
+                let canDelete = isAdmin || (c.user_id === userId);
+                let deleteBtnHtml = canDelete ? `<button onclick="deleteComment(${c.id})" class="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1 ml-2">✕</button>` : '';
+
+                div.innerHTML = `
+                    <div>
+                        <span class="font-bold text-cyan-400">${c.username || 'Anonymous'}:</span> 
+                        <span class="text-slate-200">${c.text}</span>
+                    </div>
+                    ${deleteBtnHtml}
+                `;
+                list.appendChild(div);
+            });
+            document.getElementById('admin-btn').textContent = isAdmin ? 'Admin (Logged In)' : 'Admin Login';
+        }
+    </script>
 </body>
 </html>
