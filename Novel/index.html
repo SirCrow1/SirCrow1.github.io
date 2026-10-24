@@ -359,15 +359,15 @@
         let currentCharacterIndex = 0;
 
         const characters = {
-            yato: { name: "Yato", img: "Yato.jpg", posClass: "pos-yato", color: "#c084fc", borderClass: "border-purple-500/50", age: "24", birth: "November 2", food: "Donuts", hobby: "Painting, drawing, and picking flowers", weapon: "Erebus and  Erasus ", abilities: ["Spirit Energy: Shadow", "Astro Ability: Unknown", "World Class Swordsmen", "Expert Hand-to-Hand Combat", "Expert at Astro Energy"], general: "A gloomy young man with long black hair and purple eyes. He hates violence, loves drawing even though he's terrible at it, and enjoys picking flowers.", novel: "Main character and leader of the group, balancing hard fights with looking after young Lucia." },
-            gavon: { name: "Gavon", img: "Gavon.jpg?v=2", posClass: "pos-gavon", color: "#93c5fd", borderClass: "border-indigo-500/50", age: "20", birth: "September 28", food: "Fried Chicken", hobby: "Heavy combat training", weapon: "Hammer", abilities: ["Astro Ability: Novice Astro Energy", "Novice Warrior", "Novice Hand-to-Hand Combat"], general: "A loud, energetic guy with short purple hair and Stella's twin brother. He dreams of becoming a true hero and spends all his time training.", novel: "Wannabe hero who joins the group alongside his twin sister to find their missing parents and achieve his dream of becoming a true hero." },
-            stella: { name: "Stella", img: "Stella.jpg", posClass: "pos-stella", color: "#f472b6", borderClass: "border-pink-500/50", age: "20", birth: "September 28", food: "Strawberry Shortcake", hobby: "Hacking", weapon: "Unknown", abilities: ["Astro Ability: Unknown", "World Class Hacker", "Novice Hand to Hand Combat"], general: "A kind young woman with bright pink hair and Gavon's twin sister. She wants to become a great doctor, track down her parents, and support Yato.", novel: "Wannabe doctor who handles chores and helps with important information for the group behind the scenes alongside her twin brother." },
-            lucia: { name: "Lucia", img: "Lucia.jpg", posClass: "pos-lucia", color: "#fb923c", borderClass: "border-orange-500/50", age: "11", birth: "December 5", food: "Pink cotton candy", hobby: "Watching Yato draw & Eating Sweets", weapon: "Unknown", abilities: ["Astro Ability: Unknown", "Telekinesis", "Novice Astro Energy"], general: "A quiet, fragile kid with white hair, red eyes, and an oversized coat.", novel: "Yato's daughter, living with him and bringing quiet warmth and comfort to his daily life." },
-            marin: { name: "Marin", img: "Marin.jpg", posClass: "pos-marin", color: "#22d3ee", borderClass: "border-cyan-400/60", age: "26", birth: "May 8", food: "Ice cream", hobby: "Nursing", weapon: "Kraken Threads", abilities: ["Spirit Energy: Water/Ice", "Astro Ability: Unknown", "World Class Doctor", "World Class Astro Energy"], general: "A gentle girl with long blue hair and a French cap. She spends her free time healing people and helping the needy.", novel: "Acts as the main healer for the group, using her water powers and surgical threads to patch up injuries in battle." },
-            lumio: { name: "Lumio", img: "Lumio.jpg", posClass: "pos-lumio", color: "#fde047", borderClass: "border-yellow-500/50", age: "Unknown", birth: "Unknown", food: "Beef Brisket", hobby: "Science Experiments", weapon: "Light Piercing Blade", abilities: ["Spirit Energy: Light", "Astro Ability: Unknown", "World Class Scientist", "World Class Astro Energy", "World Class Swordsmen"], general: "A mysterious companion whose birthday is unknown, wielding powerful light energy.", novel: "A core member of the light faction supporting the team against darkness." },
-            jaya: { name: "Jaya", img: "Jaya.jpg", posClass: "pos-jaya", color: "#d97706", borderClass: "border-amber-700/60", age: "28", birth: "July 22", food: "Liquor", hobby: "Fighting, Training, Drinking, and helping orphans", weapon: "Atlas Gauntlets", abilities: ["Spirit Energy: Earth", "Astro Ability: N/A", "World-Class Hand-to-Hand Combat", "World Class All-Forms Martial Arts", "No Astro Energy"], general: "A tough warrior with brown skin, brown hair, and an intense presence. She lives for a good fight, but has a huge heart spending her time freeing slaves and taking care of orphans.", novel: "Uses raw earth power and world-class martial arts skills to smash enemy lines and protect the innocent and always looking for a challenge." },
-            surtur: { name: "Surtur", img: "Surtur.jpg", posClass: "pos-surtur", color: "#ef4444", borderClass: "border-red-500/50", age: "Unknown", birth: "March 20", food: "Spicy vegan curry", hobby: "Making friends", weapon: "Monkey Staff", abilities: ["Spirit Energy: Flame", "Astro Ability: Unknown", "Highest Spirit Energy & Astro Energy Ever Recorded", "Master Bo Staff Combat", "World Class Prodigy"], general: "A wildly energetic guy with reddish-yellow hair who holds the largest energy reserve in the world. Despite his massive talent, he physically cannot bring himself to hurt people and just wants to make friends.", novel: "Uses his ancient staff and flame powers to break through enemy barriers without causing needless harm." },
-            ariel: { name: "Ariel", img: "Ariel.jpg", posClass: "pos-ariel", color: "#34d399", borderClass: "border-emerald-500/50", age: "Unknown", birth: "March 4", food: "Natural wild berries", hobby: "Playing and Singing Music", weapon: "Aeolus Rifle", abilities: ["Spirit Energy: Wind", "Astro Ability: Unknown", "World-Class Master Sniper", "World-Class Sensor", "World Class Marksmen", "Master at Astro Energy"], general: "A sharp-tongued marksman who hates humans due to past trouble. She spends her nights hunting down and punishing evil, though she keeps deep loyalty to one single person.", novel: "Provides world-class long-range wind-boosted sniper cover to protect the team from far away." }
+            yato: { name: "Yato", img: "Yato.jpg", posClass: "pos-yato", colorClass: "text-purple-400", borderClass: "border-purple-500/50", age: "24", birth: "November 2", food: "Donuts", hobby: "Painting, drawing, and picking flowers", weapon: "Erebus and  Erasus ", abilities: ["Spirit Energy: Shadow", "Astro Ability: Unknown", "World Class Swordsmen", "Expert Hand-to-Hand Combat", "Expert at Astro Energy"], general: "A gloomy young man with long black hair and purple eyes. He hates violence, loves drawing even though he's terrible at it, and enjoys picking flowers.", novel: "Main character and leader of the group, balancing hard fights with looking after young Lucia." },
+            gavon: { name: "Gavon", img: "Gavon.jpg?v=2", posClass: "pos-gavon", colorClass: "text-indigo-300", borderClass: "border-indigo-500/50", age: "20", birth: "September 28", food: "Fried Chicken", hobby: "Heavy combat training", weapon: "Hammer", abilities: ["Astro Ability: Novice Astro Energy", "Novice Warrior", "Novice Hand-to-Hand Combat"], general: "A loud, energetic guy with short purple hair and Stella's twin brother. He dreams of becoming a true hero and spends all his time training.", novel: "Wannabe hero who joins the group alongside his twin sister to find their missing parents and achieve his dream of becoming a true hero." },
+            stella: { name: "Stella", img: "Stella.jpg", posClass: "pos-stella", colorClass: "text-pink-300", borderClass: "border-pink-500/50", age: "20", birth: "September 28", food: "Strawberry Shortcake", hobby: "Hacking", weapon: "Unknown", abilities: ["Astro Ability: Unknown", "World Class Hacker", "Novice Hand to Hand Combat"], general: "A kind young woman with bright pink hair and Gavon's twin sister. She wants to become a great doctor, track down her parents, and support Yato.", novel: "Wannabe doctor who handles chores and helps with important information for the group behind the scenes alongside her twin brother." },
+            lucia: { name: "Lucia", img: "Lucia.jpg", posClass: "pos-lucia", colorClass: "text-orange-400", borderClass: "border-orange-500/50", age: "11", birth: "December 5", food: "Pink cotton candy", hobby: "Watching Yato draw & Eating Sweets", weapon: "Unknown", abilities: ["Astro Ability: Unknown", "Telekinesis", "Novice Astro Energy"], general: "A quiet, fragile kid with white hair, red eyes, and an oversized coat.", novel: "Yato's daughter, living with him and bringing quiet warmth and comfort to his daily life." },
+            marin: { name: "Marin", img: "Marin.jpg", posClass: "pos-marin", colorClass: "text-cyan-400", borderClass: "border-cyan-500/50", age: "26", birth: "May 8", food: "Ice cream", hobby: "Nursing", weapon: "Kraken Threads", abilities: ["Spirit Energy: Water/Ice", "Astro Ability: Unknown", "World Class Doctor", "World Class Astro Energy"], general: "A gentle girl with long blue hair and a French cap. She spends her free time healing people and helping the needy.", novel: "Acts as the main healer for the group, using her water powers and surgical threads to patch up injuries in battle." },
+            lumio: { name: "Lumio", img: "Lumio.jpg", posClass: "pos-lumio", colorClass: "text-yellow-300", borderClass: "border-yellow-500/50", age: "Unknown", birth: "Unknown", food: "Beef Brisket", hobby: "Science Experiments", weapon: "Light Piercing Blade", abilities: ["Spirit Energy: Light", "Astro Ability: Unknown", "World Class Scientist", "World Class Astro Energy", "World Class Swordsmen"], general: "A mysterious companion whose birthday is unknown, wielding powerful light energy.", novel: "A core member of the light faction supporting the team against darkness." },
+            jaya: { name: "Jaya", img: "Jaya.jpg", posClass: "pos-jaya", colorClass: "text-amber-600", borderClass: "border-amber-700/60", age: "28", birth: "July 22", food: "Liquor", hobby: "Fighting, Training, Drinking, and helping orphans", weapon: "Atlas Gauntlets", abilities: ["Spirit Energy: Earth", "Astro Ability: N/A", "World-Class Hand-to-Hand Combat", "World Class All-Forms Martial Arts", "No Astro Energy"], general: "A tough warrior with brown skin, brown hair, and an intense presence. She lives for a good fight, but has a huge heart spending her time freeing slaves and taking care of orphans.", novel: "Uses raw earth power and world-class martial arts skills to smash enemy lines and protect the innocent and always looking for a challenge." },
+            surtur: { name: "Surtur", img: "Surtur.jpg", posClass: "pos-surtur", colorClass: "text-red-500", borderClass: "border-red-500/50", age: "Unknown", birth: "March 20", food: "Spicy vegan curry", hobby: "Making friends", weapon: "Monkey Staff", abilities: ["Spirit Energy: Flame", "Astro Ability: Unknown", "Highest Spirit Energy & Astro Energy Ever Recorded", "Master Bo Staff Combat", "World Class Prodigy"], general: "A wildly energetic guy with reddish-yellow hair who holds the largest energy reserve in the world. Despite his massive talent, he physically cannot bring himself to hurt people and just wants to make friends.", novel: "Uses his ancient staff and flame powers to break through enemy barriers without causing needless harm." },
+            ariel: { name: "Ariel", img: "Ariel.jpg", posClass: "pos-ariel", colorClass: "text-emerald-400", borderClass: "border-emerald-500/50", age: "Unknown", birth: "March 4", food: "Natural wild berries", hobby: "Playing and Singing Music", weapon: "Aeolus Rifle", abilities: ["Spirit Energy: Wind", "Astro Ability: Unknown", "World-Class Master Sniper", "World-Class Sensor", "World Class Marksmen", "Master at Astro Energy"], general: "A sharp-tongued marksman who hates humans due to past trouble. She spends her nights hunting down and punishing evil, though she keeps deep loyalty to one single person.", novel: "Provides world-class long-range wind-boosted sniper cover to protect the team from far away." }
         };
 
         function showCharacter(key) {
@@ -378,7 +378,7 @@
             
             let titleElem = document.getElementById('modal-char-title');
             titleElem.textContent = char.name;
-            titleElem.style.color = char.color;
+            titleElem.className = `text-2xl sm:text-3xl font-extrabold ${char.colorClass}`;
 
             let cardContainer = document.getElementById('modal-card-container');
             cardContainer.className = `bg-[#0d1322] border ${char.borderClass} max-w-2xl w-full rounded-2xl p-6 sm:p-8 shadow-2xl relative space-y-5 text-left transition-all duration-300 max-h-[90vh] overflow-y-auto`;
@@ -387,41 +387,41 @@
             imgElem.src = char.img;
             imgElem.className = `face-portrait ${char.posClass}`;
 
+            // Explicitly set each value to use the character's exact unique color class
             let ageElem = document.getElementById('modal-char-age');
             ageElem.textContent = char.age;
-            ageElem.style.color = char.color;
+            ageElem.className = `font-bold ${char.colorClass}`;
 
             let birthElem = document.getElementById('modal-char-birth');
             birthElem.textContent = char.birth;
-            birthElem.style.color = char.color;
+            birthElem.className = `font-bold ${char.colorClass}`;
 
             let foodElem = document.getElementById('modal-char-food');
             foodElem.textContent = char.food;
-            foodElem.style.color = char.color;
+            foodElem.className = `font-bold ${char.colorClass}`;
 
             let hobbyElem = document.getElementById('modal-char-hobby');
             hobbyElem.textContent = char.hobby;
-            hobbyElem.style.color = char.color;
+            hobbyElem.className = `font-bold ${char.colorClass}`;
 
             let weaponElem = document.getElementById('modal-char-weapon');
             weaponElem.textContent = char.weapon;
-            weaponElem.style.color = char.color;
+            weaponElem.className = `font-bold ${char.colorClass}`;
 
             let generalElem = document.getElementById('modal-char-general');
             generalElem.textContent = char.general;
-            generalElem.style.color = char.color;
+            generalElem.className = `text-sm mt-1.5 leading-relaxed font-medium ${char.colorClass}`;
 
             let novelElem = document.getElementById('modal-char-novel');
             novelElem.textContent = char.novel;
-            novelElem.style.color = char.color;
+            novelElem.className = `text-sm mt-1.5 leading-relaxed font-medium ${char.colorClass}`;
 
             let abilityContainer = document.getElementById('modal-char-ability');
             abilityContainer.innerHTML = '';
             char.abilities.forEach(ability => {
                 let p = document.createElement('p');
-                p.className = `flex items-start font-medium`;
-                p.style.color = char.color;
-                p.innerHTML = `<span class="mr-2 font-bold" style="color: ${char.color};">•</span> <span>${ability}</span>`;
+                p.className = `flex items-start font-medium ${char.colorClass}`;
+                p.innerHTML = `<span class="mr-2 font-bold ${char.colorClass}">•</span> <span>${ability}</span>`;
                 abilityContainer.appendChild(p);
             });
 
