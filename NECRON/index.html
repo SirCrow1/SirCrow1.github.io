@@ -35,19 +35,21 @@ body{
   min-height:100vh
 }
 a{color:var(--hot)}
-main{max-width:1120px;margin:0 auto;padding:0 clamp(16px,4vw,48px)}
 
-/* Header Navigation Bar */
+/* Header Navigation Bar - Aligned to Top Left */
 header{
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  padding:20px 0;
-  border-bottom:1px solid var(--line)
+  justify-content:flex-start;
+  padding:20px 24px;
+  border-bottom:1px solid var(--line);
+  width:100%
 }
 .brand{display:flex;align-items:center;gap:12px;text-decoration:none}
 .brand img{height:36px;width:auto;border-radius:4px;border:1px solid var(--line);box-shadow:0 0 12px rgba(255,42,42,0.4)}
 .brand span{font-size:24px;font-weight:700;letter-spacing:.2em;color:var(--glow);text-shadow:0 0 16px rgba(255,42,42,0.6)}
+
+main{max-width:1120px;margin:0 auto;padding:0 clamp(16px,4vw,48px)}
 
 .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding:56px 0 56px}
 h1{font-size:clamp(44px,8vw,92px);line-height:.95;margin:0 0 18px;letter-spacing:.02em;font-weight:700;color:#fff;text-shadow:0 0 38px rgba(255,42,42,0.7)}
@@ -144,12 +146,13 @@ footer{
   color:var(--dim);
   display:flex;
   flex-wrap:wrap;
-  justify-content:space-between;
+  justify-space-between;
   align-items:center;
   gap:10px
 }
 
 @media(max-width:820px){
+  header{padding:16px 16px}
   .hero{grid-template-columns:1fr;padding-top:44px}
   .grid{grid-template-columns:1fr}
   .hud-wrapper{max-width:320px;height:320px;order:-1}
@@ -157,15 +160,16 @@ footer{
 </style>
 </head>
 <body>
-<main>
 
-<!-- HEADER NAV (Download button removed) -->
+<!-- HEADER NAV (Directly Top-Left) -->
 <header>
   <a class="brand" href="#">
     <img src="Necron.jpg" alt="NECRON">
     <span>NECRON</span>
   </a>
 </header>
+
+<main>
 
 <!-- HERO SECTION -->
 <div class="hero">
