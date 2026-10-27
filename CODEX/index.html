@@ -54,12 +54,16 @@ main{max-width:1120px;margin:0 auto;padding:0 clamp(16px,4vw,48px)}
 .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding:56px 0 56px}
 h1{font-size:clamp(44px,8vw,92px);line-height:.95;margin:0 0 18px;letter-spacing:.02em;font-weight:700;text-shadow:0 0 38px rgba(139,92,246,.7)}
 .sub{
-  font:15px var(--mono);
-  color:var(--hot);
-  margin:0 0 20px;
-  text-transform:uppercase;
-  letter-spacing:.05em;
-  text-shadow:0 0 12px rgba(183,156,255,0.6);
+  font: 16px/1.2 var(--mono);
+  color: #c084fc;
+  margin: 0 0 20px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-weight: 700;
+  text-shadow: 
+    0 0 8px rgba(192, 132, 252, 0.9),
+    0 0 20px rgba(139, 92, 246, 0.8),
+    0 0 35px rgba(139, 92, 246, 0.5);
 }
 .lead{max-width:46ch;color:#cfc6f5;margin:0 0 30px;font-size:18px}
 .cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
@@ -181,7 +185,7 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding:26px 0 48px;font
 <section>
   <h2>Privacy</h2>
   <div class="panel">
-    <p>It doesn't look at your chats just converts them into PDF and Word files.</p>
+    <p>It doesn't look at your chats just converts them to PDF, Word, JSON, Markdown, TXT, HTML, or PNG file.</p>
   </div>
 </section>
 
