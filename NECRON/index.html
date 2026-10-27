@@ -1,865 +1,425 @@
-<!DOCTYPE html>
-<html lang="en" class="scroll-smooth dark">
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NECRON - Dark Reader Extension</title>
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Google Fonts: Inter & JetBrains Mono -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
-  
-  <!-- Three.js for WebGL Hologram -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NECRON - Dark Reader Extension</title>
+<link rel="icon" type="image/jpeg" href="Necron.jpg">
+<meta name="description" content="Free browser extension. Automatically turns bright websites dark with intelligent contrast recoloring.">
+<meta property="og:title" content="NECRON - Dark Reader Extension">
+<meta property="og:description" content="Automatically turns bright websites dark as pages load while preserving media color fidelity.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --void:#050304;
+  --deep:#0c0709;
+  --panel:#0a0507;
+  --line:#2a0c10;
+  --glow:#ff2a2a;
+  --hot:#ff5555;
+  --ice:#fff0f2;
+  --dim:#9e8c90;
+  --head:"Chakra Petch","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:radial-gradient(1200px 700px at 78% 8%,#3a0a10 0%,transparent 60%),radial-gradient(900px 600px at 0% 100%,#200508 0%,transparent 55%),var(--void);
+  color:var(--ice);
+  font:16px/1.6 var(--head);
+  min-height:100vh
+}
+a{color:var(--hot)}
+main{max-width:1120px;margin:0 auto;padding:0 clamp(16px,4vw,48px)}
 
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            necron: {
-              black: '#050304',
-              card: '#0c0709',
-              border: '#2a0c10',
-              red: '#ff2a2a',
-              crimson: '#dc2626',
-              ruby: '#8a0c1a',
-              dim: '#9e8c90'
-            }
-          },
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace']
-          },
-          boxShadow: {
-            'glow-red': '0 0 25px rgba(255, 42, 42, 0.35)',
-            'glow-red-lg': '0 0 50px rgba(255, 42, 42, 0.55)',
-            'hud-panel': '0 10px 40px -10px rgba(5, 3, 4, 0.95)'
-          }
-        }
-      }
-    }
-  </script>
+/* Header Navigation Bar */
+header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:20px 0;
+  border-bottom:1px solid var(--line)
+}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.brand img{height:36px;width:auto;border-radius:4px;border:1px solid var(--line);box-shadow:0 0 12px rgba(255,42,42,0.4)}
+.brand span{font-size:24px;font-weight:700;letter-spacing:.2em;color:var(--glow);text-shadow:0 0 16px rgba(255,42,42,0.6)}
 
-  <style>
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #050304;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #2a0c10;
-      border-radius: 4px;
-      border: 1px solid #ff2a2a;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #ff2a2a;
-    }
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding:56px 0 56px}
+h1{font-size:clamp(44px,8vw,92px);line-height:.95;margin:0 0 18px;letter-spacing:.02em;font-weight:700;color:#fff;text-shadow:0 0 38px rgba(255,42,42,0.7)}
+.sub{font:15px var(--mono);color:var(--hot);margin:0 0 20px;text-transform:uppercase;letter-spacing:.05em}
+.lead{max-width:46ch;color:#f0cfd4;margin:0 0 30px;font-size:18px}
+.cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.btn{
+  display:inline-block;
+  padding:14px 26px;
+  background:var(--glow);
+  color:#0b0304;
+  font-weight:700;
+  text-decoration:none;
+  font-size:17px;
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));
+  box-shadow:0 0 30px rgba(255,42,42,0.6);
+  transition:background .15s, transform .15s
+}
+.btn:hover{background:#ff5555;transform:translateY(-1px)}
+.btn:focus-visible,a:focus-visible{outline:2px solid var(--ice);outline-offset:3px}
+.meta{font:13px var(--mono);color:var(--dim)}
 
-    .bg-grid-pattern {
-      background-size: 36px 36px;
-      background-image: 
-        linear-gradient(to right, rgba(255, 42, 42, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 42, 42, 0.05) 1px, transparent 1px);
-    }
+/* Emphasized Badges */
+.badge-free{
+  background:var(--glow);
+  color:#050304;
+  font-weight:800;
+  padding:3px 10px;
+  border-radius:4px;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  box-shadow:0 0 14px rgba(255,42,42,0.8)
+}
+.badge-free-lg{font-size:1.1em;padding:4px 12px}
 
-    .cyber-border {
-      position: relative;
-      background: #0c0709;
-      border: 1px solid #2a0c10;
-    }
-    .cyber-border::before {
-      content: '';
-      position: absolute;
-      top: -1px;
-      left: -1px;
-      width: 12px;
-      height: 12px;
-      border-top: 2px solid #ff2a2a;
-      border-left: 2px solid #ff2a2a;
-      pointer-events: none;
-    }
-    .cyber-border::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      right: -1px;
-      width: 12px;
-      height: 12px;
-      border-bottom: 2px solid #ff2a2a;
-      border-right: 2px solid #ff2a2a;
-      pointer-events: none;
-    }
+/* 3D Canvas Viewport Container */
+.hud-wrapper{
+  position:relative;
+  width:100%;
+  max-width:480px;
+  height:480px;
+  justify-self:center;
+  filter:drop-shadow(0 0 60px rgba(255,42,42,0.6));
+  cursor:grab
+}
+.hud-wrapper:active{cursor:grabbing}
+#webgl-canvas{width:100%;height:100%;display:block}
 
-    .hud-corner-tr {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      width: 8px;
-      height: 8px;
-      border-top: 1px solid #ff2a2a;
-      border-right: 1px solid #ff2a2a;
-      opacity: 0.6;
-    }
-    .hud-corner-bl {
-      position: absolute;
-      bottom: 6px;
-      left: 6px;
-      width: 8px;
-      height: 8px;
-      border-bottom: 1px solid #ff2a2a;
-      border-left: 1px solid #ff2a2a;
-      opacity: 0.6;
-    }
+.panel{
+  position:relative;
+  background:linear-gradient(180deg,rgba(42,12,16,0.6),rgba(12,7,9,0.8));
+  border:1px solid var(--line);
+  padding:26px 28px
+}
+.panel:before,.panel:after{content:"";position:absolute;width:16px;height:16px;border:2px solid var(--hot)}
+.panel:before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+.panel:after{right:-1px;bottom:-1px;border-left:0;border-top:0}
 
-    .canvas-overlay {
-      background: radial-gradient(circle at center, transparent 35%, #050304 88%);
-    }
+section{padding:36px 0}
+h2{font-size:30px;margin:0 0 22px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.panel h3{margin:0 0 8px;font-size:19px;color:var(--hot);font-weight:600}
+.panel p{margin:0;color:#f0cfd4;font-size:15px}
 
-    ::selection {
-      background: #8a0c1a;
-      color: #ffffff;
-    }
-  </style>
+.nodes{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;font:14px var(--mono)}
+.nodes div{border:1px solid var(--line);padding:12px 14px;background:rgba(12,7,9,0.7)}
+.nodes span{color:var(--glow);font-weight:700}
+.nodes em{display:block;color:var(--dim);font-style:normal;font-size:12px;margin-top:2px}
+
+ol{margin:0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:20px}
+ol li{counter-increment:s;padding-left:56px;position:relative;min-height:38px;line-height:1.5;display:block}
+ol li:before{
+  content:counter(s);
+  position:absolute;
+  left:0;
+  top:0;
+  width:38px;
+  height:38px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid var(--hot);
+  color:var(--hot);
+  font:500 15px var(--mono)
+}
+code{font-family:var(--mono);font-size:.9em;background:#2a0c10;padding:2px 7px;color:var(--ice)}
+.note{font-size:14px;color:var(--dim);margin-top:28px;line-height:1.6;border-top:1px dashed var(--line);padding-top:16px}
+
+footer{
+  margin-top:40px;
+  border-top:1px solid var(--line);
+  padding:26px 0 48px;
+  font:13px var(--mono);
+  color:var(--dim);
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px
+}
+
+@media(max-width:820px){
+  .hero{grid-template-columns:1fr;padding-top:44px}
+  .grid{grid-template-columns:1fr}
+  .hud-wrapper{max-width:320px;height:320px;order:-1}
+}
+</style>
 </head>
-<body class="bg-necron-black text-gray-200 font-sans antialiased selection:bg-necron-ruby selection:text-white relative overflow-x-hidden min-h-screen">
+<body>
+<main>
 
-  <div class="fixed inset-0 bg-grid-pattern pointer-events-none z-0"></div>
-  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[900px] h-[380px] bg-necron-red/10 blur-[160px] pointer-events-none z-0 rounded-full"></div>
+<!-- HEADER NAV -->
+<header>
+  <a class="brand" href="#">
+    <img src="Necron.jpg" alt="NECRON">
+    <span>NECRON</span>
+  </a>
+  <a class="btn" href="downloads/necron.zip.zip" download>Download Extension</a>
+</header>
 
-  <!-- NAVIGATION HEADER -->
-  <header class="sticky top-0 z-50 backdrop-blur-md bg-necron-black/90 border-b border-necron-border">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      
-      <!-- Brand Logo Image -->
-      <a href="#" class="flex items-center gap-3 group">
-        <img src="Necron.jpg" alt="NECRON" class="h-9 w-auto rounded border border-necron-border shadow-glow-red object-cover">
-        <span class="font-black text-2xl tracking-[0.3em] text-necron-red drop-shadow-[0_0_12px_rgba(255,42,42,0.6)]">
-          NECRON
-        </span>
-      </a>
-
-      <!-- Desktop Nav -->
-      <nav class="hidden md:flex items-center gap-8 text-xs font-mono font-medium uppercase tracking-wider text-gray-300">
-        <a href="#features" class="hover:text-necron-red transition-colors">Features</a>
-        <a href="#presets" class="hover:text-necron-red transition-colors">Site Integrations</a>
-        <a href="#demo" class="hover:text-necron-red transition-colors">Simulator</a>
-        <a href="#install" class="hover:text-necron-red transition-colors">Installation</a>
-      </nav>
-
-      <!-- CTA Button -->
-      <div class="flex items-center gap-3">
-        <a href="downloads/necron.zip" download class="px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider text-white bg-necron-red border border-necron-red rounded shadow-glow-red hover:bg-necron-crimson hover:shadow-glow-red-lg transition-all duration-300 flex items-center gap-2">
-          <i class="fa-solid fa-file-zipper text-xs"></i>
-          <span>Download Zip</span>
-        </a>
-      </div>
+<!-- HERO SECTION -->
+<div class="hero">
+  <div>
+    <h1>NECRON</h1>
+    <p class="sub">Automated Dark Reader Extension</p>
+    <p class="lead">Automatically turns bright websites dark as pages load. Designed for smooth, eye-friendly readability with intelligent contrast recoloring that protects media fidelity.</p>
+    <div class="cta">
+      <a class="btn" href="downloads/necron.zip.zip" download>Download extension</a>
+      <span class="meta"><strong class="badge-free">100% FREE</strong> &middot; works in Google, Edge &amp; Brave</span>
     </div>
-  </header>
-
-  <!-- HERO SECTION -->
-  <section class="relative pt-12 pb-20 lg:pt-20 lg:pb-28 z-10 overflow-hidden">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-        
-        <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
-          
-          <div class="inline-flex items-center gap-2 px-3 py-1 bg-necron-red/10 border border-necron-red/40 rounded-full font-mono text-xs text-necron-red">
-            <span class="w-2 h-2 rounded-full bg-necron-red animate-pulse"></span>
-            <span>Works in Chrome, Edge, Brave & Chromium</span>
-          </div>
-
-          <h1 class="text-5xl sm:text-7xl font-black tracking-tight text-white leading-none">
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-necron-red via-red-500 to-rose-600 drop-shadow-[0_0_20px_rgba(255,42,42,0.4)]">
-              NECRON
-            </span>
-          </h1>
-
-          <p class="text-xl sm:text-2xl font-bold text-gray-200 tracking-tight">
-            Dark Reader Extension
-          </p>
-
-          <p class="text-base sm:text-lg text-necron-dim max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
-            NECRON automatically turns bright websites dark as pages load. Designed for smooth, eye-friendly readability with intelligent contrast recoloring that protects photos, images, and video embeds across your favorite sites.
-          </p>
-
-          <div class="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-            <a href="downloads/necron.zip" download class="w-full sm:w-auto px-8 py-4 text-sm font-mono font-bold uppercase tracking-wider text-white bg-necron-red rounded shadow-glow-red hover:shadow-glow-red-lg hover:bg-necron-crimson transition-all duration-300 flex items-center justify-center gap-3 group">
-              <i class="fa-solid fa-file-zipper group-hover:translate-y-0.5 transition-transform"></i>
-              <span>Download Extension (.ZIP)</span>
-            </a>
-            <a href="#demo" class="w-full sm:w-auto px-6 py-4 text-sm font-mono font-bold uppercase tracking-wider text-gray-300 bg-necron-card border border-necron-border rounded hover:border-necron-red transition-all duration-300 flex items-center justify-center gap-2">
-              <i class="fa-solid fa-sliders text-necron-red"></i>
-              <span>Test Simulator</span>
-            </a>
-          </div>
-
-          <div class="pt-8 grid grid-cols-3 gap-4 border-t border-necron-border/80 text-center lg:text-left font-mono">
-            <div>
-              <div class="text-2xl font-black text-white">100%</div>
-              <div class="text-[11px] text-necron-dim uppercase">AUTO DARKENING</div>
-            </div>
-            <div>
-              <div class="text-2xl font-black text-white">0.0s</div>
-              <div class="text-[11px] text-necron-dim uppercase">LATENCY OVERHEAD</div>
-            </div>
-            <div>
-              <div class="text-2xl font-black text-white">100%</div>
-              <div class="text-[11px] text-necron-dim uppercase">LOCAL & PRIVATE</div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- 3D WEBGL HOLOGRAM DISPLAY -->
-        <div class="lg:col-span-5 relative flex items-center justify-center">
-          <div class="relative w-full aspect-square max-w-[440px] lg:max-w-none">
-            
-            <div id="hud-wrapper" class="w-full h-full cursor-grab active:cursor-grabbing rounded-2xl overflow-hidden relative border border-necron-border bg-necron-black/90 shadow-glow-red cyber-border">
-              <canvas id="webgl-canvas" class="w-full h-full block"></canvas>
-              <div class="canvas-overlay absolute inset-0 pointer-events-none"></div>
-
-              <div class="hud-corner-tr"></div>
-              <div class="hud-corner-bl"></div>
-
-              <div class="absolute top-4 left-4 pointer-events-none flex items-center gap-2 font-mono text-[10px] text-necron-red bg-necron-black/90 px-2.5 py-1 border border-necron-border rounded">
-                <span class="w-2 h-2 rounded-full bg-necron-red animate-ping"></span>
-                <span class="tracking-widest">3D HOLOGRAM CORE</span>
-              </div>
-
-              <div class="absolute bottom-4 right-4 pointer-events-none font-mono text-[10px] text-necron-dim bg-necron-black/90 px-2.5 py-1 border border-necron-border rounded flex items-center gap-1.5">
-                <i class="fa-solid fa-arrows-spin text-necron-red"></i> 
-                <span>DRAG TO ROTATE</span>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- FEATURES SECTION -->
-  <section id="features" class="py-20 relative z-10 border-t border-necron-border/80 bg-necron-card/40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
-        <p class="text-xs font-mono font-bold uppercase tracking-widest text-necron-red">ARCHITECTURE</p>
-        <h2 class="text-3xl sm:text-4xl font-black text-white">Engineered for Automated Darkening</h2>
-        <p class="text-necron-dim text-sm sm:text-base">
-          NECRON runs silently in the background, transforming page themes automatically across all active tabs.
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        
-        <div class="cyber-border p-8 rounded hover:border-necron-red/60 transition-all duration-300 group">
-          <div class="hud-corner-tr"></div>
-          <div class="w-12 h-12 rounded bg-necron-red/10 border border-necron-red/40 flex items-center justify-center text-necron-red text-xl mb-6 group-hover:scale-110 transition-transform shadow-glow-red">
-            <i class="fa-solid fa-bolt"></i>
-          </div>
-          <h3 class="text-xl font-bold text-white mb-2">Instant Load Darkening</h3>
-          <p class="text-necron-dim text-sm leading-relaxed">
-            Dark theme applies instantly as web pages load, preventing high-brightness white flashes before rendering.
-          </p>
-        </div>
-
-        <div class="cyber-border p-8 rounded hover:border-necron-red/60 transition-all duration-300 group">
-          <div class="hud-corner-tr"></div>
-          <div class="w-12 h-12 rounded bg-necron-red/10 border border-necron-red/40 flex items-center justify-center text-necron-red text-xl mb-6 group-hover:scale-110 transition-transform shadow-glow-red">
-            <i class="fa-solid fa-image"></i>
-          </div>
-          <h3 class="text-xl font-bold text-white mb-2">Media Protection</h3>
-          <p class="text-necron-dim text-sm leading-relaxed">
-            Preserves color fidelity for images, SVGs, canvas renders, and video embeds without inverted or washed-out visuals.
-          </p>
-        </div>
-
-        <div class="cyber-border p-8 rounded hover:border-necron-red/60 transition-all duration-300 group">
-          <div class="hud-corner-tr"></div>
-          <div class="w-12 h-12 rounded bg-necron-red/10 border border-necron-red/40 flex items-center justify-center text-necron-red text-xl mb-6 group-hover:scale-110 transition-transform shadow-glow-red">
-            <i class="fa-solid fa-sliders"></i>
-          </div>
-          <h3 class="text-xl font-bold text-white mb-2">Custom Darkness Control</h3>
-          <p class="text-necron-dim text-sm leading-relaxed">
-            Adjust global darkness levels from 0% to 100% using the toolbar popup to match your room lighting.
-          </p>
-        </div>
-
-        <div class="cyber-border p-8 rounded hover:border-necron-red/60 transition-all duration-300 group">
-          <div class="hud-corner-tr"></div>
-          <div class="w-12 h-12 rounded bg-necron-red/10 border border-necron-red/40 flex items-center justify-center text-necron-red text-xl mb-6 group-hover:scale-110 transition-transform shadow-glow-red">
-            <i class="fa-solid fa-user-shield"></i>
-          </div>
-          <h3 class="text-xl font-bold text-white mb-2">Private Local Processing</h3>
-          <p class="text-necron-dim text-sm leading-relaxed">
-            Runs 100% locally on your computer with zero external server tracking or telemetry. Your browsing data never leaves your device.
-          </p>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- SPECIALIZED SITE INTEGRATIONS SECTION -->
-  <section id="presets" class="py-20 relative z-10 border-t border-necron-border">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
-        <p class="text-xs font-mono font-bold uppercase tracking-widest text-necron-red">WEB PLATFORM SUPPORT</p>
-        <h2 class="text-3xl sm:text-4xl font-black text-white">Targeted Platform Support</h2>
-        <p class="text-necron-dim text-sm sm:text-base">
-          Specialized engine compatibility for complex search portals, academic portals, and dense reference platforms.
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        
-        <div class="cyber-border p-6 rounded flex flex-col justify-between hover:border-necron-red transition-all">
-          <div class="hud-corner-tr"></div>
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-[10px] font-mono uppercase tracking-widest px-2.5 py-1 bg-necron-red/20 text-necron-red border border-necron-red/40 rounded font-bold">SEARCH & WEB APPS</span>
-              <i class="fa-brands fa-google text-2xl text-necron-red"></i>
-            </div>
-            <h3 class="text-xl font-bold text-white mb-2">Google Services</h3>
-            <p class="text-necron-dim text-sm mb-4 leading-relaxed">
-              Transforms stark white Google Search interfaces, Knowledge Panels, and web app portals into seamless, eye-friendly dark layouts.
-            </p>
-          </div>
-          <div class="pt-4 border-t border-necron-border/60 font-mono text-xs text-necron-dim flex justify-between items-center">
-            <span>Google Platform Support</span>
-            <span class="text-emerald-400 font-bold"><i class="fa-solid fa-check mr-1"></i>Active</span>
-          </div>
-        </div>
-
-        <div class="cyber-border p-6 rounded flex flex-col justify-between hover:border-necron-red transition-all">
-          <div class="hud-corner-tr"></div>
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-[10px] font-mono uppercase tracking-widest px-2.5 py-1 bg-necron-red/20 text-necron-red border border-necron-red/40 rounded font-bold">LMS PORTAL</span>
-              <i class="fa-solid fa-graduation-cap text-2xl text-necron-red"></i>
-            </div>
-            <h3 class="text-xl font-bold text-white mb-2">D2L Brightspace LMS</h3>
-            <p class="text-necron-dim text-sm mb-4 leading-relaxed">
-              Provides complete dark mode overrides across D2L course portals, quiz modules, assignment dropboxes, and discussion boards.
-            </p>
-          </div>
-          <div class="pt-4 border-t border-necron-border/60 font-mono text-xs text-necron-dim flex justify-between items-center">
-            <span>Course Overrides</span>
-            <span class="text-emerald-400 font-bold"><i class="fa-solid fa-check mr-1"></i>Active</span>
-          </div>
-        </div>
-
-        <div class="cyber-border p-6 rounded flex flex-col justify-between hover:border-necron-red transition-all">
-          <div class="hud-corner-tr"></div>
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-[10px] font-mono uppercase tracking-widest px-2.5 py-1 bg-necron-red/20 text-necron-red border border-necron-red/40 rounded font-bold">KNOWLEDGE BASE</span>
-              <i class="fa-brands fa-wikipedia-w text-2xl text-necron-red"></i>
-            </div>
-            <h3 class="text-xl font-bold text-white mb-2">Wikipedia</h3>
-            <p class="text-necron-dim text-sm mb-4 leading-relaxed">
-              Protects eye comfort during late-night research by converting bright white article pages, tables, and references into dark contrast.
-            </p>
-          </div>
-          <div class="pt-4 border-t border-necron-border/60 font-mono text-xs text-necron-dim flex justify-between items-center">
-            <span>Article Support</span>
-            <span class="text-emerald-400 font-bold"><i class="fa-solid fa-check mr-1"></i>Active</span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- INTERACTIVE POPUP SIMULATOR -->
-  <section id="demo" class="py-20 relative z-10 border-t border-necron-border bg-necron-card/30">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-        
-        <div class="lg:col-span-5 space-y-6">
-          <p class="text-xs font-mono font-bold uppercase tracking-widest text-necron-red">POPUP SIMULATOR</p>
-          <h2 class="text-3xl sm:text-4xl font-black text-white">Interactive Toolbar Preview</h2>
-          <p class="text-necron-dim text-sm leading-relaxed">
-            Test the extension settings in real time using this interactive simulator. Switch between preview tabs and modify brightness levels directly.
-          </p>
-
-          <div class="space-y-3 font-mono text-xs text-gray-300">
-            <div class="flex items-center gap-3 p-3 bg-necron-black border border-necron-border rounded">
-              <i class="fa-solid fa-toggle-on text-necron-red text-base"></i>
-              <span>Global Master Enable Toggle</span>
-            </div>
-            <div class="flex items-center gap-3 p-3 bg-necron-black border border-necron-border rounded">
-              <i class="fa-solid fa-sliders text-necron-red text-base"></i>
-              <span>Live Darkness Slider Adjustment</span>
-            </div>
-            <div class="flex items-center gap-3 p-3 bg-necron-black border border-necron-border rounded">
-              <i class="fa-solid fa-rotate-left text-necron-red text-base"></i>
-              <span>Instant Settings Reset Button</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="lg:col-span-7 flex justify-center">
-          
-          <div class="w-full max-w-[380px] bg-necron-black text-gray-100 border-2 border-necron-border rounded-xl shadow-glow-red overflow-hidden font-sans select-none cyber-border">
-            <div class="hud-corner-tr"></div>
-            
-            <div class="px-4 py-3.5 border-b border-necron-border flex items-center justify-between bg-black">
-              <div class="flex items-center gap-2">
-                <span class="font-extrabold tracking-[0.25em] text-necron-red text-sm drop-shadow-[0_0_8px_rgba(255,42,42,0.5)]">
-                  NECRON
-                </span>
-              </div>
-              
-              <label class="relative inline-block w-11 h-6 cursor-pointer">
-                <input type="checkbox" id="demo-master" checked class="sr-only peer" onchange="toggleDemoMaster(this.checked)">
-                <div class="w-11 h-6 bg-[#2a1114] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#8f8386] after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-necron-red peer-checked:after:bg-[#000]"></div>
-              </label>
-            </div>
-
-            <div class="flex border-b border-necron-border bg-necron-card/80 font-mono text-xs">
-              <button id="tab-btn-controls" onclick="switchDemoTab('controls')" class="flex-1 py-2.5 text-center text-necron-red border-b-2 border-necron-red font-bold transition-all">
-                Controls
-              </button>
-              <button id="tab-btn-sites" onclick="switchDemoTab('sites')" class="flex-1 py-2.5 text-center text-necron-dim border-b-2 border-transparent font-medium hover:text-white transition-all">
-                Active Sites
-              </button>
-            </div>
-
-            <div id="tab-content-controls" class="p-4 space-y-4">
-              
-              <div class="flex justify-between items-center pb-3 border-b border-necron-border/80">
-                <div>
-                  <div class="text-[10px] uppercase font-mono tracking-widest text-necron-dim">DARK ENGINE</div>
-                  <div id="demo-status-text" class="text-xs font-mono font-bold text-emerald-400">ACTIVE</div>
-                </div>
-                <span id="demo-status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              </div>
-
-              <div class="space-y-2">
-                <div class="flex justify-between items-center text-xs">
-                  <span class="text-[10px] uppercase font-mono tracking-widest text-necron-dim">DARKNESS LEVEL</span>
-                  <input type="number" id="demo-bnum" value="35" min="0" max="100" class="w-12 bg-black border border-necron-border text-center text-white text-xs rounded py-0.5 font-mono" onchange="syncDemoBrightness(this.value)">
-                </div>
-                <input type="range" id="demo-brightness" value="35" min="0" max="100" class="w-full accent-necron-red cursor-pointer" oninput="syncDemoBrightness(this.value)">
-              </div>
-
-              <div class="pt-2">
-                <button onclick="resetDemoSettings()" class="w-full py-2.5 bg-necron-card hover:bg-necron-border/60 border border-necron-border text-xs font-mono text-gray-300 font-bold rounded transition-colors flex items-center justify-center gap-2">
-                  <i class="fa-solid fa-rotate-left text-necron-red text-[10px]"></i>
-                  <span>RESET TO DEFAULTS</span>
-                </button>
-              </div>
-
-            </div>
-
-            <div id="tab-content-sites" class="p-4 space-y-3 hidden font-mono text-xs">
-              <div class="text-[10px] uppercase tracking-widest text-necron-dim mb-2">ENABLED DOMAINS</div>
-              
-              <div class="flex items-center justify-between p-2 bg-black border border-necron-border rounded">
-                <span class="text-gray-300">google.com</span>
-                <span class="text-emerald-400 text-[10px] font-bold">ACTIVE</span>
-              </div>
-              <div class="flex items-center justify-between p-2 bg-black border border-necron-border rounded">
-                <span class="text-gray-300">brightspace.com</span>
-                <span class="text-emerald-400 text-[10px] font-bold">ACTIVE</span>
-              </div>
-              <div class="flex items-center justify-between p-2 bg-black border border-necron-border rounded">
-                <span class="text-gray-300">wikipedia.org</span>
-                <span class="text-emerald-400 text-[10px] font-bold">ACTIVE</span>
-              </div>
-            </div>
-
-            <div class="px-4 py-2 bg-black border-t border-necron-border flex items-center justify-between text-[9px] font-mono text-necron-dim">
-              <span>MANIFEST V3</span>
-              <span class="text-necron-red">LOCAL STORAGE</span>
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-  </section>
-
-  <!-- DEVELOPER MODE INSTALLATION GUIDE -->
-  <section id="install" class="py-20 relative z-10 border-t border-necron-border">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
-        <p class="text-xs font-mono font-bold uppercase tracking-widest text-necron-red">DEVELOPER MODE</p>
-        <h2 class="text-3xl sm:text-4xl font-black text-white">4-Step Unpacked Installation</h2>
-        <p class="text-necron-dim text-sm sm:text-base">
-          Install NECRON directly into Chrome, Brave, Edge, or Chromium browsers in under 60 seconds.
-        </p>
-      </div>
-
-      <div class="space-y-6">
-        
-        <div class="cyber-border p-6 rounded flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div class="hud-corner-tr"></div>
-          <div class="w-10 h-10 rounded bg-necron-red/20 border border-necron-red text-necron-red font-mono font-black text-lg flex items-center justify-center shrink-0 shadow-glow-red">
-            01
-          </div>
-          <div class="flex-1">
-            <h3 class="text-lg font-bold text-white mb-1">Download & Extract Extension (.ZIP)</h3>
-            <p class="text-necron-dim text-sm mb-3">
-              Click the button to download <code class="text-white font-mono bg-necron-black px-1.5 py-0.5 rounded border border-necron-border">necron.zip</code> and extract/unzip the folder on your computer.
-            </p>
-            <a href="downloads/necron.zip" download class="inline-flex items-center gap-2 px-4 py-2 bg-necron-red hover:bg-necron-crimson text-white font-mono text-xs font-bold rounded transition-all shadow-glow-red">
-              <i class="fa-solid fa-file-zipper"></i>
-              <span>Download NECRON .ZIP</span>
-            </a>
-          </div>
-        </div>
-
-        <div class="cyber-border p-6 rounded flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div class="hud-corner-tr"></div>
-          <div class="w-10 h-10 rounded bg-necron-red/20 border border-necron-red text-necron-red font-mono font-black text-lg flex items-center justify-center shrink-0 shadow-glow-red">
-            02
-          </div>
-          <div class="flex-1">
-            <h3 class="text-lg font-bold text-white mb-1">Open Extensions Page</h3>
-            <p class="text-necron-dim text-sm mb-3">
-              Navigate to <code class="text-white font-mono bg-necron-black px-1.5 py-0.5 rounded border border-necron-border">chrome://extensions</code>, <code class="text-white font-mono bg-necron-black px-1.5 py-0.5 rounded border border-necron-border">edge://extensions</code>, or <code class="text-white font-mono bg-necron-black px-1.5 py-0.5 rounded border border-necron-border">brave://extensions</code> in your browser address bar:
-            </p>
-            <div class="flex flex-wrap gap-2">
-              <button onclick="copyToClipboard('chrome://extensions')" class="px-3 py-1.5 bg-necron-black border border-necron-border hover:border-necron-red rounded font-mono text-xs text-gray-300 flex items-center gap-2 transition-colors">
-                <span>chrome://extensions</span>
-                <i class="fa-solid fa-copy text-necron-red text-[10px]"></i>
-              </button>
-              <button onclick="copyToClipboard('edge://extensions')" class="px-3 py-1.5 bg-necron-black border border-necron-border hover:border-necron-red rounded font-mono text-xs text-gray-300 flex items-center gap-2 transition-colors">
-                <span>edge://extensions</span>
-                <i class="fa-solid fa-copy text-necron-red text-[10px]"></i>
-              </button>
-              <button onclick="copyToClipboard('brave://extensions')" class="px-3 py-1.5 bg-necron-black border border-necron-border hover:border-necron-red rounded font-mono text-xs text-gray-300 flex items-center gap-2 transition-colors">
-                <span>brave://extensions</span>
-                <i class="fa-solid fa-copy text-necron-red text-[10px]"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="cyber-border p-6 rounded flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div class="hud-corner-tr"></div>
-          <div class="w-10 h-10 rounded bg-necron-red/20 border border-necron-red text-necron-red font-mono font-black text-lg flex items-center justify-center shrink-0 shadow-glow-red">
-            03
-          </div>
-          <div class="flex-1">
-            <h3 class="text-lg font-bold text-white mb-1">Enable Developer Mode</h3>
-            <p class="text-necron-dim text-sm">
-              Toggle the <strong class="text-white font-mono">Developer mode</strong> switch in the top-right corner of the Extensions page.
-            </p>
-          </div>
-        </div>
-
-        <div class="cyber-border p-6 rounded flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div class="hud-corner-tr"></div>
-          <div class="w-10 h-10 rounded bg-necron-red/20 border border-necron-red text-necron-red font-mono font-black text-lg flex items-center justify-center shrink-0 shadow-glow-red">
-            04
-          </div>
-          <div class="flex-1">
-            <h3 class="text-lg font-bold text-white mb-1">Load Unpacked</h3>
-            <p class="text-necron-dim text-sm">
-              Click <strong class="text-white font-mono">"Load unpacked"</strong> and select the unzipped extension folder.
-            </p>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-  </section>
-
-  <!-- FOOTER -->
-  <footer class="border-t border-necron-border bg-black py-8 relative z-10">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-      
-      <div class="flex items-center gap-2">
-        <span class="font-black tracking-[0.25em] text-necron-red text-sm">NECRON</span>
-      </div>
-
-      <p class="text-xs font-mono text-necron-dim text-center">
-        Automated Dark Reader Extension
-      </p>
-
-    </div>
-  </footer>
-
-  <!-- Notification Toast -->
-  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-necron-card border border-necron-red text-white text-xs font-mono px-4 py-3 rounded shadow-glow-red opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2">
-    <i class="fa-solid fa-circle-check text-necron-red"></i>
-    <span id="toast-msg">Copied to clipboard!</span>
   </div>
 
-  <script>
-    /* WebGL Three.js Hologram Core */
-    (function initHologramCore() {
-      const container = document.getElementById('hud-wrapper');
-      const canvas = document.getElementById('webgl-canvas');
+  <div class="hud-wrapper" title="Click & Drag to rotate hologram">
+    <canvas id="webgl-canvas"></canvas>
+  </div>
+</div>
 
-      if (!container || !canvas || typeof THREE === 'undefined') return;
+<section>
+  <h2><span class="badge-free badge-free-lg">100% FREE</span> &amp; Local</h2>
+  <div class="panel">
+    <h3>No subscriptions, zero tracking</h3>
+    <p>NECRON is completely free to use with zero paywalls, premium tiers, or background tracking. Runs 100% locally on your machine for instant, private theme recoloring.</p>
+  </div>
+</section>
 
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-      camera.position.z = 7.5;
+<section>
+  <h2>What it does</h2>
+  <div class="grid">
+    <div class="panel"><h3>Instant Darkening</h3><p>Applies dark themes automatically as web pages render, preventing white flashes before loading.</p></div>
+    <div class="panel"><h3>Media Protection</h3><p>Preserves color accuracy for images, photos, canvas elements, and video embeds without washing them out.</p></div>
+    <div class="panel"><h3>Custom Control</h3><p>Adjust global darkness levels from 0% to 100% using the browser popup to fit your environment.</p></div>
+  </div>
+</section>
 
-      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-      renderer.setSize(container.clientWidth, container.clientHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+<section>
+  <h2>Targeted Platforms</h2>
+  <div class="nodes">
+    <div><span>01</span> Google Services<em>google.com &amp; search apps</em></div>
+    <div><span>02</span> D2L Brightspace<em>brightspace.com &amp; course portals</em></div>
+    <div><span>03</span> Wikipedia<em>wikipedia.org &amp; reference pages</em></div>
+  </div>
+</section>
 
-      const coreGroup = new THREE.Group();
-      scene.add(coreGroup);
+<section>
+  <h2>Install in four steps</h2>
+  <div class="panel">
+    <ol>
+      <li>Download the <code>necron.zip</code> file above and unzip it onto your computer.</li>
+      <li>Open <code>chrome://extensions</code> (or <code>edge://extensions</code> / <code>brave://extensions</code>) and turn on <strong>Developer mode</strong>.</li>
+      <li>Click <strong>Load unpacked</strong> and select the unzipped extension folder.</li>
+      <li>Browse any website — NECRON will automatically transform bright pages into clean dark themes!</li>
+    </ol>
+    <p class="note">Runs fully local on your device with zero cloud tracking or telemetry.</p>
+  </div>
+</section>
 
-      const coreGeo = new THREE.IcosahedronGeometry(1.3, 3);
-      const coreMat = new THREE.MeshBasicMaterial({
-        color: 0xff2a2a,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.8
-      });
-      const wireCore = new THREE.Mesh(coreGeo, coreMat);
-      coreGroup.add(wireCore);
+<section>
+  <h2>Privacy</h2>
+  <div class="panel">
+    <p>NECRON operates completely locally on your device to modify CSS stylesheets. Your personal data and browsing activity are never collected or sent anywhere.</p>
+  </div>
+</section>
 
-      const innerGeo = new THREE.SphereGeometry(0.7, 16, 16);
-      const innerMat = new THREE.MeshBasicMaterial({
-        color: 0x8a0c1a,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.5
-      });
-      const innerSphere = new THREE.Mesh(innerGeo, innerMat);
-      coreGroup.add(innerSphere);
+<footer>
+  <span style="color: var(--glow); font-weight:700;">NECRON</span>
+  <span>Automated Dark Reader Extension</span>
+</footer>
 
-      const createRing = (radius, tube, color, rotX, rotY) => {
-        const ringGeo = new THREE.TorusGeometry(radius, tube, 16, 100);
-        const ringMat = new THREE.MeshBasicMaterial({
-          color,
-          wireframe: true,
-          transparent: true,
-          opacity: 0.7
-        });
-        const ring = new THREE.Mesh(ringGeo, ringMat);
-        ring.rotation.x = rotX;
-        ring.rotation.y = rotY;
-        return ring;
-      };
+</main>
 
-      const ring1 = createRing(1.8, 0.015, 0xff2a2a, Math.PI / 3, Math.PI / 6);
-      const ring2 = createRing(2.1, 0.012, 0xdc143c, -Math.PI / 4, Math.PI / 3);
-      const ring3 = createRing(2.4, 0.008, 0x8a0c1a, Math.PI / 2, 0);
+<script>
+const container = document.querySelector('.hud-wrapper');
+const canvas = document.getElementById('webgl-canvas');
 
-      coreGroup.add(ring1);
-      coreGroup.add(ring2);
-      coreGroup.add(ring3);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
+camera.position.z = 7.5;
 
-      const particleCount = 12000;
-      const particleGeo = new THREE.BufferGeometry();
-      const positions = new Float32Array(particleCount * 3);
-      const colors = new Float32Array(particleCount * 3);
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+renderer.setSize(480, 480);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-      for (let i = 0; i < particleCount; i++) {
-        const layer = Math.random();
-        let radius;
-        if (layer < 0.6) {
-          radius = 1.35 + Math.random() * 1.2;
-        } else if (layer < 0.9) {
-          radius = 2.4 + Math.random() * 1.1;
-        } else {
-          radius = 3.5 + Math.random() * 1.5;
-        }
+const coreGroup = new THREE.Group();
+scene.add(coreGroup);
 
-        const theta = Math.random() * Math.PI * 2;
-        const phi = (Math.random() - 0.5) * Math.PI;
+// 1. HOLOGRAPHIC WIREFRAME ICOSAHEDRON CORE
+const coreGeo = new THREE.IcosahedronGeometry(1.3, 3);
+const coreMat = new THREE.MeshBasicMaterial({
+  color: 0xff2a2a,
+  wireframe: true,
+  transparent: true,
+  opacity: 0.8
+});
+const wireCore = new THREE.Mesh(coreGeo, coreMat);
+coreGroup.add(wireCore);
 
-        positions[i * 3] = radius * Math.cos(theta) * Math.cos(phi);
-        positions[i * 3 + 1] = radius * Math.sin(phi);
-        positions[i * 3 + 2] = radius * Math.sin(theta) * Math.cos(phi);
+// 2. INNER PULSING CORE
+const innerGeo = new THREE.SphereGeometry(0.7, 16, 16);
+const innerMat = new THREE.MeshBasicMaterial({
+  color: 0x8a0c1a,
+  transparent: true,
+  opacity: 0.5,
+  wireframe: true
+});
+const innerSphere = new THREE.Mesh(innerGeo, innerMat);
+coreGroup.add(innerSphere);
 
-        const shade = Math.random();
-        if (shade > 0.4) {
-          colors[i * 3] = 1.0;
-          colors[i * 3 + 1] = 0.16 + Math.random() * 0.1;
-          colors[i * 3 + 2] = 0.16 + Math.random() * 0.1;
-        } else {
-          colors[i * 3] = 0.6 + Math.random() * 0.3;
-          colors[i * 3 + 1] = 0.02;
-          colors[i * 3 + 2] = 0.05;
-        }
-      }
+// 3. THREE COUNTER-ROTATING TORUS RINGS
+const createRing = (radius, tube, color, rotX, rotY) => {
+  const ringGeo = new THREE.TorusGeometry(radius, tube, 16, 100);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.75
+  });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = rotX;
+  ring.rotation.y = rotY;
+  return ring;
+};
 
-      particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      particleGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+const ring1 = createRing(1.8, 0.015, 0xff2a2a, Math.PI / 3, Math.PI / 6);
+const ring2 = createRing(2.1, 0.012, 0xdc143c, -Math.PI / 4, Math.PI / 3);
+const ring3 = createRing(2.4, 0.008, 0x8a0c1a, Math.PI / 2, 0);
 
-      const particleMat = new THREE.PointsMaterial({
-        size: 0.038,
-        vertexColors: true,
-        transparent: true,
-        opacity: 0.82
-      });
-      const particleSystem = new THREE.Points(particleGeo, particleMat);
-      coreGroup.add(particleSystem);
+coreGroup.add(ring1);
+coreGroup.add(ring2);
+coreGroup.add(ring3);
 
-      let isDragging = false;
-      let previousMousePosition = { x: 0, y: 0 };
-      let targetRotationX = 0;
-      let targetRotationY = 0;
+// 4. DENSE CRIMSON PARTICLE NEBULA (12,000 PARTICLES)
+const particleCount = 12000;
+const particleGeo = new THREE.BufferGeometry();
+const positions = new Float32Array(particleCount * 3);
+const colors = new Float32Array(particleCount * 3);
 
-      const onPointerDown = (e) => {
-        isDragging = true;
-        const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
-        const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
-        previousMousePosition = { x: clientX, y: clientY };
-      };
+for (let i = 0; i < particleCount; i++) {
+  const layer = Math.random();
+  let radius;
+  if (layer < 0.6) {
+    radius = 1.35 + Math.random() * 1.2;
+  } else if (layer < 0.9) {
+    radius = 2.4 + Math.random() * 1.1;
+  } else {
+    radius = 3.5 + Math.random() * 1.5;
+  }
 
-      const onPointerMove = (e) => {
-        if (!isDragging) return;
-        const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
-        const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+  const theta = Math.random() * Math.PI * 2;
+  const phi = (Math.random() - 0.5) * Math.PI;
 
-        const deltaX = clientX - previousMousePosition.x;
-        const deltaY = clientY - previousMousePosition.y;
+  positions[i * 3] = radius * Math.cos(theta) * Math.cos(phi);
+  positions[i * 3 + 1] = radius * Math.sin(phi);
+  positions[i * 3 + 2] = radius * Math.sin(theta) * Math.cos(phi);
 
-        targetRotationY += deltaX * 0.008;
-        targetRotationX += deltaY * 0.008;
+  const shade = Math.random();
+  if (shade > 0.4) {
+    colors[i * 3] = 1.0;
+    colors[i * 3 + 1] = 0.16 + Math.random() * 0.1;
+    colors[i * 3 + 2] = 0.16 + Math.random() * 0.1;
+  } else {
+    colors[i * 3] = 0.6 + Math.random() * 0.3;
+    colors[i * 3 + 1] = 0.02;
+    colors[i * 3 + 2] = 0.05;
+  }
+}
 
-        previousMousePosition = { x: clientX, y: clientY };
-      };
+particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+particleGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-      const onPointerUp = () => { isDragging = false; };
+const particleMat = new THREE.PointsMaterial({
+  size: 0.038,
+  vertexColors: true,
+  transparent: true,
+  opacity: 0.82
+});
+const particleSystem = new THREE.Points(particleGeo, particleMat);
+coreGroup.add(particleSystem);
 
-      container.addEventListener('mousedown', onPointerDown);
-      window.addEventListener('mousemove', onPointerMove);
-      window.addEventListener('mouseup', onPointerUp);
+// 5. MOUSE & TOUCH DRAG CONTROLS
+let isDragging = false;
+let previousMousePosition = { x: 0, y: 0 };
+let targetRotationX = 0;
+let targetRotationY = 0;
 
-      container.addEventListener('touchstart', onPointerDown, { passive: true });
-      window.addEventListener('touchmove', onPointerMove, { passive: true });
-      window.addEventListener('touchend', onPointerUp);
+container.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  previousMousePosition = { x: e.clientX, y: e.clientY };
+});
 
-      window.addEventListener('resize', () => {
-        if (!container) return;
-        const w = container.clientWidth;
-        const h = container.clientHeight;
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
-        renderer.setSize(w, h);
-      });
+window.addEventListener('mouseup', () => { isDragging = false; });
 
-      function animate(time) {
-        requestAnimationFrame(animate);
-        const t = time * 0.001;
+window.addEventListener('mousemove', (e) => {
+  if (isDragging) {
+    const deltaX = e.clientX - previousMousePosition.x;
+    const deltaY = e.clientY - previousMousePosition.y;
 
-        if (!isDragging) {
-          targetRotationY += 0.004;
-          targetRotationX += 0.0015;
-        }
+    targetRotationY += deltaX * 0.008;
+    targetRotationX += deltaY * 0.008;
 
-        coreGroup.rotation.y += (targetRotationY - coreGroup.rotation.y) * 0.08;
-        coreGroup.rotation.x += (targetRotationX - coreGroup.rotation.x) * 0.08;
+    previousMousePosition = { x: e.clientX, y: e.clientY };
+  }
+});
 
-        wireCore.rotation.y = t * 0.25;
-        wireCore.rotation.z = -t * 0.15;
+container.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 1) {
+    isDragging = true;
+    previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }
+});
 
-        ring1.rotation.z = t * 0.35;
-        ring2.rotation.y = -t * 0.45;
-        ring3.rotation.x = t * 0.2;
+window.addEventListener('touchend', () => { isDragging = false; });
 
-        const scale = 1 + Math.sin(t * 4.0) * 0.08;
-        innerSphere.scale.set(scale, scale, scale);
+window.addEventListener('touchmove', (e) => {
+  if (isDragging && e.touches.length === 1) {
+    const deltaX = e.touches[0].clientX - previousMousePosition.x;
+    const deltaY = e.touches[0].clientY - previousMousePosition.y;
 
-        particleSystem.rotation.y = t * 0.12;
-        particleSystem.rotation.z = t * 0.05;
+    targetRotationY += deltaX * 0.008;
+    targetRotationX += deltaY * 0.008;
 
-        renderer.render(scene, camera);
-      }
+    previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }
+});
 
-      window.onload = function() {
-        animate(0);
-      };
-    })();
+function animate(time) {
+  requestAnimationFrame(animate);
+  const t = time * 0.001;
 
-    /* Popup Mockup Tabbed Controls */
-    function switchDemoTab(tabName) {
-      const controlsTab = document.getElementById('tab-content-controls');
-      const sitesTab = document.getElementById('tab-content-sites');
-      const btnControls = document.getElementById('tab-btn-controls');
-      const btnSites = document.getElementById('tab-btn-sites');
+  if (!isDragging) {
+    targetRotationY += 0.004;
+    targetRotationX += 0.0015;
+  }
 
-      if (tabName === 'controls') {
-        controlsTab.classList.remove('hidden');
-        sitesTab.classList.add('hidden');
-        btnControls.className = "flex-1 py-2.5 text-center text-necron-red border-b-2 border-necron-red font-bold transition-all";
-        btnSites.className = "flex-1 py-2.5 text-center text-necron-dim border-b-2 border-transparent font-medium hover:text-white transition-all";
-      } else {
-        controlsTab.classList.add('hidden');
-        sitesTab.classList.remove('hidden');
-        btnSites.className = "flex-1 py-2.5 text-center text-necron-red border-b-2 border-necron-red font-bold transition-all";
-        btnControls.className = "flex-1 py-2.5 text-center text-necron-dim border-b-2 border-transparent font-medium hover:text-white transition-all";
-      }
-    }
+  coreGroup.rotation.y += (targetRotationY - coreGroup.rotation.y) * 0.08;
+  coreGroup.rotation.x += (targetRotationX - coreGroup.rotation.x) * 0.08;
 
-    function syncDemoBrightness(val) {
-      document.getElementById('demo-brightness').value = val;
-      document.getElementById('demo-bnum').value = val;
-    }
+  wireCore.rotation.y = t * 0.25;
+  wireCore.rotation.z = -t * 0.15;
 
-    function toggleDemoMaster(enabled) {
-      const statusText = document.getElementById('demo-status-text');
-      const statusDot = document.getElementById('demo-status-dot');
+  ring1.rotation.z = t * 0.35;
+  ring2.rotation.y = -t * 0.45;
+  ring3.rotation.x = t * 0.2;
 
-      if (enabled) {
-        statusText.textContent = "ACTIVE";
-        statusText.className = "text-xs font-mono font-bold text-emerald-400";
-        statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
-      } else {
-        statusText.textContent = "DISABLED";
-        statusText.className = "text-xs font-mono font-bold text-necron-red";
-        statusDot.className = "w-2.5 h-2.5 rounded-full bg-necron-red";
-      }
-    }
+  const scale = 1 + Math.sin(t * 4.0) * 0.08;
+  innerSphere.scale.set(scale, scale, scale);
 
-    function resetDemoSettings() {
-      document.getElementById('demo-master').checked = true;
-      toggleDemoMaster(true);
-      syncDemoBrightness(35);
-      showToast("Settings reset to defaults");
-    }
+  particleSystem.rotation.y = t * 0.12;
+  particleSystem.rotation.z = t * 0.05;
 
-    /* Copy Utility */
-    function copyToClipboard(text) {
-      const dummy = document.createElement('textarea');
-      document.body.appendChild(dummy);
-      dummy.value = text;
-      dummy.select();
-      document.execCommand('copy');
-      document.body.removeChild(dummy);
-      showToast(`Copied "${text}" to clipboard`);
-    }
-
-    function showToast(message) {
-      const toast = document.getElementById('toast');
-      const toastMsg = document.getElementById('toast-msg');
-      toastMsg.textContent = message;
-      toast.classList.remove('opacity-0', 'pointer-events-none');
-      setTimeout(() => {
-        toast.classList.add('opacity-0', 'pointer-events-none');
-      }, 2500);
-    }
-  </script>
+  renderer.render(scene, camera);
+}
+animate(0);
+</script>
 </body>
 </html>
