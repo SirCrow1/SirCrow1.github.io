@@ -152,7 +152,7 @@
 
         let S={gold:150,decks:[DEFAULT_DECK],completedBonus:[],deck:0,best:{}};
         try{
-            const loaded = JSON.parse(localStorage.sufference_save_v13||'{}');
+            const loaded = JSON.parse(localStorage.sufference_save_v14||'{}');
             Object.assign(S, loaded);
             if (!S.decks || S.decks.length === 0) {
                 S.decks = [DEFAULT_DECK];
@@ -161,7 +161,7 @@
             }
             if (!S.completedBonus) S.completedBonus = [];
         } catch(e){}
-        const save=()=>localStorage.sufference_save_v13=JSON.stringify(S);
+        const save=()=>localStorage.sufference_save_v14=JSON.stringify(S);
 
         // Load Sprite Sheets
         const sprites = {
@@ -337,7 +337,7 @@
         }
 
         const cv=$('#c'),ctx=cv.getContext('2d'),W=800,H=450;
-        let G=null,P=[],keys={},last=0;
+        let G=null,keys={},last=0;
 
         const R=(c,x,y,w,h)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h)};
         
@@ -347,36 +347,6 @@
             for(let y=0;y<H;y+=40)for(let x=0;x<W;x+=40){g.fillStyle=((x+y)/40)%2?'#1c1624':'#231b2d';g.fillRect(x,y,40,40)}
             g.fillStyle='#0a090e';g.fillRect(0,128,W,4)
         })(bg.getContext('2d'));
-
-        function spawnDeathParticles(x, y, deathIndex) {
-            let colors = ['#71717a', '#a1a1aa'];
-            let type = 'debris';
-
-            if ([0, 11].includes(deathIndex)) { colors = ['#10b981', '#34d399', '#059669']; type = 'bubble'; }
-            else if ([1, 6].includes(deathIndex)) { colors = ['#e2e8f0', '#94a3b8', '#cbd5e1']; type = 'spark'; }
-            else if ([3].includes(deathIndex)) { colors = ['#84cc16', '#22c55e', '#15803d']; type = 'bubble'; }
-            else if ([4].includes(deathIndex)) { colors = ['#c084fc', '#e879f9', '#a855f7']; type = 'wisp'; }
-            else if ([5, 13].includes(deathIndex)) { colors = ['#52525b', '#71717a', '#3f3f46']; type = 'rock'; }
-            else if ([7, 12].includes(deathIndex)) { colors = ['#f97316', '#ef4444', '#facc15']; type = 'fire'; }
-            else if ([8].includes(deathIndex)) { colors = ['#38bdf8', '#7dd3fc', '#bae6fd']; type = 'ice'; }
-            else if ([9].includes(deathIndex)) { colors = ['#facc15', '#fef08a', '#ffffff']; type = 'electric'; }
-            else if ([10].includes(deathIndex)) { colors = ['#ffffff', '#38bdf8', '#f43f5e']; type = 'spark'; }
-
-            // Initial burst
-            for (let i = 0; i < 25; i++) {
-                P.push({
-                    x, y,
-                    vx: (Math.random() - 0.5) * 320,
-                    vy: -Math.random() * 260,
-                    l: 0.6 + Math.random() * 0.8,
-                    ml: 1.4,
-                    c: rnd(colors),
-                    s: 3 + Math.random() * 5,
-                    type,
-                    deathIndex
-                });
-            }
-        }
 
         function start(){
             const d=S.decks[S.deck];
@@ -413,21 +383,20 @@
             if(t.k=='d'){
                 if(!G.sel)return;
                 G.tries++;
-                if(G.sel.id==t.id){G.right++;[t,G.sel].forEach(o=>spawnDeathParticles(o.x,o.y-20,0));G.tg=G.tg.filter(o=>o!=t&&o!=G.sel);G.sel=null;if(!G.tg.length)adv()}else die();
+                if(G.sel.id==t.id){G.right++;G.tg=G.tg.filter(o=>o!=t&&o!=G.sel);G.sel=null;if(!G.tg.length)adv()}else die();
                 return;
             }
             G.tries++;
             if(t.ok){G.right++;adv()}else die();
         }
 
-        function adv(){G.tg.forEach(o=>spawnDeathParticles(o.x,o.y-20,0));G.tg=[];G.state='clear';G.ct=.8}
+        function adv(){G.tg=[];G.state='clear';G.ct=.8}
         
         function die(){
             G.deaths++;
             G.state='dying';
             G.dk=Math.random()*DN.length|0;
             G.sel=null;
-            spawnDeathParticles(G.hx, G.hy - 20, G.dk);
             $('#dc').textContent='Deaths: '+G.deaths;
             $('#respawn-hint').style.display='block';
         }
@@ -485,50 +454,13 @@
                 G.moving=(dx||dy);
             }
             if(s=='clear'&&(G.ct-=dt)<0){G.i++;G.i>=G.rooms.length?winStart():mkRoom()}
-            
-            // Continuous particle emitters while dying so effect stays active until click respawn
-            if(s=='dying') {
-                let colors = ['#71717a', '#a1a1aa'];
-                let type = 'debris';
-                if ([0, 11].includes(G.dk)) { colors = ['#10b981', '#34d399', '#059669']; type = 'bubble'; }
-                else if ([1, 6].includes(G.dk)) { colors = ['#e2e8f0', '#94a3b8', '#cbd5e1']; type = 'spark'; }
-                else if ([3].includes(G.dk)) { colors = ['#84cc16', '#22c55e', '#15803d']; type = 'bubble'; }
-                else if ([4].includes(G.dk)) { colors = ['#c084fc', '#e879f9', '#a855f7']; type = 'wisp'; }
-                else if ([5, 13].includes(G.dk)) { colors = ['#52525b', '#71717a', '#3f3f46']; type = 'rock'; }
-                else if ([7, 12].includes(G.dk)) { colors = ['#f97316', '#ef4444', '#facc15']; type = 'fire'; }
-                else if ([8].includes(G.dk)) { colors = ['#38bdf8', '#7dd3fc', '#bae6fd']; type = 'ice'; }
-                else if ([9].includes(G.dk)) { colors = ['#facc15', '#fef08a', '#ffffff']; type = 'electric'; }
-                else if ([10].includes(G.dk)) { colors = ['#ffffff', '#38bdf8', '#f43f5e']; type = 'spark'; }
-
-                if(Math.random() < 0.4) {
-                    P.push({
-                        x: G.hx + (Math.random()-0.5)*30,
-                        y: G.hy - 15 + (Math.random()-0.5)*20,
-                        vx: (Math.random() - 0.5) * 120,
-                        vy: -Math.random() * 160,
-                        l: 0.5, ml: 0.5,
-                        c: rnd(colors),
-                        s: 3 + Math.random() * 4,
-                        type,
-                        deathIndex: G.dk
-                    });
-                }
-            }
-
             if(s=='resp'&&(G.rt+=dt)>.6)G.state='play';
             if(s=='win'){
                 G.wt+=dt;
-                if(G.wt>1&&!G.cb){G.cb=1;for(let i=0;i<50;i++)spawnDeathParticles(730,100,0);spawnDeathParticles(400,90,0)}
+                if(G.wt>1&&!G.cb){G.cb=1;}
                 if(G.wt>1.5&&G.wt<4){G.hx+=(695-G.hx)*dt*1.5;G.hy+=(140-G.hy)*dt*1.5;G.face=1}
                 if(G.wt>10)endRun();
             }
-            P=P.filter(p=>{
-                p.x+=p.vx*dt;
-                p.y+=p.vy*dt;
-                if(p.type=='wisp') p.vy -= 40*dt;
-                else if(!p.h) p.vy += 700*dt;
-                return(p.l-=dt)>0;
-            });
         }
 
         function winStart(){
@@ -670,12 +602,6 @@
                     drawSprite(sprites.idle, 120, 80, 10, G.hx, G.hy, G.face);
                 }
             }
-            P.forEach(p=>{
-                ctx.save();
-                ctx.globalAlpha = Math.min(1, p.l / (p.ml || 1));
-                R(p.c, p.x, p.y, p.s, p.s);
-                ctx.restore();
-            });
         }
 
         hub();
