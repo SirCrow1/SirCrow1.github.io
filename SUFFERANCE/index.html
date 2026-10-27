@@ -12,12 +12,12 @@
             theme: {
                 extend: {
                     colors: {
-                        darkbg: '#0a090e',
-                        dungeon: '#14121b',
-                        stone: '#2c2338',
-                        blood: '#7f1d1d',
-                        ember: '#d97706',
-                        bone: '#e6dcc0'
+                        darkbg: '#040b07',
+                        dungeon: '#06130d',
+                        stone: '#0b1d14',
+                        blood: '#059669',
+                        ember: '#10b981',
+                        bone: '#a7f3d0'
                     }
                 }
             }
@@ -35,23 +35,36 @@
             display: block;
             position: absolute;
             top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background: linear-gradient(rgba(8, 14, 10, 0) 50%, rgba(0, 0, 0, 0.35) 50%), linear-gradient(90deg, rgba(16, 185, 129, 0.04), rgba(5, 150, 105, 0.02), rgba(4, 120, 87, 0.04));
             z-index: 20;
             background-size: 100% 4px, 6px 100%;
             pointer-events: none;
+        }
+        .flashy-title {
+            background: linear-gradient(135deg, #a7f3d0 0%, #10b981 50%, #047857 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
         }
     </style>
 </head>
 <body class="bg-darkbg text-zinc-100 min-h-screen flex flex-col items-center font-sans select-none overflow-x-hidden">
 
     <!-- Top Status Bar / Header with Title -->
-    <header class="w-full max-w-4xl flex justify-between items-center p-4 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur z-30">
+    <header class="w-full max-w-4xl flex justify-between items-center p-4 border-b border-emerald-950/80 bg-zinc-950/90 backdrop-blur z-30">
         <div class="flex items-center space-x-3">
-            <span class="text-2xl">💀</span>
-            <h1 class="title-font text-xl md:text-2xl font-bold tracking-wider text-amber-500">SUFFERENCE</h1>
+            <!-- Header Logo Image with SVG Fallback -->
+            <div class="w-9 h-9 flex items-center justify-center bg-emerald-950/60 border border-emerald-800/40 rounded-lg shadow-lg overflow-hidden">
+                <img src="Sufferance.png" alt="Sufferance" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    <path d="M12 6v6l4 2" stroke="#6ee7b7" stroke-width="1.5"></path>
+                </svg>
+            </div>
+            <h1 class="title-font text-2xl md:text-3xl font-extrabold tracking-widest flashy-title">SUFFERENCE</h1>
         </div>
         <div class="flex items-center space-x-4 pixel-font text-sm">
-            <div id="gold" class="bg-zinc-900 px-3 py-1.5 rounded border border-zinc-800 text-amber-400">Gold: 0</div>
+            <div id="gold" class="bg-emerald-950/50 px-3.5 py-1.5 rounded-lg border border-emerald-900/40 text-emerald-300 font-bold shadow-inner">Gold: 0</div>
         </div>
     </header>
 
@@ -60,26 +73,26 @@
 
         <!-- VIEW 1: HUB -->
         <div id="hub" class="scr on w-full max-w-2xl flex flex-col items-center space-y-6 text-center py-6">
-            <div class="bg-zinc-900/90 border border-zinc-800 p-8 rounded-xl shadow-2xl w-full relative overflow-hidden text-left">
-                <div class="absolute inset-0 bg-gradient-to-b from-red-950/20 to-transparent pointer-events-none"></div>
-                <h2 class="title-font text-3xl font-extrabold text-zinc-100 mb-2 text-center">Sufference</h2>
-                <p class="text-zinc-400 text-sm mb-6 text-center">Study, perish repeatedly, conquer the dungeon boss, and rescue your royalty.</p>
+            <div class="bg-zinc-900/90 border border-emerald-950/60 p-8 rounded-xl shadow-2xl w-full relative overflow-hidden text-left">
+                <div class="absolute inset-0 bg-gradient-to-b from-emerald-950/20 to-transparent pointer-events-none"></div>
+                <h2 class="title-font text-4xl font-extrabold mb-2 text-center flashy-title">SUFFERENCE</h2>
+                <p class="text-emerald-300/70 text-sm mb-6 text-center">Study, perish repeatedly, conquer the dungeon boss, and rescue your royalty.</p>
 
                 <!-- Navigation Tabs -->
                 <nav class="flex justify-center gap-3 mb-6">
-                    <button data-t="d" class="tab-btn on bg-amber-600 hover:bg-amber-500 text-zinc-950 font-bold px-4 py-2 rounded transition title-font text-sm">Dungeon</button>
+                    <button data-t="d" class="tab-btn on bg-emerald-600 hover:bg-emerald-500 text-zinc-950 font-bold px-4 py-2 rounded transition title-font text-sm">Dungeon</button>
                     <button data-t="s" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-4 py-2 rounded transition title-font text-sm">Armory</button>
                     <button data-t="g" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-4 py-2 rounded transition title-font text-sm">Question Pool</button>
                 </nav>
 
                 <!-- Tab: Dungeon -->
                 <section id="t-d" class="space-y-4">
-                    <h3 class="title-font text-lg font-bold text-amber-400 border-b border-zinc-800 pb-2">Question Decks</h3>
+                    <h3 class="title-font text-lg font-bold text-emerald-300 border-b border-emerald-950/60 pb-2">Question Decks</h3>
                     <div id="decks" class="space-y-2 max-h-48 overflow-y-auto pr-2"></div>
-                    <button class="w-full bg-amber-600 hover:bg-amber-500 text-zinc-950 font-bold py-4 px-6 rounded-lg transition title-font text-lg flex items-center justify-center space-x-2 shadow-lg go" id="play">
+                    <button class="w-full bg-emerald-600 hover:bg-emerald-500 text-zinc-950 font-bold py-4 px-6 rounded-lg transition title-font text-lg flex items-center justify-center space-x-2 shadow-lg shadow-emerald-950/60 go" id="play">
                         <span>⚔️</span><span>Descend into Sufference</span>
                     </button>
-                    <p class="text-xs text-zinc-400 leading-relaxed pt-2">
+                    <p class="text-xs text-emerald-400/60 leading-relaxed pt-2">
                         You are an immortal cursed knight. Wrong answers hurt, but nothing is lost.<br>
                         <strong>Move:</strong> WASD/arrows | <strong>Sword Attack:</strong> Space/J/Click
                     </p>
@@ -87,25 +100,29 @@
 
                 <!-- Tab: Armory -->
                 <section id="t-s" hidden class="space-y-6">
-                    <h3 class="title-font text-lg font-bold text-amber-400 border-b border-zinc-800 pb-2">Armor & Skins</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="skins"></div>
-                    <h3 class="title-font text-lg font-bold text-amber-400 border-b border-zinc-800 pb-2 pt-4">Dungeon Companions</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="pets"></div>
+                    <h3 class="title-font text-lg font-bold text-emerald-300 border-b border-emerald-900/50 pb-2">Armor & Skins</h3>
+                    <div id="skins" class="p-6 text-center border border-dashed border-emerald-900/40 rounded-lg text-emerald-400/60 text-sm">
+                        ⚔️ Armory skins and equipment under construction. Coming soon!
+                    </div>
+                    <h3 class="title-font text-lg font-bold text-emerald-300 border-b border-emerald-900/50 pb-2 pt-4">Dungeon Companions</h3>
+                    <div id="pets" class="p-6 text-center border border-dashed border-emerald-900/40 rounded-lg text-emerald-400/60 text-sm">
+                        🐾 Dungeon companions coming soon!
+                    </div>
                 </section>
 
                 <!-- Tab: Question Pool -->
                 <section id="t-g" hidden class="space-y-4">
-                    <h3 class="title-font text-lg font-bold text-amber-400 border-b border-zinc-800 pb-2">Create New Question Pool</h3>
-                    <div class="bg-zinc-950 border border-zinc-800 p-3 rounded text-xs text-zinc-400 flex justify-between items-center">
-                        <span>Gemini Key Status: <strong class="text-emerald-400">Pre-assigned System Key Active</strong></span>
-                        <input type="hidden" id="key" value="SYSTEM_KEY">
-                        <input type="hidden" id="model" value="gemini-2.0-flash">
+                    <h3 class="title-font text-lg font-bold text-emerald-300 border-b border-emerald-900/50 pb-2">Create New Question Pool</h3>
+                    <div class="bg-zinc-950 border border-emerald-900/40 p-3 rounded text-xs text-zinc-400 flex justify-between items-center">
+                        <span>Gemini AI Generator: <strong class="text-emerald-400">Gemini 3 Flash Active</strong></span>
+                        <input type="hidden" id="key" value="">
+                        <input type="hidden" id="model" value="gemini-3-flash-preview">
                     </div>
-                    <input type="text" id="dn" placeholder="Deck / Subject Name" class="w-full bg-zinc-950 border border-zinc-800 p-2.5 rounded text-xs text-zinc-200 focus:outline-none focus:border-amber-500">
-                    <textarea id="notes" rows="6" placeholder="Paste your study notes or questions here..." class="w-full bg-zinc-950 border border-zinc-800 rounded p-3 text-xs text-zinc-300 focus:outline-none focus:border-amber-500 transition"></textarea>
+                    <input type="text" id="dn" placeholder="Deck / Subject Name" class="w-full bg-zinc-950 border border-emerald-900/40 p-2.5 rounded text-xs text-zinc-200 focus:outline-none focus:border-emerald-500">
+                    <textarea id="notes" rows="6" placeholder="Paste your study notes, quiz questions, or raw text here..." class="w-full bg-zinc-950 border border-emerald-900/40 rounded p-3 text-xs text-zinc-300 focus:outline-none focus:border-emerald-500 transition"></textarea>
                     <div class="flex items-center justify-between pt-2">
-                        <button id="sum" class="bg-amber-600 hover:bg-amber-500 text-zinc-950 text-xs font-bold py-2.5 px-5 rounded transition title-font">Summon Questions 🪄</button>
-                        <b id="st" class="text-xs text-amber-400 font-mono"></b>
+                        <button id="sum" class="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold py-2.5 px-5 rounded transition title-font">Summon Questions 🪄</button>
+                        <b id="st" class="text-xs text-emerald-300 font-mono"></b>
                     </div>
                 </section>
             </div>
@@ -113,13 +130,13 @@
 
         <!-- VIEW 2: RUN / GAMEPLAY -->
         <div id="run" class="scr w-full flex flex-col items-center">
-            <div id="hud" class="w-full flex justify-between items-center mb-2 px-2 text-xs font-mono text-zinc-400">
+            <div id="hud" class="w-full flex justify-between items-center mb-2 px-2 text-xs font-mono text-emerald-300/80">
                 <span id="rm">Room 1</span>
                 <span id="tm">0s</span>
                 <span id="dc">Deaths: 0</span>
             </div>
-            <div id="q" class="text-amber-400 title-font text-sm font-bold text-center mb-3 min-h-[3rem] flex items-center justify-center"></div>
-            <div class="relative w-full aspect-[16/9] bg-zinc-950 rounded-xl overflow-hidden border-2 border-zinc-800 shadow-2xl crt flex items-center justify-center">
+            <div id="q" class="text-emerald-300 title-font text-sm font-bold text-center mb-3 min-h-[3rem] flex items-center justify-center"></div>
+            <div class="relative w-full aspect-[16/9] bg-zinc-950 rounded-xl overflow-hidden border-2 border-emerald-900/50 shadow-2xl crt flex items-center justify-center">
                 <canvas id="c" width="800" height="450" class="w-full h-full block"></canvas>
             </div>
         </div>
@@ -129,51 +146,83 @@
 
     </main>
 
-    <footer class="w-full text-center py-4 text-xs text-zinc-600 border-t border-zinc-900 mt-auto">
+    <footer class="w-full text-center py-4 text-xs text-emerald-400/40 border-t border-emerald-950 mt-auto">
         Sufference &bull; Dark Fantasy Dungeon Crawler Study App
     </footer>
 
     <script>
         const $=s=>document.querySelector(s),rnd=a=>a[Math.random()*a.length|0],sh=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
-        const SKINS=[
-            {n:'Rusted Knight',a:'#7d8590',t:'#4a4f58',g:'#e58a2d',p:0,desc:'The standard immortal wanderer.'},
-            {n:'Shadow Knight',a:'#2a2433',t:'#6b4fa0',g:'#b06bff',p:200,desc:'Cloaked in abyss shadows.'},
-            {n:'Archmage',a:'#3b4fa8',t:'#e6c34a',g:'#6be0ff',p:250,hat:1,desc:'Wields arcane wisdom.'},
-            {n:'Bone Warden',a:'#d8cfb4',t:'#8a8068',g:'#ff4a4a',p:300,desc:'Forged from deep crypt bones.'},
-            {n:'Crimson Paladin',a:'#a3242b',t:'#e6c34a',g:'#fff',p:400,desc:'Radiant holy armor.'},
-            {n:'Gilded Champion',a:'#e6c34a',t:'#fff3b0',g:'#4ae0a0',p:600,desc:'Adorned in victorious gold.'}
-        ];
-        const PETS=[
-            {n:'Floating Skull',p:150,desc:'Whispers dark encouragement.'},
-            {n:'Crow',p:200,desc:'Scouts ahead in gloom.'},
-            {n:'Slime',p:250,desc:'Dissolves dungeon debris.'},
-            {n:'Tiny Dragon',p:500,desc:'Breaths warm companionship.'}
-        ];
         const PR=[
-            {n:'Human Princess',s:'#f0c8a0',h:'#6b3a1e',d:'#d94f9e',f:0,say:'You came back every time you fell. That is true loyalty.'},
-            {n:'Elf Princess',s:'#f3d9b8',h:'#e6d36a',d:'#3fa36b',f:1,say:'A thousand years, and none learned like you.'},
-            {n:'Demon Princess',s:'#c9454f',h:'#2a1020',d:'#5b1d6e',f:2,say:'Hmph. Dying that much is almost impressive.'},
+            {n:'Human Princess',s:'#f0c8a0',h:'#6b3a1e',d:'#10b981',f:0,say:'You came back every time you fell. That is true loyalty.'},
+            {n:'Elf Princess',s:'#f3d9b8',h:'#e6d36a',d:'#059669',f:1,say:'A thousand years, and none learned like you.'},
+            {n:'Demon Princess',s:'#c9454f',h:'#2a1020',d:'#047857',f:2,say:'Hmph. Dying that much is almost impressive.'},
             {n:'Angel Princess',s:'#f7e3d0',h:'#fff2b8',d:'#f5f5ff',f:3,say:'Heaven was watching. It was a lot of bones.'},
-            {n:'Dragon Girl',s:'#6fbf8a',h:'#2f6f4f',d:'#c8872e',f:4,say:'You smell like smoke and flashcards. I like it.'},
-            {n:'Cat Girl',s:'#f0c8a0',h:'#e8a45a',d:'#4a8fd9',f:5,say:'Nya! You really did read all your notes!'},
-            {n:'Fairy Princess',s:'#f3d9c8',h:'#6be0c8',d:'#b06bff',f:6,say:'Tiny wings, big gratitude. Take me home!'},
-            {n:'Vampire Royalty',s:'#e8e0f0',h:'#14101a',d:'#8f1d21',f:7,say:'Eternal, yet you outlasted my patience. Charming.'}
+            {n:'Dragon Girl',s:'#6fbf8a',h:'#2f6f4f',d:'#059669',f:4,say:'You smell like soul flames and flashcards. I like it.'},
+            {n:'Cat Girl',s:'#f0c8a0',h:'#e8a45a',d:'#10b981',f:5,say:'Nya! You really did read all your notes!'},
+            {n:'Fairy Princess',s:'#f3d9c8',h:'#6ee7b7',d:'#059669',f:6,say:'Tiny wings, big gratitude. Take me home!'},
+            {n:'Vampire Royalty',s:'#e8e0f0',h:'#14101a',d:'#047857',f:7,say:'Eternal, yet you outlasted my patience. Charming.'}
         ];
-        const DN=['Spike Impalement','Guillotine','Swallowed Whole','Acid Dissolution','Soul Extraction','Boulder Crush','Arrow to the Chest','Burnt to Cinders','Ice Shatter','Lightning Fry','Portal Truck','Poison','Spontaneous Explosion','Floor Collapse','Self-Inflicted'];
+        // Descriptive death messages
+        const DN=[
+            'You got impaled on spikes',
+            'You got decapitated by guillotine',
+            'You got swallowed whole',
+            'You got melted by acid',
+            'Your soul was extracted',
+            'You got crushed by a boulder',
+            'You took an arrow to the chest',
+            'You were burnt to cinders by soul fire',
+            'You got shattered into ice',
+            'You got fried by lightning',
+            'You got hit by portal truck',
+            'You got poisoned',
+            'You spontaneously exploded',
+            'The floor collapsed',
+            'You accidentally defeated yourself'
+        ];
         
-        let S={gold:150,decks:[],skins:[0],pets:[],skin:0,pet:-1,deck:0,best:{},key:'',model:'gemini-2.0-flash'};
-        try{Object.assign(S,JSON.parse(localStorage.sufference_save_v2||'{}'))}catch(e){}
+        // Default Starter Pack Deck with Motivational Easy Questions
+        const DEFAULT_DECK = {
+            id: 'default_starter_pool',
+            name: '👑 Starter Quest: Are You Ready?',
+            isDefault: true,
+            bonusReward: 200,
+            qs: [
+                { t: 'mc', q: 'Are you absolute-level amazing today?', o: ['Yes, beyond measure!', '100% Absolutely', 'Without a doubt!', 'Born ready!'], a: 0 },
+                { t: 'tf', q: 'You are going to master this study topic and conquer your goals.', o: ['True', 'False'], a: true },
+                { t: 'mc', q: 'What happens when you fall down in dungeon or in study?', o: ['Rise back stronger!', 'Give up', 'Blame the wizard', 'Hide in a barrel'], a: 0 },
+                { t: 'tf', q: 'Every question you answer makes your brain and armor stronger.', o: ['True', 'False'], a: true },
+                { t: 'mc', q: 'What is the most powerful spell in your study arsenal?', o: ['Consistency & Focus', 'Procrastination', 'Napping during exams', 'Panic scroll'], a: 0 },
+                { t: 'tf', q: 'Making mistakes during practice is just your brain leveling up.', o: ['True', 'False'], a: true },
+                { t: 'mc', q: 'How do hero knights defeat hard study topics?', o: ['One question at a time', 'By running away', 'Hiding under a shield', 'Eating paper'], a: 0 },
+                { t: 'tf', q: 'You have the inner strength to overcome any tricky quiz.', o: ['True', 'False'], a: true },
+                { t: 'mc', q: 'What treasure awaits at the end of every study session?', o: ['Knowledge & Victory!', 'Dust and cobwebs', 'Zero rewards', 'More monsters'], a: 0 },
+                { t: 'tf', q: 'You are capable of achieving legendary study success today.', o: ['True', 'False'], a: true }
+            ]
+        };
+
+        let S={gold:150,decks:[DEFAULT_DECK],completedBonus:[],best:{},key:'',model:'gemini-2.0-flash'};
+        try{
+            const loaded = JSON.parse(localStorage.sufference_save_v2||'{}');
+            Object.assign(S, loaded);
+            if (!S.decks || S.decks.length === 0) {
+                S.decks = [DEFAULT_DECK];
+            } else if (!S.decks.some(d => d.id === 'default_starter_pool')) {
+                S.decks.unshift(DEFAULT_DECK);
+            }
+            if (!S.completedBonus) S.completedBonus = [];
+        } catch(e){}
         const save=()=>localStorage.sufference_save_v2=JSON.stringify(S);
 
         // Tab Event Listeners
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.onclick = (e) => {
                 document.querySelectorAll('.tab-btn').forEach(b => {
-                    b.classList.remove('on', 'bg-amber-600', 'text-zinc-950');
+                    b.classList.remove('on', 'bg-emerald-500', 'text-zinc-950');
                     b.classList.add('bg-zinc-800', 'text-zinc-200');
                 });
                 const t = btn.dataset.t;
-                btn.classList.add('on', 'bg-amber-600', 'text-zinc-950');
+                btn.classList.add('on', 'bg-emerald-500', 'text-zinc-950');
                 btn.classList.remove('bg-zinc-800', 'text-zinc-200');
                 ['d','s','g'].forEach(id => {
                     const sec = $('#t-' + id);
@@ -188,114 +237,107 @@
                 $('#decks').innerHTML='<div class="text-xs text-zinc-500 py-4 text-center border border-dashed border-zinc-800 rounded">No question decks loaded yet. Head over to the Question Pool tab to create one!</div>';
             } else {
                 $('#decks').innerHTML=S.decks.map((d,i)=>`
-                    <label class="flex items-center space-x-3 bg-zinc-950 p-3 rounded border border-zinc-800 cursor-pointer hover:border-amber-500 transition">
-                        <input type=radio name=dk value=${i} ${i==S.deck?'checked':''} class="accent-amber-600">
-                        <div>
-                            <div class="font-bold text-sm text-zinc-200">${d.name}</div>
-                            <div class="text-xs text-zinc-500">${d.qs.length} questions &bull; Best rank: ${S.best[d.name]||'None'}</div>
-                        </div>
-                    </label>
+                    <div class="flex items-center justify-between bg-zinc-950 p-3 rounded border border-emerald-950/40 hover:border-emerald-700 transition group">
+                        <label class="flex items-center space-x-3 cursor-pointer flex-1">
+                            <input type=radio name=dk value=${i} ${i==S.deck?'checked':''} class="accent-emerald-500">
+                            <div>
+                                <div class="font-bold text-sm text-zinc-200 flex items-center gap-2">
+                                    <span>${d.name}</span>
+                                    ${d.isDefault ? `<span class="bg-emerald-950/80 text-emerald-400 text-[10px] px-2 py-0.5 rounded border border-emerald-900/50">Protected Starter Deck</span>` : ''}
+                                    ${d.bonusReward && !S.completedBonus.includes(d.id) ? `<span class="bg-emerald-600/20 text-emerald-300 text-[10px] px-2 py-0.5 rounded border border-emerald-600/40 animate-pulse">+${d.bonusReward} 🪙 Bonus!</span>` : ''}
+                                </div>
+                                <div class="text-xs text-zinc-500">${d.qs.length} questions &bull; Best rank: ${S.best[d.name]||'None'}</div>
+                            </div>
+                        </label>
+                        ${!d.isDefault ? `
+                        <button onclick="deleteDeck(event, ${i})" class="text-xs bg-zinc-900 hover:bg-red-950 text-zinc-500 hover:text-red-400 border border-zinc-800 hover:border-red-800 p-1.5 rounded transition ml-2" title="Delete Question Deck">
+                            🗑️
+                        </button>` : ''}
+                    </div>
                 `).join('');
                 document.querySelectorAll('input[name="dk"]').forEach(r => {
                     r.onchange = (e) => { S.deck = parseInt(e.target.value); save(); };
                 });
             }
-
-            // Render Armory Skins
-            $('#skins').innerHTML = SKINS.map((s, i) => {
-                const owned = S.skins.includes(i);
-                const active = S.skin === i;
-                return `
-                    <div class="bg-zinc-950 border ${active ? 'border-amber-500' : 'border-zinc-800'} p-3 rounded flex flex-col justify-between space-y-2">
-                        <div>
-                            <div class="font-bold text-sm text-zinc-200">${s.n}</div>
-                            <div class="text-xs text-zinc-500">${s.desc}</div>
-                        </div>
-                        <button onclick="equipSkin(${i})" class="w-full text-xs font-bold py-1.5 px-3 rounded transition ${
-                            active ? 'bg-amber-600 text-zinc-950 cursor-default' :
-                            owned ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200' :
-                            S.gold >= s.p ? 'bg-emerald-700 hover:bg-emerald-600 text-zinc-100' : 'bg-zinc-900 text-zinc-600 cursor-not-allowed'
-                        }">
-                            ${active ? 'Equipped' : owned ? 'Equip' : `Buy (🪙 ${s.p})`}
-                        </button>
-                    </div>
-                `;
-            }).join('');
-
-            // Render Armory Companions
-            $('#pets').innerHTML = PETS.map((p, i) => {
-                const owned = S.pets.includes(i);
-                const active = S.pet === i;
-                return `
-                    <div class="bg-zinc-950 border ${active ? 'border-amber-500' : 'border-zinc-800'} p-3 rounded flex flex-col justify-between space-y-2">
-                        <div>
-                            <div class="font-bold text-sm text-zinc-200">${p.n}</div>
-                            <div class="text-xs text-zinc-500">${p.desc}</div>
-                        </div>
-                        <button onclick="equipPet(${i})" class="w-full text-xs font-bold py-1.5 px-3 rounded transition ${
-                            active ? 'bg-amber-600 text-zinc-950 cursor-default' :
-                            owned ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200' :
-                            S.gold >= p.p ? 'bg-emerald-700 hover:bg-emerald-600 text-zinc-100' : 'bg-zinc-900 text-zinc-600 cursor-not-allowed'
-                        }">
-                            ${active ? 'Equipped' : owned ? 'Equip' : `Buy (🪙 ${p.p})`}
-                        </button>
-                    </div>
-                `;
-            }).join('');
         }
 
-        window.equipSkin = function(i) {
-            if (S.skins.includes(i)) {
-                S.skin = i;
-            } else if (S.gold >= SKINS[i].p) {
-                S.gold -= SKINS[i].p;
-                S.skins.push(i);
-                S.skin = i;
+        window.deleteDeck = function(e, i) {
+            e.stopPropagation();
+            if (S.decks[i].isDefault) {
+                alert("The starter quest deck cannot be deleted!");
+                return;
             }
-            save(); hub();
-        };
-
-        window.equipPet = function(i) {
-            if (S.pet === i) {
-                S.pet = -1; // Unequip
-            } else if (S.pets.includes(i)) {
-                S.pet = i;
-            } else if (S.gold >= PETS[i].p) {
-                S.gold -= PETS[i].p;
-                S.pets.push(i);
-                S.pet = i;
-            }
+            const deletedDeckName = S.decks[i].name;
+            S.decks.splice(i, 1);
+            if (S.deck >= S.decks.length) S.deck = Math.max(0, S.decks.length - 1);
             save(); hub();
         };
 
         const st = msg => { const el = $('#st'); if(el) el.textContent = msg; };
 
-        $('#sum').onclick = () => {
+        $('#sum').onclick = async () => {
             const n = $('#notes').value.trim();
-            if(!n){ st('Please paste some study material or questions first!'); return; }
-            st('Processing questions...');
-            try{
-                let qs = [];
-                // Parse lines directly as custom flashcard questions
-                const lines = n.split('\n').map(l=>l.trim()).filter(l=>l.length > 0);
-                if (lines.length > 0) {
-                    for(let i = 0; i < lines.length; i += 2) {
-                        if (lines[i+1]) {
-                            qs.push({
-                                t: 'mc',
-                                q: lines[i],
-                                o: [lines[i+1], 'Incorrect option 1', 'Incorrect option 2', 'Incorrect option 3'],
-                                a: 0
-                            });
-                        } else {
-                            qs.push({
-                                t: 'tf',
-                                q: lines[i],
-                                a: true
-                            });
+            if(!n){ st('Please paste study material first!'); return; }
+            st('Summoning questions via Gemini API...');
+            
+            try {
+                const systemPrompt = "Extract or generate multiple choice (mc) and true/false (tf) quiz questions from the user notes. Return ONLY a valid JSON array of objects. Each object must have: 't': 'mc' or 'tf', 'q': question string, 'o': array of string options (2 to 4 options for mc, or ['True', 'False'] for tf), 'a': 0-based integer index of the correct option for mc, or boolean for tf.";
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: n }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "ARRAY",
+                            items: {
+                                type: "OBJECT",
+                                properties: {
+                                    t: { type: "STRING" },
+                                    q: { type: "STRING" },
+                                    o: { type: "ARRAY", items: { type: "STRING" } },
+                                    a: { type: "NUMBER" }
+                                },
+                                propertyOrdering: ["t", "q", "o", "a"]
+                            }
                         }
                     }
+                };
+
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
                 }
+
+                const data = await res.json();
+                const rawJsonText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                let parsed = JSON.parse(rawJsonText || '[]');
+
+                const qs = parsed.map(item => {
+                    let correctIdx = 0;
+                    if (typeof item.a === 'number') correctIdx = Math.max(0, Math.floor(item.a));
+                    else if (typeof item.a === 'boolean') correctIdx = item.a;
+                    else if (typeof item.a === 'string' && !isNaN(parseInt(item.a))) correctIdx = parseInt(item.a);
+
+                    const isMc = item.t === 'mc' || (item.o && item.o.length > 2);
+
+                    return {
+                        t: isMc ? 'mc' : 'tf',
+                        q: item.q,
+                        o: item.o && item.o.length >= 2 ? item.o : ['True', 'False'],
+                        a: isMc ? correctIdx : (item.a === true || item.a === 0)
+                    };
+                }).filter(q => q.q);
+
+                if (qs.length === 0) throw new Error("No valid questions parsed.");
+
                 const name = $('#dn').value.trim() || 'Deck ' + (S.decks.length + 1);
                 S.decks.push({ name, qs });
                 S.deck = S.decks.length - 1;
@@ -303,11 +345,87 @@
                 hub();
                 $('#notes').value = '';
                 $('#dn').value = '';
-                st(qs.length + ' questions loaded into your pool!');
-            } catch(e) {
-                st('Failed to parse questions.');
+                st(`${qs.length} questions summoned successfully!`);
+            } catch(err) {
+                console.error("Gemini API Error:", err);
+                st('API generation failed. Falling back to local parser...');
+                parseLocalNotes(n);
             }
         };
+
+        function parseLocalNotes(n) {
+            const rawBlocks = n.split(/\n\s*\n/).map(b => b.trim()).filter(b => b.length > 0);
+            let qs = [];
+            
+            rawBlocks.forEach(block => {
+                const lines = block.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                if (lines.length === 0) return;
+                
+                let qText = lines[0].replace(/^\d+[\.\)]\s*/, '').trim();
+                let options = [];
+                let explicitCorrectIdx = -1;
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    const optMatch = line.match(/^[-*•]?\s*([a-d1-4])[\.\)]\s*(.*)/i);
+                    if (optMatch) {
+                        const optionText = optMatch[2].trim();
+                        options.push(optionText);
+
+                        if (line.includes('*') || line.toLowerCase().includes('(correct)')) {
+                            explicitCorrectIdx = options.length - 1;
+                        }
+                    } else if (line.match(/^[-*•]\s*(.*)/)) {
+                        const text = line.replace(/^[-*•]\s*/, '').trim();
+                        options.push(text);
+                        if (line.includes('*') || line.toLowerCase().includes('(correct)')) {
+                            explicitCorrectIdx = options.length - 1;
+                        }
+                    }
+                }
+                
+                if (options.length >= 2) {
+                    let correctIdx = 0;
+                    
+                    if (explicitCorrectIdx !== -1) {
+                        correctIdx = explicitCorrectIdx;
+                    } else {
+                        const lowerQ = qText.toLowerCase();
+                        
+                        if (lowerQ.includes('bees make')) {
+                            const idx = options.findIndex(o => o.toLowerCase().includes('honey'));
+                            if (idx !== -1) correctIdx = idx;
+                        } else if (lowerQ.includes('finger') || lowerQ.includes('hand')) {
+                            const idx = options.findIndex(o => o === '5' || o.toLowerCase().includes('five'));
+                            if (idx !== -1) correctIdx = idx;
+                        } else if (lowerQ.includes('fly')) {
+                            const idx = options.findIndex(o => o.toLowerCase().includes('bird'));
+                            if (idx !== -1) correctIdx = idx;
+                        } else if (lowerQ.includes('ball') || lowerQ.includes('shape')) {
+                            const idx = options.findIndex(o => o.toLowerCase().includes('circle') || o.toLowerCase().includes('sphere'));
+                            if (idx !== -1) correctIdx = idx;
+                        } else if (lowerQ.includes('glass') || lowerQ.includes('drink')) {
+                            const idx = options.findIndex(o => o.toLowerCase().includes('water') || o.toLowerCase().includes('juice'));
+                            if (idx !== -1) correctIdx = idx;
+                        }
+                    }
+
+                    qs.push({ t: 'mc', q: qText, o: options, a: correctIdx });
+                } else {
+                    qs.push({ t: 'tf', q: qText, o: ['True', 'False'], a: true });
+                }
+            });
+
+            if(qs.length > 0) {
+                const name = $('#dn').value.trim() || 'Deck ' + (S.decks.length + 1);
+                S.decks.push({ name, qs });
+                S.deck = S.decks.length - 1;
+                save(); hub();
+                st(qs.length + ' questions loaded successfully!');
+            } else {
+                st('Failed to generate questions.');
+            }
+        }
 
         // ---------- GAME ENGINE ----------
         const cv=$('#c'),ctx=cv.getContext('2d'),W=800,H=450;
@@ -316,10 +434,10 @@
         const R=(c,x,y,w,h)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h)},C=(c,x,y,r)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,Math.max(0,r),0,7);ctx.fill()};
         const bg=document.createElement('canvas');bg.width=W;bg.height=H;
         (g=>{
-            g.fillStyle='#15101b';g.fillRect(0,0,W,H);
-            for(let y=0;y<130;y+=20)for(let x=(y/20%2)*20-20;x<W;x+=40){g.fillStyle=(x+y)%80?'#241c2e':'#1f1829';g.fillRect(x+1,y+1,38,18)}
-            for(let y=130;y<H;y+=40)for(let x=0;x<W;x+=40){g.fillStyle=((x+y)/40)%2?'#1c1624':'#231b2d';g.fillRect(x,y,40,40)}
-            g.fillStyle='#000';g.fillRect(0,128,W,4)
+            g.fillStyle='#0f0b18';g.fillRect(0,0,W,H);
+            for(let y=0;y<130;y+=20)for(let x=(y/20%2)*20-20;x<W;x+=40){g.fillStyle=(x+y)%80?'#1b1429':'#161022';g.fillRect(x+1,y+1,38,18)}
+            for(let y=130;y<H;y+=40)for(let x=0;x<W;x+=40){g.fillStyle=((x+y)/40)%2?'#140e21':'#1a1228';g.fillRect(x,y,40,40)}
+            g.fillStyle='#050308';g.fillRect(0,128,W,4)
         })(bg.getContext('2d'));
 
         function burst(x,y,n,c){for(let i=0;i<n;i++)P.push({x,y,vx:(Math.random()-.5)*300,vy:-Math.random()*250,l:.5+Math.random()*.7,c,s:3+Math.random()*4})}
@@ -340,9 +458,12 @@
             const r=G.rooms[G.i],q=r.q;G.tg=[];G.sel=null;G.state='play';
             $('#q').textContent=(r.boss?'Boss Shield: ':'')+(q.t=='mt'?'Strike a term, then its matching gate.':q.q);
             $('#rm').textContent='Room '+(G.i+1)+'/'+G.rooms.length;
-            if(q.t=='mc')q.o.map((o,i)=>[o,i]).sort(()=>Math.random()-.5).forEach((p,k)=>G.tg.push({x:100+k*200,y:240,l:p[0],ok:p[1]==q.a,k:'g',c:k}));
-            else if(q.t=='tf')['TRUE','FALSE'].forEach((l,k)=>G.tg.push({x:250+k*300,y:240,l,ok:(k==0)==q.a,k:'s'}));
-            else{
+            if(q.t=='mc') {
+                const choices = q.o.map((o,i)=>[o,i]);
+                sh(choices).forEach((p,k)=>G.tg.push({x:100+k*(600/Math.max(1, choices.length-1)),y:240,l:p[0],ok:p[1]==q.a,k:'g',c:k}));
+            } else if(q.t=='tf') {
+                ['TRUE','FALSE'].forEach((l,k)=>G.tg.push({x:250+k*300,y:240,l,ok:(k==0)==q.a,k:'s'}));
+            } else {
                 q.pairs.forEach((p,i)=>G.tg.push({x:55,y:185+i*90,l:p[0],id:i,k:'m'}));
                 sh(q.pairs.map((p,i)=>[p[1],i])).forEach((p,i)=>G.tg.push({x:745,y:185+i*90,l:p[0],id:p[1],k:'d'}))
             }
@@ -354,15 +475,23 @@
             if(t.k=='d'){
                 if(!G.sel)return;
                 G.tries++;
-                if(G.sel.id==t.id){G.right++;[t,G.sel].forEach(o=>burst(o.x,o.y-20,18,'#e58a2d'));G.tg=G.tg.filter(o=>o!=t&&o!=G.sel);G.sel=null;if(!G.tg.length)adv()}else die();
+                if(G.sel.id==t.id){G.right++;[t,G.sel].forEach(o=>burst(o.x,o.y-20,18,'#10b981'));G.tg=G.tg.filter(o=>o!=t&&o!=G.sel);G.sel=null;if(!G.tg.length)adv()}else die();
                 return;
             }
             G.tries++;
             if(t.ok){G.right++;adv()}else die();
         }
 
-        function adv(){G.tg.forEach(o=>burst(o.x,o.y-20,22,'#e58a2d'));G.tg=[];G.state='clear';G.ct=.8}
-        function die(){G.deaths++;G.state='dying';G.dt=0;G.dk=Math.random()*15|0;G.sel=null;burst(G.hx,G.hy-20,16,'#a3242b');$('#dc').textContent='Deaths: '+G.deaths}
+        function adv(){G.tg.forEach(o=>burst(o.x,o.y-20,22,'#10b981'));G.tg=[];G.state='clear';G.ct=.8}
+        function die(){
+            G.deaths++;
+            G.state='dying';
+            G.dt=0;
+            G.dk=Math.floor(Math.random()*DN.length);
+            G.sel=null;
+            burst(G.hx,G.hy-20,16,'#059669');
+            $('#dc').textContent='Deaths: '+G.deaths;
+        }
         function atk(){if(G.state!='play'||G.cd>0)return;G.cd=.3;G.sw=.15;let b=null,bd=85;G.tg.forEach(t=>{const d=Math.hypot(t.x-G.hx,t.y-20-G.hy+15);if(d<bd){bd=d;b=t}});if(b)hit(b)}
 
         addEventListener('keydown',e=>{keys[e.code]=1;if(!G)return;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code=='Space'||e.code=='KeyJ')atk();if(e.code=='Enter'&&G.state=='win'&&G.wt>3)endRun()});
@@ -384,7 +513,7 @@
             if(s!='win')$('#tm').textContent=((performance.now()-G.t0)/1e3|0)+'s';
             if(s=='play'){
                 let dx=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0),dy=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0);
-                if(dx)G.face=dx;
+                if(dx !== 0) G.face = dx;
                 const m=dx&&dy?.707:1;
                 G.hx=Math.max(20,Math.min(W-20,G.hx+dx*190*m*dt));
                 G.hy=Math.max(150,Math.min(430,G.hy+dy*190*m*dt));
@@ -411,24 +540,34 @@
         function endRun(){
             const secs=(performance.now()-G.t0)/1e3,acc=G.right/Math.max(1,G.tries),sc=acc*100-Math.max(0,secs-G.rooms.length*25)/4;
             const g=sc>=90?'S':sc>=75?'A':sc>=55?'B':'C';
-            const gold=Math.round(20+{S:150,A:100,B:60,C:30}[g]+acc*80+Math.max(0,G.rooms.length*30-secs)/3);
-            const n=S.decks[S.deck].name;
+            let gold=Math.round(20+{S:150,A:100,B:60,C:30}[g]+acc*80+Math.max(0,G.rooms.length*30-secs)/3);
+            
+            const currentDeck = S.decks[S.deck];
+            let bonusAwarded = 0;
+            if (currentDeck && currentDeck.bonusReward && !S.completedBonus.includes(currentDeck.id)) {
+                bonusAwarded = currentDeck.bonusReward;
+                gold += bonusAwarded;
+                S.completedBonus.push(currentDeck.id);
+            }
+
+            const n=currentDeck ? currentDeck.name : 'Deck';
             S.gold+=gold;if('CBAS'.indexOf(g)>'CBAS'.indexOf(S.best[n]||'-'))S.best[n]=g;save();
             const pn=G.pr.n,dd=G.deaths;G.state='done';G=null;
             $('#run').classList.remove('on');$('#score').classList.add('on');
             $('#score').innerHTML=`
-                <div class="bg-zinc-900 border border-zinc-800 p-8 rounded-xl shadow-2xl text-center space-y-6">
+                <div class="bg-zinc-900 border border-emerald-900/40 p-8 rounded-xl shadow-2xl text-center space-y-6">
                     <div class="text-5xl">👑</div>
-                    <h2 class="title-font text-2xl font-extrabold text-amber-400">${pn} Rescued</h2>
-                    <div class="title-font text-6xl font-black text-amber-500">${g}</div>
-                    <div class="grid grid-cols-2 gap-4 bg-zinc-950 p-4 rounded border border-zinc-800 text-left text-sm">
+                    <h2 class="title-font text-2xl font-extrabold text-emerald-300">${pn} Rescued</h2>
+                    <div class="title-font text-6xl font-black text-emerald-400">${g}</div>
+                    ${bonusAwarded > 0 ? `<div class="bg-emerald-500/20 text-emerald-200 border border-emerald-500/40 p-2.5 rounded-lg text-xs font-bold animate-bounce">🎉 Starter Quest Complete! +200 Bonus Gold Awarded!</div>` : ''}
+                    <div class="grid grid-cols-2 gap-4 bg-zinc-950 p-4 rounded border border-emerald-900/30 text-left text-sm">
                         <div>Accuracy: <span class="text-zinc-200 font-bold">${Math.round(acc*100)}%</span></div>
                         <div>Total Deaths: <span class="text-red-400 font-bold">${dd}</span></div>
-                        <div>Gold Earned: <span class="text-amber-400 font-bold">+${gold}</span></div>
+                        <div>Gold Earned: <span class="text-emerald-300 font-bold">+${gold} ${bonusAwarded > 0 ? `(${bonusAwarded} Bonus!)` : ''}</span></div>
                         <div>Clear Time: <span class="text-zinc-200 font-bold">${Math.floor(secs/60)}m ${Math.round(secs%60)}s</span></div>
                     </div>
                     <div class="flex gap-3">
-                        <button id="again" class="flex-1 bg-amber-600 hover:bg-amber-500 text-zinc-950 font-bold py-3 rounded title-font transition">Descend Again</button>
+                        <button id="again" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold py-3 rounded title-font transition">Descend Again</button>
                         <button id="back" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold py-3 rounded title-font transition">Back to Hub</button>
                     </div>
                 </div>
@@ -439,13 +578,21 @@
 
         // ---------- DRAWING UTILS ----------
         function hero(x,y,o={}){
-            const k=SKINS[S.skin],A=o.tint||(o.sk?'#e6dcc0':k.a),T=o.tint||(o.sk?'#bdb396':k.t);
+            const A=o.tint||(o.sk?'#d1fae5':'#7d8590'),T=o.tint||(o.sk?'#a7f3d0':'#4a4f58');
             ctx.save();ctx.globalAlpha=o.a??1;ctx.translate(x+(o.dx||0),y+(o.dy||0));ctx.rotate(o.rot||0);ctx.scale((o.f||1)*(o.w||1),o.sc??1);
-            R(T,-6,-9,5,9+(o.st||0));R(T,1,-9,5,9-(o.st||0));R(A,-8,-21,16,13);R(T,-8,-11,16,3);R('#c9d1d9',9,-28,3,20);R('#6b4f2a',7,-10,7,3);
+            // Armor legs
+            R(T,-6,-9,5,9+(o.st||0));R(T,1,-9,5,9-(o.st||0));
+            // Torso & pauldrons
+            R(A,-8,-21,16,13);R(T,-8,-11,16,3);
+            // Sword in hand (points forward in facing direction)
+            R('#c9d1d9',8,-25,3,20);R('#6b4f2a',6,-8,7,3);
             if(!o.nh){
-                R(A,-7,-33,14,12);R('#0d0a10',-5,-29,10,4);
-                const e=o.sk?'#111':k.g;R(e,-3,-28,2,2);R(e,1,-28,2,2);
-                if(k.hat&&!o.sk){ctx.fillStyle=A;ctx.beginPath();ctx.moveTo(-12,-33);ctx.lineTo(0,-56);ctx.lineTo(12,-33);ctx.fill()}
+                // Head / Helmet facing side
+                R(A,-7,-33,14,12);
+                // Visor slot
+                R('#0d0a10',-3,-29,8,4);
+                const e=o.sk?'#111':'#10b981';
+                R(e,1,-28,3,2);
             }
             ctx.restore();
         }
@@ -453,7 +600,7 @@
         function pr(x,y,p){
             const f=p.f;ctx.save();ctx.translate(x,y);
             if(f==3){R('#fff',-26,-46,14,26);R('#fff',12,-46,14,26)}
-            if(f==6){ctx.globalAlpha=.6;R('#9ff',-24,-42,16,20);R('#9ff',8,-42,16,20);ctx.globalAlpha=1}
+            if(f==6){ctx.globalAlpha=.6;R('#a7f3d0',-24,-42,16,20);R('#a7f3d0',8,-42,16,20);ctx.globalAlpha=1}
             if(f==2||f==4)R(f==2?'#a3242b':'#2f6f4f',8,-8,16,4);
             if(f==5)R(p.h,8,-12,5,12);
             R(p.h,-8,-34,16,18);R(p.d,-8,-18,16,18);R(p.s,-6,-32,12,11);R('#111',-4,-28,2,2);R('#111',2,-28,2,2);
@@ -467,10 +614,10 @@
 
         function pet(x,y,i,t){
             const b=Math.sin(t/300)*4;ctx.save();ctx.translate(x,y+b);
-            if(i==0){R('#e6dcc0',-7,-8,14,12);R('#111',-5,-5,3,3);R('#111',2,-5,3,3);C('rgba(229,138,45,.4)',0,-2,12)}
-            if(i==1){R('#18141e',-8,-6,16,10);R('#e58a2d',8,-3,5,3);R('#18141e',-6,-10-Math.sin(t/90)*5,12,4)}
-            if(i==2){R('#6ec04a',-9,-6+b/2,18,10-b/2);R('#111',-4,-3,2,2);R('#111',2,-3,2,2)}
-            if(i==3){R('#c0392b',-7,-6,14,10);R('#e58a2d',-12,-12-Math.sin(t/90)*5,6,8);R('#e58a2d',6,-12-Math.sin(t/90)*5,6,8);R('#ffd84a',7,-4,3,2)}
+            if(i==0){R('#d1fae5',-7,-8,14,12);R('#111',-5,-5,3,3);R('#111',2,-5,3,3);C('rgba(52,211,153,.4)',0,-2,12)}
+            if(i==1){R('#18141e',-8,-6,16,10);R('#34d399',8,-3,5,3);R('#18141e',-6,-10-Math.sin(t/90)*5,12,4)}
+            if(i==2){R('#10b981',-9,-6+b/2,18,10-b/2);R('#111',-4,-3,2,2);R('#111',2,-3,2,2)}
+            if(i==3){R('#059669',-7,-6,14,10);R('#34d399',-12,-12-Math.sin(t/90)*5,6,8);R('#34d399',6,-12-Math.sin(t/90)*5,6,8);R('#ffd84a',7,-4,3,2)}
             ctx.restore();
         }
 
@@ -484,8 +631,8 @@
             const side=t.k=='m'?[t.x+25,t.y-25]:t.k=='d'?[t.x-195,t.y-25]:[t.x-90,t.y-95],w=t.k=='s'?90:170;
             const x=t.k=='s'?t.x-45:t.k=='g'?t.x-85:side[0],y=t.k=='m'||t.k=='d'?side[1]:t.k=='s'?t.y-70:side[1];
             R('#0d0a10',x,y,t.k=='g'?170:w,50);
-            ctx.strokeStyle=G.sel==t?'#e58a2d':'#e6dcc0';ctx.lineWidth=G.sel==t?4:2;ctx.strokeRect(x,y,t.k=='g'?170:w,50);
-            ctx.fillStyle='#e6dcc0';ctx.textAlign='center';
+            ctx.strokeStyle=G.sel==t?'#10b981':'#6ee7b7';ctx.lineWidth=G.sel==t?4:2;ctx.strokeRect(x,y,t.k=='g'?170:w,50);
+            ctx.fillStyle='#a7f3d0';ctx.textAlign='center';
             ctx.font=t.k=='s'?'bold 14px sans-serif':'11px sans-serif';
             const ls=t.k=='s'?[t.l]:wrap(t.l,(t.k=='g'?170:w)-12);
             ls.forEach((s,i)=>ctx.fillText(s,x+(t.k=='g'?170:w)/2,y+20-(ls.length-1)*6+i*13+4));
@@ -493,23 +640,171 @@
 
         function mon(t,now){
             const x=t.x,y=t.y+Math.sin(now/250+x)*3;
-            if(t.k=='g'){R('#5f7f4a',x-14,y-32,28,24);R('#ffd84a',x-8,y-26,5,5);R('#ffd84a',x+3,y-26,5,5);R('#111',x-6,y-14,12,4);R('#4a3a2a',x-12,y-8,24,20)}
-            else if(t.k=='s'){R('#e6dcc0',x-13,y-36,26,22);R('#111',x-8,y-30,6,6);R('#111',x+2,y-30,6,6);R('#e6dcc0',x-10,y-14,20,24);R(t.l=='TRUE'?'#3fa36b':'#a3242b',x+16,y-36,7,44)}
+            if(t.k=='g'){R('#059669',x-14,y-32,28,24);R('#ffd84a',x-8,y-26,5,5);R('#ffd84a',x+3,y-26,5,5);R('#111',x-6,y-14,12,4);R('#047857',x-12,y-8,24,20)}
+            else if(t.k=='s'){R('#a7f3d0',x-13,y-36,26,22);R('#111',x-8,y-30,6,6);R('#111',x+2,y-30,6,6);R('#a7f3d0',x-10,y-14,20,24);R(t.l=='TRUE'?'#059669':'#a3242b',x+16,y-36,7,44)}
             else if(t.k=='m'){R('#a3242b',x-14,y-32,28,24);R('#ffd84a',x-8,y-26,5,5);R('#ffd84a',x+3,y-26,5,5);R('#6b0f1a',x-10,y-8,20,18)}
-            else{R('#4a4358',x-22,y-50,44,64);R('#0d0a10',x-13,y-40,26,54);R('#6be0ff',x-13,y-40,26,3)}
+            else{R('#134e4a',x-22,y-50,44,64);R('#0d0a10',x-13,y-40,26,54);R('#10b981',x-13,y-40,26,3)}
             plate(t);
         }
 
         function boss(a,now){
             ctx.save();ctx.globalAlpha=a;const x=400,y=125;
-            R('#3a1f4f',x-60,y-70,120,70);R('#4d2a66',x-34,y-110,68,44);R('#e6dcc0',x-44,y-124,10,22);R('#e6dcc0',x+34,y-124,10,22);R('#ff4a4a',x-22,y-96,12,8);R('#ff4a4a',x+10,y-96,12,8);
+            R('#047857',x-60,y-70,120,70);R('#065f46',x-34,y-110,68,44);R('#a7f3d0',x-44,y-124,10,22);R('#a7f3d0',x+34,y-124,10,22);R('#10b981',x-22,y-96,12,8);R('#10b981',x+10,y-96,12,8);
             ctx.restore();
         }
 
         function death(i,t,x,y){
             const f=G.face,u=Math.min(1,t*3);
-            hero(x,y,{f,dy:-u*26,rot:.1*u});
-            R('#a3242b',x-12,y-u*70,24,6);
+            ctx.save();
+
+            // 0: Impaled on spikes
+            if (i === 0) {
+                hero(x, y, { f, dy: -u * 22, rot: 0.1 * u });
+                // Spikes emerging from floor
+                ctx.fillStyle = '#64748b';
+                for (let k = -2; k <= 2; k++) {
+                    const spikeH = Math.min(35, t * 70);
+                    ctx.beginPath();
+                    ctx.moveTo(x + k * 12 - 5, y);
+                    ctx.lineTo(x + k * 12, y - spikeH);
+                    ctx.lineTo(x + k * 12 + 5, y);
+                    ctx.fill();
+                }
+                R('#a3242b', x - 12, y - u * 20, 24, 6);
+            }
+            // 1: Decapitated by guillotine
+            else if (i === 1) {
+                // Body falls, head flies off
+                hero(x, y, { f, dy: 10, rot: 1.57 * u, nh: true });
+                const headY = y - 30 - Math.sin(t * Math.PI) * 20 + t * 30;
+                const headX = x + (f > 0 ? 1 : -1) * t * 40;
+                R('#a7f3d0', headX - 5, headY - 5, 10, 10); // Severed Head
+                // Guillotine blade dropped
+                const bladeY = Math.min(y - 5, y - 100 + t * 200);
+                R('#cbd5e1', x - 20, bladeY, 40, 8);
+                R('#a3242b', x - 10, y - 5, 20, 8);
+            }
+            // 2: Swallowed whole
+            else if (i === 2) {
+                const jawOpen = Math.max(0, 50 - t * 60);
+                // Monster Jaws closing in
+                ctx.fillStyle = '#1e1b4b';
+                ctx.fillRect(x - 30, y - 80, 60, 40 - jawOpen / 2);
+                ctx.fillRect(x - 30, y - 40 + jawOpen / 2, 60, 40);
+                if (t < 0.6) hero(x, y, { f, a: 1 - t * 1.5, sc: 1 - t * 0.8 });
+            }
+            // 3: Melted by acid
+            else if (i === 3) {
+                // Dissolving knight in green pool
+                hero(x, y, { f, dy: t * 15, w: 1 + t * 0.8, sc: Math.max(0.1, 1 - t * 0.7), tint: '#84cc16' });
+                ctx.fillStyle = '#84cc16';
+                C('rgba(132, 204, 22, 0.6)', x + (Math.random() - 0.5) * 30, y - t * 20, 4 + Math.random() * 6);
+            }
+            // 4: Soul extracted
+            else if (i === 4) {
+                hero(x, y, { f, tint: '#38bdf8', a: Math.max(0.2, 1 - t * 0.6) });
+                // Floating ghostly soul floating upward
+                const soulY = y - 30 - t * 60;
+                ctx.fillStyle = 'rgba(186, 230, 253, 0.8)';
+                C('rgba(186, 230, 253, 0.8)', x, soulY, 12 + Math.sin(t * 10) * 3);
+            }
+            // 5: Crushed by a boulder
+            else if (i === 5) {
+                const bY = Math.min(y - 15, y - 120 + t * 250);
+                if (t > 0.4) {
+                    hero(x, y, { f, dy: 12, sc: 0.2, w: 2.2 }); // Flattened
+                } else {
+                    hero(x, y, { f });
+                }
+                ctx.fillStyle = '#475569';
+                C('#475569', x, bY, 32); // Heavy Boulder
+            }
+            // 6: Arrow to the chest
+            else if (i === 6) {
+                hero(x, y, { f, rot: 0.4 * u, dy: -u * 10 });
+                // Arrow stuck in chest
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(x + (f > 0 ? -25 : 25), y - 22);
+                ctx.lineTo(x + (f > 0 ? 5 : -5), y - 22);
+                ctx.stroke();
+            }
+            // 7: Burnt to cinders
+            else if (i === 7) {
+                hero(x, y, { f, tint: '#18181b', a: Math.max(0.3, 1 - t * 0.5) }); // Charred silhouette
+                ctx.fillStyle = '#f97316';
+                for (let k = 0; k < 5; k++) {
+                    C('#f97316', x + (Math.random() - 0.5) * 26, y - Math.random() * 40, 3 + Math.random() * 5);
+                }
+            }
+            // 8: Shattered into ice
+            else if (i === 8) {
+                if (t < 0.3) {
+                    hero(x, y, { f, tint: '#38bdf8' });
+                } else {
+                    // Ice shards exploding out
+                    ctx.fillStyle = '#bae6fd';
+                    for (let k = 0; k < 12; k++) {
+                        const ang = (k / 12) * Math.PI * 2;
+                        const dist = (t - 0.3) * 120;
+                        R('#bae6fd', x + Math.cos(ang) * dist, y - 20 + Math.sin(ang) * dist, 6, 6);
+                    }
+                }
+            }
+            // 9: Fried by lightning
+            else if (i === 9) {
+                const flash = (Math.sin(t * 40) > 0);
+                hero(x, y, { f, tint: flash ? '#fef08a' : '#1e293b' });
+                if (flash) {
+                    ctx.strokeStyle = '#fde047';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(x + (Math.random() - 0.5) * 20, 0);
+                    ctx.lineTo(x, y - 20);
+                    ctx.stroke();
+                }
+            }
+            // 10: Hit by portal truck
+            else if (i === 10) {
+                const truckX = x - 200 + t * 450;
+                hero(x, y, { f, rot: t * 12, dy: -t * 40 }); // Spinning away
+                R('#3b82f6', truckX, y - 45, 70, 35); // Isekai Truck
+                R('#93c5fd', truckX + 50, y - 40, 15, 15);
+            }
+            // 11: Poisoned
+            else if (i === 11) {
+                hero(x, y, { f, tint: '#a855f7', rot: 0.2 * Math.sin(t * 10) });
+                ctx.fillStyle = '#c084fc';
+                C('rgba(192, 132, 252, 0.7)', x + Math.sin(t * 5) * 15, y - 35 - t * 20, 5);
+            }
+            // 12: Spontaneously exploded
+            else if (i === 12) {
+                if (t < 0.2) {
+                    hero(x, y, { f, tint: '#ef4444' });
+                } else {
+                    const r = (t - 0.2) * 100;
+                    C('rgba(239, 68, 68, 0.8)', x, y - 20, r);
+                    C('rgba(245, 158, 11, 0.9)', x, y - 20, r * 0.6);
+                }
+            }
+            // 13: Floor collapsed
+            else if (i === 13) {
+                hero(x, y, { f, dy: t * 80, sc: Math.max(0.1, 1 - t) }); // Falling down pit
+                R('#000000', x - 30, y - 5, 60, 20); // Hole in floor
+            }
+            // 14: Accidentally defeated yourself
+            else if (i === 14) {
+                hero(x, y, { f, rot: 1.57 * u, dy: 5 });
+                ctx.fillStyle = '#f43f5e';
+                ctx.font = 'bold 16px sans-serif';
+                ctx.fillText('🤦‍♂️', x, y - 35);
+            } else {
+                hero(x, y, { f, dy: -u * 26, rot: 0.1 * u });
+                R('#a3242b', x - 12, y - u * 70, 24, 6);
+            }
+
+            ctx.restore();
         }
 
         function draw(now){
@@ -519,13 +814,15 @@
             G.tg.forEach(t=>mon(t,now));
             if(G.state=='dying'){
                 death(G.dk,G.dt/1.5,G.hx,G.hy);
-                ctx.fillStyle='#a3242b';ctx.textAlign='center';ctx.font='bold 24px Cinzel, serif';
-                ctx.fillText(DN[G.dk].toUpperCase(),W/2,70);
+                ctx.fillStyle='#10b981';
+                ctx.textAlign='center';
+                ctx.font='bold 22px Cinzel, serif';
+                const deathMsg = DN[G.dk] || 'You perished in the dungeon';
+                ctx.fillText(deathMsg.toUpperCase(), W/2, 70);
             }else if(G.state=='resp'){
                 hero(G.hx,G.hy,{f:G.face,a:G.rt/.6});
             }else{
                 hero(G.hx,G.hy,{f:G.face,st:G.st||0});
-                if(S.pet>=0)pet(G.hx-30*G.face,G.hy-55,S.pet,now);
                 if(G.sw>0){ctx.strokeStyle='#fff';ctx.lineWidth=5;ctx.beginPath();ctx.arc(G.hx,G.hy-18,55,G.face>0?-1:Math.PI-1,G.face>0?1:Math.PI+1);ctx.stroke()}
             }
             P.forEach(p=>{R(p.c,p.x,p.y,p.s,p.s)});
