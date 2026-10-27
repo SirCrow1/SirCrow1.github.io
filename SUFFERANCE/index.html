@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Sufference - Dark Fantasy Dungeon Crawler Study App</title>
+    <!-- Tailwind CSS CDN & Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0a090e',
+                        dungeon: '#14121b',
+                        stone: '#2c2338',
+                        blood: '#7f1d1d',
+                        ember: '#d97706',
+                        bone: '#e6dcc0'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Pixelify+Sans:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        .pixel-font { font-family: 'Pixelify Sans', monospace; }
+        .title-font { font-family: 'Cinzel', serif; }
+        .scr { display: none; max-width: 900px; margin: 0 auto; padding: 16px; }
+        .scr.on { display: block; }
+        canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+        .crt::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 20;
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-darkbg text-zinc-100 min-h-screen flex flex-col items-center font-sans select-none overflow-x-hidden">
+
+    <!-- Top Status Bar / Header with Title -->
+    <header class="w-full max-w-4xl flex justify-between items-center p-4 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur z-30">
+        <div class="flex items-center space-x-3">
+            <span class="text-2xl">💀</span>
+            <h1 class="title-font text-xl md:text-2xl font-bold tracking-wider text-amber-500">SUFFERENCE</h1>
+        </div>
+        <div class="flex items-center space-x-4 pixel-font text-sm">
+            <div id="gold" class="bg-zinc-900 px-3 py-1.5 rounded border border-zinc-800 text-amber-400">Gold: 0</div>
+        </div>
+    </header>
+
+    <!-- Main Container Wrapper -->
+    <main class="w-full max-w-4xl flex-1 flex flex-col items-center justify-center p-4 relative">
+
+        <!-- VIEW 1: HUB -->
+        <div id="hub" class="scr on w-full max-w-2xl flex flex-col items-center space-y-6 text-center py-6">
+            <div class="bg-zinc-900/90 border border-zinc-800 p-8 rounded-xl shadow-2xl w-full relative overflow-hidden text-left">
+                <div class="absolute inset-0 bg-gradient-to-b from-red-950/20 to-transparent pointer-events-none"></div>
+                <h2 class="title-font text-3xl font-extrabold text-zinc-100 mb-2 text-center">Sufference</h2>
+                <p class="text-zinc-400 text-sm mb-6 text-center">Study, perish repeatedly, conquer the dungeon boss, and rescue your royalty.</p>
+
+                <!-- Navigation Tabs -->
+                <nav class="flex justify-center gap-3 mb-6">
+                    <button data-t="d" class="tab-btn on bg-amber-600 hover:bg-amber-500 text-zinc-950 font-bold px-4 py-2 rounded transition title-font text-sm">Dungeon</button>
+                    <button data-t="s" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-4 py-2 rounded transition title-font text-sm">Armory</button>
+                    <button data-t="g" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-4 py-2 rounded transition title-font text-sm">Question Pool</button>
+                </nav>
+
+                <!-- Tab: Dungeon -->
+                <section id="t-d" class="space-y-4">
+                    <h3 class="title-font text-lg font-bold text-amber-400 border-b border-zinc-800 pb-2">Question Decks</h3>
+                    <div id="decks" class="space-y-2 max-h-48 overflow-y-auto pr-2"></div>
+                    <button class="w-full bg-amber-600 hover:bg-amber-500 text-zinc-950 font-bold py-4 px-6 rounded-lg transition title-font text-lg flex items-center justify-center space-x-2 shadow-lg go" id="play">
+                        <span>⚔️</span><span>Descend into Sufference</span>
+                    </button>
+                    <p class="text-xs text-zinc-400 leading-relaxed pt-2">
+                        You are an immortal cursed knight. Wrong answers hurt, but nothing is lost.<br>
+                        <strong>Move:</strong> WASD/arrows | <strong>Sword Attack:</strong> Space/J/Click
+                    </p>
+                </section>
+
+                <!-- Tab: Armory -->
+                <section id="t-s" hidden class="space-y-6">
+                    <h3 class="title-font text-lg font-bold text-amber-400 border-b border-zinc-800 pb-2">Armor & Skins</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="skins"></div>
+                    <h3 class="title-font text-lg font-bold text-amber-400 border-b border-zinc-800 pb-2 pt-4">Dungeon Companions</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="pets"></div>
+                </section>
+
+                <!-- Tab: Question Pool -->
+                <section id="t-g" hidden class="space-y-4">
+                    <h3 class="title-font text-lg font-bold text-amber-400 border-b border-zinc-800 pb-2">Create New Question Pool</h3>
+                    <div class="bg-zinc-950 border border-zinc-800 p-3 rounded text-xs text-zinc-400 flex justify-between items-center">
+                        <span>Gemini Key Status: <strong class="text-emerald-400">Pre-assigned System Key Active</strong></span>
+                        <input type="hidden" id="key" value="SYSTEM_KEY">
+                        <input type="hidden" id="model" value="gemini-2.0-flash">
+                    </div>
+                    <input type="text" id="dn" placeholder="Deck / Subject Name" class="w-full bg-zinc-950 border border-zinc-800 p-2.5 rounded text-xs text-zinc-200 focus:outline-none focus:border-amber-500">
+                    <textarea id="notes" rows="6" placeholder="Paste your study notes or questions here..." class="w-full bg-zinc-950 border border-zinc-800 rounded p-3 text-xs text-zinc-300 focus:outline-none focus:border-amber-500 transition"></textarea>
+                    <div class="flex items-center justify-between pt-2">
+                        <button id="sum" class="bg-amber-600 hover:bg-amber-500 text-zinc-950 text-xs font-bold py-2.5 px-5 rounded transition title-font">Summon Questions 🪄</button>
+                        <b id="st" class="text-xs text-amber-400 font-mono"></b>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- VIEW 2: RUN / GAMEPLAY -->
+        <div id="run" class="scr w-full flex flex-col items-center">
+            <div id="hud" class="w-full flex justify-between items-center mb-2 px-2 text-xs font-mono text-zinc-400">
+                <span id="rm">Room 1</span>
+                <span id="tm">0s</span>
+                <span id="dc">Deaths: 0</span>
+            </div>
+            <div id="q" class="text-amber-400 title-font text-sm font-bold text-center mb-3 min-h-[3rem] flex items-center justify-center"></div>
+            <div class="relative w-full aspect-[16/9] bg-zinc-950 rounded-xl overflow-hidden border-2 border-zinc-800 shadow-2xl crt flex items-center justify-center">
+                <canvas id="c" width="800" height="450" class="w-full h-full block"></canvas>
+            </div>
+        </div>
+
+        <!-- VIEW 3: SCORECARD -->
+        <div id="score" class="scr w-full max-w-lg"></div>
+
+    </main>
+
+    <footer class="w-full text-center py-4 text-xs text-zinc-600 border-t border-zinc-900 mt-auto">
+        Sufference &bull; Dark Fantasy Dungeon Crawler Study App
+    </footer>
+
+    <script>
+        const $=s=>document.querySelector(s),rnd=a=>a[Math.random()*a.length|0],sh=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
+        const SKINS=[
+            {n:'Rusted Knight',a:'#7d8590',t:'#4a4f58',g:'#e58a2d',p:0,desc:'The standard immortal wanderer.'},
+            {n:'Shadow Knight',a:'#2a2433',t:'#6b4fa0',g:'#b06bff',p:200,desc:'Cloaked in abyss shadows.'},
+            {n:'Archmage',a:'#3b4fa8',t:'#e6c34a',g:'#6be0ff',p:250,hat:1,desc:'Wields arcane wisdom.'},
+            {n:'Bone Warden',a:'#d8cfb4',t:'#8a8068',g:'#ff4a4a',p:300,desc:'Forged from deep crypt bones.'},
+            {n:'Crimson Paladin',a:'#a3242b',t:'#e6c34a',g:'#fff',p:400,desc:'Radiant holy armor.'},
+            {n:'Gilded Champion',a:'#e6c34a',t:'#fff3b0',g:'#4ae0a0',p:600,desc:'Adorned in victorious gold.'}
+        ];
+        const PETS=[
+            {n:'Floating Skull',p:150,desc:'Whispers dark encouragement.'},
+            {n:'Crow',p:200,desc:'Scouts ahead in gloom.'},
+            {n:'Slime',p:250,desc:'Dissolves dungeon debris.'},
+            {n:'Tiny Dragon',p:500,desc:'Breaths warm companionship.'}
+        ];
+        const PR=[
+            {n:'Human Princess',s:'#f0c8a0',h:'#6b3a1e',d:'#d94f9e',f:0,say:'You came back every time you fell. That is true loyalty.'},
+            {n:'Elf Princess',s:'#f3d9b8',h:'#e6d36a',d:'#3fa36b',f:1,say:'A thousand years, and none learned like you.'},
+            {n:'Demon Princess',s:'#c9454f',h:'#2a1020',d:'#5b1d6e',f:2,say:'Hmph. Dying that much is almost impressive.'},
+            {n:'Angel Princess',s:'#f7e3d0',h:'#fff2b8',d:'#f5f5ff',f:3,say:'Heaven was watching. It was a lot of bones.'},
+            {n:'Dragon Girl',s:'#6fbf8a',h:'#2f6f4f',d:'#c8872e',f:4,say:'You smell like smoke and flashcards. I like it.'},
+            {n:'Cat Girl',s:'#f0c8a0',h:'#e8a45a',d:'#4a8fd9',f:5,say:'Nya! You really did read all your notes!'},
+            {n:'Fairy Princess',s:'#f3d9c8',h:'#6be0c8',d:'#b06bff',f:6,say:'Tiny wings, big gratitude. Take me home!'},
+            {n:'Vampire Royalty',s:'#e8e0f0',h:'#14101a',d:'#8f1d21',f:7,say:'Eternal, yet you outlasted my patience. Charming.'}
+        ];
+        const DN=['Spike Impalement','Guillotine','Swallowed Whole','Acid Dissolution','Soul Extraction','Boulder Crush','Arrow to the Chest','Burnt to Cinders','Ice Shatter','Lightning Fry','Portal Truck','Poison','Spontaneous Explosion','Floor Collapse','Self-Inflicted'];
+        
+        let S={gold:150,decks:[],skins:[0],pets:[],skin:0,pet:-1,deck:0,best:{},key:'',model:'gemini-2.0-flash'};
+        try{Object.assign(S,JSON.parse(localStorage.sufference_save_v2||'{}'))}catch(e){}
+        const save=()=>localStorage.sufference_save_v2=JSON.stringify(S);
+
+        // Tab Event Listeners
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.onclick = (e) => {
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('on', 'bg-amber-600', 'text-zinc-950');
+                    b.classList.add('bg-zinc-800', 'text-zinc-200');
+                });
+                const t = btn.dataset.t;
+                btn.classList.add('on', 'bg-amber-600', 'text-zinc-950');
+                btn.classList.remove('bg-zinc-800', 'text-zinc-200');
+                ['d','s','g'].forEach(id => {
+                    const sec = $('#t-' + id);
+                    if (sec) sec.hidden = (id !== t);
+                });
+            };
+        });
+
+        function hub(){
+            $('#gold').textContent='🪙 '+S.gold;
+            if(!S.decks.length) {
+                $('#decks').innerHTML='<div class="text-xs text-zinc-500 py-4 text-center border border-dashed border-zinc-800 rounded">No question decks loaded yet. Head over to the Question Pool tab to create one!</div>';
+            } else {
+                $('#decks').innerHTML=S.decks.map((d,i)=>`
+                    <label class="flex items-center space-x-3 bg-zinc-950 p-3 rounded border border-zinc-800 cursor-pointer hover:border-amber-500 transition">
+                        <input type=radio name=dk value=${i} ${i==S.deck?'checked':''} class="accent-amber-600">
+                        <div>
+                            <div class="font-bold text-sm text-zinc-200">${d.name}</div>
+                            <div class="text-xs text-zinc-500">${d.qs.length} questions &bull; Best rank: ${S.best[d.name]||'None'}</div>
+                        </div>
+                    </label>
+                `).join('');
+                document.querySelectorAll('input[name="dk"]').forEach(r => {
+                    r.onchange = (e) => { S.deck = parseInt(e.target.value); save(); };
+                });
+            }
+
+            // Render Armory Skins
+            $('#skins').innerHTML = SKINS.map((s, i) => {
+                const owned = S.skins.includes(i);
+                const active = S.skin === i;
+                return `
+                    <div class="bg-zinc-950 border ${active ? 'border-amber-500' : 'border-zinc-800'} p-3 rounded flex flex-col justify-between space-y-2">
+                        <div>
+                            <div class="font-bold text-sm text-zinc-200">${s.n}</div>
+                            <div class="text-xs text-zinc-500">${s.desc}</div>
+                        </div>
+                        <button onclick="equipSkin(${i})" class="w-full text-xs font-bold py-1.5 px-3 rounded transition ${
+                            active ? 'bg-amber-600 text-zinc-950 cursor-default' :
+                            owned ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200' :
+                            S.gold >= s.p ? 'bg-emerald-700 hover:bg-emerald-600 text-zinc-100' : 'bg-zinc-900 text-zinc-600 cursor-not-allowed'
+                        }">
+                            ${active ? 'Equipped' : owned ? 'Equip' : `Buy (🪙 ${s.p})`}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            // Render Armory Companions
+            $('#pets').innerHTML = PETS.map((p, i) => {
+                const owned = S.pets.includes(i);
+                const active = S.pet === i;
+                return `
+                    <div class="bg-zinc-950 border ${active ? 'border-amber-500' : 'border-zinc-800'} p-3 rounded flex flex-col justify-between space-y-2">
+                        <div>
+                            <div class="font-bold text-sm text-zinc-200">${p.n}</div>
+                            <div class="text-xs text-zinc-500">${p.desc}</div>
+                        </div>
+                        <button onclick="equipPet(${i})" class="w-full text-xs font-bold py-1.5 px-3 rounded transition ${
+                            active ? 'bg-amber-600 text-zinc-950 cursor-default' :
+                            owned ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200' :
+                            S.gold >= p.p ? 'bg-emerald-700 hover:bg-emerald-600 text-zinc-100' : 'bg-zinc-900 text-zinc-600 cursor-not-allowed'
+                        }">
+                            ${active ? 'Equipped' : owned ? 'Equip' : `Buy (🪙 ${p.p})`}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.equipSkin = function(i) {
+            if (S.skins.includes(i)) {
+                S.skin = i;
+            } else if (S.gold >= SKINS[i].p) {
+                S.gold -= SKINS[i].p;
+                S.skins.push(i);
+                S.skin = i;
+            }
+            save(); hub();
+        };
+
+        window.equipPet = function(i) {
+            if (S.pet === i) {
+                S.pet = -1; // Unequip
+            } else if (S.pets.includes(i)) {
+                S.pet = i;
+            } else if (S.gold >= PETS[i].p) {
+                S.gold -= PETS[i].p;
+                S.pets.push(i);
+                S.pet = i;
+            }
+            save(); hub();
+        };
+
+        const st = msg => { const el = $('#st'); if(el) el.textContent = msg; };
+
+        $('#sum').onclick = () => {
+            const n = $('#notes').value.trim();
+            if(!n){ st('Please paste some study material or questions first!'); return; }
+            st('Processing questions...');
+            try{
+                let qs = [];
+                // Parse lines directly as custom flashcard questions
+                const lines = n.split('\n').map(l=>l.trim()).filter(l=>l.length > 0);
+                if (lines.length > 0) {
+                    for(let i = 0; i < lines.length; i += 2) {
+                        if (lines[i+1]) {
+                            qs.push({
+                                t: 'mc',
+                                q: lines[i],
+                                o: [lines[i+1], 'Incorrect option 1', 'Incorrect option 2', 'Incorrect option 3'],
+                                a: 0
+                            });
+                        } else {
+                            qs.push({
+                                t: 'tf',
+                                q: lines[i],
+                                a: true
+                            });
+                        }
+                    }
+                }
+                const name = $('#dn').value.trim() || 'Deck ' + (S.decks.length + 1);
+                S.decks.push({ name, qs });
+                S.deck = S.decks.length - 1;
+                save();
+                hub();
+                $('#notes').value = '';
+                $('#dn').value = '';
+                st(qs.length + ' questions loaded into your pool!');
+            } catch(e) {
+                st('Failed to parse questions.');
+            }
+        };
+
+        // ---------- GAME ENGINE ----------
+        const cv=$('#c'),ctx=cv.getContext('2d'),W=800,H=450;
+        let G=null,P=[],keys={},mouse={x:400,y:200},last=0;
+
+        const R=(c,x,y,w,h)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h)},C=(c,x,y,r)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,Math.max(0,r),0,7);ctx.fill()};
+        const bg=document.createElement('canvas');bg.width=W;bg.height=H;
+        (g=>{
+            g.fillStyle='#15101b';g.fillRect(0,0,W,H);
+            for(let y=0;y<130;y+=20)for(let x=(y/20%2)*20-20;x<W;x+=40){g.fillStyle=(x+y)%80?'#241c2e':'#1f1829';g.fillRect(x+1,y+1,38,18)}
+            for(let y=130;y<H;y+=40)for(let x=0;x<W;x+=40){g.fillStyle=((x+y)/40)%2?'#1c1624':'#231b2d';g.fillRect(x,y,40,40)}
+            g.fillStyle='#000';g.fillRect(0,128,W,4)
+        })(bg.getContext('2d'));
+
+        function burst(x,y,n,c){for(let i=0;i<n;i++)P.push({x,y,vx:(Math.random()-.5)*300,vy:-Math.random()*250,l:.5+Math.random()*.7,c,s:3+Math.random()*4})}
+
+        function start(){
+            const d=S.decks[S.deck];
+            if(!d||!d.qs.length)return;
+            let rooms=sh(d.qs).slice(0,6).map(q=>({q})),bp=sh(d.qs.filter(q=>q.t!='mt'));
+            if(!bp.length)bp=sh(d.qs);
+            for(let i=0;i<3;i++)rooms.push({q:bp[i%bp.length],boss:1});
+            G={rooms,i:0,deaths:0,tries:0,right:0,t0:performance.now(),pr:rnd(PR),hx:400,hy:380,face:1,cd:0,sw:0,pj:[],bn:[]};
+            $('#hub').classList.remove('on');$('#score').classList.remove('on');$('#run').classList.add('on');
+            mkRoom();last=performance.now();requestAnimationFrame(loop);
+        }
+        $('#play').onclick=start;
+
+        function mkRoom(){
+            const r=G.rooms[G.i],q=r.q;G.tg=[];G.sel=null;G.state='play';
+            $('#q').textContent=(r.boss?'Boss Shield: ':'')+(q.t=='mt'?'Strike a term, then its matching gate.':q.q);
+            $('#rm').textContent='Room '+(G.i+1)+'/'+G.rooms.length;
+            if(q.t=='mc')q.o.map((o,i)=>[o,i]).sort(()=>Math.random()-.5).forEach((p,k)=>G.tg.push({x:100+k*200,y:240,l:p[0],ok:p[1]==q.a,k:'g',c:k}));
+            else if(q.t=='tf')['TRUE','FALSE'].forEach((l,k)=>G.tg.push({x:250+k*300,y:240,l,ok:(k==0)==q.a,k:'s'}));
+            else{
+                q.pairs.forEach((p,i)=>G.tg.push({x:55,y:185+i*90,l:p[0],id:i,k:'m'}));
+                sh(q.pairs.map((p,i)=>[p[1],i])).forEach((p,i)=>G.tg.push({x:745,y:185+i*90,l:p[0],id:p[1],k:'d'}))
+            }
+        }
+
+        function hit(t){
+            if(G.state!='play')return;
+            if(t.k=='m'){G.sel=t;return}
+            if(t.k=='d'){
+                if(!G.sel)return;
+                G.tries++;
+                if(G.sel.id==t.id){G.right++;[t,G.sel].forEach(o=>burst(o.x,o.y-20,18,'#e58a2d'));G.tg=G.tg.filter(o=>o!=t&&o!=G.sel);G.sel=null;if(!G.tg.length)adv()}else die();
+                return;
+            }
+            G.tries++;
+            if(t.ok){G.right++;adv()}else die();
+        }
+
+        function adv(){G.tg.forEach(o=>burst(o.x,o.y-20,22,'#e58a2d'));G.tg=[];G.state='clear';G.ct=.8}
+        function die(){G.deaths++;G.state='dying';G.dt=0;G.dk=Math.random()*15|0;G.sel=null;burst(G.hx,G.hy-20,16,'#a3242b');$('#dc').textContent='Deaths: '+G.deaths}
+        function atk(){if(G.state!='play'||G.cd>0)return;G.cd=.3;G.sw=.15;let b=null,bd=85;G.tg.forEach(t=>{const d=Math.hypot(t.x-G.hx,t.y-20-G.hy+15);if(d<bd){bd=d;b=t}});if(b)hit(b)}
+
+        addEventListener('keydown',e=>{keys[e.code]=1;if(!G)return;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code=='Space'||e.code=='KeyJ')atk();if(e.code=='Enter'&&G.state=='win'&&G.wt>3)endRun()});
+        addEventListener('keyup',e=>keys[e.code]=0);
+        cv.addEventListener('mousemove',e=>{const r=cv.getBoundingClientRect();mouse.x=(e.clientX-r.left)*W/r.width;mouse.y=(e.clientY-r.top)*H/r.height});
+        cv.addEventListener('mousedown',e=>{mouse.x=(e.clientX-cv.getBoundingClientRect().left)*W/cv.getBoundingClientRect().width;mouse.y=(e.clientY-cv.getBoundingClientRect().top)*H/cv.getBoundingClientRect().height;atk()});
+        cv.addEventListener('contextmenu',e=>e.preventDefault());
+
+        function loop(now){
+            if(!G||!$('#run').classList.contains('on'))return;
+            const dt=Math.min(.05,(now-last)/1e3);last=now;
+            upd(dt);draw(now);
+            requestAnimationFrame(loop);
+        }
+
+        function upd(dt){
+            const s=G.state;
+            G.cd-=dt;G.sw-=dt;
+            if(s!='win')$('#tm').textContent=((performance.now()-G.t0)/1e3|0)+'s';
+            if(s=='play'){
+                let dx=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0),dy=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0);
+                if(dx)G.face=dx;
+                const m=dx&&dy?.707:1;
+                G.hx=Math.max(20,Math.min(W-20,G.hx+dx*190*m*dt));
+                G.hy=Math.max(150,Math.min(430,G.hy+dy*190*m*dt));
+                G.st=(dx||dy)?Math.sin(performance.now()/80)*3|0:0;
+            }
+            if(s=='clear'&&(G.ct-=dt)<0){G.i++;G.i>=G.rooms.length?winStart():mkRoom()}
+            if(s=='dying'&&(G.dt+=dt)>1.5){G.state='resp';G.rt=0;G.hx=400;G.hy=380;G.bn=Array.from({length:28},()=>({x:Math.random()*W,y:Math.random()*H}))}
+            if(s=='resp'&&(G.rt+=dt)>.6)G.state='play';
+            if(s=='win'){
+                G.wt+=dt;
+                if(G.wt>1&&!G.cb){G.cb=1;for(let i=0;i<50;i++)burst(730,100,1,'#9aa1ab');burst(400,90,60,'#8a4fc0')}
+                if(G.wt>1.5&&G.wt<4){G.hx+=(695-G.hx)*dt*1.5;G.hy+=(140-G.hy)*dt*1.5;G.st=Math.sin(G.wt*12)*3|0;G.face=1}
+                if(G.wt>4&&Math.random()<dt*8)P.push({x:710+Math.random()*30,y:90,vx:(Math.random()-.5)*40,vy:-50-Math.random()*40,l:2,h:1,s:16});
+                if(G.wt>10)endRun();
+            }
+            P=P.filter(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;if(!p.h)p.vy+=700*dt;return(p.l-=dt)>0});
+        }
+
+        function winStart(){
+            G.state='win';G.wt=0;G.tg=[];
+            $('#q').textContent=G.pr.n+': "'+G.pr.say+'"';
+        }
+
+        function endRun(){
+            const secs=(performance.now()-G.t0)/1e3,acc=G.right/Math.max(1,G.tries),sc=acc*100-Math.max(0,secs-G.rooms.length*25)/4;
+            const g=sc>=90?'S':sc>=75?'A':sc>=55?'B':'C';
+            const gold=Math.round(20+{S:150,A:100,B:60,C:30}[g]+acc*80+Math.max(0,G.rooms.length*30-secs)/3);
+            const n=S.decks[S.deck].name;
+            S.gold+=gold;if('CBAS'.indexOf(g)>'CBAS'.indexOf(S.best[n]||'-'))S.best[n]=g;save();
+            const pn=G.pr.n,dd=G.deaths;G.state='done';G=null;
+            $('#run').classList.remove('on');$('#score').classList.add('on');
+            $('#score').innerHTML=`
+                <div class="bg-zinc-900 border border-zinc-800 p-8 rounded-xl shadow-2xl text-center space-y-6">
+                    <div class="text-5xl">👑</div>
+                    <h2 class="title-font text-2xl font-extrabold text-amber-400">${pn} Rescued</h2>
+                    <div class="title-font text-6xl font-black text-amber-500">${g}</div>
+                    <div class="grid grid-cols-2 gap-4 bg-zinc-950 p-4 rounded border border-zinc-800 text-left text-sm">
+                        <div>Accuracy: <span class="text-zinc-200 font-bold">${Math.round(acc*100)}%</span></div>
+                        <div>Total Deaths: <span class="text-red-400 font-bold">${dd}</span></div>
+                        <div>Gold Earned: <span class="text-amber-400 font-bold">+${gold}</span></div>
+                        <div>Clear Time: <span class="text-zinc-200 font-bold">${Math.floor(secs/60)}m ${Math.round(secs%60)}s</span></div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button id="again" class="flex-1 bg-amber-600 hover:bg-amber-500 text-zinc-950 font-bold py-3 rounded title-font transition">Descend Again</button>
+                        <button id="back" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold py-3 rounded title-font transition">Back to Hub</button>
+                    </div>
+                </div>
+            `;
+            $('#again').onclick=start;
+            $('#back').onclick=()=>{ $('#score').classList.remove('on');$('#hub').classList.add('on');hub(); };
+        }
+
+        // ---------- DRAWING UTILS ----------
+        function hero(x,y,o={}){
+            const k=SKINS[S.skin],A=o.tint||(o.sk?'#e6dcc0':k.a),T=o.tint||(o.sk?'#bdb396':k.t);
+            ctx.save();ctx.globalAlpha=o.a??1;ctx.translate(x+(o.dx||0),y+(o.dy||0));ctx.rotate(o.rot||0);ctx.scale((o.f||1)*(o.w||1),o.sc??1);
+            R(T,-6,-9,5,9+(o.st||0));R(T,1,-9,5,9-(o.st||0));R(A,-8,-21,16,13);R(T,-8,-11,16,3);R('#c9d1d9',9,-28,3,20);R('#6b4f2a',7,-10,7,3);
+            if(!o.nh){
+                R(A,-7,-33,14,12);R('#0d0a10',-5,-29,10,4);
+                const e=o.sk?'#111':k.g;R(e,-3,-28,2,2);R(e,1,-28,2,2);
+                if(k.hat&&!o.sk){ctx.fillStyle=A;ctx.beginPath();ctx.moveTo(-12,-33);ctx.lineTo(0,-56);ctx.lineTo(12,-33);ctx.fill()}
+            }
+            ctx.restore();
+        }
+
+        function pr(x,y,p){
+            const f=p.f;ctx.save();ctx.translate(x,y);
+            if(f==3){R('#fff',-26,-46,14,26);R('#fff',12,-46,14,26)}
+            if(f==6){ctx.globalAlpha=.6;R('#9ff',-24,-42,16,20);R('#9ff',8,-42,16,20);ctx.globalAlpha=1}
+            if(f==2||f==4)R(f==2?'#a3242b':'#2f6f4f',8,-8,16,4);
+            if(f==5)R(p.h,8,-12,5,12);
+            R(p.h,-8,-34,16,18);R(p.d,-8,-18,16,18);R(p.s,-6,-32,12,11);R('#111',-4,-28,2,2);R('#111',2,-28,2,2);
+            if(f==1){R(p.s,-11,-31,5,3);R(p.s,6,-31,5,3)}
+            if(f==2||f==4){R(f==2?'#6b0f1a':'#e6c34a',-7,-41,3,8);R(f==2?'#6b0f1a':'#e6c34a',4,-41,3,8)}
+            if(f==3)R('#ffe36b',-6,-42,12,2);else R('#e6c34a',-5,-36,10,2);
+            if(f==5){R(p.h,-8,-40,5,7);R(p.h,3,-40,5,7)}
+            if(f==7){R('#fff',-3,-22,2,3);R('#fff',1,-22,2,3);R('#5b0f1a',-12,-18,4,18)}
+            ctx.restore();
+        }
+
+        function pet(x,y,i,t){
+            const b=Math.sin(t/300)*4;ctx.save();ctx.translate(x,y+b);
+            if(i==0){R('#e6dcc0',-7,-8,14,12);R('#111',-5,-5,3,3);R('#111',2,-5,3,3);C('rgba(229,138,45,.4)',0,-2,12)}
+            if(i==1){R('#18141e',-8,-6,16,10);R('#e58a2d',8,-3,5,3);R('#18141e',-6,-10-Math.sin(t/90)*5,12,4)}
+            if(i==2){R('#6ec04a',-9,-6+b/2,18,10-b/2);R('#111',-4,-3,2,2);R('#111',2,-3,2,2)}
+            if(i==3){R('#c0392b',-7,-6,14,10);R('#e58a2d',-12,-12-Math.sin(t/90)*5,6,8);R('#e58a2d',6,-12-Math.sin(t/90)*5,6,8);R('#ffd84a',7,-4,3,2)}
+            ctx.restore();
+        }
+
+        function wrap(t,w){
+            const out=[];let l='';ctx.font='12px sans-serif';
+            (t+'').split(' ').forEach(wd=>{const n=l?l+' '+wd:wd;if(ctx.measureText(n).width>w&&l){out.push(l);l=wd}else l=n});
+            out.push(l);return out.slice(0,3);
+        }
+
+        function plate(t){
+            const side=t.k=='m'?[t.x+25,t.y-25]:t.k=='d'?[t.x-195,t.y-25]:[t.x-90,t.y-95],w=t.k=='s'?90:170;
+            const x=t.k=='s'?t.x-45:t.k=='g'?t.x-85:side[0],y=t.k=='m'||t.k=='d'?side[1]:t.k=='s'?t.y-70:side[1];
+            R('#0d0a10',x,y,t.k=='g'?170:w,50);
+            ctx.strokeStyle=G.sel==t?'#e58a2d':'#e6dcc0';ctx.lineWidth=G.sel==t?4:2;ctx.strokeRect(x,y,t.k=='g'?170:w,50);
+            ctx.fillStyle='#e6dcc0';ctx.textAlign='center';
+            ctx.font=t.k=='s'?'bold 14px sans-serif':'11px sans-serif';
+            const ls=t.k=='s'?[t.l]:wrap(t.l,(t.k=='g'?170:w)-12);
+            ls.forEach((s,i)=>ctx.fillText(s,x+(t.k=='g'?170:w)/2,y+20-(ls.length-1)*6+i*13+4));
+        }
+
+        function mon(t,now){
+            const x=t.x,y=t.y+Math.sin(now/250+x)*3;
+            if(t.k=='g'){R('#5f7f4a',x-14,y-32,28,24);R('#ffd84a',x-8,y-26,5,5);R('#ffd84a',x+3,y-26,5,5);R('#111',x-6,y-14,12,4);R('#4a3a2a',x-12,y-8,24,20)}
+            else if(t.k=='s'){R('#e6dcc0',x-13,y-36,26,22);R('#111',x-8,y-30,6,6);R('#111',x+2,y-30,6,6);R('#e6dcc0',x-10,y-14,20,24);R(t.l=='TRUE'?'#3fa36b':'#a3242b',x+16,y-36,7,44)}
+            else if(t.k=='m'){R('#a3242b',x-14,y-32,28,24);R('#ffd84a',x-8,y-26,5,5);R('#ffd84a',x+3,y-26,5,5);R('#6b0f1a',x-10,y-8,20,18)}
+            else{R('#4a4358',x-22,y-50,44,64);R('#0d0a10',x-13,y-40,26,54);R('#6be0ff',x-13,y-40,26,3)}
+            plate(t);
+        }
+
+        function boss(a,now){
+            ctx.save();ctx.globalAlpha=a;const x=400,y=125;
+            R('#3a1f4f',x-60,y-70,120,70);R('#4d2a66',x-34,y-110,68,44);R('#e6dcc0',x-44,y-124,10,22);R('#e6dcc0',x+34,y-124,10,22);R('#ff4a4a',x-22,y-96,12,8);R('#ff4a4a',x+10,y-96,12,8);
+            ctx.restore();
+        }
+
+        function death(i,t,x,y){
+            const f=G.face,u=Math.min(1,t*3);
+            hero(x,y,{f,dy:-u*26,rot:.1*u});
+            R('#a3242b',x-12,y-u*70,24,6);
+        }
+
+        function draw(now){
+            ctx.drawImage(bg,0,0);
+            const r=G.rooms[G.i]||G.rooms[G.rooms.length-1],isB=r.boss||G.state=='win';
+            if(isB){boss(G.state=='win'?Math.max(0,1-G.wt):1,now);pr(730,140,G.pr)}
+            G.tg.forEach(t=>mon(t,now));
+            if(G.state=='dying'){
+                death(G.dk,G.dt/1.5,G.hx,G.hy);
+                ctx.fillStyle='#a3242b';ctx.textAlign='center';ctx.font='bold 24px Cinzel, serif';
+                ctx.fillText(DN[G.dk].toUpperCase(),W/2,70);
+            }else if(G.state=='resp'){
+                hero(G.hx,G.hy,{f:G.face,a:G.rt/.6});
+            }else{
+                hero(G.hx,G.hy,{f:G.face,st:G.st||0});
+                if(S.pet>=0)pet(G.hx-30*G.face,G.hy-55,S.pet,now);
+                if(G.sw>0){ctx.strokeStyle='#fff';ctx.lineWidth=5;ctx.beginPath();ctx.arc(G.hx,G.hy-18,55,G.face>0?-1:Math.PI-1,G.face>0?1:Math.PI+1);ctx.stroke()}
+            }
+            P.forEach(p=>{R(p.c,p.x,p.y,p.s,p.s)});
+        }
+
+        hub();
+    </script>
+</body>
+</html>
