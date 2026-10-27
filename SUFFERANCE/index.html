@@ -30,7 +30,7 @@
         .title-font { font-family: 'Cinzel', serif; }
         .scr { display: none; max-width: 900px; margin: 0 auto; padding: 16px; }
         .scr.on { display: block; }
-        canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+        canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer; }
     </style>
 </head>
 <body class="bg-darkbg text-zinc-100 min-h-screen flex flex-col items-center font-sans select-none overflow-x-hidden">
@@ -74,7 +74,7 @@
                     </button>
                     <p class="text-xs text-zinc-400 leading-relaxed pt-2">
                         You are an immortal knight sprite. Wrong answers hurt, but nothing is lost.<br>
-                        <strong>Move:</strong> WASD/arrows | <strong>Sword Attack:</strong> Space/J/Click
+                        <strong>Move:</strong> WASD/arrows | <strong>Sword Attack:</strong> Space/J/Click | <strong>Respawn:</strong> Click Screen
                     </p>
                 </section>
 
@@ -113,6 +113,7 @@
             <div class="relative w-full aspect-[16/9] bg-zinc-950 rounded-xl overflow-hidden border-2 border-emerald-900/60 shadow-[0_0_30px_rgba(16,185,129,0.15)] flex items-center justify-center">
                 <canvas id="c" width="800" height="450" class="w-full h-full block"></canvas>
             </div>
+            <p class="text-[11px] text-emerald-500/80 mt-2 font-mono animate-pulse" id="respawn-hint" style="display:none;">Click anywhere on screen to respawn...</p>
         </div>
 
         <!-- VIEW 3: SCORECARD -->
@@ -151,7 +152,7 @@
 
         let S={gold:150,decks:[DEFAULT_DECK],completedBonus:[],deck:0,best:{}};
         try{
-            const loaded = JSON.parse(localStorage.sufference_save_v12||'{}');
+            const loaded = JSON.parse(localStorage.sufference_save_v13||'{}');
             Object.assign(S, loaded);
             if (!S.decks || S.decks.length === 0) {
                 S.decks = [DEFAULT_DECK];
@@ -160,7 +161,7 @@
             }
             if (!S.completedBonus) S.completedBonus = [];
         } catch(e){}
-        const save=()=>localStorage.sufference_save_v12=JSON.stringify(S);
+        const save=()=>localStorage.sufference_save_v13=JSON.stringify(S);
 
         // Load Sprite Sheets
         const sprites = {
@@ -347,59 +348,32 @@
             g.fillStyle='#0a090e';g.fillRect(0,128,W,4)
         })(bg.getContext('2d'));
 
-        // Unique Death Particle Generators based on Death Index (0 to 14)
-        function burst(x, y, deathIndex) {
-            let count = 25;
-            let colors = ['#71717a', '#a1a1aa']; // Default
+        function spawnDeathParticles(x, y, deathIndex) {
+            let colors = ['#71717a', '#a1a1aa'];
             let type = 'debris';
 
-            if ([0, 11].includes(deathIndex)) {
-                // Poison / Swamp Gas -> Toxic Acid Bubbles
-                colors = ['#10b981', '#34d399', '#059669'];
-                type = 'bubble';
-            } else if ([1, 6].includes(deathIndex)) {
-                // Beheaded / Sword / Arrow -> Metal Sparks & Splinters
-                colors = ['#e2e8f0', '#94a3b8', '#cbd5e1'];
-                type = 'spark';
-            } else if ([3, 11].includes(deathIndex)) {
-                // Acid / Melted -> Acid Splatters
-                colors = ['#84cc16', '#22c55e', '#15803d'];
-                type = 'bubble';
-            } else if ([4].includes(deathIndex)) {
-                // Soul Extracted -> Spectral Wisps
-                colors = ['#c084fc', '#e879f9', '#a855f7'];
-                type = 'wisp';
-            } else if ([5, 13].includes(deathIndex)) {
-                // Boulder / Floor Collapse -> Stone Debris & Dust
-                colors = ['#52525b', '#71717a', '#3f3f46'];
-                type = 'rock';
-            } else if ([7, 12].includes(deathIndex)) {
-                // Burnt / Cinders / Exploded -> Fire Cinders
-                colors = ['#f97316', '#ef4444', '#facc15'];
-                type = 'fire';
-            } else if ([8].includes(deathIndex)) {
-                // Shattered by Ice -> Ice Shards
-                colors = ['#38bdf8', '#7dd3fc', '#bae6fd'];
-                type = 'ice';
-            } else if ([9].includes(deathIndex)) {
-                // Lightning -> Electric Sparks
-                colors = ['#facc15', '#fef08a', '#ffffff'];
-                type = 'electric';
-            } else if ([10].includes(deathIndex)) {
-                // Isekai Truck -> Speed lines / glass shards
-                colors = ['#ffffff', '#38bdf8', '#f43f5e'];
-                type = 'spark';
-            }
+            if ([0, 11].includes(deathIndex)) { colors = ['#10b981', '#34d399', '#059669']; type = 'bubble'; }
+            else if ([1, 6].includes(deathIndex)) { colors = ['#e2e8f0', '#94a3b8', '#cbd5e1']; type = 'spark'; }
+            else if ([3].includes(deathIndex)) { colors = ['#84cc16', '#22c55e', '#15803d']; type = 'bubble'; }
+            else if ([4].includes(deathIndex)) { colors = ['#c084fc', '#e879f9', '#a855f7']; type = 'wisp'; }
+            else if ([5, 13].includes(deathIndex)) { colors = ['#52525b', '#71717a', '#3f3f46']; type = 'rock'; }
+            else if ([7, 12].includes(deathIndex)) { colors = ['#f97316', '#ef4444', '#facc15']; type = 'fire'; }
+            else if ([8].includes(deathIndex)) { colors = ['#38bdf8', '#7dd3fc', '#bae6fd']; type = 'ice'; }
+            else if ([9].includes(deathIndex)) { colors = ['#facc15', '#fef08a', '#ffffff']; type = 'electric'; }
+            else if ([10].includes(deathIndex)) { colors = ['#ffffff', '#38bdf8', '#f43f5e']; type = 'spark'; }
 
-            for (let i = 0; i < count; i++) {
+            // Initial burst
+            for (let i = 0; i < 25; i++) {
                 P.push({
                     x, y,
                     vx: (Math.random() - 0.5) * 320,
                     vy: -Math.random() * 260,
                     l: 0.6 + Math.random() * 0.8,
+                    ml: 1.4,
                     c: rnd(colors),
                     s: 3 + Math.random() * 5,
-                    type
+                    type,
+                    deathIndex
                 });
             }
         }
@@ -412,6 +386,7 @@
             for(let i=0;i<3;i++)rooms.push({q:bp[i%bp.length],boss:1});
             G={rooms,i:0,deaths:0,tries:0,right:0,t0:performance.now(),pr:rnd(PR),hx:150,hy:320,face:1,cd:0,sw:0,pj:[],bn:[]};
             $('#hub').classList.remove('on');$('#score').classList.remove('on');$('#run').classList.add('on');
+            $('#respawn-hint').style.display='none';
             mkRoom();last=performance.now();requestAnimationFrame(loop);
         }
         $('#play').onclick=start;
@@ -438,25 +413,34 @@
             if(t.k=='d'){
                 if(!G.sel)return;
                 G.tries++;
-                if(G.sel.id==t.id){G.right++;[t,G.sel].forEach(o=>burst(o.x,o.y-20,0));G.tg=G.tg.filter(o=>o!=t&&o!=G.sel);G.sel=null;if(!G.tg.length)adv()}else die();
+                if(G.sel.id==t.id){G.right++;[t,G.sel].forEach(o=>spawnDeathParticles(o.x,o.y-20,0));G.tg=G.tg.filter(o=>o!=t&&o!=G.sel);G.sel=null;if(!G.tg.length)adv()}else die();
                 return;
             }
             G.tries++;
             if(t.ok){G.right++;adv()}else die();
         }
 
-        function adv(){G.tg.forEach(o=>burst(o.x,o.y-20,0));G.tg=[];G.state='clear';G.ct=.8}
+        function adv(){G.tg.forEach(o=>spawnDeathParticles(o.x,o.y-20,0));G.tg=[];G.state='clear';G.ct=.8}
         
         function die(){
             G.deaths++;
             G.state='dying';
-            G.dt=0;
             G.dk=Math.random()*DN.length|0;
             G.sel=null;
-            burst(G.hx, G.hy - 20, G.dk);
+            spawnDeathParticles(G.hx, G.hy - 20, G.dk);
             $('#dc').textContent='Deaths: '+G.deaths;
+            $('#respawn-hint').style.display='block';
         }
         
+        function triggerRespawn() {
+            if(!G || G.state!='dying') return;
+            G.state='resp';
+            G.rt=0;
+            G.hx=150;
+            G.hy=320;
+            $('#respawn-hint').style.display='none';
+        }
+
         function atk(){
             if(G.state!='play'||G.cd>0)return;
             G.cd=.4;G.sw=.3;G.face=1;
@@ -465,9 +449,20 @@
             if(b)hit(b);
         }
 
-        addEventListener('keydown',e=>{keys[e.code]=1;if(!G)return;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code=='Space'||e.code=='KeyJ')atk();if(e.code=='Enter'&&G.state=='win'&&G.wt>3)endRun()});
+        addEventListener('keydown',e=>{
+            keys[e.code]=1;
+            if(!G)return;
+            if(G.state=='dying' && (e.code=='Space'||e.code=='Enter'||e.code=='KeyJ')) { triggerRespawn(); return; }
+            if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
+            if(e.code=='Space'||e.code=='KeyJ')atk();
+            if(e.code=='Enter'&&G.state=='win'&&G.wt>3)endRun()
+        });
         addEventListener('keyup',e=>keys[e.code]=0);
-        cv.addEventListener('mousedown',()=>atk());
+        
+        cv.addEventListener('mousedown',() => {
+            if(G && G.state=='dying') { triggerRespawn(); return; }
+            atk();
+        });
         cv.addEventListener('contextmenu',e=>e.preventDefault());
 
         function loop(now){
@@ -490,18 +485,47 @@
                 G.moving=(dx||dy);
             }
             if(s=='clear'&&(G.ct-=dt)<0){G.i++;G.i>=G.rooms.length?winStart():mkRoom()}
-            if(s=='dying'&&(G.dt+=dt)>3.0){G.state='resp';G.rt=0;G.hx=150;G.hy=320;}
+            
+            // Continuous particle emitters while dying so effect stays active until click respawn
+            if(s=='dying') {
+                let colors = ['#71717a', '#a1a1aa'];
+                let type = 'debris';
+                if ([0, 11].includes(G.dk)) { colors = ['#10b981', '#34d399', '#059669']; type = 'bubble'; }
+                else if ([1, 6].includes(G.dk)) { colors = ['#e2e8f0', '#94a3b8', '#cbd5e1']; type = 'spark'; }
+                else if ([3].includes(G.dk)) { colors = ['#84cc16', '#22c55e', '#15803d']; type = 'bubble'; }
+                else if ([4].includes(G.dk)) { colors = ['#c084fc', '#e879f9', '#a855f7']; type = 'wisp'; }
+                else if ([5, 13].includes(G.dk)) { colors = ['#52525b', '#71717a', '#3f3f46']; type = 'rock'; }
+                else if ([7, 12].includes(G.dk)) { colors = ['#f97316', '#ef4444', '#facc15']; type = 'fire'; }
+                else if ([8].includes(G.dk)) { colors = ['#38bdf8', '#7dd3fc', '#bae6fd']; type = 'ice'; }
+                else if ([9].includes(G.dk)) { colors = ['#facc15', '#fef08a', '#ffffff']; type = 'electric'; }
+                else if ([10].includes(G.dk)) { colors = ['#ffffff', '#38bdf8', '#f43f5e']; type = 'spark'; }
+
+                if(Math.random() < 0.4) {
+                    P.push({
+                        x: G.hx + (Math.random()-0.5)*30,
+                        y: G.hy - 15 + (Math.random()-0.5)*20,
+                        vx: (Math.random() - 0.5) * 120,
+                        vy: -Math.random() * 160,
+                        l: 0.5, ml: 0.5,
+                        c: rnd(colors),
+                        s: 3 + Math.random() * 4,
+                        type,
+                        deathIndex: G.dk
+                    });
+                }
+            }
+
             if(s=='resp'&&(G.rt+=dt)>.6)G.state='play';
             if(s=='win'){
                 G.wt+=dt;
-                if(G.wt>1&&!G.cb){G.cb=1;for(let i=0;i<50;i++)burst(730,100,0);burst(400,90,60,0)}
+                if(G.wt>1&&!G.cb){G.cb=1;for(let i=0;i<50;i++)spawnDeathParticles(730,100,0);spawnDeathParticles(400,90,0)}
                 if(G.wt>1.5&&G.wt<4){G.hx+=(695-G.hx)*dt*1.5;G.hy+=(140-G.hy)*dt*1.5;G.face=1}
                 if(G.wt>10)endRun();
             }
             P=P.filter(p=>{
                 p.x+=p.vx*dt;
                 p.y+=p.vy*dt;
-                if(p.type=='wisp') p.vy -= 40*dt; // Wisps float up
+                if(p.type=='wisp') p.vy -= 40*dt;
                 else if(!p.h) p.vy += 700*dt;
                 return(p.l-=dt)>0;
             });
@@ -648,7 +672,7 @@
             }
             P.forEach(p=>{
                 ctx.save();
-                ctx.globalAlpha = p.l;
+                ctx.globalAlpha = Math.min(1, p.l / (p.ml || 1));
                 R(p.c, p.x, p.y, p.s, p.s);
                 ctx.restore();
             });
