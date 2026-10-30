@@ -126,6 +126,7 @@
             <div class="relative w-full aspect-[16/9] bg-zinc-950 rounded-xl overflow-hidden border-2 border-emerald-900/60 shadow-[0_0_30px_rgba(16,185,129,0.15)] flex items-center justify-center">
                 <canvas id="c" width="800" height="450" class="w-full h-full block"></canvas>
                 <div id="bc" style="display:none" class="absolute inset-0 z-10 flex items-center justify-center p-2 md:p-6 bg-black/55"></div>
+                <button id="rp" type="button" style="display:none;right:.5rem;top:2.75rem" class="absolute z-20 px-3 py-1 rounded-md bg-black/70 border border-emerald-700/70 text-emerald-300 text-xs font-mono hover:bg-emerald-900/60">↺ Replay (R)</button>
                 <button id="pz" type="button" style="display:none" class="absolute top-2 right-2 z-20 px-3 py-1 rounded-md bg-black/70 border border-emerald-700/70 text-emerald-300 text-xs font-mono hover:bg-emerald-900/60">⏸ Pause (P)</button>
             </div>
             <p class="text-[11px] text-emerald-500/80 mt-2 font-mono animate-pulse" id="respawn-hint" style="display:none;">Click anywhere on screen to respawn...</p>
@@ -235,20 +236,34 @@
 
         // Load Sprite Sheets
         const sprites = {
-            idle: { img: new Image(), loaded: false },
-            run: { img: new Image(), loaded: false },
-            attack: { img: new Image(), loaded: false },
-            death: { img: new Image(), loaded: false }
+            idle: { img: new Image(), loaded: false, file: '_Idle.png' },
+            run: { img: new Image(), loaded: false, file: '_Run.png' },
+            attack: { img: new Image(), loaded: false, file: '_Attack.png' },
+            death: { img: new Image(), loaded: false, file: '_Death.png' }
         };
-        sprites.idle.img.onload = () => { sprites.idle.loaded = true; };
-        sprites.run.img.onload = () => { sprites.run.loaded = true; };
-        sprites.attack.img.onload = () => { sprites.attack.loaded = true; };
-        sprites.death.img.onload = () => { sprites.death.loaded = true; };
-
-        sprites.idle.img.src = 'FreeKnight_v1/Colour1/NoOutline/120x80_PNGSheets/_Idle.png';
-        sprites.run.img.src = 'FreeKnight_v1/Colour1/NoOutline/120x80_PNGSheets/_Run.png';
-        sprites.attack.img.src = 'FreeKnight_v1/Colour1/NoOutline/120x80_PNGSheets/_Attack.png';
-        sprites.death.img.src = 'FreeKnight_v1/Colour1/NoOutline/120x80_PNGSheets/_Death.png';
+        // GitHub Pages is CASE-SENSITIVE (Windows file:// is not), so if the exact path 404s we quietly try other spellings / folders before giving up.
+        const SPRITE_DIRS = ['FreeKnight_v1/Colour1/NoOutline/120x80_PNGSheets/', 'freeknight_v1/colour1/nooutline/120x80_pngsheets/', 'FreeKnight_v1/colour1/nooutline/120x80_pngsheets/', 'FreeKnight_v1/Colour1/NoOutline/120x80_PNGSheets/'.toLowerCase(), 'sprites/', 'knight/', ''];
+        Object.values(sprites).forEach(sp => {
+            const tries = [];
+            SPRITE_DIRS.forEach(d => [sp.file, sp.file.toLowerCase(), sp.file.slice(1)].forEach(f => { if (!tries.includes(d + f)) tries.push(d + f); }));
+            let k = 0; sp.tries = tries;
+            sp.img.onload = () => { sp.loaded = true; sp.url = tries[k]; };
+            sp.img.onerror = () => { k++; if (k < tries.length) sp.img.src = tries[k]; };
+            sp.img.src = tries[0];
+        });
+        // If the knight (or the fx sheets) still can't be found, say EXACTLY what is missing instead of silently showing the grey placeholder.
+        setTimeout(() => {
+            const miss = Object.values(sprites).filter(sp => !sp.loaded).map(sp => new URL(sp.tries[0], location.href).href);
+            const fxMiss = typeof FX !== 'undefined' ? Object.keys(FX).filter(n => !(FX[n].complete && FX[n].naturalWidth)).map(n => 'fx/' + n + '.png') : [];
+            if (!miss.length && !fxMiss.length) return;
+            const d = document.createElement('div');
+            d.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;background:#3b0a0a;border:2px solid #ef4444;color:#fecaca;font:12px/1.5 monospace;padding:10px 34px 10px 12px;border-radius:8px;box-shadow:0 0 20px #000';
+            d.innerHTML = '<b>Missing game files (this is why the knight is a grey box):</b><br>' + miss.concat(fxMiss).join('<br>') +
+                '<br><br>Fix: put the <b>FreeKnight_v1</b> and <b>fx</b> folders (and Sufferance.png) in the SAME folder as index.html, <b>commit &amp; push them</b>, and make sure the capital letters match exactly - GitHub Pages is case-sensitive, Windows is not. Open a URL above in a new tab: a 404 means the file is not in the repo.' +
+                '<span style="position:absolute;right:10px;top:6px;cursor:pointer;font-size:18px" onclick="this.parentNode.remove()">&times;</span>';
+            document.body.appendChild(d);
+            console.warn('Missing assets:', miss.concat(fxMiss));
+        }, 4000);
 
         // Monster = the demon (frames 160x128: idle 0-5, death 6-27, walk 28-39, cleave 40-54)
         const MON={img:new Image(),ok:false};MON.img.onload=()=>{MON.ok=true};
@@ -942,7 +957,7 @@
         const SDN={spike:['IMPALED ON SPIKES','#ff4a4a'],axe:['CHOPPED IN HALF','#ff8c1a'],boulder:['SQUISHED BY A BOULDER','#d2b48c'],lava:['SWALLOWED BY LAVA','#ff6a1a'],ghost:['LIFE DRAINED BY A GHOST','#9fd8ff'],fire:['LAUNCHED BY FLAME JETS','#ff8c1a'],dart:['RIDDLED WITH DARTS','#ffb347'],gas:['GASSED','#a8ff3c'],ice:['PIERCED BY ICE SPIKES','#8fe8ff'],fall:['FELL INTO THE PIT','#c9b8ff']};
         const SRC={stone:'#ffd84a',moss:'#86efac',lava:'#ff8c1a',ice:'#8fe8ff'};
         function srHurt(c,type){type=SDN[type]?type:'spike';c.dead={type,t:0,x:(type=='spike'&&c.spx!=null)?c.spx:G.hx,spx:type=='spike'?c.spx:null,y:G.hy,f:G.face,sp:[0,1,2].map(()=>Math.random()*23|0),click:false};G.deaths++;$('#dc').textContent='Deaths: '+G.deaths;G.state='secretDie';G.moving=0;c.vx=0;c.vy=0}
-        addEventListener('mousedown',()=>{if(G&&G.state=='secretDie'&&G.sc&&G.sc.dead)G.sc.dead.click=true});
+        addEventListener('mousedown',()=>{if(G&&G.state=='secretDie'&&!G.paused&&G.sc&&G.sc.dead)G.sc.dead.click=true});
         function srDeathDraw(c,now){
             const D=c.dead,t=D.t,x=D.x,fy=D.y+15,F=D.f,type=D.type,bx=x-57*F;
             const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -1438,7 +1453,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         
         // pause / resume the death cutscene (button or P). While paused nothing updates or redraws, so the scene freezes on screen.
         function togglePause(){
-            if(!G||G.state!='dying')return;
+            if(!G||(G.state!='dying'&&G.state!='secretDie'))return;
             const b=$('#pz'),h=$('#respawn-hint');
             if(!G.paused){
                 G.paused=1;G.pz0=performance.now();
@@ -1449,6 +1464,15 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 b.textContent='⏸ Pause (P)';if(h)h.textContent='Click anywhere on screen to respawn...';
             }
         }
+        // replay the death: restart the whole cutscene from its first frame (also un-pauses it)
+        function replayDeath(){
+            if(!G||(G.state!='dying'&&G.state!='secretDie'))return;
+            if(G.paused)togglePause();
+            if(G.state=='secretDie'){if(G.sc&&G.sc.dead){G.sc.dead.t=0;G.sc.dead.click=false}}   // secret-room trap deaths have their own timer
+            else{G.dt=0;G.ba=null;G.bp=null}
+        }
+        $('#rp').addEventListener('click',e=>{e.stopPropagation();replayDeath()});
+        $('#rp').addEventListener('mousedown',e=>e.stopPropagation());
         $('#pz').addEventListener('click',e=>{e.stopPropagation();togglePause()});
         $('#pz').addEventListener('mousedown',e=>e.stopPropagation());
         function triggerRespawn() {
@@ -1479,8 +1503,9 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             keys[e.code]=1;
             if(!G)return;
             if(G.state=='choose'){if(e.code=='Digit1'||e.code=='Numpad1')pickTrial('weak');if(e.code=='Digit2'||e.code=='Numpad2')pickTrial('bonus');return}
-            if(G.state=='dying'&&e.code=='KeyP'){togglePause();return}
-            if(G.state=='dying'&&G.paused)return;
+            if((G.state=='dying'||G.state=='secretDie')&&e.code=='KeyP'){togglePause();return}
+            if((G.state=='dying'||G.state=='secretDie')&&e.code=='KeyR'){replayDeath();return}
+            if((G.state=='dying'||G.state=='secretDie')&&G.paused)return;
             if(G.state=='dying' && (e.code=='Space'||e.code=='Enter'||e.code=='KeyJ')) { triggerRespawn(); return; }
             if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
             if(e.code=='Space'||e.code=='KeyJ')atk();
@@ -1488,7 +1513,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         });
         addEventListener('keyup',e=>keys[e.code]=0);
         
-        addEventListener('mousedown',e=>{if(G&&G.state=='dying'&&!G.paused&&e.target!==cv&&!(e.target.closest&&e.target.closest('#pz')))triggerRespawn()});
+        addEventListener('mousedown',e=>{if(G&&G.state=='dying'&&!G.paused&&e.target!==cv&&!(e.target.closest&&e.target.closest('#pz,#rp')))triggerRespawn()});
         cv.addEventListener('mousedown',e => {
             if(G && G.state=='dying') { if(!G.paused)triggerRespawn(); return; }
             if(G && G.state=='win' && G.wt>WT.skip) { endRun(); return; }
@@ -1510,7 +1535,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
 
         function upd(dt){
             const s=G.state;
-            $('#pz').style.display=s=='dying'?'':'none';
+            {const dv=(s=='dying'||s=='secretDie')?'':'none';$('#pz').style.display=dv;$('#rp').style.display=dv}
             G.cd-=dt;G.sw-=dt;if(s=='dying')G.dt+=dt;if(s!='play')G.goal=null;
             if(s!='win')$('#tm').textContent=((performance.now()-G.t0)/1e3|0)+'s';
             if(s=='play'){

@@ -126,6 +126,7 @@
             <div class="relative w-full aspect-[16/9] bg-zinc-950 rounded-xl overflow-hidden border-2 border-emerald-900/60 shadow-[0_0_30px_rgba(16,185,129,0.15)] flex items-center justify-center">
                 <canvas id="c" width="800" height="450" class="w-full h-full block"></canvas>
                 <div id="bc" style="display:none" class="absolute inset-0 z-10 flex items-center justify-center p-2 md:p-6 bg-black/55"></div>
+                <button id="rp" type="button" style="display:none;right:.5rem;top:2.75rem" class="absolute z-20 px-3 py-1 rounded-md bg-black/70 border border-emerald-700/70 text-emerald-300 text-xs font-mono hover:bg-emerald-900/60">↺ Replay (R)</button>
                 <button id="pz" type="button" style="display:none" class="absolute top-2 right-2 z-20 px-3 py-1 rounded-md bg-black/70 border border-emerald-700/70 text-emerald-300 text-xs font-mono hover:bg-emerald-900/60">⏸ Pause (P)</button>
             </div>
             <p class="text-[11px] text-emerald-500/80 mt-2 font-mono animate-pulse" id="respawn-hint" style="display:none;">Click anywhere on screen to respawn...</p>
@@ -235,20 +236,34 @@
 
         // Load Sprite Sheets
         const sprites = {
-            idle: { img: new Image(), loaded: false },
-            run: { img: new Image(), loaded: false },
-            attack: { img: new Image(), loaded: false },
-            death: { img: new Image(), loaded: false }
+            idle: { img: new Image(), loaded: false, file: '_Idle.png' },
+            run: { img: new Image(), loaded: false, file: '_Run.png' },
+            attack: { img: new Image(), loaded: false, file: '_Attack.png' },
+            death: { img: new Image(), loaded: false, file: '_Death.png' }
         };
-        sprites.idle.img.onload = () => { sprites.idle.loaded = true; };
-        sprites.run.img.onload = () => { sprites.run.loaded = true; };
-        sprites.attack.img.onload = () => { sprites.attack.loaded = true; };
-        sprites.death.img.onload = () => { sprites.death.loaded = true; };
-
-        sprites.idle.img.src = 'FreeKnight_v1/Colour1/NoOutline/120x80_PNGSheets/_Idle.png';
-        sprites.run.img.src = 'FreeKnight_v1/Colour1/NoOutline/120x80_PNGSheets/_Run.png';
-        sprites.attack.img.src = 'FreeKnight_v1/Colour1/NoOutline/120x80_PNGSheets/_Attack.png';
-        sprites.death.img.src = 'FreeKnight_v1/Colour1/NoOutline/120x80_PNGSheets/_Death.png';
+        // GitHub Pages is CASE-SENSITIVE (Windows file:// is not), so if the exact path 404s we quietly try other spellings / folders before giving up.
+        const SPRITE_DIRS = ['FreeKnight_v1/Colour1/NoOutline/120x80_PNGSheets/', 'freeknight_v1/colour1/nooutline/120x80_pngsheets/', 'FreeKnight_v1/colour1/nooutline/120x80_pngsheets/', 'FreeKnight_v1/Colour1/NoOutline/120x80_PNGSheets/'.toLowerCase(), 'sprites/', 'knight/', ''];
+        Object.values(sprites).forEach(sp => {
+            const tries = [];
+            SPRITE_DIRS.forEach(d => [sp.file, sp.file.toLowerCase(), sp.file.slice(1)].forEach(f => { if (!tries.includes(d + f)) tries.push(d + f); }));
+            let k = 0; sp.tries = tries;
+            sp.img.onload = () => { sp.loaded = true; sp.url = tries[k]; };
+            sp.img.onerror = () => { k++; if (k < tries.length) sp.img.src = tries[k]; };
+            sp.img.src = tries[0];
+        });
+        // If the knight (or the fx sheets) still can't be found, say EXACTLY what is missing instead of silently showing the grey placeholder.
+        setTimeout(() => {
+            const miss = Object.values(sprites).filter(sp => !sp.loaded).map(sp => new URL(sp.tries[0], location.href).href);
+            const fxMiss = typeof FX !== 'undefined' ? Object.keys(FX).filter(n => !(FX[n].complete && FX[n].naturalWidth)).map(n => 'fx/' + n + '.png') : [];
+            if (!miss.length && !fxMiss.length) return;
+            const d = document.createElement('div');
+            d.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;background:#3b0a0a;border:2px solid #ef4444;color:#fecaca;font:12px/1.5 monospace;padding:10px 34px 10px 12px;border-radius:8px;box-shadow:0 0 20px #000';
+            d.innerHTML = '<b>Missing game files (this is why the knight is a grey box):</b><br>' + miss.concat(fxMiss).join('<br>') +
+                '<br><br>Fix: put the <b>FreeKnight_v1</b> and <b>fx</b> folders (and Sufferance.png) in the SAME folder as index.html, <b>commit &amp; push them</b>, and make sure the capital letters match exactly - GitHub Pages is case-sensitive, Windows is not. Open a URL above in a new tab: a 404 means the file is not in the repo.' +
+                '<span style="position:absolute;right:10px;top:6px;cursor:pointer;font-size:18px" onclick="this.parentNode.remove()">&times;</span>';
+            document.body.appendChild(d);
+            console.warn('Missing assets:', miss.concat(fxMiss));
+        }, 4000);
 
         // Monster = the demon (frames 160x128: idle 0-5, death 6-27, walk 28-39, cleave 40-54)
         const MON={img:new Image(),ok:false};MON.img.onload=()=>{MON.ok=true};
@@ -942,7 +957,7 @@
         const SDN={spike:['IMPALED ON SPIKES','#ff4a4a'],axe:['CHOPPED IN HALF','#ff8c1a'],boulder:['SQUISHED BY A BOULDER','#d2b48c'],lava:['SWALLOWED BY LAVA','#ff6a1a'],ghost:['LIFE DRAINED BY A GHOST','#9fd8ff'],fire:['LAUNCHED BY FLAME JETS','#ff8c1a'],dart:['RIDDLED WITH DARTS','#ffb347'],gas:['GASSED','#a8ff3c'],ice:['PIERCED BY ICE SPIKES','#8fe8ff'],fall:['FELL INTO THE PIT','#c9b8ff']};
         const SRC={stone:'#ffd84a',moss:'#86efac',lava:'#ff8c1a',ice:'#8fe8ff'};
         function srHurt(c,type){type=SDN[type]?type:'spike';c.dead={type,t:0,x:(type=='spike'&&c.spx!=null)?c.spx:G.hx,spx:type=='spike'?c.spx:null,y:G.hy,f:G.face,sp:[0,1,2].map(()=>Math.random()*23|0),click:false};G.deaths++;$('#dc').textContent='Deaths: '+G.deaths;G.state='secretDie';G.moving=0;c.vx=0;c.vy=0}
-        addEventListener('mousedown',()=>{if(G&&G.state=='secretDie'&&G.sc&&G.sc.dead)G.sc.dead.click=true});
+        addEventListener('mousedown',()=>{if(G&&G.state=='secretDie'&&!G.paused&&G.sc&&G.sc.dead)G.sc.dead.click=true});
         function srDeathDraw(c,now){
             const D=c.dead,t=D.t,x=D.x,fy=D.y+15,F=D.f,type=D.type,bx=x-57*F;
             const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -1421,11 +1436,16 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(fk==null&&!r.boss&&r.q)G.mq.set(r.q,(G.mq.get(r.q)||0)+1);   // remember what is hurting you
             G.deaths++;
             G.state='dying';
-            G.kt=t||null;G.ba=null;G.dn=dname||null;G.bomb=0;G.ch=null;G.dk=fk!=null?fk:(()=>{const q=Math.random()*17|0;return q==16?17:q})();if(G.dk==2&&(!G.kt||r.boss))G.dk=Math.random()<.5?0:1;G.dt=0;G.dx=r.boss?Math.min(G.hx,700):Math.min(G.hx,290);if(fk!=null)G.dx=Math.min(G.hx,470);{const sp=openSpot(r,G.dx);G.dx=sp.x;G.dy=sp.y}G.ew=G.kt?Math.max(.4,(G.kt.x-(G.dx+55))/260):1;G.sk=Math.random()*4|0;G.ss=Math.random()*100;G.sp=[0,0,0].map(()=>Math.random()*23|0);
+            G.kt=t||null;G.ba=null;G.dn=dname||null;G.bomb=0;G.ch=null;G.dk=fk!=null?fk:(()=>{const q=Math.random()*17|0;return q==16?17:q})();if(G.dk==2&&!G.kt&&!r.boss)G.dk=Math.random()<.5?0:1;G.dt=0;G.dx=r.boss?Math.min(G.hx,700):Math.min(G.hx,290);if(fk!=null)G.dx=Math.min(G.hx,470);{const sp=openSpot(r,G.dx);G.dx=sp.x;G.dy=sp.y}G.ew=G.kt?Math.max(.4,(G.kt.x-(G.dx+55))/260):1;G.sk=Math.random()*4|0;G.ss=Math.random()*100;G.sp=[0,0,0].map(()=>Math.random()*23|0);
             const DP=DT[G.dk]||TAUNTS;G.sel=null;G.tt=r.boss?(Math.random()<.7?rnd(DP):rnd(bossTaunts(r))):rnd(DP);
             G.lt=(fk!=null&&!r.boss&&G.tg&&G.tg.length)?rnd(G.tg):null;   // died to a chest: one of the demons laughs
             if(G.lt)G.tt=rnd(DP);
             G.cast=(G.kt&&!r.boss&&fk==null&&G.dk!=1&&G.dk!=2&&G.dk!=14&&G.dk!=16&&G.dk!=17&&CASTN[G.dk])?(G.dk==6?1.15:.8):0;   // the demon casts the spell that kills you
+            G.bs=!!r.boss;G.bk=null;G.bh=null;
+            if(r.boss){   // THE DEMON LORD: bigger spells, and he does the physical kills himself
+                G.cast=(fk==null&&G.dk!=1&&G.dk!=2&&G.dk!=14&&G.dk!=16&&G.dk!=17&&CASTN[G.dk])?(G.dk==6?1.35:1.15):0;
+                if(fk==null&&(G.dk==1||G.dk==2)){let F0=G.face||1;const off=G.dk==2?82:105;if(G.dx+F0*off>W-90||G.dx+F0*off<90)F0=-F0;const x1=G.dx+F0*off,y1=G.dy+15+8;
+                    G.bk={x1,y1,flip:x1<G.dx?1:0};G.ew=Math.max(.8,Math.hypot(x1-BZ.cx,y1-BZ.base)/230)}}
             if(!r.boss&&G.tg){const tp=sh(DP.filter(x=>x!==G.tt));G.tg.forEach((t,i)=>t.tt=(t===(G.kt||G.lt))?G.tt:tp[i%tp.length])}
             $('#dc').textContent='Deaths: '+G.deaths;
             $('#respawn-hint').style.display='block';
@@ -1433,7 +1453,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         
         // pause / resume the death cutscene (button or P). While paused nothing updates or redraws, so the scene freezes on screen.
         function togglePause(){
-            if(!G||G.state!='dying')return;
+            if(!G||(G.state!='dying'&&G.state!='secretDie'))return;
             const b=$('#pz'),h=$('#respawn-hint');
             if(!G.paused){
                 G.paused=1;G.pz0=performance.now();
@@ -1444,6 +1464,15 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 b.textContent='⏸ Pause (P)';if(h)h.textContent='Click anywhere on screen to respawn...';
             }
         }
+        // replay the death: restart the whole cutscene from its first frame (also un-pauses it)
+        function replayDeath(){
+            if(!G||(G.state!='dying'&&G.state!='secretDie'))return;
+            if(G.paused)togglePause();
+            if(G.state=='secretDie'){if(G.sc&&G.sc.dead){G.sc.dead.t=0;G.sc.dead.click=false}}   // secret-room trap deaths have their own timer
+            else{G.dt=0;G.ba=null;G.bp=null}
+        }
+        $('#rp').addEventListener('click',e=>{e.stopPropagation();replayDeath()});
+        $('#rp').addEventListener('mousedown',e=>e.stopPropagation());
         $('#pz').addEventListener('click',e=>{e.stopPropagation();togglePause()});
         $('#pz').addEventListener('mousedown',e=>e.stopPropagation());
         function triggerRespawn() {
@@ -1474,8 +1503,9 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             keys[e.code]=1;
             if(!G)return;
             if(G.state=='choose'){if(e.code=='Digit1'||e.code=='Numpad1')pickTrial('weak');if(e.code=='Digit2'||e.code=='Numpad2')pickTrial('bonus');return}
-            if(G.state=='dying'&&e.code=='KeyP'){togglePause();return}
-            if(G.state=='dying'&&G.paused)return;
+            if((G.state=='dying'||G.state=='secretDie')&&e.code=='KeyP'){togglePause();return}
+            if((G.state=='dying'||G.state=='secretDie')&&e.code=='KeyR'){replayDeath();return}
+            if((G.state=='dying'||G.state=='secretDie')&&G.paused)return;
             if(G.state=='dying' && (e.code=='Space'||e.code=='Enter'||e.code=='KeyJ')) { triggerRespawn(); return; }
             if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
             if(e.code=='Space'||e.code=='KeyJ')atk();
@@ -1483,7 +1513,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         });
         addEventListener('keyup',e=>keys[e.code]=0);
         
-        addEventListener('mousedown',e=>{if(G&&G.state=='dying'&&!G.paused&&e.target!==cv&&!(e.target.closest&&e.target.closest('#pz')))triggerRespawn()});
+        addEventListener('mousedown',e=>{if(G&&G.state=='dying'&&!G.paused&&e.target!==cv&&!(e.target.closest&&e.target.closest('#pz,#rp')))triggerRespawn()});
         cv.addEventListener('mousedown',e => {
             if(G && G.state=='dying') { if(!G.paused)triggerRespawn(); return; }
             if(G && G.state=='win' && G.wt>WT.skip) { endRun(); return; }
@@ -1505,7 +1535,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
 
         function upd(dt){
             const s=G.state;
-            $('#pz').style.display=s=='dying'?'':'none';
+            {const dv=(s=='dying'||s=='secretDie')?'':'none';$('#pz').style.display=dv;$('#rp').style.display=dv}
             G.cd-=dt;G.sw-=dt;if(s=='dying')G.dt+=dt;if(s!='play')G.goal=null;
             if(s!='win')$('#tm').textContent=((performance.now()-G.t0)/1e3|0)+'s';
             if(s=='play'){
@@ -1891,47 +1921,50 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         const hexRgb=h=>{const n=parseInt(h.slice(1),16);return(n>>16)+','+((n>>8)&255)+','+(n&255)};
         // THE DEMON SHOOTS YOU: raises a bow, draws the string back, lets go, and the arrow flies from the bow into the knight
         function bowDraw(now){
-            const k=G.kt,u=Math.min(1,G.dt/G.cast),sc=SZ[(k.z||0)%4],mx=k.x,mfy=k.y+24,tx=G.dx-13*G.face,ty=G.dy+15;
-            const ox=mx,oy=mfy-96*sc,ex=tx,ey=ty-48,L=Math.hypot(ex-ox,ey-oy)||1,dx=(ex-ox)/L,dy=(ey-oy)/L,px=-dy,py=dx;
+            const B=!!G.bs,S=B?2.1:1,k=G.kt||{},sc=B?BZ.sc:SZ[(k.z||0)%4],u=Math.min(1,G.dt/G.cast),mx=B?BZ.cx:k.x,mfy=B?BZ.base:k.y+24,tx=G.dx-13*G.face,ty=G.dy+15;
+            const ox=B?BZ.cx-66:mx,oy=B?BZ.base-128:mfy-96*sc,ex=tx,ey=ty-48,L=Math.hypot(ex-ox,ey-oy)||1,dx=(ex-ox)/L,dy=(ey-oy)/L,px=-dy,py=dx;
             G.ba=Math.atan2(dy,dx);
-            ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(mx,mfy+1,34*sc,7,0,0,7);ctx.fill();
-            drawMon(mx+(u<.7?Math.sin(now/40)*.8*u:0),mfy,Math.floor(now/150)%6,sc,k.v||0,0);   // stands still and aims
-            const D=Math.min(1,u/.6),pull=2+16*D*D*(3-2*D),rel=u>=.7,w=rel?Math.min(1,(u-.7)/.3):0;
-            const gx=ox+dx*14,gy=oy+dy*14,tre=rel?0:Math.sin(now/28)*1.2*D;
-            const tA=[gx+px*28-dx*10,gy+py*28-dy*10],tB=[gx-px*28-dx*10,gy-py*28-dy*10];
-            const bow=(c)=>{ctx.beginPath();ctx.moveTo(tA[0],tA[1]);ctx.quadraticCurveTo(gx+dx*(22-(rel?0:pull*.35)),gy+dy*(22-(rel?0:pull*.35)),tB[0],tB[1]);ctx.strokeStyle=c[0];ctx.lineWidth=c[1];ctx.stroke()};
+            if(!B){ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(mx,mfy+1,34*sc,7,0,0,7);ctx.fill();
+                drawMon(mx+(u<.7?Math.sin(now/40)*.8*u:0),mfy,Math.floor(now/150)%6,sc,k.v||0,0)}   // the demon stands still and aims (the Demon Lord is drawn by bossDraw)
+            const D=Math.min(1,u/.6),pull=(2+16*D*D*(3-2*D))*S,rel=u>=.7,w=rel?Math.min(1,(u-.7)/.3):0;
+            const gx=ox+dx*14*S,gy=oy+dy*14*S,tre=rel?0:Math.sin(now/28)*1.2*D*S;
+            const tA=[gx+px*28*S-dx*10*S,gy+py*28*S-dy*10*S],tB=[gx-px*28*S-dx*10*S,gy-py*28*S-dy*10*S];
+            const bow=(c)=>{ctx.beginPath();ctx.moveTo(tA[0],tA[1]);ctx.quadraticCurveTo(gx+dx*(22*S-(rel?0:pull*.35)),gy+dy*(22*S-(rel?0:pull*.35)),tB[0],tB[1]);ctx.strokeStyle=c[0];ctx.lineWidth=c[1];ctx.stroke()};
             ctx.save();ctx.lineCap='round';
-            bow(['#4a2c14',5]);bow(['#8a5a30',2]);
-            const nx=gx-dx*(10+pull)+px*tre,ny=gy-dy*(10+pull)+py*tre;   // where the string is pulled to
-            ctx.strokeStyle='rgba(240,230,205,.95)';ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(tA[0],tA[1]);
-            if(rel){const vib=Math.sin(now/22)*3*Math.max(0,1-w*3);ctx.lineTo(gx-dx*10+px*vib,gy-dy*10+py*vib)}else ctx.lineTo(nx,ny);
+            if(B){ctx.save();ctx.globalCompositeOperation='lighter';glow(gx,gy,90,'255,180,60',.25+.15*D);ctx.restore()}
+            bow(['#4a2c14',5*S]);bow(['#8a5a30',2*S]);
+            const nx=gx-dx*(10*S+pull)+px*tre,ny=gy-dy*(10*S+pull)+py*tre;   // where the string is pulled to
+            ctx.strokeStyle='rgba(240,230,205,.95)';ctx.lineWidth=1.6*Math.sqrt(S);ctx.beginPath();ctx.moveTo(tA[0],tA[1]);
+            if(rel){const vib=Math.sin(now/22)*3*S*Math.max(0,1-w*3);ctx.lineTo(gx-dx*10*S+px*vib,gy-dy*10*S+py*vib)}else ctx.lineTo(nx,ny);
             ctx.lineTo(tB[0],tB[1]);ctx.stroke();
             // the arrow: nocked on the string, then flying
-            const S=[nx+dx*46,ny+dy*46],H=rel?[S[0]+(ex-S[0])*w,S[1]+(ey-S[1])*w]:S;
-            if(u>.08){ctx.translate(H[0],H[1]);ctx.rotate(G.ba+Math.PI);
+            const AS=[nx+dx*46*S,ny+dy*46*S],HH=rel?[AS[0]+(ex-AS[0])*w,AS[1]+(ey-AS[1])*w]:AS;
+            if(u>.08){ctx.translate(HH[0],HH[1]);ctx.rotate(G.ba+Math.PI);ctx.scale(S,S);
                 R('#6b4f2a',0,-1,46,3);R('#e6dcc0',44,-4,8,3);R('#e6dcc0',44,1,8,3);R('#ccc',-6,-3,8,7)}
             ctx.restore();
-            if(rel&&w<1){ctx.save();ctx.globalAlpha=.35*(1-w);ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(S[0],S[1]);ctx.lineTo(H[0]-dx*46,H[1]-dy*46);ctx.stroke();ctx.restore()}   // faint streak behind it
+            if(rel&&w<1){ctx.save();ctx.globalAlpha=.35*(1-w);ctx.strokeStyle='#fff';ctx.lineWidth=1.5*S;ctx.beginPath();ctx.moveTo(AS[0],AS[1]);ctx.lineTo(HH[0]-dx*46*S,HH[1]-dy*46*S);ctx.stroke();ctx.restore()}   // faint streak behind it
+            if(B){ctx.save();ctx.globalAlpha=Math.min(1,u*3)*(1-Math.max(0,(u-.8)*5));ctx.textAlign='center';ctx.font='bold 20px sans-serif';ctx.lineWidth=4;ctx.strokeStyle='#000';ctx.strokeText(CASTN[6],BZ.cx,66);ctx.fillStyle=DC[6];ctx.fillText(CASTN[6],BZ.cx,66);ctx.restore()}
         }
         function castDraw(now){
             if(G.dk==6){bowDraw(now);return}
-            const k=G.kt,dk=G.dk,u=Math.min(1,G.dt/G.cast),col=DC[dk]||'#e05bff',rgb=hexRgb(col);
-            const sc=SZ[(k.z||0)%4],mx=k.x,mfy=k.y+24,tx=G.dx-13*G.face,ty=G.dy+15;
+            const B=!!G.bs,S=B?2.1:1,k=G.kt||{},dk=G.dk,u=Math.min(1,G.dt/G.cast),col=DC[dk]||'#e05bff',rgb=hexRgb(col);
+            const sc=B?BZ.sc:SZ[(k.z||0)%4],mx=B?BZ.cx:k.x,mfy=B?BZ.base:k.y+24,tx=G.dx-13*G.face,ty=G.dy+15;   // B = the Demon Lord: everything about his spell is about twice the size
             // the demon roars and commands, with a glowing orb in its hands
-            ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(mx,mfy+1,34*sc,7,0,0,7);ctx.fill();
-            drawMon(mx+Math.sin(now/30)*1.5,mfy,40+Math.floor(now/80)%15,sc,k.v||0,0);
-            const ox=mx,oy=mfy-96*sc,or=6+u*12;
-            ctx.save();ctx.globalCompositeOperation='lighter';glow(ox,oy,70,rgb,.5);ctx.fillStyle='rgba('+rgb+',.9)';ctx.beginPath();ctx.arc(ox,oy,or,0,7);ctx.fill();ctx.fillStyle='rgba(255,255,255,.8)';ctx.beginPath();ctx.arc(ox,oy,or*.45,0,7);ctx.fill();ctx.restore();
+            if(!B){ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(mx,mfy+1,34*sc,7,0,0,7);ctx.fill();
+            drawMon(mx+Math.sin(now/30)*1.5,mfy,40+Math.floor(now/80)%15,sc,k.v||0,0)}
+            const ox=B?BZ.cx-62:mx,oy=B?BZ.base-128:mfy-96*sc,or=(6+u*12)*S;
+            ctx.save();ctx.globalCompositeOperation='lighter';glow(ox,oy,70*S,rgb,.5);ctx.fillStyle='rgba('+rgb+',.9)';ctx.beginPath();ctx.arc(ox,oy,or,0,7);ctx.fill();ctx.fillStyle='rgba(255,255,255,.8)';ctx.beginPath();ctx.arc(ox,oy,or*.45,0,7);ctx.fill();ctx.restore();
             // spell circle: always on the floor right under the knight (boulder and lightning then strike down onto it)
-            const tg=[tx,ty-38],cyc=ty-1,cu=Math.min(1,u*2.2),rx=(dk==5||dk==9?62:50)*cu,ry=rx*.26;
+            const tg=[tx,ty-38],cyc=ty-1,cu=Math.min(1,u*2.2),rx=(dk==5||dk==9?62:50)*cu*S,ry=rx*.26;
             ctx.save();ctx.globalAlpha=cu;ctx.strokeStyle='rgba('+rgb+',.95)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(tx,cyc,rx,ry,0,0,7);ctx.stroke();ctx.fillStyle='rgba('+rgb+',.18)';ctx.fill();
             for(let j=0;j<8;j++){const a=now/500+j*.785;ctx.beginPath();ctx.moveTo(tx+Math.cos(a)*rx*.7,cyc+Math.sin(a)*ry*.7);ctx.lineTo(tx+Math.cos(a)*rx,cyc+Math.sin(a)*ry);ctx.stroke()}
-            ctx.globalCompositeOperation='lighter';glow(tx,cyc,70,rgb,.35);ctx.restore();
+            ctx.globalCompositeOperation='lighter';glow(tx,cyc,70*S,rgb,.35);ctx.restore();
             // jagged beam from the demon's hands to the spell
-            if(u>.25){ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle='rgba('+rgb+',.9)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(ox,oy);
+            if(u>.25){ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle='rgba('+rgb+',.9)';ctx.lineWidth=3*S;ctx.beginPath();ctx.moveTo(ox,oy);
                 for(let j=1;j<=8;j++){const q=j/8;ctx.lineTo(ox+(tg[0]-ox)*q+(j<8?Math.sin(now/22+j*2.1)*7:0),oy+(tg[1]-oy)*q+(j<8?Math.cos(now/27+j)*5:0))}ctx.stroke();ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1;ctx.stroke();ctx.restore()}
             // what the spell actually does to the knight
             const g=Math.max(0,Math.min(1,(u-.3)/.7));
+            if(B){ctx.save();ctx.translate(tx,ty);ctx.scale(S*.85,S*.85);ctx.translate(-tx,-ty)}   // the Demon Lord's version is much bigger
             if(dk==11){for(let j=0;j<4;j++){const bx=tx+(j-1.5)*30,top=ty-8-g*16;ctx.strokeStyle='#4f3720';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(bx,ty+3);ctx.quadraticCurveTo(bx+(j<2?-10:10),(ty+top)/2,tx+(j-1.5)*10,top);ctx.stroke();O('#6a4a2a',tx+(j-1.5)*10,top,5.5)}}   // mud hands grab his ankles
             else if(dk==14){ctx.strokeStyle='rgba('+rgb+',.9)';ctx.lineWidth=2;ctx.beginPath();for(let j=0;j<40;j++){const a=j*.5+now/120,rr=3+j*.9*g;ctx.lineTo(tx+Math.cos(a)*rr,ty-96+Math.sin(a)*rr*.5)}ctx.stroke()}   // hypnotic spiral at his head
             else if(dk==15){for(let j=0;j<8;j++)O('rgba(120,190,255,.85)',tx-40+j*11,ty-((now/14+j*17)%(20+g*40)),3)}
@@ -1941,12 +1974,18 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             else if(dk==8){ctx.fillStyle='#d6efff';for(let j=-2;j<=2;j++){ctx.beginPath();ctx.moveTo(tx+j*14-6,ty);ctx.lineTo(tx+j*14,ty-g*(34-Math.abs(j)*6));ctx.lineTo(tx+j*14+6,ty);ctx.fill()}}
             else if(dk==0||dk==3){for(let j=0;j<5;j++){const px=tx-34+j*17,py=ty-210+((now/16+j*27)%170);O(dk==3?'rgba(110,200,60,.85)':'rgba(180,100,255,.8)',px,py,3)}}
             else if(dk==1){ctx.strokeStyle='rgba(255,90,90,.9)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(tx,ty-70,28,Math.PI*.1,Math.PI*(.1+g*.8));ctx.stroke()}
+            if(B)ctx.restore();
             // spell name floats over the demon
-            ctx.save();ctx.globalAlpha=Math.min(1,u*3)*(1-Math.max(0,(u-.8)*5));ctx.textAlign='center';ctx.font='bold 14px sans-serif';ctx.lineWidth=3;ctx.strokeStyle='#000';ctx.strokeText(CASTN[dk],mx,mfy-128*sc);ctx.fillStyle=col;ctx.fillText(CASTN[dk],mx,mfy-128*sc);ctx.restore()}
+            ctx.save();ctx.globalAlpha=Math.min(1,u*3)*(1-Math.max(0,(u-.8)*5));ctx.textAlign='center';ctx.font='bold '+(B?20:14)+'px sans-serif';ctx.lineWidth=B?4:3;ctx.strokeStyle='#000';ctx.strokeText(CASTN[dk],mx,B?66:mfy-128*sc);ctx.fillStyle=col;ctx.fillText(CASTN[dk],mx,B?66:mfy-128*sc);ctx.restore()}
 
         function deathDraw(){
-            const t=Math.max(0,G.dt-(G.bomb?.6:(G.cast||0))),k=G.dk,x=G.dx,y=G.dy,fy=y+15,now=performance.now(),F=G.face,bx=x-57*F,cy=fy-48;
-            if(t>.03)bloodStain(bx,y+14,G.ss||0,1.2*Math.min(1,t*1.6),k);   // same stain that stays after respawn
+            const t=Math.max(0,G.dt-(G.bomb?.6:(G.cast||0))),k=G.dk,x=G.dx,y=G.dy,fy=y+15,now=performance.now(),F=G.face,bx=x-57*F,cy=fy-48,BS=G.bs?1.9:1;
+            if(t>.03)bloodStain(bx,y+14,G.ss||0,1.2*Math.min(1,t*1.6),k);
+            // the Demon Lord's spell circle: a huge one stays under the knight until he respawns (boulder + lightning draw their own, bigger)
+            if(G.bs&&G.cast>0&&k!=5&&k!=9&&k!=6&&t>0){const rgb=hexRgb(DC[k]||'#e05bff'),kx=x-13*F,a=Math.min(1,t/.25);ctx.save();ctx.globalAlpha=a*.85;ctx.strokeStyle='rgba('+rgb+',.95)';ctx.fillStyle='rgba('+rgb+',.16)';ctx.lineWidth=3;
+                ctx.beginPath();ctx.ellipse(kx,fy-1,120,31,0,0,7);ctx.fill();ctx.stroke();ctx.beginPath();ctx.ellipse(kx,fy-1,84,22,0,0,7);ctx.stroke();
+                for(let j=0;j<8;j++){const q=now/600+j*.785;ctx.beginPath();ctx.moveTo(kx+Math.cos(q)*84,fy-1+Math.sin(q)*22);ctx.lineTo(kx+Math.cos(q)*120,fy-1+Math.sin(q)*31);ctx.stroke()}
+                ctx.globalCompositeOperation='lighter';glow(kx,fy-1,150,rgb,.3);ctx.restore()}   // same stain that stays after respawn
             // knight sprite: idle (standing) or death sheet (plays from t0, 9 fps, holds the last frame)
             const spr=o=>{const im=o.idle?sprites.idle:sprites.death;if(!im.loaded)return;const n=o.idle?Math.floor(now/100)%10:Math.min(9,Math.floor(Math.max(0,t-(o.t0||0))*9));
                 ctx.save();ctx.globalAlpha=o.a??1;if(o.f)ctx.filter=o.f;if(o.clip){ctx.beginPath();ctx.rect(o.clip[0],o.clip[1],o.clip[2],o.clip[3]);ctx.clip()}
@@ -2045,7 +2084,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 for(let j=0;j<7;j++){const ph=(now/1000+j*.29)%1;O('rgba(205,170,125,'+(.8-ph*.6)+')',(t<2.2?x:bx)-30+j*10+Math.sin(now/200+j)*4,fy+2-ph*(40+j*4),2+j%3)}
                 for(let j=0;j<4;j++)R('#111',pcx+Math.cos(now/300+j*2)*60,fy-50+Math.sin(now/250+j*3)*20,3,3);break}
             case 1:{ // DECAPITATED: the demon walks up, swings, head flies off, body pumps blood
-                const cut=walkKill()?G.ew+.25:.55;
+                const cut=(walkKill()||G.bk)?G.ew+.25:.55;
                 if(t<cut)spr({idle:1});
                 else{const u=t-cut,dx=-F*Math.min(u,.7)*130,dy=Math.min(64,-110*u+330*u*u);
                     if(u<.45)spr({idle:1,clip:[x-70,fy-70,140,90]});else spr({t0:-9});
@@ -2070,21 +2109,21 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 cell('soul',48,64,Math.floor(u*7)%16,0,x-55,fy-20-u*60,4,.8);cell('soul',48,64,(Math.floor(u*7)+5)%16,0,x+55,fy-10-u*50,4,.8);
                 for(let j=0;j<6;j++)R('#9fd8ff',x-30+j*12+Math.sin(now/200+j)*6,cy-((now/20+j*30)%110),3,3);break}
             case 5:{ // BOULDER: a magic circle on the floor under him, the boulder drops from above straight onto it
-                const kx=x-13*F,u=Math.min(1,Math.max(0,(t-.5)/.35)),hit=t>.85,bY=-70+u*(fy-30+70),rgb=hexRgb(DC[5]);
+                const kx=x-13*F,u=Math.min(1,Math.max(0,(t-.5)/.35)),hit=t>.85,bY=-110+u*((fy-30-(BS-1)*30)+110),rgb=hexRgb(DC[5]);
                 {const a=Math.min(1,t/.2);   // circle stays under him until respawn
                     ctx.save();ctx.globalAlpha=a*(hit?.7:1);ctx.strokeStyle='rgba('+rgb+',.95)';ctx.fillStyle='rgba('+rgb+',.18)';ctx.lineWidth=2;
-                    ctx.beginPath();ctx.ellipse(kx,fy-1,62,16,0,0,7);ctx.fill();ctx.stroke();
-                    for(let j=0;j<8;j++){const q=now/500+j*.785;ctx.beginPath();ctx.moveTo(kx+Math.cos(q)*44,fy-1+Math.sin(q)*11);ctx.lineTo(kx+Math.cos(q)*62,fy-1+Math.sin(q)*16);ctx.stroke()}
-                    ctx.globalCompositeOperation='lighter';glow(kx,fy-1,80,rgb,.3);ctx.restore()}
+                    ctx.beginPath();ctx.ellipse(kx,fy-1,62*BS,16*BS,0,0,7);ctx.fill();ctx.stroke();
+                    for(let j=0;j<8;j++){const q=now/500+j*.785;ctx.beginPath();ctx.moveTo(kx+Math.cos(q)*44*BS,fy-1+Math.sin(q)*11*BS);ctx.lineTo(kx+Math.cos(q)*62*BS,fy-1+Math.sin(q)*16*BS);ctx.stroke()}
+                    ctx.globalCompositeOperation='lighter';glow(kx,fy-1,80*BS,rgb,.3);ctx.restore()}
                 if(!hit)spr({idle:1});else spr({t0:-9,my:.25,dx:F*44});   // he stands there until it lands, then is flattened right under it
                 if(hit)burst(.85,kx,fy-20);
-                if(t>=.5){O('#6d655c',kx,bY,34);O('#8a8278',kx-9,bY-9,10)}
-                if(hit&&t<2)for(let j=0;j<8;j++)R('rgba(180,170,150,'+Math.max(0,2-t)+')',kx-40+j*11,fy-4-((t-.85)*60+j*5)%30,6,6);break}
+                if(t>=.5){O('#6d655c',kx,bY,34*BS);O('#8a8278',kx-9*BS,bY-9*BS,10*BS)}
+                if(hit&&t<2)for(let j=0;j<8*(G.bs?2:1);j++)R('rgba(180,170,150,'+Math.max(0,2-t)+')',kx-40*BS+j*11*BS,fy-4-((t-.85)*60+j*5)%30,6,6);break}
             case 6:{ // ARROW: shot by the demon's bow (bowDraw), sticks in the chest and tilts as he falls
                 if(G.cast>0&&G.ba!=null){
                     const k2=Math.min(1,t/.9),Ex=x-13*F,ax=Ex+(bx+F*6-Ex)*k2,ay=cy+(fy-18-cy)*k2;
                     spr({t0:0});burst(0,Ex,cy);
-                    ctx.save();ctx.translate(ax,ay);ctx.rotate(G.ba+Math.PI-1.05*F*k2);
+                    ctx.save();ctx.translate(ax,ay);ctx.rotate(G.ba+Math.PI-1.05*F*k2);if(G.bs)ctx.scale(2.1,2.1);
                     R('#6b4f2a',0,-1,46,3);R('#e6dcc0',44,-4,8,3);R('#e6dcc0',44,1,8,3);R('#ccc',-6,-3,8,7);ctx.restore();break}
                 const fl=Math.min(1,t/.25),k2=Math.min(1,Math.max(0,(t-.3)/.9));
                 if(t<.3)spr({idle:1});else spr({t0:.3});
@@ -2098,7 +2137,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 const u=Math.min(1,Math.max(0,(t-.4)/.9)),cx=x+(bx-x)*u,base=fy-26+10*u,HH=100-40*u;
                 const f=t<1.2?'sepia(1) saturate(4) hue-rotate(-25deg)':'brightness(.3) sepia(.6)';
                 if(t<.4)spr({idle:1,f});else spr({t0:.4,f});
-                fire(cx,base,t<.4?50:70,HH*Math.min(1,.4+t),now);break}
+                fire(cx,base,(t<.4?50:70)*(G.bs?1.6:1),HH*Math.min(1,.4+t)*(G.bs?1.4:1),now);break}
             case 8:{ // ICE: freezes solid, then shatters into hundreds of shards that stay on the floor
                 const ts=.9;
                 if(t<ts){spr({idle:1,f:'saturate(.4) brightness(1.3) hue-rotate(160deg)'});const h=Math.min(1,t/.8)*100;
@@ -2113,16 +2152,16 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 if(t<.95)spr({idle:1,f,dx:on?Math.sin(now/25)*3:0});else spr({t0:.95,f});
                 {const mcx=hx2,mcy=fy-1,mca=Math.min(1,t/.25)*(on?1:.8);
                 ctx.save();ctx.globalAlpha=mca;ctx.lineWidth=2;ctx.strokeStyle=on?'rgba(235,245,255,.95)':'rgba(130,170,255,.85)';ctx.fillStyle='rgba(30,50,120,.35)';
-                ctx.beginPath();ctx.ellipse(mcx,mcy,64,16,0,0,7);ctx.fill();ctx.stroke();
-                ctx.beginPath();ctx.ellipse(mcx,mcy,44,11,0,0,7);ctx.stroke();
-                for(let j=0;j<6;j++){const a=now/700+j*Math.PI/3;ctx.beginPath();ctx.moveTo(mcx+Math.cos(a)*44,mcy+Math.sin(a)*11);ctx.lineTo(mcx+Math.cos(a+2.1)*64,mcy+Math.sin(a+2.1)*16);ctx.stroke()}
-                ctx.globalCompositeOperation='lighter';glow(mcx,mcy,on?100:64,'120,170,255',on?.5:.28);ctx.restore()}
+                ctx.beginPath();ctx.ellipse(mcx,mcy,64*BS,16*BS,0,0,7);ctx.fill();ctx.stroke();
+                ctx.beginPath();ctx.ellipse(mcx,mcy,44*BS,11*BS,0,0,7);ctx.stroke();
+                for(let j=0;j<6;j++){const a=now/700+j*Math.PI/3;ctx.beginPath();ctx.moveTo(mcx+Math.cos(a)*44*BS,mcy+Math.sin(a)*11*BS);ctx.lineTo(mcx+Math.cos(a+2.1)*64*BS,mcy+Math.sin(a+2.1)*16*BS);ctx.stroke()}
+                ctx.globalCompositeOperation='lighter';glow(mcx,mcy,(on?100:64)*BS,'120,170,255',on?.5:.28);ctx.restore()}
                 if(on){const rr=a=>{const v=Math.sin(a*127.1+n*311.7)*43758.5453;return v-Math.floor(v)},al=1-ph/.3*.5,sx=hx2+(rr(1)-.5)*70,N=9,pts=[[sx,0]];
                     for(let i=1;i<N;i++){const k2=i/N;pts.push([sx+(hx2-sx)*k2+(rr(i+3)-.5)*46,hy2*k2])}pts.push([hx2,hy2]);
                     ctx.save();ctx.globalAlpha=al;ctx.lineJoin='miter';
                     const path=a=>{ctx.beginPath();ctx.moveTo(a[0][0],a[0][1]);a.slice(1).forEach(q=>ctx.lineTo(q[0],q[1]))};
                     const br=[pts[3],[pts[3][0]+(rr(9)>.5?1:-1)*45,pts[3][1]+40],[pts[3][0]+(rr(9)>.5?1:-1)*60,pts[3][1]+75]];
-                    [[9,'rgba(110,160,255,.3)'],[4,'rgba(190,215,255,.8)'],[1.6,'#fff']].forEach(l=>{ctx.strokeStyle=l[1];ctx.lineWidth=l[0];path(pts);ctx.stroke();ctx.lineWidth=l[0]*.6;path(br);ctx.stroke()});
+                    [[9,'rgba(110,160,255,.3)'],[4,'rgba(190,215,255,.8)'],[1.6,'#fff']].forEach(l=>{ctx.strokeStyle=l[1];ctx.lineWidth=l[0]*BS;path(pts);ctx.stroke();ctx.lineWidth=l[0]*.6*BS;path(br);ctx.stroke()});
                     ctx.strokeStyle='#fff';ctx.lineWidth=2;for(let j=0;j<7;j++){const a=j*.9+rr(j)*.5,r1=6,r2=12+rr(j+20)*14;ctx.beginPath();ctx.moveTo(hx2+Math.cos(a)*r1,hy2+Math.sin(a)*r1*.6);ctx.lineTo(hx2+Math.cos(a)*r2,hy2+Math.sin(a)*r2*.6);ctx.stroke()}
                     ctx.restore()}
                 break}
@@ -2332,16 +2371,47 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
 
         function bossDraw(now){
             if(!BOSS.ok)return;
-            const sc=BZ.sc,FW=BZ.FW,FH=BZ.FH;let f=Math.floor(now/170)%6,a=1,ox=0,oy=Math.sin(now/420)*3;
+            const sc=BZ.sc,FW=BZ.FW,FH=BZ.FH;let f=Math.floor(now/170)%6,a=1,ox=0,oy=Math.sin(now/420)*3,cx=BZ.cx,base=BZ.base,flip=0,rot=0,lunge=0,dd=-1;
+            const dying=G.state=='dying',K=dying&&G.bk,D=dying?G.dt:0;
             if(G.state=='win'){const u=G.wt-.3;f=u<0?0:11+Math.min(21,Math.floor(u*10));oy=0;if(G.wt>3.2)a=Math.max(0,1-(G.wt-3.2)/.8)}
             else if(G.state=='bclear'){if(G.ct<.6)f=6+Math.min(4,Math.floor(G.ct*9));ox=G.ct<.5?Math.sin(now/30)*4:0}
-            else if(G.state=='dying'&&G.dt>.35){ox=Math.sin(now/35)*3;oy=-Math.abs(Math.sin(now/90))*8}   // he laughs
+            else if(K){   // the Demon Lord walks up to you and does it HIMSELF
+                const w=Math.min(1,D/G.ew),e=w*w*(3-2*w);dd=K.flip?1:-1;flip=K.flip;cx=BZ.cx+(K.x1-BZ.cx)*e;base=BZ.base+(K.y1-BZ.base)*e;
+                if(w<1){f=Math.floor(now/90)%6;oy=-Math.abs(Math.sin(now/110))*9}
+                else{const u=D-G.ew;
+                    if(G.dk==1){const s=Math.max(0,Math.min(1,(u-.08)/.2)),es=s*s*(3-2*s);rot=u<.08?-.1*(u/.08):u<.28?-.1+.38*es:.28*(1-Math.min(1,(u-.28)/.5))}   // wind-up, then a huge swing
+                    else lunge=u<.25?62*(u/.25):(u<.6?62:Math.max(0,62*(1-(u-.6)/.3)));   // head thrust at you
+                    if(u>.65){ox=Math.sin(now/35)*3;oy=-Math.abs(Math.sin(now/90))*8}else oy=0}}
+            else if(dying&&G.bs&&G.cast>0&&D<G.cast){   // casting: he rears up and shakes while the spell builds (the bow shot: he stands still and aims)
+                if(G.dk==6){f=0;oy=0}else{f=Math.floor(now/110)%6;ox=Math.sin(now/28)*2.5;oy=-Math.abs(Math.sin(now/140))*5}}
+            else if(dying&&D>.35+(G.cast||0)){ox=Math.sin(now/35)*3;oy=-Math.abs(Math.sin(now/90))*8}   // he laughs
+            G.bh=[cx,BZ.hy+(base-BZ.base)];
             if(a<=0)return;
             ctx.save();ctx.globalAlpha=a;
-            const gl=ctx.createRadialGradient(BZ.cx,200,30,BZ.cx,200,280);gl.addColorStop(0,'rgba(150,10,40,.28)');gl.addColorStop(1,'rgba(150,10,40,0)');ctx.fillStyle=gl;ctx.fillRect(BZ.cx-340,0,680,H);
-            ctx.fillStyle='rgba(0,0,0,.55)';ctx.beginPath();ctx.ellipse(BZ.cx,BZ.base-4,92,13,0,0,7);ctx.fill();
+            const gl=ctx.createRadialGradient(cx,200,30,cx,200,280);gl.addColorStop(0,'rgba(150,10,40,.28)');gl.addColorStop(1,'rgba(150,10,40,0)');ctx.fillStyle=gl;ctx.fillRect(cx-340,0,680,H);
+            ctx.fillStyle='rgba(0,0,0,.55)';ctx.beginPath();ctx.ellipse(cx,base-4,92,13,0,0,7);ctx.fill();
             ctx.imageSmoothingEnabled=false;
-            ctx.drawImage(BOSS.img,f*FW,0,FW,FH,BZ.ox+ox,BZ.base-FH*sc+oy,FW*sc,FH*sc);ctx.restore();
+            ctx.translate(cx+ox+(dd<0||dd>0?dd*lunge:0),base);if(rot)ctx.rotate(rot*(dd||1));ctx.scale(flip?-1:1,1);
+            ctx.drawImage(BOSS.img,f*FW,0,FW,FH,-50*sc,-FH*sc+oy,FW*sc,FH*sc);ctx.restore();
+        }
+        // THE DEMON LORD'S OWN ATTACKS: a huge sword swing for the beheading, giant jaws for the bite
+        function bossKillFx(now){
+            const K=G.bk,u=G.dt-G.ew,d=K.flip?1:-1,x=G.dx,fy=G.dy+15;
+            if(G.dk==1&&u>-.02&&u<.7){
+                const px=K.x1+d*34,py=K.y1-150,s=Math.max(0,Math.min(1,(u-.08)/.2)),es=s*s*(3-2*s);
+                const th=(u<.08?-120-10*(u/.08):-130+205*es)*Math.PI/180,fade=u<.45?1:Math.max(0,1-(u-.45)/.25);
+                const blade=(t2,al)=>{ctx.save();ctx.globalAlpha=al*fade;ctx.translate(px,py);ctx.scale(d,1);ctx.rotate(t2);
+                    ctx.fillStyle='#2b2b36';ctx.fillRect(0,-6,44,12);ctx.fillStyle='#8a1220';ctx.fillRect(40,-8,6,16);
+                    ctx.fillStyle='#4a4a5a';ctx.beginPath();ctx.moveTo(46,-14);ctx.lineTo(210,-5);ctx.lineTo(230,6);ctx.lineTo(46,14);ctx.closePath();ctx.fill();
+                    ctx.fillStyle='#c9d1dd';ctx.fillRect(48,10,170,2.5);ctx.restore()};
+                if(u>.08&&u<.3)for(let i=4;i>=1;i--)blade(th-i*.13,.13*(5-i));   // motion trail
+                blade(th,1)}
+            if(G.dk==2&&u>-.05&&u<.35){const hy=fy-90,o=Math.max(0,1-(u+.05)/.3)*16+2;
+                ctx.save();ctx.translate(x+7,hy);ctx.scale(2.3,2.3);ctx.translate(-(x+7),-hy);
+                ctx.fillStyle='#5a0f14';ctx.fillRect(x-14,hy-o,36,o*2);ctx.fillStyle='#f2ecd8';
+                for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(x-14+i*7.5,hy-o);ctx.lineTo(x-10+i*7.5,hy-o+8);ctx.lineTo(x-6+i*7.5,hy-o);ctx.fill();
+                    ctx.beginPath();ctx.moveTo(x-14+i*7.5,hy+o);ctx.lineTo(x-10+i*7.5,hy+o-8);ctx.lineTo(x-6+i*7.5,hy+o);ctx.fill()}
+                ctx.restore()}
         }
 
         // where the princess is during the finale: 0 hidden, 1 waiting in the doorway, 2 running to the knight, 4 kissing
@@ -2444,16 +2514,17 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 ts.forEach(t=>mon(t,now,G.state=='dying'&&t===G.kt&&(walkKill()||(G.cast&&G.dt<G.cast))))}
 
             if(G.state=='dying'){
-                if(G.cast&&G.dt<G.cast&&G.kt)castDraw(now);
-                ctx.save();ctx.beginPath();ctx.rect(0,0,(r.boss||G.wide)?W:515,H);ctx.clip();deathDraw();ctx.restore();if(walkKill())eatDemon(now);
-                ctx.fillStyle=DC[G.dk]||'#facc15';ctx.shadowColor='#000';ctx.shadowBlur=6;ctx.textAlign='center';{const tx=(G.dn||DN[G.dk]).toUpperCase();ctx.font='bold 22px Cinzel, serif';const mw=ctx.measureText(tx).width;ctx.font='bold '+(mw>770?Math.floor(22*770/mw):22)+'px Cinzel, serif';ctx.fillText(tx,W/2,40)}ctx.shadowBlur=0;
+                if(G.cast&&G.dt<G.cast&&(G.kt||G.bs))castDraw(now);
+                ctx.save();ctx.beginPath();ctx.rect(0,0,(r.boss||G.wide)?W:515,H);ctx.clip();deathDraw();ctx.restore();if(walkKill())eatDemon(now);if(G.bk)bossKillFx(now);
+                ctx.fillStyle=DC[G.dk]||'#facc15';ctx.shadowColor='#000';ctx.shadowBlur=6;ctx.textAlign='center';{const tx=(G.dn||(r.boss?(G.dk==14?'The Demon Lord made you hurt yourself':DN[G.dk].replace(/^The demon /,'The Demon Lord ')):DN[G.dk])).toUpperCase();   // when the boss kills you, it says the BOSS killed you
+                ctx.font='bold 22px Cinzel, serif';const mw=ctx.measureText(tx).width;ctx.font='bold '+(mw>770?Math.floor(22*770/mw):22)+'px Cinzel, serif';ctx.fillText(tx,W/2,40)}ctx.shadowBlur=0;
                 late=()=>{
                     let hp=null;
                     if(G.dk==17&&G.sm){const sm=G.sm,tt=G.dt;   // the summoner's lines
                         if(tt>.3&&tt<1.5)laugh(sm[0],sm[1]-150,now,false,'ARISE, MY MINIONS!');
                         else if(tt>=1.6&&tt<3.4)laugh(sm[0],sm[1]-150,now,false,'GET HIM, ALL OF YOU!');
                         else if(tt>=3.4)haha(sm[0],sm[1]-130,now)}   // the attackers only laugh
-                    if(r.boss){if(G.dt>(G.dk==17?3.4:.35+(G.cast||0))){hp=[BZ.cx,BZ.hy];laugh(hp[0],hp[1],now,false);haha(BZ.cx-30,BZ.hy+80,now)}}   // the Demon Lord laughs at you
+                    if(r.boss){if(G.dt>(G.dk==17?3.4:(G.bk?G.ew+.65:.35+(G.cast||0)))){hp=G.bh||[BZ.cx,BZ.hy];laugh(hp[0],hp[1],now,false);haha(hp[0]-30,hp[1]+80,now)}}   // the Demon Lord laughs at you
                     else{
                         if(walkKill()&&G.dt>G.ew+.65&&G.bp){laugh(G.bp[0],G.bp[1]-100,now,false);haha(G.bp[0],G.bp[1]-75,now)}   // the one that ate you
                         // EVERY demon in a doorway laughs, each under his own answer plate
