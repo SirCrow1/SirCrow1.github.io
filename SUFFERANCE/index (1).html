@@ -236,34 +236,20 @@
 
         // Load Sprite Sheets
         const sprites = {
-            idle: { img: new Image(), loaded: false, file: '_Idle.png' },
-            run: { img: new Image(), loaded: false, file: '_Run.png' },
-            attack: { img: new Image(), loaded: false, file: '_Attack.png' },
-            death: { img: new Image(), loaded: false, file: '_Death.png' }
+            idle: { img: new Image(), loaded: false },
+            run: { img: new Image(), loaded: false },
+            attack: { img: new Image(), loaded: false },
+            death: { img: new Image(), loaded: false }
         };
-        // GitHub Pages is CASE-SENSITIVE (Windows file:// is not), so if the exact path 404s we quietly try other spellings / folders before giving up.
-        const SPRITE_DIRS = ['FreeKnight_v1/Colour1/NoOutline/120x80_PNGSheets/', 'freeknight_v1/colour1/nooutline/120x80_pngsheets/', 'FreeKnight_v1/colour1/nooutline/120x80_pngsheets/', 'FreeKnight_v1/Colour1/NoOutline/120x80_PNGSheets/'.toLowerCase(), 'sprites/', 'knight/', ''];
-        Object.values(sprites).forEach(sp => {
-            const tries = [];
-            SPRITE_DIRS.forEach(d => [sp.file, sp.file.toLowerCase(), sp.file.slice(1)].forEach(f => { if (!tries.includes(d + f)) tries.push(d + f); }));
-            let k = 0; sp.tries = tries;
-            sp.img.onload = () => { sp.loaded = true; sp.url = tries[k]; };
-            sp.img.onerror = () => { k++; if (k < tries.length) sp.img.src = tries[k]; };
-            sp.img.src = tries[0];
-        });
-        // If the knight (or the fx sheets) still can't be found, say EXACTLY what is missing instead of silently showing the grey placeholder.
-        setTimeout(() => {
-            const miss = Object.values(sprites).filter(sp => !sp.loaded).map(sp => new URL(sp.tries[0], location.href).href);
-            const fxMiss = typeof FX !== 'undefined' ? Object.keys(FX).filter(n => !(FX[n].complete && FX[n].naturalWidth)).map(n => 'fx/' + n + '.png') : [];
-            if (!miss.length && !fxMiss.length) return;
-            const d = document.createElement('div');
-            d.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;background:#3b0a0a;border:2px solid #ef4444;color:#fecaca;font:12px/1.5 monospace;padding:10px 34px 10px 12px;border-radius:8px;box-shadow:0 0 20px #000';
-            d.innerHTML = '<b>Missing game files (this is why the knight is a grey box):</b><br>' + miss.concat(fxMiss).join('<br>') +
-                '<br><br>Fix: put the <b>FreeKnight_v1</b> and <b>fx</b> folders (and Sufferance.png) in the SAME folder as index.html, <b>commit &amp; push them</b>, and make sure the capital letters match exactly - GitHub Pages is case-sensitive, Windows is not. Open a URL above in a new tab: a 404 means the file is not in the repo.' +
-                '<span style="position:absolute;right:10px;top:6px;cursor:pointer;font-size:18px" onclick="this.parentNode.remove()">&times;</span>';
-            document.body.appendChild(d);
-            console.warn('Missing assets:', miss.concat(fxMiss));
-        }, 4000);
+        sprites.idle.img.onload = () => { sprites.idle.loaded = true; };
+        sprites.run.img.onload = () => { sprites.run.loaded = true; };
+        sprites.attack.img.onload = () => { sprites.attack.loaded = true; };
+        sprites.death.img.onload = () => { sprites.death.loaded = true; };
+
+        sprites.idle.img.src = 'FreeKnight_v1/Colour1/NoOutline/120x80_PNGSheets/_Idle.png';
+        sprites.run.img.src = 'FreeKnight_v1/Colour1/NoOutline/120x80_PNGSheets/_Run.png';
+        sprites.attack.img.src = 'FreeKnight_v1/Colour1/NoOutline/120x80_PNGSheets/_Attack.png';
+        sprites.death.img.src = 'FreeKnight_v1/Colour1/NoOutline/120x80_PNGSheets/_Death.png';
 
         // Monster = the demon (frames 160x128: idle 0-5, death 6-27, walk 28-39, cleave 40-54)
         const MON={img:new Image(),ok:false};MON.img.onload=()=>{MON.ok=true};
