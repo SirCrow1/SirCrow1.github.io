@@ -298,7 +298,7 @@
                             </div>
                         </label>
                         <div class="flex items-center gap-1 ml-2">
-                            <button onclick="editDeck(event, ${i})" class="text-xs bg-zinc-900 hover:bg-emerald-950 text-zinc-400 hover:text-emerald-400 border border-zinc-800 hover:border-emerald-800 px-2 py-1.5 rounded transition" title="Edit this deck">✏️ Edit</button>
+                            ${!d.isDefault ? `<button onclick="editDeck(event, ${i})" class="text-xs bg-zinc-900 hover:bg-emerald-950 text-zinc-400 hover:text-emerald-400 border border-zinc-800 hover:border-emerald-800 px-2 py-1.5 rounded transition" title="Edit this deck">✏️ Edit</button>` : ''}
                             ${!d.isDefault ? `<button onclick="deleteDeck(event, ${i})" class="text-xs bg-zinc-900 hover:bg-emerald-950 text-zinc-500 hover:text-emerald-400 border border-zinc-800 hover:border-emerald-800 p-1.5 rounded transition" title="Delete Question Deck">🗑️</button>` : ''}
                         </div>
                     </div>
@@ -2550,7 +2550,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         const INP='w-full bg-zinc-950 border border-emerald-950/80 p-2 rounded text-xs text-zinc-200 focus:outline-none focus:border-emerald-500';
         window.editDeck=(e,i)=>{
             if(e)e.stopPropagation();
-            const d=S.decks[i];if(!d)return;
+            const d=S.decks[i];if(!d||d.isDefault)return;   // the starter quiz can't be edited
             ED={i,qs:JSON.parse(JSON.stringify(d.qs))};
             ED.qs.forEach(q=>{if(q.t=='mc'&&(typeof q.a!='number'||q.a<0||q.a>=q.o.length))q.a=0;if(q.t=='tf')q.a=q.a===true});
             $('#ed-name').value=d.name;$('#ed-err').textContent='';edRender();
