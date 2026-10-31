@@ -171,7 +171,7 @@
             {n:'The Princess',say:'Hmph. Dying that much in green flame is almost impressive.'},
             {n:'The Princess',say:'Heaven was watching. Lots of emerald bones.'}
         ];
-        const DN=['The demon poisoned you','The demon decapitated you','The demon devoured you','The demon melted you with acid','The demon ripped out your soul','The demon crushed you with a boulder','The demon shot you with an arrow','The demon burned you to cinders','The demon froze and shattered you','The demon struck you with lightning','The demon sent an isekai truck at you','The demon dragged you into the swamp','The demon blew you up','The demon collapsed the floor beneath you','You suffered self-inflicted damage','The demon drowned you','The mimic chest devoured you','The demon summoned a horde that tore you apart','The demon crushed you in an iron maiden','The demon let the cockroaches eat you alive'];
+        const DN=['The demon poisoned you','The demon decapitated you','The demon devoured you','The demon melted you with acid','The demon ripped out your soul','The demon crushed you with a boulder','The demon shot you with an arrow','The demon burned you to cinders','The demon froze and shattered you','The demon struck you with lightning','The demon sent an isekai truck at you','The demon dragged you into the swamp','The demon blew you up','The demon collapsed the floor beneath you','You suffered self-inflicted damage','The demon drowned you','The mimic chest devoured you','The demon summoned a horde that tore you apart','The demon crushed you in an iron maiden','The demon let the cockroaches eat you alive','The demon crushed you with an anvil','The demon boiled you alive'];
         const TAUNTS=['HAHAHA! Skill issue.','LOL. Did you even study?','You died. Again. Hehehe.','Imagine missing that one...','Too easy. HA HA HA!','GG. Go read your notes!','Bwahaha! Nice try, noob.','LMAO. Ouch.','That was the EASY one!','Do you need a tissue? Heh.'];
         const MIMIC_TAUNTS=['HAHAHA! It was a MIMIC!','Greedy little knight! Hehehe!','Did that chest look friendly?! HA HA!','Nom nom nom! Hahaha!','Never trust a chest, fool!'];
         const BOMB_TAUNTS=['BOOM! Hahaha!','Loot goes boom! HA HA HA!','Greedy AND dead! Hehehe!','Open another one! Hahaha!','Smells like burnt knight! HA!'];
@@ -196,9 +196,11 @@
             ['HAHAHA! It was a MIMIC!','Greedy little knight! Hehehe!','Did that chest look friendly?! HA HA!','Nom nom nom! Hahaha!','Never trust a chest, fool!'],
             ['You brought ONE sword to a horde!','Reinforcements! Hahaha!','Many hands make light work of you!','Outnumbered AND outstudied!','My minions say thanks for the snack!'],
             ['Iron Maiden: the world\'s tightest hug!','Squeezed into a tight spot, hehehe!','Maiden voyage: one way trip!','You should have stayed OUT of the box! HA!','Nice and snug in there, knight!'],
-            ['Roach to conclusions much? HA HA!','Skin deep? Not anymore! Hahaha!','Bug off! ...Oh wait, THEY ate YOU!','Bon appetit, little bugs!','Nothing but bones now! Hehehe!']
+            ['Roach to conclusions much? HA HA!','Skin deep? Not anymore! Hahaha!','Bug off! ...Oh wait, THEY ate YOU!','Bon appetit, little bugs!','Nothing but bones now! Hehehe!'],
+            ['Heavy metal! HA HA HA!','Anvil-able for a smackdown!','You just got ACME\'d! Hehehe!','Flat out wrong! Hahaha!','Your grades hit rock bottom... literally!'],
+            ['Out of the frying pan, into the POT!','Soup of the day: knight stew! Hehehe!','Getting hot in there? Hahaha!','Boiled alive! Medium rare? HA!','Simmer down! ...Oh wait, you cannot!']
         ];
-        const DC=['#b46bff','#ff4a4a','#ff5a1f','#a8ff3c','#9fd8ff','#d2b48c','#ffb347','#ff8c1a','#8fe8ff','#ffe14a','#ff6bd6','#b8864a','#ffa21f','#9d8cff','#ff5a7a','#4aa8ff','#e0a040','#e05bff','#aab2c2','#c98a3c'];
+        const DC=['#b46bff','#ff4a4a','#ff5a1f','#a8ff3c','#9fd8ff','#d2b48c','#ffb347','#ff8c1a','#8fe8ff','#ffe14a','#ff6bd6','#b8864a','#ffa21f','#9d8cff','#ff5a7a','#4aa8ff','#e0a040','#e05bff','#aab2c2','#c98a3c','#9aa5b8','#ff7a4a'];
         
         const DEFAULT_DECK = {
             id: 'default_starter_pool',
@@ -1535,7 +1537,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(fk==null&&!r.boss&&r.q)G.mq.set(r.q,(G.mq.get(r.q)||0)+1);   // remember what is hurting you
             G.deaths++;
             G.state='dying';
-            G.kt=t||null;G.ba=null;G.dn=dname||null;G.bomb=0;G.ch=null;G.dk=fk!=null?fk:(()=>{const q=Math.random()*19|0;return q==16?17:q==17?18:q==18?19:q})();if(G.dk==2&&!G.kt&&!r.boss)G.dk=Math.random()<.5?0:1;G.dt=0;G.dx=r.boss?Math.min(G.hx,700):Math.min(G.hx,290);if(fk!=null)G.dx=Math.min(G.hx,470);{const sp=openSpot(r,G.dx);G.dx=sp.x;G.dy=sp.y}G.ew=G.kt?Math.max(.4,(G.kt.x-(G.dx+55))/260):1;G.sk=Math.random()*4|0;G.ss=Math.random()*100;G.sp=[0,0,0].map(()=>Math.random()*23|0);
+            G.kt=t||null;G.ba=null;G.dn=dname||null;G.bomb=0;G.ch=null;G.dk=fk!=null?fk:(()=>{const q=Math.random()*21|0;return q==16?17:q==17?18:q==18?19:q==19?20:q==20?21:q})();if(G.dk==2&&!G.kt&&!r.boss)G.dk=Math.random()<.5?0:1;G.dt=0;G.dx=r.boss?Math.min(G.hx,700):Math.min(G.hx,290);if(fk!=null)G.dx=Math.min(G.hx,470);{const sp=openSpot(r,G.dx);G.dx=sp.x;G.dy=sp.y}G.ew=G.kt?Math.max(.4,(G.kt.x-(G.dx+55))/260):1;G.sk=Math.random()*4|0;G.ss=Math.random()*100;G.sp=[0,0,0].map(()=>Math.random()*23|0);
             const DP=DT[G.dk]||TAUNTS;G.sel=null;G.tt=r.boss?(Math.random()<.7?rnd(DP):rnd(bossTaunts(r))):rnd(DP);
             G.lt=(fk!=null&&!r.boss&&G.tg&&G.tg.length)?rnd(G.tg):null;   // died to a chest: one of the demons laughs
             if(G.lt)G.tt=rnd(DP);
@@ -1820,7 +1822,8 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             6:['rgba(110,15,23,.9)','rgba(170,25,35,.8)',1,3,1],7:['rgba(22,18,18,.9)','rgba(255,120,30,.5)',1.2,6,1],8:['rgba(150,215,240,.5)','rgba(235,250,255,.7)',1.1,7,1],
             9:['rgba(25,22,28,.9)','rgba(190,215,255,.55)',1.1,5,1],10:['rgba(110,15,23,.9)','rgba(160,20,30,.8)',1.3,7,1.9],11:['rgba(70,47,24,.9)','rgba(135,98,58,.55)',1.4,5,1],
             12:['rgba(110,15,23,.9)','rgba(170,25,35,.8)',1.8,13,1],13:['rgba(110,15,23,.85)','rgba(150,140,130,.65)',1.3,6,1],14:['rgba(110,15,23,.9)','rgba(170,25,35,.8)',1.1,5,1],
-            15:['rgba(40,80,120,.75)','rgba(150,200,240,.55)',1.3,5,1],16:['rgba(95,20,25,.92)','rgba(80,50,30,.75)',1.3,6,1],18:['rgba(110,15,23,.92)','rgba(170,25,35,.85)',1.6,9,1],19:['rgba(85,22,22,.88)','rgba(120,70,30,.55)',1.1,5,1]};
+            15:['rgba(40,80,120,.75)','rgba(150,200,240,.55)',1.3,5,1],16:['rgba(95,20,25,.92)','rgba(80,50,30,.75)',1.3,6,1],18:['rgba(110,15,23,.92)','rgba(170,25,35,.85)',1.6,9,1],19:['rgba(85,22,22,.88)','rgba(120,70,30,.55)',1.1,5,1],
+            20:['rgba(105,14,22,.93)','rgba(165,24,34,.85)',1.7,9,1.5],21:['rgba(120,160,185,.55)','rgba(245,250,255,.55)',1.5,6,1.2]};
         const BKD=['rgba(110,15,23,.9)','rgba(170,30,40,.5)',1,5,1];
         function bloodStain(x,y,seed,s,kind){s=s||1;const b=BK[kind]||BKD,rr=k=>{const v=Math.sin(seed*999+k*127.1)*43758.5453;return v-Math.floor(v)};
             const rx=18*s*b[2]*b[4]*(.85+.3*rr(51)),ry=7*s*b[2]*(.8+.4*rr(52));
@@ -1952,6 +1955,15 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 for(let j=0;j<12;j++){const px=x-98+rr(j+20)*196,py=b+3+rr(j+30)*14;R('rgba(20,6,30,.75)',px,py,3,2);R('rgba(20,6,30,.75)',px+4,py+1,3,2);R('rgba(20,6,30,.75)',px+1,py-3,2,2)}
                 for(let j=0;j<5;j++){ctx.save();ctx.translate(x-40+rr(j+40)*80,b+2+rr(j+50)*12);ctx.rotate(rr(j+60)*3);R('#e6dcc0',-5,-1,10,2);R('#e6dcc0',-6,-2,2,4);R('#e6dcc0',4,-2,2,4);ctx.restore()}
                 for(let j=0;j<4;j++){const ph=(now/1600+j*.25)%1;O('rgba(200,120,255,'+(.6*(1-ph))+')',x-40+j*26,b+4-ph*22,1.5+ph*2)}}
+            else if(o.kind=='anvil'){ // the anvil that flattened him: sunk into cracked stone, blood seeping out from under it, grit still settling
+                const M=(o.m||1)*.85;
+                ctx.fillStyle='rgba(8,6,6,.5)';ctx.beginPath();ctx.ellipse(x,b+4,56*M,12*M,0,0,7);ctx.fill();
+                ctx.strokeStyle='rgba(0,0,0,.55)';ctx.lineWidth=1.5;for(let j=0;j<8;j++){const a=j*.8+(rr(j)-.5)*.3,l0=44*M,l1=(62+rr(j+9)*34)*M;ctx.beginPath();ctx.moveTo(x+Math.cos(a)*l0,b+4+Math.sin(a)*l0*.22);ctx.lineTo(x+Math.cos(a)*l1,b+4+Math.sin(a)*l1*.22);ctx.stroke()}
+                ctx.fillStyle='rgba(110,15,23,.8)';ctx.beginPath();ctx.ellipse(x+8*M,b+5,46*M,7*M,0,0,7);ctx.fill();
+                anvil(x,b+3,M,(rr(1)-.5)*.05,o.f||1);
+                for(let j=0;j<2;j++){const ph=(now/2600+j/2)%1;O('rgba(150,150,160,'+(.14*(1-ph))+')',x-12+j*24,b-30*M-ph*30,5+ph*8)}}
+            else if(o.kind=='cauldron'){ // the cauldron he was boiled in: a low fire under it, his skull in the water and steam still curling out
+                const big=(o.m||1)>1;cauldron(x,b+2,big?1.5:.9,big?1.2:.9,now,.5,.3,null,1)}
             else if(o.kind=='maiden'){ // the iron maiden he died in stays standing where it crushed him, doors shut, still bleeding. Pure scenery: drawn behind the knight, the demons' bubbles and everything else, and nothing collides with it. One per death.
                 ironMaiden(x+(rr(1)-.5)*16,b+1,(o.m||1)*.62,1,now,1,null)}
             else if(o.kind=='roachrem'){ // gnawed bones with a few stragglers still picking at them
@@ -2007,7 +2019,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 for(let j=0;j<6;j++){const px=x+(rr(j)-.5)*130,py=b+10+rr(j+20)*8;ctx.save();ctx.translate(px,py);ctx.rotate(rr(j+40)*3);
                     if(j==5){O('#7d8590',0,0,7);R('#0a0810',-5,-1,10,3)}else{R('#e6dcc0',-8,-1.5,16,3);O('#e6dcc0',-8,0,2.5);O('#e6dcc0',8,0,2.5)}ctx.restore()}}}
         function stainAdd(){if(G.ch&&(G.ch.kind=='bomb'||G.ch.kind=='mimic')){G.rem.push({x:G.ch.x,y:G.ch.y,kind:G.ch.kind,room:G.i,sd:Math.random()*100});G.ch=null}
-            {const RK={6:'arrow',14:'sword',10:'tracks',2:'armor',7:'scorch',8:'icicles',12:'bones',5:'boulder',1:'helmet',9:'strike',13:'hole',4:'soul',17:'summon',18:'maiden',19:'roachrem'}[G.dk];if(RK){G.rem.push({x:(RK=='hole'||RK=='maiden')?G.dx:G.dx-57*G.face,y:G.dy+14,f:G.face,kind:RK,m:G.bs?1.7:1,room:G.i,sd:Math.random()*100})}}
+            {const RK={6:'arrow',14:'sword',10:'tracks',2:'armor',7:'scorch',8:'icicles',12:'bones',5:'boulder',1:'helmet',9:'strike',13:'hole',4:'soul',17:'summon',18:'maiden',19:'roachrem',20:'anvil',21:'cauldron'}[G.dk];if(RK){G.rem.push({x:(RK=='hole'||RK=='maiden')?G.dx:(RK=='anvil'||RK=='cauldron')?G.dx-13*G.face:G.dx-57*G.face,y:G.dy+14,f:G.face,kind:RK,m:G.bs?1.7:1,room:G.i,sd:Math.random()*100})}}
             if(G.rem.length>40)G.rem.shift();if(G.dk!=13){G.bl.push({x:G.dx-57*G.face,y:G.dy+14,room:G.i,sd:G.ss||Math.random()*100,k:G.dk});if(G.bl.length>80)G.bl.shift()}}
 
         function fire(cx,by,w,h,now){
@@ -2031,7 +2043,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         // Every effect keeps playing (loops or holds) until the player clicks to respawn.
         // The knight's final death frame is a pile centred 57px behind where he died (bx), so body effects use bx.
         // ---------- THE DEMON CASTS THE SPELL THAT KILLS YOU ----------
-        const CASTN=['Venom Hex!','Off With Your Head!','','Acid Rain!','Soul Snatch!','Boulder Summon!','Arrow Volley!','Inferno!','Frost Nova!','Thunder Call!','Isekai Portal!','Swamp Grasp!','Detonate!','Quake!','Mind Control!','Flood!','','','Iron Maiden!','Roach Swarm!'];
+        const CASTN=['Venom Hex!','Off With Your Head!','','Acid Rain!','Soul Snatch!','Boulder Summon!','Arrow Volley!','Inferno!','Frost Nova!','Thunder Call!','Isekai Portal!','Swamp Grasp!','Detonate!','Quake!','Mind Control!','Flood!','','','Iron Maiden!','Roach Swarm!','Anvil Drop!','Boil Over!'];
         const hexRgb=h=>{const n=parseInt(h.slice(1),16);return(n>>16)+','+((n>>8)&255)+','+(n&255)};
         // THE DEMON SHOOTS YOU: raises a bow, draws the string back, lets go, and the arrow flies from the bow into the knight
         function bowDraw(now){
@@ -2059,6 +2071,49 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(rel&&w<1){ctx.save();ctx.globalAlpha=.35*(1-w);ctx.strokeStyle='#fff';ctx.lineWidth=1.5*S;ctx.beginPath();ctx.moveTo(AS[0],AS[1]);ctx.lineTo(HH[0]-dx*46*S,HH[1]-dy*46*S);ctx.stroke();ctx.restore()}   // faint streak behind it
             if(B){ctx.save();ctx.globalAlpha=Math.min(1,u*3)*(1-Math.max(0,(u-.8)*5));ctx.textAlign='center';ctx.font='bold 20px sans-serif';ctx.lineWidth=4;ctx.strokeStyle='#000';ctx.strokeText(CASTN[6],BZ.cx,66);ctx.fillStyle=DC[6];ctx.fillText(CASTN[6],BZ.cx,66);ctx.restore()}
         }
+        // A BIG IRON ANVIL. (cx,by) = bottom centre on the floor, M = size, tl = tilt, f = which way the horn points (+1 right / -1 left)
+        function anvil(cx,by,M,tl,f){
+            ctx.save();ctx.translate(cx,by);ctx.rotate(tl||0);ctx.scale((f||1)*M,M);
+            const P=[[-42,0],[42,0],[40,-12],[22,-14],[16,-28],[22,-38],[48,-40],[48,-52],[-30,-52],[-60,-50],[-80,-44],[-34,-40],[-16,-28],[-22,-14],[-40,-12]];
+            const g=ctx.createLinearGradient(0,-52,0,0);g.addColorStop(0,'#8a91a2');g.addColorStop(.45,'#4b505d');g.addColorStop(1,'#22242b');
+            ctx.fillStyle=g;ctx.strokeStyle='#0f1015';ctx.lineWidth=2;ctx.lineJoin='round';
+            ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p[0]+16,p[1]):ctx.moveTo(p[0]+16,p[1]));ctx.closePath();ctx.fill();ctx.stroke();
+            ctx.strokeStyle='#dfe4ee';ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(-60+16,-51);ctx.lineTo(-30+16,-52);ctx.lineTo(48+16,-52);ctx.stroke();   // shiny struck face
+            ctx.fillStyle='rgba(255,255,255,.1)';ctx.fillRect(-12+16,-38,5,22);ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(10+16,-36,12,8);
+            ctx.fillStyle='#101116';ctx.fillRect(30+16,-52,8,3);ctx.fillRect(-4+16,-52,5,3);   // hardy hole + punch hole
+            ctx.restore();
+        }
+        // A BOILING CAULDRON over a fire. (cx,by) = bottom centre, WM/HM = width/height size, heat 0..1 = how hot (water colour, bubbles, steam),
+        // lit 0..1 = fire strength, mid() draws whoever is inside (between the back and the front of the pot), skull 0..1 = a skull bobbing in the water
+        function cauldron(cx,by,WM,HM,now,heat,lit,mid,skull){
+            const rx=58*WM,rimY=by-50*HM,ry=12*WM,h=Math.max(0,Math.min(1,heat)),rn=k=>{const v=Math.sin(k*127.1+3.7)*43758.5453;return v-Math.floor(v)};
+            const wc='rgba('+(90+115*h|0)+','+(170-65*h|0)+','+(210-125*h|0)+',.96)';
+            ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(cx,by+4,rx*1.25,8*WM,0,0,7);ctx.fill();   // shadow
+            [.3,-.3].forEach(a=>{ctx.save();ctx.translate(cx,by+1);ctx.rotate(a);R('#4b3220',-50*WM,-3*WM,100*WM,7*WM);R('#6a4a2c',-50*WM,-3*WM,100*WM,2*WM);ctx.restore()});   // logs
+            if(lit>0)fire(cx,by+2,34*WM,(40+34*h)*HM*lit,now);
+            R('#141417',cx-rx*.6,by-2,12*WM,7);R('#141417',cx+rx*.6-12*WM,by-2,12*WM,7);   // stubby legs
+            ctx.fillStyle='#0b0b0e';ctx.beginPath();ctx.ellipse(cx,rimY,rx,ry,0,0,7);ctx.fill();   // inside of the pot + water
+            ctx.fillStyle=wc;ctx.beginPath();ctx.ellipse(cx,rimY+1,rx*.92,ry*.8,0,0,7);ctx.fill();
+            ctx.strokeStyle='#5b5e69';ctx.lineWidth=3.5;ctx.beginPath();ctx.ellipse(cx,rimY,rx,ry,0,Math.PI,Math.PI*2);ctx.stroke();   // back rim
+            if(mid)mid();
+            ctx.fillStyle=wc;ctx.beginPath();ctx.ellipse(cx,rimY+1,rx*.92,ry*.8,0,0,Math.PI);ctx.fill();   // water in front of whoever is inside
+            ctx.strokeStyle='rgba(255,255,255,'+(.25+.3*h)+')';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(cx,rimY+2,rx*.8,ry*.6,0,.25,Math.PI-.25);ctx.stroke();
+            const nb=5+Math.round(11*h);   // bubbles popping on the surface
+            for(let j=0;j<nb;j++){const ph=(now/(520+rn(j)*300)+rn(j+9))%1,bx2=cx+(rn(j+30)-.5)*rx*1.6,by2=rimY+1+(rn(j+50)-.35)*ry*1.2,r2=1.5+ph*(2.5+rn(j)*3)*Math.min(WM,1.6);
+                ctx.strokeStyle='rgba(235,248,255,'+(.8*(1-ph*.6))+')';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(bx2,by2-ph*3,r2,0,7);ctx.stroke();
+                if(ph>.85){ctx.fillStyle='rgba(235,248,255,.7)';ctx.fillRect(bx2-r2-1,by2-r2-4,2,2);ctx.fillRect(bx2+r2,by2-r2-5,2,2)}}
+            if(skull>0){ctx.save();ctx.globalAlpha=Math.min(1,skull);const sx=cx+Math.sin(now/900)*rx*.25,sy=rimY+Math.sin(now/340)*1.6;ctx.fillStyle='#e6dcc0';ctx.beginPath();ctx.arc(sx,sy-3,7*WM,Math.PI,Math.PI*2);ctx.fill();ctx.fillRect(sx-5*WM,sy-3,10*WM,4*WM);
+                ctx.fillStyle='#0a0810';ctx.fillRect(sx-4*WM,sy-5,3*WM,3*WM);ctx.fillRect(sx+1*WM,sy-5,3*WM,3*WM);ctx.fillStyle='#e6dcc0';ctx.fillRect(sx+rx*.35,sy-2,12*WM,2.5*WM);ctx.restore()}   // what is left of him
+            const g=ctx.createLinearGradient(cx-rx*1.15,0,cx+rx*1.15,0);g.addColorStop(0,'#141417');g.addColorStop(.3,'#4a4c56');g.addColorStop(.55,'#2d2e35');g.addColorStop(1,'#101012');
+            ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(cx-rx,rimY);ctx.bezierCurveTo(cx-rx*1.2,rimY+34*HM,cx-rx*1.08,by-4,cx-rx*.62,by+2);ctx.lineTo(cx+rx*.62,by+2);
+            ctx.bezierCurveTo(cx+rx*1.08,by-4,cx+rx*1.2,rimY+34*HM,cx+rx,rimY);ctx.ellipse(cx,rimY,rx,ry,0,0,Math.PI);ctx.closePath();ctx.fill();ctx.strokeStyle='#0a0a0c';ctx.lineWidth=2;ctx.stroke();   // the pot itself
+            if(lit>0){ctx.save();ctx.globalCompositeOperation='lighter';glow(cx,by-8,rx*1.1,'255,110,30',.28*lit);ctx.restore()}   // firelight on its belly
+            ctx.strokeStyle='#7a7e8a';ctx.lineWidth=3.5;ctx.beginPath();ctx.ellipse(cx,rimY,rx,ry,0,0,Math.PI);ctx.stroke();   // front rim, rivets, handles
+            for(let j=-3;j<=3;j++)O('#8a8e9a',cx+j*rx*.28,rimY+ry*Math.sqrt(1-Math.pow(j*.28,2))+5,1.8*Math.min(1.4,WM));
+            ctx.strokeStyle='#202127';ctx.lineWidth=4;[-1,1].forEach(sg=>{ctx.beginPath();ctx.arc(cx+sg*(rx+6*WM),rimY+10*HM,8*WM,0,7);ctx.stroke()});
+            for(let j=0;j<9;j++){const ph=(now/(1700-h*500)+j/9)%1;O('rgba(238,242,248,'+((.35+.5*h)*.5*Math.sin(ph*Math.PI))+')',cx+Math.sin(now/600+j*2.1)*rx*.45*(.3+ph)+(j%3-1)*rx*.3,rimY-ph*95*HM,(8+ph*20)*WM*.8)}   // steam
+        }
+
         // THE IRON MAIDEN: a cast-iron coffin shaped like a veiled woman. c = how shut the doors are (0 open .. 1 shut), bl = blood seeping out (0..1),
         // mid() draws whatever is standing inside it (the knight) between the spiked interior and the doors.
         function ironMaiden(mx,fy,M,c,now,bl,mid,flat){
@@ -2150,6 +2205,9 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             else if(dk==8){ctx.fillStyle='#d6efff';for(let j=-2;j<=2;j++){ctx.beginPath();ctx.moveTo(tx+j*14-6,ty);ctx.lineTo(tx+j*14,ty-g*(34-Math.abs(j)*6));ctx.lineTo(tx+j*14+6,ty);ctx.fill()}}
             else if(dk==0||dk==3){for(let j=0;j<5;j++){const px=tx-34+j*17,py=ty-210+((now/16+j*27)%170);O(dk==3?'rgba(110,200,60,.85)':'rgba(180,100,255,.8)',px,py,3)}}
             else if(dk==1){ctx.strokeStyle='rgba(255,90,90,.9)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(tx,ty-70,28,Math.PI*.1,Math.PI*(.1+g*.8));ctx.stroke()}
+            else if(dk==20){ctx.fillStyle='rgba(0,0,0,'+(.2+.3*g)+')';ctx.beginPath();ctx.ellipse(tx,ty-1,16+g*34,4+g*8,0,0,7);ctx.fill();ctx.fillStyle='rgba(170,175,190,.8)';for(let j=0;j<5;j++)ctx.fillRect(tx-28+j*14,ty-190+((now/12+j*37)%160),2,7)}   // a dark shadow grows on the floor and grit rains down: something heavy is coming
+            else if(dk==21){for(let j=0;j<9;j++){const ph=(now/700+j*.23)%1;ctx.strokeStyle='rgba(215,240,255,'+(.8*(1-ph))+')';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(tx-42+j*10.5+Math.sin(j*3)*4,ty-ph*(30+g*55),2+(j%3),0,7);ctx.stroke()}
+                for(let j=0;j<5;j++){const ph=(now/1100+j/5)%1;O('rgba(238,242,248,'+(.35*(1-ph)*g)+')',tx+(j-2)*14,ty-30-ph*80,6+ph*10)}}   // bubbles and steam rise out of the circle
             else if(dk==18){ctx.fillStyle='#aab2bf';for(let j=-2;j<=2;j++){ctx.beginPath();ctx.moveTo(tx+j*15-5,ty);ctx.lineTo(tx+j*15,ty-g*(46-Math.abs(j)*8));ctx.lineTo(tx+j*15+5,ty);ctx.fill()}}   // iron spikes grow out of the circle
             else if(dk==19){for(let j=0;j<10;j++){const a=now/420+j*.63;roach(tx+Math.cos(a)*rx*.95,cyc+Math.sin(a)*ry*.95,a+Math.PI/2,.9+g*.3,now/1000+j)}}   // roaches skitter around the circle
             if(B)ctx.restore();
@@ -2160,7 +2218,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             const t=Math.max(0,G.dt-(G.bomb?.6:(G.cast||0))),k=G.dk,x=G.dx,y=G.dy,fy=y+15,now=performance.now(),F=G.face,bx=x-57*F,cy=fy-48,BS=G.bs?1.9:1,AOE=G.bs?1.3:1;
             if(t>.03)bloodStain(bx,y+14,G.ss||0,1.2*Math.min(1,t*1.6),k);
             // the Demon Lord's spell circle: a huge one stays under the knight until he respawns (boulder + lightning draw their own, bigger)
-            if(G.bs&&G.cast>0&&k!=5&&k!=9&&k!=6&&t>0){const rgb=hexRgb(DC[k]||'#e05bff'),kx=x-13*F,a=Math.min(1,t/.25);ctx.save();ctx.globalAlpha=a*.85;ctx.strokeStyle='rgba('+rgb+',.95)';ctx.fillStyle='rgba('+rgb+',.16)';ctx.lineWidth=3;
+            if(G.bs&&G.cast>0&&k!=5&&k!=9&&k!=6&&k!=20&&t>0){const rgb=hexRgb(DC[k]||'#e05bff'),kx=x-13*F,a=Math.min(1,t/.25);ctx.save();ctx.globalAlpha=a*.85;ctx.strokeStyle='rgba('+rgb+',.95)';ctx.fillStyle='rgba('+rgb+',.16)';ctx.lineWidth=3;
                 ctx.beginPath();ctx.ellipse(kx,fy-1,120,31,0,0,7);ctx.fill();ctx.stroke();ctx.beginPath();ctx.ellipse(kx,fy-1,84,22,0,0,7);ctx.stroke();
                 for(let j=0;j<8;j++){const q=now/600+j*.785;ctx.beginPath();ctx.moveTo(kx+Math.cos(q)*84,fy-1+Math.sin(q)*22);ctx.lineTo(kx+Math.cos(q)*120,fy-1+Math.sin(q)*31);ctx.stroke()}
                 ctx.globalCompositeOperation='lighter';glow(kx,fy-1,150,rgb,.3);ctx.restore()}   // same stain that stays after respawn
@@ -2460,6 +2518,36 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                     if(p<1){roach(sx+(tx-sx)*p,lane+Math.sin(now/90+i*2)*1.5,sx>tx?Math.PI:0,RS,ph);continue}
                     const u=cl((t-ta)/(1+hz*.9),0,1),Hm=(8+hz*105)*(1-dn)+(6+hz*10)*dn;
                     roach(tx+Math.sin(now/130+i)*5*u*AOE,lane-u*Hm+Math.sin(now/90+i*3)*2,-Math.PI/2+Math.sin(now/170+i*2.3)*(.5+.9*dn),RS,ph)}
+                break}
+            case 20:{ // ANVIL: a magic circle under him, a huge iron anvil falls from the sky and flattens him. The Demon Lord's is more than twice the size.
+                const AM=G.bs?2.2:1,kx=x-13*F,rgb=hexRgb(DC[20]),cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+                const fu=cl((t-.4)/.3,0,1),hit=t>.7,aBy=hit?fy+2:(-60*AM-60)+((fy+2)-(-60*AM-60))*fu*fu;
+                {const a=Math.min(1,t/.2);   // the circle stays under him until respawn
+                    ctx.save();ctx.globalAlpha=a*(hit?.7:1);ctx.strokeStyle='rgba('+rgb+',.95)';ctx.fillStyle='rgba('+rgb+',.18)';ctx.lineWidth=2;
+                    ctx.beginPath();ctx.ellipse(kx,fy-1,62*AM,16*AM,0,0,7);ctx.fill();ctx.stroke();
+                    for(let j=0;j<8;j++){const q=now/500+j*.785;ctx.beginPath();ctx.moveTo(kx+Math.cos(q)*44*AM,fy-1+Math.sin(q)*11*AM);ctx.lineTo(kx+Math.cos(q)*62*AM,fy-1+Math.sin(q)*16*AM);ctx.stroke()}
+                    ctx.globalCompositeOperation='lighter';glow(kx,fy-1,80*AM,rgb,.3);ctx.restore()}
+                if(!hit)spr({idle:1});else spr({t0:-9,my:.2,dx:F*44});   // he stands there until it lands, then he is a pancake
+                if(hit)burst(.7,kx,fy-10);
+                if(!hit){ctx.fillStyle='rgba(0,0,0,'+(.15+.3*fu)+')';ctx.beginPath();ctx.ellipse(kx,fy,(18+fu*34)*AM,(4+fu*8)*AM,0,0,7);ctx.fill()}   // its shadow grows as it falls
+                if(hit){const pg=cl((t-.8)/2.2,0,1);ctx.fillStyle='rgba(110,15,23,.9)';ctx.beginPath();ctx.ellipse(kx,fy+4,(30+pg*58)*AM,(6+pg*8)*AM,0,0,7);ctx.fill()   // blood slowly pools out from under it
+                    ,ctx.strokeStyle='rgba(0,0,0,'+Math.min(.6,(t-.7)*4)+')';ctx.lineWidth=1.5;for(let j=0;j<8;j++){const a=j*.8+.2,l1=(60+(j*37%30))*AM*cl((t-.7)/.15,0,1);ctx.beginPath();ctx.moveTo(kx+Math.cos(a)*40*AM,fy+3+Math.sin(a)*9*AM);ctx.lineTo(kx+Math.cos(a)*l1,fy+3+Math.sin(a)*l1*.22);ctx.stroke()}}   // cracks run out through the floor
+                anvil(kx,aBy,AM,hit?Math.sin((t-.7)*38)*Math.max(0,.06-(t-.7)*.09)*F:0,F);
+                if(hit&&t<1.6){const e=t-.7;   // impact: dust ring, rising dust, sparks and a CLANG
+                    ctx.strokeStyle='rgba(190,185,170,'+Math.max(0,1-e/.6)+')';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(kx,fy+2,(10+e*240)*AM,(3+e*60)*AM,0,0,7);ctx.stroke();
+                    for(let j=0;j<8;j++){const dd=(34+j*9)*AM*Math.min(1,e*3);O('rgba(160,155,145,'+Math.max(0,.7-e*.7)+')',kx+(j%2?1:-1)*dd,fy-4-e*40*(1+j%3*.4)*AM,(6+e*14)*AM)}
+                    for(let j=0;j<10;j++){const a=j*.63+.3,v=(150+j*17)*AM;R('#ffe08a',kx+Math.cos(a)*v*e*.9,fy-14*AM-(Math.abs(Math.sin(a))*v*e-420*e*e),3,3)}
+                    ctx.save();ctx.globalAlpha=Math.max(0,1-e/.8);ctx.textAlign='center';ctx.font='bold '+Math.round(26*Math.sqrt(AM)*(1+.5*Math.max(0,1-e*8)))+'px Cinzel, serif';ctx.lineWidth=5;ctx.strokeStyle='#000';ctx.strokeText('CLANG!',kx,fy-(66*AM+14)-e*24);ctx.fillStyle='#ffe08a';ctx.fillText('CLANG!',kx,fy-(66*AM+14)-e*24);ctx.restore()}
+                break}
+            case 21:{ // BOILED ALIVE: a cauldron over a roaring fire rises out of the circle with him standing in it. The Demon Lord's is huge.
+                const WM=G.bs?1.8:1,HM=G.bs?1.25:1,kx=x-13*F,rgb=hexRgb(DC[21]),cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+                const h=cl((t-.3)/2.3,0,1),es=cl(t/.45,0,1),pe=es*es*(3-2*es),sink=t>2.4?(t-2.4)*120:0,off=(1-pe)*26,rimY=fy-50*HM+off;
+                if(!G.bs){const a=Math.min(1,t/.2);ctx.save();ctx.globalAlpha=a;ctx.strokeStyle='rgba('+rgb+',.95)';ctx.fillStyle='rgba('+rgb+',.18)';ctx.lineWidth=2;   // (the Demon Lord's big circle is drawn above)
+                    ctx.beginPath();ctx.ellipse(kx,fy-1,62,16,0,0,7);ctx.fill();ctx.stroke();ctx.globalCompositeOperation='lighter';glow(kx,fy-1,80,rgb,.3);ctx.restore()}
+                ctx.save();ctx.globalAlpha=pe;
+                cauldron(kx,fy+off,WM,HM,now,h,pe,()=>{if(sink<130)spr({idle:1,clip:[0,0,W,rimY+3],f:'sepia('+(h*.8)+') saturate('+(1+h*3)+') hue-rotate('+(-h*25)+'deg) brightness('+(1+h*.2)+')',dx:(t>.45&&t<2.4)?Math.sin(now/22)*3:0,dy:sink})},cl((t-3)/.5,0,1));
+                ctx.restore();
+                if(t>2.4&&t<3.1){const e=(t-2.4)/.7;for(let j=0;j<10;j++)O('rgba(150,210,255,'+(1-e)+')',kx+(j-4.5)*9*WM*(.5+e),rimY-Math.sin(e*Math.PI)*(20+j%3*14)*HM,2.5*Math.min(1.5,WM))}   // splash as he goes under
                 break}
             case 15:{ // FELL IN THE WATER AND DROWNED: stumbles, topples into a pool, splashes, sinks, floats
                 const pcx=x-28*F,pw=Math.min(1,t/.5),sf='hue-rotate(160deg) saturate(1.3)',fall=1.1,tip=Math.min(1,Math.max(0,(t-.6)/.5)),u=Math.min(1,Math.max(0,(t-fall)/.9));
