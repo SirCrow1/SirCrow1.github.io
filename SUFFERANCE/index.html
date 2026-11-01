@@ -98,6 +98,7 @@
                     <button class="w-full bg-emerald-600 hover:bg-emerald-500 text-zinc-950 font-bold py-4 px-6 rounded-lg transition title-font text-lg flex items-center justify-center space-x-2 shadow-[0_0_15px_rgba(16,185,129,0.4)] go" id="play">
                         <span>⚔️</span><span>Descend into Sufference</span>
                     </button>
+                    <button id="newrun" type="button" style="display:none" class="w-full bg-zinc-900 hover:bg-zinc-800 text-amber-300 font-bold py-2.5 px-6 rounded-lg border border-amber-700/50 transition title-font text-sm">🔄 Start a new run instead</button>
                     <p class="text-xs text-zinc-400 leading-relaxed pt-2">
                         You are an immortal knight sprite. Wrong answers hurt, but nothing is lost.<br>
                         <strong>Move:</strong> WASD/arrows | <strong>Sword Attack:</strong> Space/J/Click | <strong>Respawn:</strong> Click Screen<br>
@@ -192,7 +193,7 @@
             {n:'The Princess',say:'Hmph. Dying that much in green flame is almost impressive.'},
             {n:'The Princess',say:'Heaven was watching. Lots of emerald bones.'}
         ];
-        const DN=['The demon poisoned you','The demon decapitated you','The demon devoured you','The demon melted you with acid','The demon ripped out your soul','The demon crushed you with a boulder','The demon shot you with an arrow','The demon burned you to cinders','The demon froze and shattered you','The demon struck you with lightning','The demon sent an isekai truck at you','The demon dragged you into the swamp','The demon blew you up','The demon collapsed the floor beneath you','You suffered self-inflicted damage','The demon drowned you','The mimic chest devoured you','The demon summoned a horde that tore you apart','The demon crushed you in an iron maiden','The demon let the cockroaches eat you alive','The demon crushed you with an anvil','The demon boiled you alive'];
+        const DN=['The demon poisoned you','The demon decapitated you','The demon devoured you','The demon melted you with acid','The demon ripped out your soul','The demon crushed you with a boulder','The demon shot you with an arrow','The demon burned you to cinders','The demon froze and shattered you','The demon struck you with lightning','The demon sent an isekai truck at you','The demon dragged you into the swamp','The demon blew you up','The demon collapsed the floor beneath you','You suffered self-inflicted damage','The demon drowned you','The mimic chest devoured you','The demon summoned a horde that tore you apart','The demon crushed you in an iron maiden','The demon let the cockroaches eat you alive','The demon crushed you with an anvil','The demon boiled you alive','The demon sucked you into a black hole','The demon cursed you with a voodoo doll'];
         const TAUNTS=['HAHAHA! Skill issue.','LOL. Did you even study?','You died. Again. Hehehe.','Imagine missing that one...','Too easy. HA HA HA!','GG. Go read your notes!','Bwahaha! Nice try, noob.','LMAO. Ouch.','That was the EASY one!','Do you need a tissue? Heh.'];
         const MIMIC_TAUNTS=['HAHAHA! It was a MIMIC!','Greedy little knight! Hehehe!','Did that chest look friendly?! HA HA!','Nom nom nom! Hahaha!','Never trust a chest, fool!'];
         const BOMB_TAUNTS=['BOOM! Hahaha!','Loot goes boom! HA HA HA!','Greedy AND dead! Hehehe!','Open another one! Hahaha!','Smells like burnt knight! HA!'];
@@ -219,9 +220,14 @@
             ['Iron Maiden: the world\'s tightest hug!','Squeezed into a tight spot, hehehe!','Maiden voyage: one way trip!','You should have stayed OUT of the box! HA!','Nice and snug in there, knight!'],
             ['Roach to conclusions much? HA HA!','Skin deep? Not anymore! Hahaha!','Bug off! ...Oh wait, THEY ate YOU!','Bon appetit, little bugs!','Nothing but bones now! Hehehe!'],
             ['Heavy metal! HA HA HA!','Anvil-able for a smackdown!','You just got ACME\'d! Hehehe!','Flat out wrong! Hahaha!','Your grades hit rock bottom... literally!'],
-            ['Out of the frying pan, into the POT!','Soup of the day: knight stew! Hehehe!','Getting hot in there? Hahaha!','Boiled alive! Medium rare? HA!','Simmer down! ...Oh wait, you cannot!']
+            ['Out of the frying pan, into the POT!','Soup of the day: knight stew! Hehehe!','Getting hot in there? Hahaha!','Boiled alive! Medium rare? HA!','Simmer down! ...Oh wait, you cannot!'],
+            ['Gravity always wins! Hahaha!','Spaghettification: now with extra regret!','You really sucked at that one!','Nothing escapes! Not even your grades!','Down the drain... of SPACE! HA HA!'],
+            ['Pin cushion! Hahaha!','Voodoo? More like voo-DOOMED!','You got stuck on that question! Hehehe!','Do not worry, it only hurts a LOT!','Ouch! Somebody felt that one!']
         ];
-        const DC=['#b46bff','#ff4a4a','#ff5a1f','#a8ff3c','#9fd8ff','#d2b48c','#ffb347','#ff8c1a','#8fe8ff','#ffe14a','#ff6bd6','#b8864a','#ffa21f','#9d8cff','#ff5a7a','#4aa8ff','#e0a040','#e05bff','#aab2c2','#c98a3c','#9aa5b8','#ff7a4a'];
+        const DC=['#b46bff','#ff4a4a','#ff5a1f','#a8ff3c','#9fd8ff','#d2b48c','#ffb347','#ff8c1a','#8fe8ff','#ffe14a','#ff6bd6','#b8864a','#ffa21f','#9d8cff','#ff5a7a','#4aa8ff','#e0a040','#e05bff','#aab2c2','#c98a3c','#9aa5b8','#ff7a4a','#8f5cff','#6ee0a0'];
+        DN[24]='The demons summoned your dead family members';DN[25]='The demons fed you into the meat grinder';DC[25]='#e0707f';
+        DT[25]=['We turned you into paste!','Fresh ground!','Hope you taste good in the stew!','Meat for the soup tonight!','Now that is what we call a grind!'];DC[24]='#9fd47a';
+        DT[24]=['We revived your dead family!','Say hi to your dead family! We dug them up for you!','Look who we dug up for you!','We brought your whole family back. You are welcome!','Your relatives send their regards. We woke them up just for you!'];
         
         const DEFAULT_DECK = {
             id: 'default_starter_pool',
@@ -294,6 +300,7 @@
 
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.onclick = (e) => {
+                if (btn.dataset.t === 'h' && typeof G!=='undefined' && G && !G.gal && typeof SAVED!=='undefined' && !SAVED && window.galOpen) { window.galOpen(); }   // parks the run, then this handler goes on to show the gallery tab
                 document.querySelectorAll('.tab-btn').forEach(b => {
                     b.classList.remove('on', 'bg-emerald-600', 'text-zinc-950', 'shadow-[0_0_10px_rgba(16,185,129,0.4)]');
                     b.classList.add('bg-zinc-800', 'text-zinc-200');
@@ -311,6 +318,8 @@
 
         function hub(){
             $('#gold').textContent='🪙 '+S.gold;
+            {const nb=$('#newrun');if(nb)nb.style.display=(()=>{try{return SAVED||(G&&!G.gal)}catch(e){return 0}})()?'':'none'}   // a run is in progress (or parked): offer a fresh one
+            {const pb=$('#play');if(pb){const sp=pb.querySelectorAll('span');if(sp.length>1)sp[1].textContent=(()=>{try{return SAVED&&SAVED.G}catch(e){return 0}})()?'Resume your run':'Descend into Sufference'}}
             if(!S.decks.length) {
                 $('#decks').innerHTML='<div class="text-xs text-zinc-500 py-4 text-center border border-dashed border-emerald-950 rounded">No question decks loaded yet. Head over to the Question Pool tab to create one!</div>';
             } else {
@@ -522,6 +531,13 @@
         };
 
         const cv=$('#c'),ctx=cv.getContext('2d'),W=800,H=450;
+        // Canvas shapes throw on a negative radius, and one throw inside a frame used to kill the whole game loop (replays froze, runs froze).
+        // Animations that shrink past zero now just draw nothing instead.
+        (()=>{const P=CanvasRenderingContext2D.prototype,arc=P.arc,el=P.ellipse,rg=P.createRadialGradient;
+            P.arc=function(x,y,r,...a){return arc.call(this,x,y,r>0?r:0,...a)};
+            P.ellipse=function(x,y,rx,ry,...a){return el.call(this,x,y,rx>0?rx:0,ry>0?ry:0,...a)};
+            P.createRadialGradient=function(x0,y0,r0,x1,y1,r1){return rg.call(this,x0,y0,r0>0?r0:0,x1,y1,r1>0?r1:0)};
+        })();
         let G=null,keys={},last=0;
 
         const R=(c,x,y,w,h)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h)};
@@ -772,7 +788,7 @@
             if(rng()<.8){const v=rng()<.5?1:0;add('skel',90,x=>D.skel(x,v))}
             const pool=[['banner',32],['banner',32],['swords',56],['axe',54],['spears',50],['plaque',32],['window',40],['chains',34],['armor',46],['rack',58],['sit',58],['crates',66],['urns',52],['bones',46],['halberd',34],['mace',30],['manacles',40],['pike',28],['niche',52],['cracks',34],['lone',34],['cage',40],['tapestry',44],['shelf',52],['vines',38],['runes',44],['horns',72],['gargoyle',44],['meathooks',56],['skullrow',66],['crest',44],['grate',36],['spider',26]];
             let floorItems=0;
-            sh(pool).slice(0,16).forEach(([n,w])=>{const fl=['armor','rack','sit','crates','urns','bones'].includes(n);if(fl&&floorItems>=3)return;if(add(n,w,x=>D[n](x)))if(fl)floorItems++});
+            sh(pool).filter(([n])=>SHOW_BARRELS||n!='crates').slice(0,16).forEach(([n,w])=>{const fl=['armor','rack','sit','crates','urns','bones'].includes(n);if(fl&&floorItems>=3)return;if(add(n,w,x=>D[n](x)))if(fl)floorItems++});
             // ---- old dried blood first (items sit on top of it)
             const nearDoor=x=>(G.tg||[]).some(t=>t.y<=140&&Math.abs(t.x-x)<60);
             plan.forEach(p=>{if(p.n=='skel')splatPaint(g,rng,p.x,WB+14,26,.45);if(p.n=='sit'){splatPaint(g,rng,p.x,WB+12,30,.45);for(let i=0;i<6;i++)splatPaint(g,rng,p.x-10+i*18,WB+28+i*26,6+rng()*6,.5)}});
@@ -846,11 +862,11 @@
 
 
 
-        function start(){startRun()}
+        function start(){if(SAVED){galResume();return}if(G&&!G.gal){$('#run').scrollIntoView();return}startRun()}
         function startRun(gq){   // gq = a question: this is a Death Gallery replay (one plain room, nothing counts)
             const d=S.decks[S.deck];
             if(!gq&&(!d||!d.qs.length))return;
-            let rooms=gq?[{q:gq}]:sh(d.qs).slice(0,6).map(q=>({q}));
+            let rooms=gq?[{q:gq}]:sh(d.qs).map(q=>({q}));   // every question in the deck gets a room
             // one boss room at the very end: the question list is chosen at the gate
             if(!gq)rooms.push({q:null,boss:1,qs:null,qi:0,mode:null});
             G={gal:gq?1:0,rooms,mq:new Map(),rv:new Map(),rvo:[],stains:[],bl:[],rem:[],i:0,deaths:0,tries:0,right:0,t0:performance.now(),pr:rnd(PR),hx:150,hy:320,face:1,cd:0,sw:0,pj:[],bn:[],hearts:[],xg:0,bar:[],fl:[],cn:[],deb:[],ka:1,fin:0,ct:0,maxX:470};
@@ -860,15 +876,27 @@
             mkRoom();last=performance.now();requestAnimationFrame(loop);
         }
         $('#play').onclick=start;
+        let nrT=0;
+        $('#newrun').onclick=function(){
+            const b=this;
+            if(!b.dataset.sure){b.dataset.sure=1;b.textContent='⚠️ Click again to abandon this run and start over';clearTimeout(nrT);nrT=setTimeout(()=>{delete b.dataset.sure;b.textContent='🔄 Start a new run instead'},4000);return}
+            clearTimeout(nrT);delete b.dataset.sure;b.textContent='🔄 Start a new run instead';
+            const d=S.decks[S.deck];if(!d||!d.qs.length)return;
+            if(SAVED){SAVED=null;const nav=document.querySelector('#hub nav');if(nav)nav.style.display='';$('#galink').style.display='';$('#galx').style.display='none'}   // drop the parked run / scorecard
+            G=null;keys={};   // the old loop stops by itself once G is empty
+            $('#bc').style.display='none';$('#respawn-hint').style.display='none';$('#pz').style.display='none';$('#rp').style.display='none';
+            $('#run').classList.remove('on');$('#score').classList.remove('on');
+            setTimeout(()=>startRun(),80);
+        };
 
         // ================= DEATH GALLERY =================
         let SAVED=null;   // whatever screen you were on (a live run, or the scorecard) while the Death Gallery page is open
-        const GN=[...Array(22).keys()].map(String).concat(['bomb']);
-        const GNI=['☠️','🪓','🦷','🧪','👻','🪨','🏹','🔥','❄️','⚡','🚚','🐊','💥','🕳️','⚔️','🌊','📦','👹','⚙️','🪳','🔨','🍲','🧨'];
+        const GN=[...Array(26).keys()].map(String).concat(['bomb']);
+        const GNI=['☠️','🪓','🦷','🧪','👻','🪨','🏹','🔥','❄️','⚡','🚚','🐊','💥','🕳️','⚔️','🌊','📦','👹','⚙️','🪳','🔨','🍲','🌀','🪆','🪦','🥩','🧨'];
         const GSK=['spike','axe','boulder','lava','ghost','fire','dart','gas','ice','fall'];
         const GSI={spike:'🗡️',axe:'🪓',boulder:'🪨',lava:'🌋',ghost:'👻',fire:'🔥',dart:'🎯',gas:'☁️',ice:'🧊',fall:'🕳️'};
         const SRIDX={spike:0,boulder:1,axe:2,fire:3,dart:4,gas:5,fall:6,lava:7,ghost:8,ice:9};
-        const galNName=k=>k=='bomb'?'The trapped chest blew you up':DN[+k];
+        const galNName=k=>k=='bomb'?'The trapped chest blew you up':k=='24'?'Family Reunion':k=='25'?'Meat Grinder':DN[+k];
         const galTitle=t=>t.toLowerCase().replace(/(^|\s)\S/g,m=>m.toUpperCase());
         let toastT=0;
         function toast(msg){const el=$('#toast');if(!el)return;el.textContent=msg;el.style.transform='translate(-50%,0)';clearTimeout(toastT);toastT=setTimeout(()=>{el.style.transform='translate(-50%,-90px)'},3400)}
@@ -884,15 +912,16 @@
             const el=$('#t-h');if(!el)return;
             const ns=GN.filter(k=>S.seen[k]).length,ss=GSK.filter(k=>S.seen['s:'+k]).length;
             const nc=GN.map((k,i)=>galCard(!!S.seen[k],GNI[i],galNName(k),k=='bomb'?DC[12]:DC[+k],S.seen[k],`'n','${k}'`,'Die to unlock')).join('');
-            const sc=GSK.map(k=>galCard(!!S.seen['s:'+k],GSI[k],galTitle(SDN[k][0]),SDN[k][1],S.seen['s:'+k],`'s','${k}'`,'Hidden in a secret room')).join('');
+            const sc=GSK.map(k=>galCard(!!S.seen['s:'+k],GSI[k],galTitle(SDN[k][0]),SDN[k][1],S.seen['s:'+k],`'s','${k}'`,'Not discovered yet')).join('');
             el.innerHTML=(SAVED?`<button type="button" onclick="galResume()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-zinc-950 font-bold py-2.5 rounded title-font text-sm shadow-[0_0_10px_rgba(16,185,129,0.4)]">▶ Back to ${SAVED.G?'your run':'where you were'}</button><p class="text-xs text-emerald-400/80 text-center">${SAVED.G?'Your run is paused and safe. ':''}Nothing here counts.</p>`:'')+`<h3 class="title-font text-lg font-bold text-emerald-400 border-b border-emerald-950 pb-2 flex justify-between items-end"><span>💀 Death Gallery</span><span class="text-xs text-zinc-400 font-mono">${ns}/${GN.length} found</span></h3>
                 <p class="text-xs text-zinc-500">Every new way to die unlocks here. Tap Replay to watch it again.</p>
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${nc}</div>
                 <h3 class="title-font text-lg font-bold text-fuchsia-300 border-b border-fuchsia-950 pb-2 pt-3 flex justify-between items-end"><span>🗝️ Secret Deaths</span><span class="text-xs text-zinc-400 font-mono">${ss}/${GSK.length} found</span></h3>
-                <p class="text-xs text-zinc-500">Traps that only wait behind the secret doors.</p>
+                <p class="text-xs text-zinc-500">Can you find them all?</p>
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${sc}</div>`;
         }
         window.galPlay=function(kind,id){
+            if(G&&!G.gal&&!SAVED)galOpen();   // safety: never let a replay overwrite a live run
             const d=S.decks.find(x=>x.qs&&x.qs.some(q=>q.t!='mt'))||DEFAULT_DECK,q=rnd(d.qs.filter(q=>q.t!='mt'));
             startRun(q);if(!G)return;
             $('#galx').style.display='block';G.hx=200;G.hy=330;G.face=1;
@@ -923,6 +952,7 @@
         }
         // The Death Gallery is its own page. Opening it from a run (or the scorecard) PARKS what you were doing, untouched,
         // and "Back" puts it back exactly as it was. Replays are a separate throw-away session that counts for nothing.
+        window.galOpen=galOpen;
         function galOpen(){
             if(SAVED||(G&&G.gal))return;
             const hubOn=$('#hub').classList.contains('on'),tb=document.querySelector('.tab-btn[data-t="h"]');
@@ -986,7 +1016,7 @@
             const hy=G.hy;
             if(!front)(G.chs||[]).forEach(c=>chestDraw(c,now));
             if(!front)G.deb.forEach(d=>{ctx.save();ctx.translate(d.x,d.y);ctx.rotate(d.a);R('#6b4423',-8,0,16,3);ctx.restore()});
-            const atk=G.state=='dying'&&(G.dk==17||G.dk==2);   // demons jumping the knight (the swarm / the devour): every barrel goes BEHIND them so no face is ever covered
+            const atk=G.state=='dying'&&(G.dk==17||G.dk==24||G.dk==2);   // demons jumping the knight (the swarm / the devour): every barrel goes BEHIND them so no face is ever covered
             G.bar.forEach(b=>{if(atk?!front:(b.y>hy)==front)b.k=='crate'?crateDraw(b,now):barrelDraw(b,now)})}
         function bitsDraw(now){
             G.cn.forEach(c=>R('#ffd84a',c.x,c.y,3,3));
@@ -998,7 +1028,8 @@
             if(G.rooms[G.i].boss&&y<306&&x>332&&x<468)return true;   // the Demon Lord's body is solid
             const L=x-13,Rr=x+13,T=y+8,B=y+17;
             return G.bar.some(b=>L<b.x+14&&Rr>b.x-14&&B>b.y-8&&T<b.y+3)}
-        function mkBarrels(){
+        const SHOW_BARRELS=false;   // flip to true to bring the barrels and crates back
+        function mkBarrels(){if(!SHOW_BARRELS)return [];
             const r=G.rooms[G.i];if(r.boss)return[];
             const wide=r.q.t!='mt',a=[];
             // props spawn at y>=262 so they are never hidden behind the answer plates (those cover y 165-215)
@@ -1648,7 +1679,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 else{av.push([px-95,py-32,px+95,py+40]);av.push([px-92,py+36,px+92,py+106])}});
             if(r.boss)av.push([310,60,490,306]);
             const circ=(G.bl||[]).filter(b=>b.room===G.i).map(b=>[b.x+57*G.face,b.y-14,46]).concat((G.bar||[]).map(o=>[o.x,o.y,52])).concat((G.chs||[]).filter(c=>!c.gone).map(c=>[c.x,c.y,52]))
-                .concat((G.rem||[]).filter(o=>o.room===G.i&&o.kind!='bomb'&&o.kind!='mimic').map(o=>[o.x,o.y,({summon:105,maiden:80,anvil:80,cauldron:80,tracks:110,boulder:80,icicles:75,hole:75,bones:70,armor:70}[o.kind]||60)]));
+                .concat((G.rem||[]).filter(o=>o.room===G.i&&o.kind!='bomb'&&o.kind!='mimic').map(o=>[o.x,o.y,({summon:105,maiden:80,anvil:80,cauldron:80,blackhole:70,tracks:110,boulder:80,icicles:75,hole:75,bones:70,armor:70}[o.kind]||60)]));
             const xMax=r.boss?690:455;let best=[x0,G.hy],bc=1e12;
             for(let x=80;x<=xMax;x+=10)for(let y=316;y<=418;y+=8){
                 let c=0;const x1=x-62,x2=x+62,y1=y-22,y2=y+24;
@@ -1664,7 +1695,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(fk==null&&!r.boss&&r.q)G.mq.set(r.q,(G.mq.get(r.q)||0)+1);   // remember what is hurting you
             G.deaths++;
             G.state='dying';
-            G.kt=t||null;G.hv=null;G.ba=null;G.dn=dname||null;G.bomb=0;G.ch=null;G.dk=fk!=null?fk:GAL_DK!=null?GAL_DK:(()=>{const q=Math.random()*21|0;return q==16?17:q==17?18:q==18?19:q==19?20:q==20?21:q})();if(G.dk==2&&!G.kt&&!r.boss)G.dk=Math.random()<.5?0:1;G.dt=0;G.dx=r.boss?Math.min(G.hx,700):Math.min(G.hx,290);if(fk!=null)G.dx=Math.min(G.hx,470);if(G.dk==17)G.dx=r.boss?400:257;   // the horde needs room on BOTH sides of him
+            G.kt=t||null;G.hv=null;G.zv=null;G.ba=null;G.dn=dname||null;G.bomb=0;G.ch=null;G.dk=fk!=null?fk:GAL_DK!=null?GAL_DK:(()=>{const q=Math.random()*25|0;return q==24?25:q==23?24:q==16?17:q==17?18:q==18?19:q==19?20:q==20?21:q==21?22:q==22?23:q})();if(G.dk==2&&!G.kt&&!r.boss)G.dk=Math.random()<.5?0:1;G.dt=0;G.dx=r.boss?Math.min(G.hx,700):Math.min(G.hx,290);if(fk!=null)G.dx=Math.min(G.hx,470);if(G.dk==17||G.dk==24||G.dk==25)G.dx=r.boss?400:257;   // the horde needs room on BOTH sides of him
                 {const sp=openSpot(r,G.dx);G.dx=sp.x;G.dy=sp.y}G.ew=G.kt?Math.max(.4,(G.kt.x-(G.dx+55))/260):1;G.sk=Math.random()*4|0;G.ss=Math.random()*100;G.sp=[0,0,0].map(()=>Math.random()*23|0);
             const DP=DT[G.dk]||TAUNTS;G.sel=null;G.tt=r.boss?(Math.random()<.7?rnd(DP):rnd(bossTaunts(r))):rnd(DP);
             G.lt=(fk!=null&&!r.boss&&G.tg&&G.tg.length)?rnd(G.tg):null;   // died to a chest: one of the demons laughs
@@ -1767,7 +1798,8 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(!G||!$('#run').classList.contains('on'))return;
             if(G.paused){last=now;requestAnimationFrame(loop);return}
             const dt=Math.min(.05,(now-last)/1e3);last=now;
-            upd(dt);draw(now);rpGrab(dt);
+            try{upd(dt);draw(now);rpGrab(dt)}
+            catch(err){console.error('frame error (skipped):',err);try{ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.filter='none'}catch(e){}}
             requestAnimationFrame(loop);
         }
 
@@ -1954,7 +1986,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             9:['rgba(25,22,28,.9)','rgba(190,215,255,.55)',1.1,5,1],10:['rgba(110,15,23,.9)','rgba(160,20,30,.8)',1.3,7,1.9],11:['rgba(70,47,24,.9)','rgba(135,98,58,.55)',1.4,5,1],
             12:['rgba(110,15,23,.9)','rgba(170,25,35,.8)',1.8,13,1],13:['rgba(110,15,23,.85)','rgba(150,140,130,.65)',1.3,6,1],14:['rgba(110,15,23,.9)','rgba(170,25,35,.8)',1.1,5,1],
             15:['rgba(40,80,120,.75)','rgba(150,200,240,.55)',1.3,5,1],16:['rgba(95,20,25,.92)','rgba(80,50,30,.75)',1.3,6,1],18:['rgba(110,15,23,.92)','rgba(170,25,35,.85)',1.6,9,1],19:['rgba(85,22,22,.88)','rgba(120,70,30,.55)',1.1,5,1],
-            20:['rgba(105,14,22,.93)','rgba(165,24,34,.85)',1.7,9,1.5],21:['rgba(120,160,185,.55)','rgba(245,250,255,.55)',1.5,6,1.2]};
+            20:['rgba(105,14,22,.93)','rgba(165,24,34,.85)',1.7,9,1.5],21:['rgba(120,160,185,.55)','rgba(245,250,255,.55)',1.5,6,1.2],23:['rgba(55,25,70,.85)','rgba(120,210,130,.45)',1.1,5,1]};
         const BKD=['rgba(110,15,23,.9)','rgba(170,30,40,.5)',1,5,1];
         function bloodStain(x,y,seed,s,kind){s=s||1;const b=BK[kind]||BKD,rr=k=>{const v=Math.sin(seed*999+k*127.1)*43758.5453;return v-Math.floor(v)};
             const rx=18*s*b[2]*b[4]*(.85+.3*rr(51)),ry=7*s*b[2]*(.8+.4*rr(52));
@@ -2101,6 +2133,26 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 for(let j=0;j<2;j++){const ph=(now/2600+j/2)%1;O('rgba(150,150,160,'+(.14*(1-ph))+')',x-12+j*24,b-30*M-ph*30,5+ph*8)}}
             else if(o.kind=='cauldron'){ // the cauldron he was boiled in: a low fire under it, his skull in the water and steam still curling out
                 const big=(o.m||1)>1;cauldron(x,b+2,big?1.28:.77,big?1.08:.81,now,.5,.3,null,1)}
+            else if(o.kind=='voodoo'){ // the doll he was cursed through: lying limp on the floor, pins still in it, a few green wisps
+                const M=(o.m||1)>1?2.4:.95;
+                ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.ellipse(x,b+4,36*(M/1.5),6,0,0,7);ctx.fill();
+                voodooDoll(x,b-1,M,1.45*(o.hs||1),now,1,[0,1,2,3].map(i=>({i,p:1})),true);
+                for(let j=0;j<3;j++){const ph=(now/2400+j/3)%1;O('rgba(120,230,170,'+(.4*(1-ph))+')',x+(j-1)*8*(M/1.5),b-8-ph*34,1.4+(1-ph)*1.4)}}
+            else if(o.kind=='blackhole'){ // where the floor was dragged toward a singularity: a dark scar, spiral drag-marks and a faint violet shimmer
+                const M=(o.m||1)*.9,gw=o.gr??1,pu=.5+.5*Math.sin(now/700);
+                ctx.save();ctx.translate(x,b+4);ctx.scale(1,.3);
+                const g=ctx.createRadialGradient(0,0,2,0,0,58*M);g.addColorStop(0,'rgba(0,0,0,'+(.92*gw)+')');g.addColorStop(.45,'rgba(24,10,48,'+(.6*gw)+')');g.addColorStop(1,'rgba(24,10,48,0)');
+                ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,58*M,0,7);ctx.fill();
+                ctx.strokeStyle='rgba(165,120,255,'+((.22+.14*pu)*gw)+')';ctx.lineWidth=2;
+                for(let j=0;j<5;j++){ctx.beginPath();for(let i=0;i<=14;i++){const q=i/14,a=j*1.257+q*2.4,d=(8+q*50)*M;ctx.lineTo(Math.cos(a)*d,Math.sin(a)*d)}ctx.stroke()}
+                ctx.restore();
+                for(let j=0;j<5;j++){const ph=(now/2200+j/5)%1;O('rgba(180,140,255,'+(.4*(1-ph)*gw)+')',x+Math.cos(j*2.1+now/900)*(30-ph*20)*M,b-ph*34,1.5+(1-ph)*1.5)}}
+            else if(o.kind=='paste'){ // what is left of him: a puddle of pink paste with chunks, under where the spout was
+                const m=o.m||1,rr=48*(m>1?1.25:1);ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.ellipse(x,b+3,rr+4,rr*.3+2,0,0,7);ctx.fill();
+                ctx.fillStyle='#a8505c';ctx.beginPath();ctx.ellipse(x,b+2,rr,rr*.27,0,0,7);ctx.fill();ctx.fillStyle='#d9808a';ctx.beginPath();ctx.ellipse(x-3,b+1,rr*.7,rr*.19,0,0,7);ctx.fill();
+                for(let j=0;j<7;j++){const q=Math.sin((o.sd||0)*7.1+j*3.9),q2=Math.sin((o.sd||0)*3.3+j*5.7);O(j%2?'#7e3440':'#e8a0a8',x+q*rr*.8,b+2+q2*rr*.2,2+(j%3))}}
+            else if(o.kind=='grave'){ // the tiny gravestone left where the family buried him: fresh dirt and a stone
+                ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(x,b+3,22*(o.m||1),4*(o.m||1),0,0,7);ctx.fill();ctx.fillStyle='#4a3a2a';ctx.beginPath();ctx.ellipse(x,b+1,18*(o.m||1),4*(o.m||1),0,0,7);ctx.fill();tinyGrave(x,b,o.m||1,1)}
             else if(o.kind=='maiden'){ // the iron maiden he died in stays standing where it crushed him, doors shut, still bleeding. Pure scenery: drawn behind the knight, the demons' bubbles and everything else, and nothing collides with it. One per death.
                 ironMaiden(x+(rr(1)-.5)*16,b+1,(o.m||1)*.62,1,now,1,null)}
             else if(o.kind=='roachrem'){ // gnawed bones with a few stragglers still picking at them
@@ -2155,10 +2207,16 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 for(let j=0;j<3;j++)R('#8a1c22',x-10+j*10,b-18+((now/90+j*13)%14),2,4);   // drool
                 for(let j=0;j<6;j++){const px=x+(rr(j)-.5)*130,py=b+10+rr(j+20)*8;ctx.save();ctx.translate(px,py);ctx.rotate(rr(j+40)*3);
                     if(j==5){O('#7d8590',0,0,7);R('#0a0810',-5,-1,10,3)}else{R('#e6dcc0',-8,-1.5,16,3);O('#e6dcc0',-8,0,2.5);O('#e6dcc0',8,0,2.5)}ctx.restore()}}}
+        function tinyGrave(cx,gb,m,u){if(u<=0)return;const gy=gb+(1-u)*34*m;ctx.save();ctx.beginPath();ctx.rect(cx-20*m,gb-52*m,40*m,56*m);ctx.clip();
+            ctx.fillStyle='#8c8f98';ctx.strokeStyle='#26272c';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(cx-12*m,gy);ctx.lineTo(cx-12*m,gy-24*m);ctx.arc(cx,gy-24*m,12*m,Math.PI,0);ctx.lineTo(cx+12*m,gy);ctx.closePath();ctx.fill();ctx.stroke();
+            const hx=cx,hy=gy-17*m;   // his knight helmet carved on the stone as the symbol
+            ctx.fillStyle='#2e3038';ctx.beginPath();ctx.moveTo(hx-7*m,hy+8*m);ctx.lineTo(hx-7*m,hy-1*m);ctx.arc(hx,hy-1*m,7*m,Math.PI,0);ctx.lineTo(hx+7*m,hy+8*m);ctx.closePath();ctx.fill();
+            ctx.fillStyle='#0d0d10';ctx.fillRect(hx-5*m,hy-1.5*m,10*m,2*m);ctx.fillRect(hx-.7*m,hy-1.5*m,1.4*m,8*m);   // visor slit and nose guard
+            ctx.fillStyle='#b8860b';ctx.fillRect(hx-.8*m,hy-9*m,1.6*m,4*m);ctx.restore()}
         function stainAdd(){if(G.ch&&(G.ch.kind=='bomb'||G.ch.kind=='mimic')){G.rem.push({x:G.ch.x,y:G.ch.y,kind:G.ch.kind,room:G.i,sd:Math.random()*100});G.ch=null}
-            {const RK={6:'arrow',14:'sword',10:'tracks',2:'armor',7:'scorch',8:'icicles',12:'bones',5:'boulder',1:'helmet',9:'strike',13:'hole',4:'soul',15:'puddle',17:'summon',18:'maiden',19:'roachrem',20:'anvil',21:'cauldron'}[G.dk];if(RK){G.rem.push({x:(RK=='hole'||RK=='maiden')?G.dx:(RK=='anvil'||RK=='cauldron')?G.dx-13*G.face:G.dx-57*G.face,y:G.dy+14,f:G.face,kind:RK,m:G.bs?1.7:1,room:G.i,sd:Math.random()*100})}}
+            {const RK={6:'arrow',14:'sword',10:'tracks',2:'armor',7:'scorch',8:'icicles',12:'bones',5:'boulder',1:'helmet',9:'strike',13:'hole',4:'soul',15:'puddle',17:'summon',18:'maiden',19:'roachrem',20:'anvil',21:'cauldron',22:'blackhole',23:'voodoo',24:'grave',25:'paste'}[G.dk];if(RK){G.rem.push({x:(RK=='blackhole'||RK=='voodoo')?bhPos().x:(RK=='hole'||RK=='maiden')?G.dx:(RK=='anvil'||RK=='cauldron'||RK=='grave')?G.dx-13*G.face:RK=='paste'?G.dx-13*G.face+72*(G.bs?1.25:1):G.dx-57*G.face,y:G.dy+14,f:G.face,hs:RK=='voodoo'?bhPos().s:1,kind:RK,m:G.bs?1.7:1,room:G.i,sd:Math.random()*100})}}
             if(G.rem.length>40)G.rem.shift();
-            if(G.dk!=13){G.bl.push({x:G.dx-57*G.face,y:G.dy+14,room:G.i,sd:G.ss||Math.random()*100,k:G.dk});if(G.bl.length>80)G.bl.shift()}}
+            if(G.dk!=13&&G.dk!=22){G.bl.push({x:G.dx-57*G.face,y:G.dy+14,room:G.i,sd:G.ss||Math.random()*100,k:G.dk});if(G.bl.length>80)G.bl.shift()}}
 
         function fire(cx,by,w,h,now){
             ctx.save();ctx.globalCompositeOperation='lighter';
@@ -2181,7 +2239,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         // Every effect keeps playing (loops or holds) until the player clicks to respawn.
         // The knight's final death frame is a pile centred 57px behind where he died (bx), so body effects use bx.
         // ---------- THE DEMON CASTS THE SPELL THAT KILLS YOU ----------
-        const CASTN=['Venom Hex!','Off With Your Head!','','Acid Rain!','Soul Snatch!','Boulder Summon!','Arrow Volley!','Inferno!','Frost Nova!','Thunder Call!','Isekai Portal!','Swamp Grasp!','Detonate!','Quake!','Mind Control!','Flood!','','','Iron Maiden!','Roach Swarm!','Anvil Drop!','Boil Over!'];
+        const CASTN=['Venom Hex!','Off With Your Head!','','Acid Rain!','Soul Snatch!','Boulder Summon!','Arrow Volley!','Inferno!','Frost Nova!','Thunder Call!','Isekai Portal!','Swamp Grasp!','Detonate!','Quake!','Mind Control!','Flood!','','','Iron Maiden!','Roach Swarm!','Anvil Drop!','Boil Over!','Black Hole!','Voodoo Curse!'];
         const hexRgb=h=>{const n=parseInt(h.slice(1),16);return(n>>16)+','+((n>>8)&255)+','+(n&255)};
         // THE DEMON SHOOTS YOU: raises a bow, draws the string back, lets go, and the arrow flies from the bow into the knight
         function bowDraw(now){
@@ -2314,6 +2372,105 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             ctx.fillStyle='#74401b';ctx.beginPath();ctx.ellipse(-1,0,4.8,2.3,0,0,7);ctx.fill();
             ctx.fillStyle='#9a6a34';ctx.fillRect(-4,-.5,7,1);
             ctx.fillStyle='#22110a';ctx.beginPath();ctx.ellipse(6,0,2.4,2.1,0,0,7);ctx.fill();ctx.restore()}
+        // ---------- BLACK HOLE (death 22) ----------
+        const bhR=()=>G.bs?48:31;
+        // where it opens: in front of the knight at chest height (flips to the other side if there is no room)
+        function bhPos(){const r=G.rooms[G.i],d=G.bs?150:96,hi=(r.boss||G.wide)?W-60:490;let s=G.face||1;if(G.dx+s*d>hi||G.dx+s*d<60)s=-s;return{x:G.dx+s*d,y:G.dy+15-52,s}}
+        // the hole itself: glow, back half of the tilted accretion disk, pitch-black core with a bright photon ring, front half of the disk
+        function blackHole(cx,cy,rad,now,a){
+            if(rad<1||a<=0)return;
+            const rx=rad*2.25,ry=rad*.62,ring=front=>{
+                ctx.save();ctx.translate(cx,cy);ctx.rotate(-.32);
+                for(let k=0;k<4;k++){const f=1-k*.17;
+                    ctx.strokeStyle='rgba('+['255,245,210','255,170,60','235,90,60','150,80,255'][k]+','+(.9-k*.12)+')';ctx.lineWidth=Math.max(1,rad*(.12-k*.02));
+                    ctx.setLineDash([rad*(.9-k*.1),rad*.14]);ctx.lineDashOffset=-(now/14)*(1+k*.25)*(rad/30);
+                    ctx.beginPath();ctx.ellipse(0,0,rx*f,ry*f,0,front?0:Math.PI,front?Math.PI:Math.PI*2);ctx.stroke()}
+                ctx.setLineDash([]);ctx.restore()};
+            ctx.save();ctx.globalAlpha=a;
+            ctx.globalCompositeOperation='lighter';glow(cx,cy,rad*3.4,'130,80,255',.3);glow(cx,cy,rad*2,'255,120,40',.16);ctx.globalCompositeOperation='source-over';
+            ring(false);
+            ctx.fillStyle='#000';ctx.beginPath();ctx.arc(cx,cy,rad,0,7);ctx.fill();
+            ctx.strokeStyle='rgba(220,195,255,.95)';ctx.lineWidth=Math.max(1.5,rad*.07);ctx.beginPath();ctx.arc(cx,cy,rad*1.02,0,7);ctx.stroke();
+            ctx.globalCompositeOperation='lighter';ctx.strokeStyle='rgba(150,90,255,.35)';ctx.lineWidth=rad*.25;ctx.beginPath();ctx.arc(cx,cy,rad*1.18,0,7);ctx.stroke();ctx.globalCompositeOperation='source-over';
+            ring(true);ctx.restore()}
+        // streaks of light (and bits of stone) that spiral into the hole, faster and faster the closer they get
+        function bhLines(cx,cy,rad,now,amt,reach,N){
+            if(amt<=.01)return;
+            ctx.save();ctx.globalCompositeOperation='lighter';ctx.lineCap='round';
+            const d0=rad*1.25,pt=(j,ph)=>{const d=d0+reach*(1-ph*ph),a=j*2.39996+3.2*(1-d/(d0+reach));return[cx+Math.cos(a)*d,cy+Math.sin(a)*d*.86]};
+            for(let j=0;j<N;j++){
+                const sp=.5+(j%5)*.12,ph=(now/1000*sp+j*.61803)%1,al=amt*Math.min(1,ph*7)*(1-Math.max(0,(ph-.9)*10));
+                if(al<=.02)continue;
+                ctx.strokeStyle='rgba('+(j%3?'200,180,255':'255,200,150')+','+(al*.85)+')';ctx.lineWidth=1+(j%3)*.7;
+                ctx.beginPath();for(let i=0;i<=5;i++){const q=pt(j,Math.max(0,ph-i*.018));i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])}ctx.stroke();
+                if(j%3==0){const q=pt(j+7,(ph+.3)%1),s=3*(1-ph*.6);ctx.fillStyle='rgba(190,175,215,'+(al*.9)+')';ctx.fillRect(q[0],q[1],s,s)}}   // chips of stone get dragged in too
+            ctx.restore()}
+        // the demon's spell: a small black hole starts to open beside the knight
+        function bhCast(now,u){const p=bhPos(),g=Math.max(0,Math.min(1,(u-.2)/.8));if(g<=0)return;const rr=bhR()*(.05+.4*g);blackHole(p.x,p.y,rr,now,Math.min(1,g*4));bhLines(p.x,p.y,rr,now,.55*g,120*(G.bs?1.55:1),14)}
+        // ---------- VOODOO DOLL (death 23) ----------
+        // The DEMON holds a voodoo doll of the knight in its fist and works it: pins go in (head, chest, arm, leg), he convulses in the same spots,
+        // then it squeezes the doll while he wastes away, twists it, the threads snap, he finally sinks and the demon flings the broken doll down onto the floor.
+        const VD_PINS=[[0,-19,-1.2,'#ff4a4a'],[-1,-4,2.7,'#f2f2f2'],[-13,-6,3.5,'#b46bff'],[4,16,.5,'#ffd84a']];   // pin tip x,y on the doll, direction it sticks out, head colour (head, chest, arm, leg)
+        const VD_S=[.8,1.8,2.8,3.8],VD_SQ=4.7,VD_TW=6.2;   // when each pin goes in, when the squeezing starts, and when the doll is finally twisted (he dies slowly over all of it)
+        // the doll: burlap body, one button eye and one stitched X, stitched mouth, heart patch, and the pins stuck in it. pins=[{i,p}] (p 0..1 = how far in). limp = slack. held = a demon claw grips its legs
+        function voodooDoll(cx,cy,sc,rot,now,a,pins,limp,held,sq){
+            if(a<=0)return;
+            ctx.save();ctx.globalAlpha=a;ctx.translate(cx,cy);ctx.rotate(rot);ctx.scale(sc*(1-.28*(sq||0)),sc*(1+.1*(sq||0)));
+            if(!limp){ctx.save();ctx.globalCompositeOperation='lighter';glow(0,0,36,'110,230,160',.22+.08*Math.sin(now/200));ctx.restore()}
+            const burl='#b8935a',st='#3a2616';
+            ctx.fillStyle=burl;ctx.fillRect(-7,9,6,12);ctx.fillRect(1,9,6,12);ctx.fillStyle='#7a5a30';ctx.fillRect(-7,19,6,2);ctx.fillRect(1,19,6,2);   // legs
+            ctx.save();ctx.translate(-7,-7);ctx.rotate(limp?.9:-.15);ctx.fillStyle=burl;ctx.fillRect(-10,-2.5,10,5);ctx.restore();   // arms
+            ctx.save();ctx.translate(7,-7);ctx.rotate(limp?-.9:.15);ctx.fillStyle=burl;ctx.fillRect(0,-2.5,10,5);ctx.restore();
+            ctx.fillStyle=burl;ctx.fillRect(-7,-9,14,19);ctx.fillStyle='rgba(0,0,0,.18)';ctx.fillRect(2,-9,5,19);   // torso
+            ctx.fillStyle='#c9a468';ctx.beginPath();ctx.arc(0,-16,8,0,7);ctx.fill();   // head
+            ctx.strokeStyle=st;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-6,-9);ctx.lineTo(6,-9);ctx.stroke();   // neck cord
+            ctx.fillStyle='#111';ctx.beginPath();ctx.arc(-3.2,-17,2,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.fillRect(-3.8,-17.8,1,1);   // button eye
+            ctx.strokeStyle='#111';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(1.5,-19);ctx.lineTo(5,-15.5);ctx.moveTo(5,-19);ctx.lineTo(1.5,-15.5);ctx.stroke();   // stitched X eye
+            ctx.strokeStyle=st;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-4,-12.2);ctx.lineTo(4,-12.2);ctx.stroke();for(let j=-3;j<=3;j+=2){ctx.beginPath();ctx.moveTo(j,-13.6);ctx.lineTo(j,-10.8);ctx.stroke()}   // stitched mouth
+            ctx.fillStyle='#8a1c22';ctx.beginPath();ctx.arc(-1.6,-4,1.8,0,7);ctx.fill();ctx.beginPath();ctx.arc(1.6,-4,1.8,0,7);ctx.fill();ctx.beginPath();ctx.moveTo(-3.4,-3.4);ctx.lineTo(3.4,-3.4);ctx.lineTo(0,.2);ctx.fill();   // heart patch
+            ctx.setLineDash([2,2]);ctx.strokeStyle=st;ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(0,1.5);ctx.lineTo(0,9);ctx.moveTo(0,10);ctx.lineTo(0,20);ctx.stroke();ctx.setLineDash([]);   // seams
+            if(held){ctx.fillStyle='#4a3248';ctx.beginPath();ctx.ellipse(0,15,8.5,5.5,0,0,7);ctx.fill();ctx.fillStyle='#6a4a66';for(let j=-1;j<=1;j++){ctx.beginPath();ctx.arc(j*4.5,11.5,2.5,0,7);ctx.fill()}
+                ctx.fillStyle='#efe6cf';for(let j=-1;j<=1;j++){ctx.beginPath();ctx.moveTo(j*4.5-1.5,10);ctx.lineTo(j*4.5+1.5,10);ctx.lineTo(j*4.5,6);ctx.fill()}}   // the demon's claw gripping it
+            (pins||[]).forEach(o=>{const v=VD_PINS[o.i],L=9+(1-o.p)*18;ctx.strokeStyle='#d8dde6';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(v[0],v[1]);ctx.lineTo(v[0]+Math.cos(v[2])*L,v[1]+Math.sin(v[2])*L);ctx.stroke();ctx.fillStyle=v[3];ctx.beginPath();ctx.arc(v[0]+Math.cos(v[2])*L,v[1]+Math.sin(v[2])*L,1.9,0,7);ctx.fill()});
+            ctx.restore()}
+        // a glowing thread from the doll to the part of him it is hurting
+        function vdThread(x0,y0,x1,y1,now,a,seed){
+            if(a<=0)return;
+            ctx.save();ctx.globalCompositeOperation='lighter';ctx.lineCap='round';
+            for(let L=0;L<2;L++){ctx.strokeStyle=L?'rgba(230,255,235,'+(a*.8)+')':'rgba(90,230,150,'+(a*.7)+')';ctx.lineWidth=L?1:3;ctx.beginPath();
+                for(let i=0;i<=16;i++){const q=i/16,w=Math.sin(q*Math.PI)*Math.sin(now/110+q*9+seed)*6,px=x0+(x1-x0)*q,py=y0+(y1-y0)*q+w;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.stroke()}
+            const q=(now/500+seed*.13)%1;glow(x0+(x1-x0)*q,y0+(y1-y0)*q,10,'150,255,190',.6*a);ctx.restore()}
+        // pain lines: a starburst of red/white streaks where the pin lands (e = 0..1)
+        function vdPain(x,y,e,s){
+            ctx.save();ctx.lineCap='round';
+            for(let j=0;j<8;j++){const an=j*.785+.2,r0=(6+e*8)*s,r1=r0+(10+(j%2)*8)*s*(1-e*.4);ctx.strokeStyle='rgba(255,'+(j%2?90:230)+','+(j%2?90:200)+','+(1-e)+')';ctx.lineWidth=2*(1-e)+1;ctx.beginPath();ctx.moveTo(x+Math.cos(an)*r0,y+Math.sin(an)*r0);ctx.lineTo(x+Math.cos(an)*r1,y+Math.sin(an)*r1);ctx.stroke()}
+            ctx.globalCompositeOperation='lighter';glow(x,y,26*s,'255,70,70',.5*(1-e));ctx.restore()}
+        // where the demon holds the doll (the Demon Lord holds a huge one). ok=0: nobody to hold it, it just floats beside the knight
+        function vdHand(){
+            const r=G.rooms[G.i],k=G.kt;
+            if(r.boss)return{x:BZ.cx-62,y:BZ.base-128,sc:2.4,ok:1};
+            if(k){const sc=SZ[(k.z||0)%4],dir=G.dx>k.x?1:-1;return{x:k.x+dir*26,y:k.y+24-58*sc,sc:.95,ok:1}}
+            const p=bhPos();return{x:p.x,y:p.y,sc:1.5,ok:0}}
+        const vdKP=()=>{const F=G.face,fy=G.dy+15,x=G.dx;return[[x,fy-84],[x,fy-52],[x+F*17,fy-56],[x,fy-14]]};   // head, chest, arm, leg of the knight
+        // the demon's spell: it raises the doll in its fist and a thread ties it to the knight
+        function vdCast(now,u){const h=vdHand(),g=Math.max(0,Math.min(1,(u-.15)/.6));if(g<=0)return;voodooDoll(h.x,h.y+Math.sin(now/380)*2,h.sc,Math.sin(now/300)*.06,now,g,[],false,h.ok);if(u>.5)vdThread(h.x,h.y,G.dx,G.dy+15-52,now,Math.min(1,(u-.5)*3),1)}
+        // the doll, threads, pins and the throw: drawn on top of everything (so it is never cut off by the room clip)
+        function vdDraw(now){
+            const t=Math.max(0,G.dt-(G.cast||0)),VS=G.bs?1.6:1,h=vdHand(),fy=G.dy+15,p=bhPos(),cl=(v,a,b)=>Math.max(a,Math.min(b,v)),pre=G.cast?1:0;
+            const sc=h.ok?h.sc:1.5*VS,S=VD_S,TW=VD_TW,SQ=VD_SQ,T1=TW+.9,op=cl(pre+t/.6,0,1),ns=S.filter(v=>t>=v).length,li=ns-1,e0=li>=0?t-S[li]:9,jk=(e0<.45&&t<TW)?1-e0/.45:0;
+            const sq=(t>SQ&&t<TW)?cl((t-SQ)/.4,0,1)*(.6+.4*Math.abs(Math.sin(now/170))):0;   // the demon squeezes it in pulses
+            const KP=vdKP(),th=cl((t-T1)/.75,0,1),limp=t>T1,landX=p.x,landY=fy-2;
+            let hx=h.x,hy=h.y+Math.sin(now/380)*(h.ok?2:3);
+            if(th>0){hx=h.x+(landX-h.x)*th;hy=h.y+(landY-h.y)*th-Math.sin(th*Math.PI)*70*VS}   // flung down onto the floor
+            const rot=t<TW?Math.sin(now/26)*.18*jk+Math.sin(now/300)*.05+Math.sin(now/45)*.08*sq:t<T1?7*cl((t-TW)/.3,0,1)*p.s:1.45*p.s+(1-th)*9*p.s;   // jolts with each pin, shudders when squeezed, whirls when twisted, flops when thrown
+            const dpw=i=>[hx+VD_PINS[i][0]*sc,hy+VD_PINS[i][1]*sc],ta=op*(1-cl((t-TW)/.15,0,1));
+            if(ta>0){vdThread(hx,hy,G.dx,fy-52,now,ta*(.55+.35*sq),1);for(let i=0;i<ns;i++){const d=dpw(i);vdThread(d[0],d[1],KP[i][0],KP[i][1],now,ta,i*3+2)}}   // threads: one to his body, one from every pin to the spot it hurts
+            for(let i=0;i<4;i++){const e=(t-S[i])/.35;if(e>=0&&e<1){const d=dpw(i);vdPain(d[0],d[1],e,.5*Math.max(1,sc/1.2))}}   // pain lines on the doll
+            voodooDoll(hx,hy,sc,rot,now,op,S.map((v,i)=>({i,p:cl((t-(v-.14))/.14,0,1)})).filter(o=>o.p>0),limp,t<T1&&h.ok,sq);
+            if(sq>0)for(let j=0;j<5;j++){const ph=(now/600+j/5)%1;O('rgba(235,228,205,'+(.8*(1-ph))+')',hx+(j-2)*5*sc*.8+Math.sin(now/200+j)*4,hy-8*sc-ph*30*sc*.6,1.6)}   // stuffing squeezes out
+            if(t>TW&&t<TW+.25){ctx.fillStyle='rgba(255,255,255,'+(.4*(1-(t-TW)/.25))+')';ctx.fillRect(0,0,W,H)}   // the snap
+            if(th>=1){const e=(t-T1-.75)/.45;if(e>0&&e<1){ctx.strokeStyle='rgba(190,170,140,'+(.7*(1-e))+')';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(landX,fy+3,10+e*44*VS,2+e*9*VS,0,0,7);ctx.stroke()}}   // dust puff where it lands
+            if(th>=1)for(let j=0;j<4;j++){const ph=(now/2000+j/4)%1;O('rgba(120,230,170,'+(.5*(1-ph))+')',landX+(j-1.5)*8*VS,fy-8-ph*40*VS,1.5+(1-ph)*1.5)}}   // green wisps rise off it
         function castDraw(now){
             if(G.dk==6){bowDraw(now);return}
             const B=!!G.bs,S=B?2.1:1,k=G.kt||{},dk=G.dk,u=Math.min(1,G.dt/G.cast),col=DC[dk]||'#e05bff',rgb=hexRgb(col);
@@ -2322,14 +2479,14 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(!B){ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(mx,mfy+1,34*sc,7,0,0,7);ctx.fill();
             drawMon(mx+Math.sin(now/30)*1.5,mfy,40+Math.floor(now/80)%15,sc,k.v||0,0)}
             const ox=B?BZ.cx-62:mx,oy=B?BZ.base-128:mfy-96*sc,or=(6+u*12)*S;
-            ctx.save();ctx.globalCompositeOperation='lighter';glow(ox,oy,70*S,rgb,.5);ctx.fillStyle='rgba('+rgb+',.9)';ctx.beginPath();ctx.arc(ox,oy,or,0,7);ctx.fill();ctx.fillStyle='rgba(255,255,255,.8)';ctx.beginPath();ctx.arc(ox,oy,or*.45,0,7);ctx.fill();ctx.restore();
+            if(dk!=23){ctx.save();ctx.globalCompositeOperation='lighter';glow(ox,oy,70*S,rgb,.5);ctx.fillStyle='rgba('+rgb+',.9)';ctx.beginPath();ctx.arc(ox,oy,or,0,7);ctx.fill();ctx.fillStyle='rgba(255,255,255,.8)';ctx.beginPath();ctx.arc(ox,oy,or*.45,0,7);ctx.fill();ctx.restore()}
             // spell circle: always on the floor right under the knight (boulder and lightning then strike down onto it)
             const tg=[tx,ty-38],cyc=ty-1,cu=Math.min(1,u*2.2),rx=(dk==5||dk==9?62:50)*cu*S,ry=rx*.26;
             ctx.save();ctx.globalAlpha=cu;ctx.strokeStyle='rgba('+rgb+',.95)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(tx,cyc,rx,ry,0,0,7);ctx.stroke();ctx.fillStyle='rgba('+rgb+',.18)';ctx.fill();
             for(let j=0;j<8;j++){const a=now/500+j*.785;ctx.beginPath();ctx.moveTo(tx+Math.cos(a)*rx*.7,cyc+Math.sin(a)*ry*.7);ctx.lineTo(tx+Math.cos(a)*rx,cyc+Math.sin(a)*ry);ctx.stroke()}
             ctx.globalCompositeOperation='lighter';glow(tx,cyc,70*S,rgb,.35);ctx.restore();
             // jagged beam from the demon's hands to the spell
-            if(u>.25){ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle='rgba('+rgb+',.9)';ctx.lineWidth=3*S;ctx.beginPath();ctx.moveTo(ox,oy);
+            if(u>.25&&dk!=23){ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle='rgba('+rgb+',.9)';ctx.lineWidth=3*S;ctx.beginPath();ctx.moveTo(ox,oy);
                 for(let j=1;j<=8;j++){const q=j/8;ctx.lineTo(ox+(tg[0]-ox)*q+(j<8?Math.sin(now/22+j*2.1)*7:0),oy+(tg[1]-oy)*q+(j<8?Math.cos(now/27+j)*5:0))}ctx.stroke();ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1;ctx.stroke();ctx.restore()}
             // what the spell actually does to the knight
             const g=Math.max(0,Math.min(1,(u-.3)/.7));
@@ -2349,19 +2506,21 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             else if(dk==18){ctx.fillStyle='#aab2bf';for(let j=-2;j<=2;j++){ctx.beginPath();ctx.moveTo(tx+j*15-5,ty);ctx.lineTo(tx+j*15,ty-g*(46-Math.abs(j)*8));ctx.lineTo(tx+j*15+5,ty);ctx.fill()}}   // iron spikes grow out of the circle
             else if(dk==19){for(let j=0;j<10;j++){const a=now/420+j*.63;roach(tx+Math.cos(a)*rx*.95,cyc+Math.sin(a)*ry*.95,a+Math.PI/2,.9+g*.3,now/1000+j)}}   // roaches skitter around the circle
             if(B)ctx.restore();
+            if(dk==22)bhCast(now,u);
+            if(dk==23)vdCast(now,u);
             // spell name floats over the demon
             ctx.save();ctx.globalAlpha=Math.min(1,u*3)*(1-Math.max(0,(u-.8)*5));ctx.textAlign='center';ctx.font='bold '+(B?20:14)+'px sans-serif';ctx.lineWidth=B?4:3;ctx.strokeStyle='#000';ctx.strokeText(CASTN[dk],mx,B?66:mfy-128*sc);ctx.fillStyle=col;ctx.fillText(CASTN[dk],mx,B?66:mfy-128*sc);ctx.restore()}
 
         function deathDraw(){
             const t=Math.max(0,G.dt-(G.bomb?.6:(G.cast||0))),k=G.dk,x=G.dx,y=G.dy,fy=y+15,now=performance.now(),F=G.face,bx=x-57*F,cy=fy-48,BS=G.bs?1.9:1,AOE=G.bs?1.3:1;
-            {const ts0=k==15?4.6:0;if(t>ts0+.03)bloodStain(bx,y+14,G.ss||0,1.2*Math.min(1,(t-ts0)*1.6),k)}   // the water bubble death: nothing pools on the floor until the bubble pops
+            {const ts0=k==15?4.6:0;if(k!=22&&k!=25&&t>ts0+.03)bloodStain(bx,y+14,G.ss||0,1.2*Math.min(1,(t-ts0)*1.6),k)}   // the water bubble death: nothing pools on the floor until the bubble pops
             // the Demon Lord's spell circle: a huge one stays under the knight until he respawns (boulder + lightning draw their own, bigger)
             if(G.bs&&G.cast>0&&k!=5&&k!=9&&k!=6&&k!=20&&t>0){const rgb=hexRgb(DC[k]||'#e05bff'),kx=x-13*F,a=Math.min(1,t/.25);ctx.save();ctx.globalAlpha=a*.85;ctx.strokeStyle='rgba('+rgb+',.95)';ctx.fillStyle='rgba('+rgb+',.16)';ctx.lineWidth=3;
                 ctx.beginPath();ctx.ellipse(kx,fy-1,120,31,0,0,7);ctx.fill();ctx.stroke();ctx.beginPath();ctx.ellipse(kx,fy-1,84,22,0,0,7);ctx.stroke();
                 for(let j=0;j<8;j++){const q=now/600+j*.785;ctx.beginPath();ctx.moveTo(kx+Math.cos(q)*84,fy-1+Math.sin(q)*22);ctx.lineTo(kx+Math.cos(q)*120,fy-1+Math.sin(q)*31);ctx.stroke()}
                 ctx.globalCompositeOperation='lighter';glow(kx,fy-1,150,rgb,.3);ctx.restore()}   // same stain that stays after respawn
             // knight sprite: idle (standing) or death sheet (plays from t0, 9 fps, holds the last frame)
-            const spr=o=>{const im=o.idle?sprites.idle:sprites.death;if(!im.loaded)return;const n=o.idle?Math.floor(now/100)%10:Math.min(9,Math.floor(Math.max(0,t-(o.t0||0))*9));
+            const spr=o=>{const im=o.idle?sprites.idle:sprites.death;if(!im.loaded)return;const n=o.fr!=null?o.fr:o.idle?Math.floor(now/100)%10:Math.min(9,Math.floor(Math.max(0,t-(o.t0||0))*9));
                 ctx.save();ctx.globalAlpha=o.a??1;if(o.f)ctx.filter=o.f;if(o.clip){ctx.beginPath();ctx.rect(o.clip[0],o.clip[1],o.clip[2],o.clip[3]);ctx.clip()}
                 ctx.translate(x+(o.dx||0),fy+(o.dy||0));ctx.rotate(o.rot||0);ctx.scale(F,o.my??1);ctx.drawImage(im.img,n*120,0,120,80,-132,-176,264,176);ctx.restore()};
             const burst=(t0,px,py)=>{if(t<t0)return;const u=Math.min(1,(t-t0)/.7);for(let j=0;j<3;j++)sprayAt(j,px+(j-1)*18*AOE,py-j*6,(.7+u*.8)*AOE,1-u*.9,j==1?-1:1)};
@@ -2387,9 +2546,10 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 // TWO SIDES: 4 demons on the left facing right, 4 on the right facing left, the knight (and later his body) in the middle.
                 // Each side is two staggered rows of two, spaced wider than a demon, so no demon overlaps another.
                 const lo=60,hi=(bs||G.wide)?W-60:500,PS=bs?1.45:1,roomA=0,roomB=0;
-                const DD=[[50,-38],[70,38],[130,-38],[150,38]],ysh=Math.min(0,(H-14)-(fy+38*HS));   // 2 columns x 2 rows a side, 90 apart: wider than any demon. ysh keeps the front row on screen
-                const FC=cl(kx,lo+196*PS,hi-196*PS);   // the whole formation always fits on screen at FULL spacing (it never gets squeezed together)
-                const mk=(dir,room)=>DD.map(q=>[FC+dir*q[0]*PS,fy+q[1]*HS+ysh]);
+                const DD=[[50,-38],[70,38],[130,-38],[150,38]],ysh=Math.min(0,(H-14)-(fy+38*HS*1.45));   // 2 columns x 2 rows a side, 90 apart: wider than any demon. ysh keeps the front row on screen
+                const FC=kx;   // the formation is ALWAYS centred on the knight's body: 4 demons on his left facing right, 4 on his right facing left
+                const mk=(dir,room)=>{const rm=dir>0?hi-FC:FC-lo,sc=cl(rm/(150*PS+30),.5,1);   // near a wall that side's columns tuck in and the rows spread out instead of moving the formation
+                    return DD.map(q=>[FC+dir*q[0]*PS*sc,fy+q[1]*HS*(1+(1-sc)*.9)+ysh])};
                 const SA=mk(S,roomA),SB=mk(-S,roomB);
                 const slp=hsrc?[SA[0],SB[0],SA[1],SB[1],SA[2],SB[2],SA[3],SB[3]]:[SA[0],SA[1],SB[0],SB[1],SA[2],SA[3],SB[2],SB[3]];   // horn: they alternate sides as they pour out; old summoner: 0,1 and their children go to side A, 2,3 and theirs to side B
                 const MN=hsrc?[0,1,2,3,4,5,6,7].map(i=>({p:-1,ts:.85+i*.2,px:kx+(i%2?1:-1)*(10+(i%3)*8)*HS,py:fy+6})):[0,1,2,3].map(i=>({p:-1,ts:.45+i*.25,px:sx-S*(50+i*40),py:sy+(i%2?14:-8)}))   // 4 summoned by the demon
@@ -2430,7 +2590,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                     const n=(t>.5&&t<3.4)?40+Math.floor(now/110)%15:Math.floor(now/150)%6;   // roaring orders at the floor while he summons
                     drawMon(sx+lx,sy+ly,n,SZ[1],(G.kt&&G.kt.v)||0,S<0);ctx.restore()};
                 const MM=i=>{
-                    const m=MN[i];if(t<m.ts-.3)return;if(!G.hv){G.hv=sh(Array.from({length:NV},(_,k)=>k));G.hs=MN.map(()=>.9+Math.random()*.2)}   // every horde is a fresh random mix of breeds and sizes
+                    const m=MN[i];if(t<m.ts-.3)return;if(!G.hv){G.hv=sh(Array.from({length:NV},(_,k)=>k));G.hs=MN.map(()=>.82+Math.random()*.36);G.hx2=MN.map(()=>'hue-rotate('+Math.floor(Math.random()*360)+'deg) saturate('+(.8+Math.random()*1.2).toFixed(2)+') brightness('+(.8+Math.random()*.6).toFixed(2)+')')}   // every horde is a fresh random mix of breeds and sizes
                     const p=mpos(i,t),mx=cl(p[0],45,W-45),my=p[1],vs=VAR[G.hv[i%NV]%NV].s||1,sc=Math.min(SZ[i%4]*1.0*HS*G.hs[i%G.hs.length]*vs,.88*HS)/vs,pt=t-(m.ts-.3);   // capped so a big breed still never overlaps its neighbour   // same size as the normal demons
                     
                     if(!hsrc&&pt<1.3){const pa=cl(pt/.2,0,1)*cl(1-(t-m.ts)/1,0,1),pr=30*cl(pt/.3,0,1);   // the portal it climbs out of
@@ -2449,7 +2609,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                     else n=40+Math.floor(now/70+i*5)%15;   // biting the knight
                     shadow(mx,my,34*sc*(VAR[G.hv[i%NV]%NV].s||1));G.mpA.push([mx,my]);
                     ctx.save();if(rise<1){ctx.beginPath();ctx.rect(mx-100*HS,my-135*HS*rise-4,200*HS,135*HS*rise+8);ctx.clip()}
-                    drawMon(mx+lx,my+ly,n,sc,G.hv[i%NV],cx>mx,1);ctx.restore()};
+                    drawMon(mx+lx,my+ly,n,sc,G.hv[i%NV],cx>mx,1,G.hx2&&G.hx2[i]);ctx.restore()};
                 const ids=MN.map((_,i)=>i).filter(i=>t>=MN[i].ts-.3).sort((a,b)=>mpos(a,t)[1]-mpos(b,t)[1]);
                 {const p0=mpos(0,t);G.mm=[p0[0],p0[1]]}
                 if(hsrc)CIRC();else SM();
@@ -2461,6 +2621,70 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                     if(r1>.45){const hx=kx+(r1-.5)*70,hy=fy-120+r2*80;ctx.save();ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(hx-12,hy-10);ctx.lineTo(hx+12,hy+10);ctx.stroke();ctx.restore()}}
                 if(hsrc)HORN();
                 burst(2.1,x,fy-85);burst(2.5,x,fy-65);burst(2.9,x,fy-50);burst(3.2,kx,fy-30);
+                break}
+            case 24:{const T0=t;{const t=T0*.5;   // ANCESTORS (the whole scene runs at half speed so you can follow it): the whole family line claws out of the ground, shambles in and mauls him. A gravestone rises over his body, and they say tender things while they do it.
+                const cl=(v,a,b)=>Math.max(a,Math.min(b,v)),bs=G.rooms[G.i].boss,HS=bs?1.5:1,kx=x-13*F,lo=60,hi=(bs||G.wide)?W-60:500,NZ=16;
+                if(!G.zv){G.zv=Array.from({length:NZ},()=>'hue-rotate('+(60+Math.floor(Math.random()*50))+'deg) saturate('+(.45+Math.random()*.5).toFixed(2)+') sepia('+(.2+Math.random()*.4).toFixed(2)+') brightness('+(.6+Math.random()*.3).toFixed(2)+')');G.zs=Array.from({length:NZ},()=>.9+Math.random()*.2)}   // fresh random rotting mix every death
+                const ysh=Math.min(0,(H-14)-(fy+56*HS)),RO=[['Mom','Dad'],['Grandma','Grandpa'],['Great-Grandma','Great-Grandpa']],Z=[];
+                for(let i=0;i<NZ;i++){const side=i%2?1:-1,j=i>>1,col=j>>1,row=j&1,rm=side>0?hi-kx:kx-lo,f=cl(rm/230,.6,1);   // 8 a side: parents closest, older generations further back
+                    const sx=kx+side*(46+col*52+row*26)*f,sy=fy+(row?30:-30)*HS*(1+(1-f)*.8)+(col%2?10:0)+ysh,ox=cl(sx+side*(80+col*14),45,W-45),ts=.35+i*.11,dist=Math.abs(sx-ox),run=Math.max(.2,dist/110),u=cl((t-ts-.3)/run,0,1);
+                    if(t<ts-.3)continue;Z.push({i,side,sx,sy,ox,ts,u,mx:ox+(sx-ox)*u,my:sy,sc:.78*HS*G.zs[i]*(1-col*.04),role:(RO[j]||['Ancestor','Ancestor'])[i%2]})}
+                const drawZ=z=>{const{i,ts,u,mx,my,sc}=z,rise=cl((t-ts)/.3,0,1);
+                    if(t<ts+.9){ctx.save();ctx.globalAlpha=cl(1-(t-ts)/.9,0,1)*cl((t-ts+.3)/.2,0,1);ctx.fillStyle='#3a2a1a';ctx.beginPath();ctx.ellipse(z.ox,my+2,30*HS,8*HS,0,0,7);ctx.fill();ctx.restore()}   // the dirt mound it climbs out of
+                    if(t<ts)return;
+                    let n;if(t<ts+.3)n=Math.floor(now/150+i)%6;else if(u<1)n=28+Math.floor(now/110+i*3)%12;else if(t<3.6)n=40+Math.floor(now/80+i*5)%15;else n=Math.floor(now/180+i)%6;
+                    ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(mx,my+1,34*sc,6,0,0,7);ctx.fill();
+                    ctx.save();if(rise<1){ctx.beginPath();ctx.rect(mx-100*HS,my-135*HS*rise-4,200*HS,135*HS*rise+8);ctx.clip()}
+                    drawMon(mx,my+(u>=1&&t>=3.6?0:Math.sin(now/260+i)*1.2),n,sc,0,kx>mx,1,G.zv[i]);ctx.restore()};
+                Z.sort((a,b)=>a.my-b.my);
+                Z.filter(z=>z.my<fy).forEach(drawZ);
+                tinyGrave(kx,fy-2,1,cl((t-3.9)/.6,0,1));   // the tiny gravestone rises where he fell (and stays there afterwards)
+                if(t<3)spr({idle:1,dx:t>1.9?Math.sin(now/28)*(1+Math.min(2,(t-1.9)*2)):0});else spr({fr:Math.min(9,Math.floor((t-3)*9)),dx:F*44});   // his body falls in the middle of them
+                Z.filter(z=>z.my>=fy).forEach(drawZ);
+                if(t>1.9&&t<3.4)for(let i=0;i<NZ;i++){const q=Math.floor(now/90)+i*13,r1=Math.abs(Math.sin(q*12.9898)),r2=Math.abs(Math.sin(q*78.233));
+                    if(r1>.55){const hx=kx+(r1-.5)*70,hy=fy-120+r2*80;ctx.save();ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(hx-12,hy-10);ctx.lineTo(hx+12,hy+10);ctx.stroke();ctx.restore()}}
+                burst(4.2,x,fy-85);burst(5,x,fy-65);burst(5.8,x,fy-50);burst(6.4,kx,fy-30);
+                // they are kind about it
+                const LN=[[2,5.4,0,'Mom: It will be over soon, sweetheart.'],[5.4,8.8,1,'Dad: We are so proud of you, kiddo.'],[8.8,12.2,2,'Grandma: Come home to us, dear.'],[12.2,15.6,4,'Great-Grandma: You always had our eyes.']],MX=(bs||G.wide)?W:515;
+                const EX=[[3,'Grandpa: Rest now. We have got you.'],[5,'Great-Grandpa: The whole family is here.'],[6,'Ancestor: You look just like your father.'],[0,'Mom: I made your favorite, honey.'],[7,'Ancestor: Family sticks together.'],[1,'Dad: Do not be scared, kiddo.'],[8,'Ancestor: We have been waiting for you.'],[2,'Grandma: Stay with us, dear.']];   // after the kill they keep talking until you respawn
+                const FOOT=Z.length?Math.max(...Z.map(q=>q.my)):fy;
+                const say=(z,txt,al)=>{ctx.save();ctx.globalAlpha=al;ctx.font='bold 16px sans-serif';const w=ctx.measureText(txt).width+24,px=cl(z.mx,w/2+8,MX-w/2-8),top=Math.min(FOOT+16,H-50);   // below the horde so it never sits on the demons' taunt bubbles
+                    R('#fff',cl(z.mx,px-w/2+10,px+w/2-10)-4,top-5,8,8);R('#fff',px-w/2,top,w,32);ctx.fillStyle='#111';ctx.textAlign='center';ctx.fillText(txt,px,top+21);ctx.restore()};
+                LN.forEach(l=>{const e=l[1]-.45;if(T0<l[0]||T0>e)return;const z=Z.find(q=>q.i==l[2]);if(z)say(z,l[3],cl((T0-l[0])/.25,0,1)*cl((e-T0)/.25,0,1))});   // a gap between lines so two bubbles are never up at once
+                if(T0>15.6){const ph=(T0-15.6)%3.4,e=EX[Math.floor((T0-15.6)/3.4)%EX.length],z=Z.find(q=>q.i==e[0]);if(z&&ph<2.95)say(z,e[1],cl(ph/.25,0,1)*cl((2.95-ph)/.25,0,1))}
+                }break}
+            case 25:{ // MEAT GRINDER: two demons haul him up, drop him in the hopper, crank it, and he comes out of the spout as paste. The puddle stays after respawn.
+                const M=G.bs?1.25:1,kx=x-13*F,mx=kx+120*M,sp=mx-48*M,ez=u=>u*u*(3-2*u),cl=(v,a,b)=>Math.max(a,Math.min(b,v)),rimY=fy-142*M;
+                if(!G.hv)G.hv=[Math.floor(Math.random()*NV),Math.floor(Math.random()*NV)];
+                const drop=ez(cl(t/.7,0,1)),yo=-300*(1-drop),gr=t>3.4&&t<8.6,shk=(gr?Math.sin(now/30)*2.2*M:0)+(t>.65&&t<.95?Math.sin(now/18)*3:0),ca=Math.max(0,Math.min(t,8.8)-3.4)*9;
+                const lift=ez(cl((t-1)/1.4,0,1)),sink=ez(cl((t-2.4)/1,0,1)),flow=cl((t-3.6)/.6,0,1)*(t<8.2?1:cl(1-(t-8.2)/.8,0,1)),pr=ez(cl((t-3.8)/5,0,1));
+                ctx.save();ctx.lineWidth=2;ctx.strokeStyle='#17181d';ctx.translate(mx+shk,fy+yo);
+                ctx.fillStyle='#2f323b';ctx.fillRect(-48*M,-16*M,96*M,16*M);ctx.strokeRect(-48*M,-16*M,96*M,16*M);
+                ctx.fillStyle='#5b606c';ctx.fillRect(-40*M,-98*M,80*M,84*M);ctx.strokeRect(-40*M,-98*M,80*M,84*M);
+                ctx.fillStyle='#454953';ctx.beginPath();ctx.moveTo(-56*M,-146*M);ctx.lineTo(56*M,-146*M);ctx.lineTo(32*M,-98*M);ctx.lineTo(-32*M,-98*M);ctx.closePath();ctx.fill();ctx.stroke();
+                ctx.fillStyle='#1a0d10';ctx.beginPath();ctx.ellipse(0,-146*M,56*M,7*M,0,0,7);ctx.fill();
+                ctx.fillStyle='#222';ctx.beginPath();ctx.arc(0,-62*M,22*M,0,7);ctx.fill();ctx.stroke();
+                ctx.save();ctx.translate(0,-62*M);ctx.rotate(ca);ctx.fillStyle='#b9bcc6';for(let j=0;j<8;j++){ctx.rotate(Math.PI/4);ctx.fillRect(-3*M,-17*M,6*M,8*M)}ctx.beginPath();ctx.arc(0,0,11*M,0,7);ctx.fill();ctx.fillStyle='#555';ctx.beginPath();ctx.arc(0,0,3*M,0,7);ctx.fill();ctx.restore();
+                ctx.fillStyle='#3d4049';ctx.fillRect(-56*M,-50*M,18*M,12*M);ctx.strokeRect(-56*M,-50*M,18*M,12*M);
+                ctx.save();ctx.translate(40*M,-66*M);ctx.fillStyle='#8c8f98';ctx.beginPath();ctx.arc(0,0,5*M,0,7);ctx.fill();ctx.stroke();ctx.rotate(ca);ctx.fillRect(0,-2*M,22*M,4*M);ctx.beginPath();ctx.arc(22*M,0,5*M,0,7);ctx.fill();ctx.stroke();ctx.restore();
+                ctx.restore();
+                // the paste: a stream out of the spout and a growing puddle under it
+                if(t>3.7){ctx.fillStyle='#a8505c';ctx.beginPath();ctx.ellipse(sp,fy+2,(14+34*pr)*M,(4+9*pr)*M,0,0,7);ctx.fill();ctx.fillStyle='#d9808a';ctx.beginPath();ctx.ellipse(sp-3,fy+1,(10+26*pr)*M,(3+6*pr)*M,0,0,7);ctx.fill();
+                    for(let j=0;j<7;j++)O(j%2?'#7e3440':'#e8a0a8',sp+Math.sin(j*5.3+1)*(10+30*pr)*M,fy+2+Math.sin(j*7.7)*(2+6*pr)*M,2+(j%3));   // the puddle and its chunks STAY once the machine is done
+                    if(flow>0){ctx.fillStyle='#d9808a';ctx.fillRect(sp-3*M*flow,fy-44*M,6*M*flow,44*M);
+                        for(let j=0;j<6;j++){const ph=(now/420+j/6)%1;O(j%2?'#7e3440':'#e8a0a8',sp+Math.sin(j*9.1)*(6+ph*16)*M,fy-40*M+ph*40*M-Math.sin(ph*3.1)*10,2+(j%3)*.8)}}}
+                // the knight: carried over, lowered into the hopper (clipped at the rim so he vanishes into it)
+                if(t<3.5){const sway=lift>0&&lift<1?Math.sin(now/90)*.12:0;
+                    spr({idle:1,dx:(mx-x)*lift+(sink>0?shk:0),dy:-146*M*lift+130*sink,rot:sway*F,clip:sink>0?[mx-220,fy-600,440,rimY-(fy-600)]:null})}
+                ctx.save();ctx.translate(mx+shk,fy+yo);ctx.fillStyle='#6d7280';ctx.strokeStyle='#17181d';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-58*M,-146*M);ctx.lineTo(58*M,-146*M);ctx.lineTo(56*M,-138*M);ctx.lineTo(-56*M,-138*M);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+                burst(2.9,mx,fy-150*M);burst(3.8,mx,fy-150*M);burst(5.2,mx,fy-150*M);burst(6.8,mx,fy-150*M);
+                // the two demons: both carry him, then one steps back and one cranks the handle
+                const ax0=kx-52,bx0=kx+52,ax=ax0+(mx-110*M-ax0)*lift-220*(1-ez(cl(t/.9,0,1)))*1,bxp=bx0+(mx+98*M-bx0)*lift+220*(1-ez(cl(t/.9,0,1))),dsc=.88*M;
+                const dn=(w)=>t<.9?28+Math.floor(now/110+w*3)%12:(lift>0&&lift<1)?28+Math.floor(now/110+w*3)%12:Math.floor(now/180+w)%6;
+                const bn=(t>2.4&&t<8.8)?40+Math.floor(now/80)%15:dn(1);
+                const dd=(px,n,v,flip)=>{const mx2=cl(px,45,W-45);ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(mx2,fy+8,34*dsc,6,0,0,7);ctx.fill();drawMon(mx2,fy+14,n,dsc,v,flip,1)};
+                dd(ax,dn(0),G.hv[0],true);dd(bxp,bn,G.hv[1],false);
+                if(t>2.4){const LF=['Haha!','Hahaha!','Hehehe!'],hd=fy+14-110*dsc-12,q=Math.floor(now/900);bubble(LF[q%3],cl(ax,45,W-45),hd);bubble(LF[(q+1)%3],cl(bxp,45,W-45),hd)}   // the two grinder demons laugh
                 break}
             case 0:{ // POISON: purple, foaming, floating skulls
                 spr({idle:t<.8,t0:.8,f:'hue-rotate(250deg) saturate(2)',dx:t<.8?Math.sin(now/40)*2:0});
@@ -2742,6 +2966,35 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 ctx.restore();
                 if(t>2.4&&t<3.1){const e=(t-2.4)/.7;for(let j=0;j<10;j++)O('rgba(150,210,255,'+(1-e)+')',kx+(j-4.5)*9*WM*(.5+e),rimY-Math.sin(e*Math.PI)*(20+j%3*14)*HM,2.5*Math.min(1.5,WM))}   // splash as he goes under
                 break}
+            case 23:{ // VOODOO DOLL (the demon works the doll, see vdDraw): here only the knight. Every pin wears him down (hunching, swaying, going grey), the squeeze makes him double over, and when the doll is twisted he sinks slowly through the death frames.
+                const cl=(v,a,b)=>Math.max(a,Math.min(b,v)),S=VD_S,TW=VD_TW,SQ=VD_SQ,ns=S.filter(v=>t>=v).length,li=ns-1,e0=li>=0?t-S[li]:9,jk=(e0<.45&&t<TW)?1-e0/.45:0,KP=vdKP();
+                const pr=cl(t/TW,0,1),sq=(t>SQ&&t<TW)?cl((t-SQ)/.5,0,1):0;
+                if(!G.bs){ctx.save();ctx.globalAlpha=Math.min(1,t/.4)*(.5+.2*Math.sin(now/(260-sq*120)));ctx.strokeStyle='rgba(110,230,160,.9)';ctx.fillStyle='rgba(110,230,160,.14)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x-13*F,fy-1,56,15,0,0,7);ctx.fill();ctx.stroke();ctx.restore()}   // faint green sigil under him
+                const tint=(ns||sq)?'sepia('+(ns*.14+sq*.2)+') hue-rotate('+(ns*12)+'deg) saturate('+(1+ns*.3)+') brightness('+(1-pr*.3)+')':'';
+                if(t<TW)spr({idle:1,f:tint,my:1-(ns*.035+sq*.1),rot:F*(.03*ns+.09*sq)+(li%2?1:-1)*.14*jk,dx:Math.sin(now/17)*7*jk+Math.sin(now/520)*ns*1.6});   // hunched, swaying, jerking at each pin
+                else spr({fr:Math.min(9,Math.floor((t-TW)/1.7*10)),f:tint});   // finally sinks, slowly
+                for(let i=0;i<4;i++){const e=(t-S[i])/.35;if(e>=0&&e<1)vdPain(KP[i][0],KP[i][1],e,1)}   // pain lines where the pin landed
+                if(sq>0){const k=(t-SQ)/.4,e=k%1;vdPain(KP[1][0],KP[1][1],e,1.1);if(sq>.5)vdPain(KP[Math.floor(k)%4][0],KP[Math.floor(k)%4][1],(e+.5)%1,.8)}   // the squeeze: pain pulses through his body
+                break}
+            case 22:{ // BLACK HOLE: a tiny singularity opens beside him, streaks of light bend toward it, it drags him in (stretched, spinning, shrinking to a dot), swallows him, flashes and collapses. Only a scar is left on the floor.
+                const BHS=G.bs?1.55:1,Rf=bhR(),p=bhPos(),hx=p.x,hy=p.y,cl=(v,a,b)=>Math.max(a,Math.min(b,v)),pre=G.cast?.45:0;
+                const T0=.75,T1=2.7,pu=cl((t-T0)/(T1-T0),0,1),e=Math.pow(pu,2.1),op=cl(pre+t/(pre?.5:.8),0,1);
+                const col=cl((t-T1-.35)/.85,0,1),swell=t>T1?Math.sin(cl((t-T1)/.5,0,1)*Math.PI):0;
+                const R0=Rf*(pre?op:op*op*(3-2*op))*(1+.22*swell)*(1-col*col);
+                ctx.fillStyle='rgba(8,0,22,'+(.26*op*(1-col))+')';ctx.fillRect(0,0,W,H);   // the room darkens while it feeds
+                if(t>T1)remDraw({x:hx,y:G.dy+14,kind:'blackhole',sd:G.ss||1,m:BHS,gr:cl((t-T1)/1.4,0,1)});   // the drag-scar spreads where it collapsed
+                if(op>.2&&col<1)for(let j=0;j<16;j++){const ph=(now/1300+j*.137)%1,sx0=hx+(j%2?1:-1)*(70+j*9)*BHS,dd=sx0+(hx-sx0)*ph*ph;R('rgba(170,150,200,'+(.55*(1-ph)*(1-col))+')',dd,fy+3+(j%3)*3,3-ph*2,1)}   // floor dust slides toward it
+                bhLines(hx,hy,Math.max(R0,Rf*.3),now,op*(1-cl((t-T1-.2)/.5,0,1)),170*BHS,24);   // the suction lines
+                if(t<T0)spr({idle:1,dx:Math.sin(now/38)*2.2*(t/T0),rot:p.s*.08*(t/T0)});   // he braces and leans away/toward it
+                else if(pu<1&&sprites.idle.loaded){
+                    const ang=e*6.4*p.s,c0=Math.cos(ang),s0=Math.sin(ang),rv0=x-hx,rv1=cy-hy,px=hx+(rv0*c0-rv1*s0)*(1-e),py=hy+(rv0*s0+rv1*c0)*(1-e),sc=1-.94*e,str=1+e*1.9,tw=Math.atan2(hy-py,hx-px);
+                    ctx.save();ctx.globalAlpha=1-cl((pu-.82)/.18,0,1);ctx.filter='brightness('+(1-.45*e)+') saturate('+(1+e)+') hue-rotate('+(e*60)+'deg)';
+                    ctx.translate(px,py);ctx.rotate(tw);ctx.scale(str,1/(1+(str-1)*.6));ctx.rotate(-tw+e*7*p.s+p.s*.08*(1-e));ctx.scale(F*sc,sc);   // stretched along the pull, spinning, shrinking
+                    ctx.drawImage(sprites.idle.img,(Math.floor(now/100)%10)*120,0,120,80,-132,-128,264,176);ctx.restore()}
+                blackHole(hx,hy,R0,now,1);   // drawn on top of him so he vanishes INTO it
+                if(t>T1&&t<T1+.7){const w=(t-T1)/.7;ctx.save();ctx.globalCompositeOperation='lighter';glow(hx,hy,Rf*(1.6+w*3),'210,170,255',.55*(1-w));ctx.strokeStyle='rgba(220,190,255,'+(.8*(1-w))+')';ctx.lineWidth=4*(1-w)+1;ctx.beginPath();ctx.ellipse(hx,hy,Rf*(1+w*5),Rf*(1+w*5)*.9,0,0,7);ctx.stroke();ctx.restore()}   // the swallow: flash + shockwave ring
+                if(t>T1+1.15){const w=cl((t-T1-1.15)/1.2,0,1);for(let j=0;j<10;j++){const a=j*.628+.3,d=(8+j%3*10)*(.3+w*2.4)*BHS;ctx.globalAlpha=(1-w)*.8;R('#c9a8ff',hx+Math.cos(a)*d,hy+Math.sin(a)*d,2,2)}ctx.globalAlpha=1}   // it pops: a few violet sparks
+                break}
             case 15:{ // TRAPPED IN A WATER BUBBLE: a giant sphere of water gathers around him and holds him; he thrashes, runs out of air, goes limp and floats; then the bubble pops and he drops
                 const bsz=G.bs?1.12:1,rx=66*bsz,ry=84*bsz,cx0=x,cy0=fy-46,grow=Math.min(1,t/.9),pop=4.6,sf='hue-rotate(160deg) saturate(1.3)';
                 const held=t<pop,lim=Math.min(1,Math.max(0,(t-2.6)/1.3)),liftMax=24,lift=Math.min(1,Math.max(0,(t-.7)/.8))*liftMax,bob=Math.sin(now/420)*4;
@@ -2835,7 +3088,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             {f:'hue-rotate(150deg) saturate(1.8) brightness(.85)',au:'40,255,190',s:.9}, // 16 Spectre: teal ghost
             {f:'sepia(1) saturate(3) hue-rotate(-50deg) brightness(.6) contrast(1.3)',s:1.1} // 17 Blood: dried-blood red-brown
         ],NV=VAR.length;
-        function drawMon(x,fy,n,sc,v,flip,noAura){
+        function drawMon(x,fy,n,sc,v,flip,noAura,xf){
             if(!MON.ok)return;
             const V=VAR[v%NV];sc*=(V.s||1);
             ctx.save();ctx.translate(x,fy);ctx.scale(flip?-1:1,1);
@@ -2844,7 +3097,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 g.addColorStop(0,'rgba('+V.au+','+(.42*pu)+')');g.addColorStop(1,'rgba('+V.au+',0)');
                 ctx.save();ctx.globalCompositeOperation='lighter';ctx.fillStyle=g;ctx.fillRect(-90*sc,-130*sc,180*sc,140*sc);ctx.restore()}
             if(V.sh)ctx.translate(Math.sin(performance.now()/70+x)*1.4,0);
-            ctx.filter=V.f;
+            ctx.filter=(V.f||'')+(xf?' '+xf:'')||'none';
             ctx.drawImage(MON.img,n*160,0,160,128,-65*sc,-126*sc,160*sc,128*sc);ctx.restore();
         }
         function archD(x0,y0,w,by){const R=w/2;ctx.beginPath();ctx.moveTo(x0,by);ctx.lineTo(x0,y0+R);ctx.arc(x0+R,y0+R,R,Math.PI,0);ctx.lineTo(x0+w,by);ctx.closePath()}
@@ -3036,11 +3289,11 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
 
         function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
         // red HA HA HA pouring out of a laughing demon's mouth
-        function haha(x,y,now,n=6){
+        function haha(x,y,now,n=6,rise=64,side=8){
             ctx.save();ctx.textAlign='center';ctx.lineJoin='round';
             for(let j=0;j<n;j++){const ph=(now/700+j/6)%1,sd=j%2?1:-1,sz=13+ph*9;
                 ctx.globalAlpha=Math.min(1,(1-ph)*1.6);ctx.font='900 '+sz.toFixed(0)+'px sans-serif';
-                const px=x+sd*(8+ph*34)+Math.sin(now/120+j*2)*3,py=y-ph*64;
+                const px=x+sd*(side+ph*34)+Math.sin(now/120+j*2)*3,py=y-ph*rise;
                 ctx.lineWidth=3;ctx.strokeStyle='rgba(40,0,0,.85)';ctx.strokeText('HA',px,py);
                 ctx.fillStyle=j%3?'#ff3b3b':'#ff6b5a';ctx.fillText('HA',px,py)}
             ctx.restore();
@@ -3142,7 +3395,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(G.state=='dying'){
                 if(G.cast&&G.dt<G.cast&&(G.kt||G.bs))castDraw(now);
                 if(G.dk==17&&!r.boss&&G.dt>3.4){G.avoid=null;G.bubR=[];G.tg.forEach(t=>{if(t.y>140)return;laugh(t.px??t.x,(t.ply??t.y)+26,now,true,t.tt,t===(G.kt||G.lt))})}   // horde death: the door demons' speech bubbles are drawn FIRST, so the horde stands in front of them
-                ctx.save();ctx.beginPath();ctx.rect(0,0,(r.boss||G.wide)?W:515,H);ctx.clip();deathDraw();ctx.restore();if(walkKill())eatDemon(now);if(G.bk)bossKillFx(now);
+                ctx.save();ctx.beginPath();ctx.rect(0,0,(r.boss||G.wide)?W:515,H);ctx.clip();deathDraw();ctx.restore();if(G.dk==23&&!(G.cast&&G.dt<G.cast))vdDraw(now);if(walkKill())eatDemon(now);if(G.bk)bossKillFx(now);
                 ctx.fillStyle=DC[G.dk]||'#facc15';ctx.shadowColor='#000';ctx.shadowBlur=6;ctx.textAlign='center';{const tx=(G.dn||(r.boss?(G.dk==14?'The Demon Lord made you hurt yourself':DN[G.dk].replace(/^The demon /,'The Demon Lord ')):DN[G.dk])).toUpperCase();   // when the boss kills you, it says the BOSS killed you
                 ctx.font='bold 22px Cinzel, serif';const mw=ctx.measureText(tx).width;ctx.font='bold '+(mw>770?Math.floor(22*770/mw):22)+'px Cinzel, serif';ctx.fillText(tx,W/2,40)}ctx.shadowBlur=0;
                 late=()=>{
@@ -3159,7 +3412,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                             const hz=(G.dk==17&&G.mpA&&G.mpA.length)?G.mpA:null;
                             G.avoid=(G.dk==18&&G.mbox)?G.mbox:null;G.bubR=[];
                             if(hz)hz.forEach(p=>haha(p[0],p[1]-100*(G.rooms[G.i].boss?1.7:1),now));   // the horde's HAs go first, so the speech bubbles always sit on top of them
-                            G.tg.forEach(t=>{if(t.y>140||(walkKill()&&t===G.kt))return;{if(G.dk!=17)laugh(t.px??t.x,(t.ply??t.y)+26,now,true,t.tt,t===(G.kt||G.lt));haha(t.x,t.y-18,now)}});G.avoid=null}   // all 4 doorway demons taunt you from their answer plates, horde death included
+                            G.tg.forEach(t=>{if(t.y>140||(walkKill()&&t===G.kt))return;{if(G.dk!=17)laugh(t.px??t.x,(t.ply??t.y)+26,now,true,t.tt,t===(G.kt||G.lt));haha(t.x,t.y-38,now,6,22,30)}});G.avoid=null}   // all 4 doorway demons taunt you from their answer plates, horde death included
                     }
                 };
             }else if(G.state=='resp'){
