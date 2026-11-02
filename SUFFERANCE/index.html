@@ -193,7 +193,7 @@
             {n:'The Princess',say:'Hmph. Dying that much in green flame is almost impressive.'},
             {n:'The Princess',say:'Heaven was watching. Lots of emerald bones.'}
         ];
-        const DN=['The demon poisoned you','The demon decapitated you','The demon devoured you','The demon melted you with acid','The demon ripped out your soul','The demon crushed you with a boulder','The demon shot you with an arrow','The demon burned you to cinders','The demon froze and shattered you','The demon struck you with lightning','The demon sent an isekai truck at you','The demon dragged you into the swamp','The demon blew you up','The demon collapsed the floor beneath you','You suffered self-inflicted damage','The demon drowned you','The mimic chest devoured you','The demon summoned a horde that tore you apart','The demon crushed you in an iron maiden','The demons summoned cockroaches to eat you alive','The demon crushed you with an anvil','The demon boiled you in hot oil','The demon sucked you into a black hole','The demon cursed you with a voodoo doll'];
+        const DN=['The demon poisoned you','The demon decapitated you','The demon devoured you','The demon melted you with acid','The demon ripped out your soul','The demon crushed you with a mountain','The demon shot you with an arrow','The demon burned you to cinders','The demon froze and shattered you','The demon struck you with lightning','The demon sent an isekai truck at you','The demon dragged you into the swamp','The demon blew you up','The demon collapsed the floor beneath you','You suffered self-inflicted damage','The demon drowned you','The mimic chest devoured you','The demon summoned a horde that tore you apart','The demon crushed you in an iron maiden','The demons summoned cockroaches to eat you alive','The demon crushed you with an anvil','The demon boiled you in hot oil','The demon sucked you into a black hole','The demon cursed you with a voodoo doll'];
         const TAUNTS=['HAHAHA! Skill issue.','LOL. Did you even study?','You died. Again. Hehehe.','Imagine missing that one...','Too easy. HA HA HA!','GG. Go read your notes!','Bwahaha! Nice try, noob.','LMAO. Ouch.','That was the EASY one!','Do you need a tissue? Heh.'];
         const MIMIC_TAUNTS=['HAHAHA! It was a MIMIC!','Greedy little knight! Hehehe!','Did that chest look friendly?! HA HA!','Nom nom nom! Hahaha!','Never trust a chest, fool!'];
         const BOMB_TAUNTS=['BOOM! Hahaha!','Loot goes boom! HA HA HA!','Greedy AND dead! Hehehe!','Open another one! Hahaha!','Smells like burnt knight! HA!'];
@@ -204,7 +204,7 @@
             ['Nom nom nom! Delicious mistake!','You were a tasty snack!','Burp. Pardon me!','Chewy. Needs more studying.','Mmm, knight-flavored regret!'],
             ['You are dissolving! Hehehe!','Acid test: you failed it!','That is a burn! Literally!','Melting down already?','Sizzle sizzle, little knight!'],
             ['Your soul is MINE now!','Nice soul. I will keep it!','Soul get! Hahaha!','Who needs a soul to study?','Ghost mode: unlocked. HA!'],
-            ['Rock beats knight!','Hope you saw that one coming!','You got ROCKED! Hahaha!','Boulder than you thought!','Flat as your test score!'],
+            ['Mountain beats knight!','What a mountain of regret! Hehehe!','You got ROCKED! Hahaha!','Flattened under a mountain of homework!','Nice view from down there? HA HA!'],
             ['Right through the knee! Hehehe!','Should have dodged, hero!','Bullseye! Hahaha!','Arrow-gant exit, knight!','Pointy end goes in YOU.'],
             ['You are toast! Hahaha!','Burn notice: you failed!','Smells like burnt knight!','Too hot to handle? HA HA!','Crispy! Just how I like them!'],
             ['Chill out! Oh wait, you did.','Cold hard facts. You missed them!','Shattered! Like your grade!','You really froze up there!','Ice to meet you! Hahaha!'],
@@ -897,7 +897,7 @@
         // ================= DEATH GALLERY =================
         let SAVED=null;   // whatever screen you were on (a live run, or the scorecard) while the Death Gallery page is open
         const GN=[...Array(29).keys()].map(String).concat(['bomb']);
-        const GNI=['☠️','🪓','🦷','🧪','👻','🪨','🏹','🔥','❄️','⚡','🚚','🐊','💥','🕳️','⚔️','🌊','📦','👹','⚙️','🪳','🔨','🍲','🌀','🪆','🪦','🥩','🌳','☢️','⏳','🧨'];
+        const GNI=['☠️','🪓','🦷','🧪','👻','⛰️','🏹','🔥','❄️','⚡','🚚','🐊','💥','🕳️','⚔️','🌊','📦','👹','⚙️','🪳','🔨','🍲','🌀','🪆','🪦','🥩','🌳','☢️','⏳','🧨'];
         const GSK=['spike','axe','boulder','lava','ghost','fire','dart','gas','ice','fall'];
         const GSI={spike:'🗡️',axe:'🪓',boulder:'🪨',lava:'🌋',ghost:'👻',fire:'🔥',dart:'🎯',gas:'☁️',ice:'🧊',fall:'🕳️'};
         const SRIDX={spike:0,boulder:1,axe:2,fire:3,dart:4,gas:5,fall:6,lava:7,ghost:8,ice:9};
@@ -1684,7 +1684,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 else{av.push([px-95,py-32,px+95,py+40]);av.push([px-92,py+36,px+92,py+106])}});
             if(r.boss)av.push([310,60,490,306]);
             const circ=(G.bl||[]).filter(b=>b.room===G.i).map(b=>[b.x+57*G.face,b.y-14,46]).concat((G.bar||[]).map(o=>[o.x,o.y,52])).concat((G.chs||[]).filter(c=>!c.gone).map(c=>[c.x,c.y,52]))
-                .concat((G.rem||[]).filter(o=>o.room===G.i&&o.kind!='bomb'&&o.kind!='mimic').map(o=>[o.x,o.y,({summon:105,maiden:80,anvil:80,cauldron:80,blackhole:70,nuke:100,tracks:110,boulder:80,icicles:75,hole:75,bones:70,armor:70}[o.kind]||60)]));
+                .concat((G.rem||[]).filter(o=>o.room===G.i&&o.kind!='bomb'&&o.kind!='mimic').map(o=>[o.x,o.y,({summon:105,maiden:80,anvil:80,cauldron:80,blackhole:70,nuke:100,tracks:110,boulder:110,icicles:75,hole:75,bones:70,armor:70}[o.kind]||60)]));
             const xMax=r.boss?690:455;let best=[x0,G.hy],bc=1e12;
             for(let x=80;x<=xMax;x+=10)for(let y=316;y<=418;y+=8){
                 let c=0;const x1=x-62,x2=x+62,y1=y-22,y2=y+24;
@@ -2053,15 +2053,15 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 ctx.strokeStyle='#e6dcc0';ctx.lineWidth=2;for(let k=0;k<4;k++){ctx.beginPath();ctx.ellipse(x+34,b-2+k*4,13-k*1.5,4,0,Math.PI,Math.PI*2);ctx.stroke()}ctx.beginPath();ctx.moveTo(x+34,b-4);ctx.lineTo(x+34,b+10);ctx.stroke();   // ribcage
                 const sx=x-26,sy=b-3;ctx.fillStyle='#e6dcc0';ctx.beginPath();ctx.arc(sx,sy,8,0,7);ctx.fill();ctx.fillRect(sx-5,sy+4,10,5);ctx.fillStyle='#0a0810';ctx.fillRect(sx-5,sy-3,3,4);ctx.fillRect(sx+2,sy-3,3,4);ctx.fillRect(sx-1,sy+2,2,2);   // skull
                 ctx.fillStyle='#8a141c';ctx.fillRect(sx+3,sy+6,3,2)}
-            else if(o.kind=='boulder'){ // the rock that crushed him, wedged into the floor
-                ctx.fillStyle='rgba(8,6,6,.55)';ctx.beginPath();ctx.ellipse(x,b+4,48,11,0,0,7);ctx.fill();   // crater
-                ctx.strokeStyle='rgba(0,0,0,.5)';ctx.lineWidth=1.5;for(let j=0;j<7;j++){const a=-.2+j*.55+(rr(j)-.5)*.2;ctx.beginPath();ctx.moveTo(x+Math.cos(a)*40,b+4+Math.sin(a)*8);ctx.lineTo(x+Math.cos(a)*(56+rr(j+9)*16),b+4+Math.sin(a)*(13+rr(j+9)*4));ctx.stroke()}   // cracked floor
-                ctx.save();ctx.beginPath();ctx.rect(x-60,b-60,120,62);ctx.clip();   // buried deep: only the top of the rock peeks out
-                O('#6d655c',x,b+4,34);O('#8a8278',x-9,b-8,10);ctx.strokeStyle='#4a463e';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+8,b-26);ctx.lineTo(x+14,b-14);ctx.lineTo(x+6,b-4);ctx.stroke();ctx.restore();
-                ctx.fillStyle='#4a443b';ctx.beginPath();ctx.ellipse(x,b+2,42,7,0,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle='#5f584c';ctx.beginPath();ctx.ellipse(x-4,b+1,32,4,0,Math.PI,Math.PI*2);ctx.fill();   // dirt heaped against the rock
-                ctx.fillStyle='rgba(60,54,48,.7)';ctx.beginPath();ctx.ellipse(x,b+6,34,5,0,0,Math.PI);ctx.fill();   // soil piled around where it sank in
-                for(let j=0;j<6;j++)R(j%2?'#5a544a':'#7d7668',x-46+rr(j)*92,b+6+rr(j+20)*6,3+rr(j+30)*3,2+rr(j+40)*2);
-                ctx.fillStyle='rgba(110,15,23,.75)';ctx.beginPath();ctx.ellipse(x+30,b+8,12,3,0,0,7);ctx.fill()}   // a little blood seeps out from underneath
+            else if(o.kind=='boulder'){ // the MOUNTAIN that crushed him, sunk halfway into the floor
+                const M=(o.m||1);
+                ctx.fillStyle='rgba(8,6,6,.55)';ctx.beginPath();ctx.ellipse(x,b+4,74*M,14*M,0,0,7);ctx.fill();   // crater
+                ctx.strokeStyle='rgba(0,0,0,.5)';ctx.lineWidth=1.5;for(let j=0;j<8;j++){const a=-.2+j*.5+(rr(j)-.5)*.2;ctx.beginPath();ctx.moveTo(x+Math.cos(a)*62*M,b+4+Math.sin(a)*12*M);ctx.lineTo(x+Math.cos(a)*(84+rr(j+9)*22)*M,b+4+Math.sin(a)*(17+rr(j+9)*5)*M);ctx.stroke()}   // cracked floor
+                ctx.save();ctx.beginPath();ctx.rect(x-140*M,b-260*M,280*M,260*M+3);ctx.clip();mountain(x,b+85*M,M);ctx.restore();   // half of it is below the floor
+                ctx.fillStyle='#4a443b';ctx.beginPath();ctx.ellipse(x,b+3,60*M,9*M,0,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle='#5f584c';ctx.beginPath();ctx.ellipse(x-4*M,b+2,46*M,5*M,0,Math.PI,Math.PI*2);ctx.fill();   // dirt heaped against the mountain
+                ctx.fillStyle='rgba(60,54,48,.7)';ctx.beginPath();ctx.ellipse(x,b+6,50*M,6*M,0,0,Math.PI);ctx.fill();   // soil piled around where it sank in
+                for(let j=0;j<8;j++)R(j%2?'#5a544a':'#7d7668',x-68*M+rr(j)*136*M,b+6+rr(j+20)*6,3+rr(j+30)*3,2+rr(j+40)*2);
+                ctx.fillStyle='rgba(110,15,23,.75)';ctx.beginPath();ctx.ellipse(x+46*M,b+8,14*M,3.5*M,0,0,7);ctx.fill()}   // a little blood seeps out from underneath
             else if(o.kind=='helmet'){ // his knight helmet, rolled off where his head flew
                 const F=o.f||1,hx=x-F*34;
                 ctx.fillStyle='rgba(110,15,23,.8)';ctx.beginPath();ctx.ellipse(hx-F*3,b+6,17,4,0,0,7);ctx.fill();
@@ -2264,7 +2264,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             ctx.fillStyle='#0d0d10';ctx.fillRect(hx-5*m,hy-1.5*m,10*m,2*m);ctx.fillRect(hx-.7*m,hy-1.5*m,1.4*m,8*m);   // visor slit and nose guard
             ctx.fillStyle='#b8860b';ctx.fillRect(hx-.8*m,hy-9*m,1.6*m,4*m);ctx.restore()}
         function stainAdd(){if(G.ch&&(G.ch.kind=='bomb'||G.ch.kind=='mimic')){G.rem.push({x:G.ch.x,y:G.ch.y,kind:G.ch.kind,room:G.i,sd:Math.random()*100});G.ch=null}
-            {const RK={6:'arrow',14:'sword',10:'tracks',2:'armor',7:'scorch',8:'icicles',12:'bones',5:'boulder',1:'helmet',9:'strike',13:'hole',4:'soul',15:'puddle',17:'summon',18:'maiden',19:'roachrem',20:'anvil',21:'cauldron',22:'blackhole',23:'voodoo',24:'grave',25:'paste',26:'lifetree',27:'nuke',28:'clock'}[G.dk];if(RK){G.rem.push({x:(RK=='blackhole'||RK=='voodoo')?bhPos().x:(RK=='hole'||RK=='maiden')?G.dx:(RK=='anvil'||RK=='cauldron'||RK=='grave'||RK=='nuke')?G.dx-13*G.face:RK=='paste'?G.dx-13*G.face+72*(G.bs?1.25:1):RK=='lifetree'?G.dx-13*G.face+80*(G.bs?1.25:1):G.dx-57*G.face,y:G.dy+14,f:G.face,hs:RK=='voodoo'?bhPos().s:1,kind:RK,m:G.bs?1.7:1,room:G.i,sd:Math.random()*100})}}
+            {const RK={6:'arrow',14:'sword',10:'tracks',2:'armor',7:'scorch',8:'icicles',12:'bones',5:'boulder',1:'helmet',9:'strike',13:'hole',4:'soul',15:'puddle',17:'summon',18:'maiden',19:'roachrem',20:'anvil',21:'cauldron',22:'blackhole',23:'voodoo',24:'grave',25:'paste',26:'lifetree',27:'nuke',28:'clock'}[G.dk];if(RK){G.rem.push({x:(RK=='blackhole'||RK=='voodoo')?bhPos().x:(RK=='hole'||RK=='maiden')?G.dx:(RK=='anvil'||RK=='cauldron'||RK=='grave'||RK=='nuke'||RK=='boulder')?G.dx-13*G.face:RK=='paste'?G.dx-13*G.face+72*(G.bs?1.25:1):RK=='lifetree'?G.dx-13*G.face+80*(G.bs?1.25:1):G.dx-57*G.face,y:G.dy+14,f:G.face,hs:RK=='voodoo'?bhPos().s:1,kind:RK,m:G.bs?1.7:1,room:G.i,sd:Math.random()*100})}}
             if(G.rem.length>40)G.rem.shift();
             if(G.dk!=13&&G.dk!=22&&G.dk!=27){G.bl.push({x:G.dx-57*G.face,y:G.dy+14,room:G.i,sd:G.ss||Math.random()*100,k:G.dk});if(G.bl.length>80)G.bl.shift()}}
 
@@ -2289,7 +2289,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         // Every effect keeps playing (loops or holds) until the player clicks to respawn.
         // The knight's final death frame is a pile centred 57px behind where he died (bx), so body effects use bx.
         // ---------- THE DEMON CASTS THE SPELL THAT KILLS YOU ----------
-        const CASTN=['Venom Hex!','Off With Your Head!','','Acid Rain!','Soul Snatch!','Boulder Summon!','Arrow Volley!','Inferno!','Frost Nova!','Thunder Call!','Isekai Portal!','Swamp Grasp!','Detonate!','Quake!','Mind Control!','Flood!','','','Iron Maiden!','Roach Swarm!','Anvil Drop!','Hot Oil!','Black Hole!','Voodoo Curse!'];CASTN[27]='Nuke Launch!';CASTN[28]='Time Warp!';
+        const CASTN=['Venom Hex!','Off With Your Head!','','Acid Rain!','Soul Snatch!','Mountain Summon!','Arrow Volley!','Inferno!','Frost Nova!','Thunder Call!','Isekai Portal!','Swamp Grasp!','Detonate!','Quake!','Mind Control!','Flood!','','','Iron Maiden!','Roach Swarm!','Anvil Drop!','Hot Oil!','Black Hole!','Voodoo Curse!'];CASTN[27]='Nuke Launch!';CASTN[28]='Time Warp!';
         const hexRgb=h=>{const n=parseInt(h.slice(1),16);return(n>>16)+','+((n>>8)&255)+','+(n&255)};
         // THE DEMON SHOOTS YOU: raises a bow, draws the string back, lets go, and the arrow flies from the bow into the knight
         function bowDraw(now){
@@ -2341,6 +2341,20 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             for(let j=0;j<3;j++){const a0=j*2.094-.5236;ctx.beginPath();ctx.moveTo(0,-48);ctx.arc(0,-48,10,a0,a0+1.047);ctx.closePath();ctx.fill()}
             ctx.fillStyle='#ffd23f';ctx.beginPath();ctx.arc(0,-48,3,0,7);ctx.fill();ctx.fillStyle='#16130a';ctx.beginPath();ctx.arc(0,-48,1.8,0,7);ctx.fill();   // radiation trefoil
             ctx.fillStyle='rgba(255,255,255,.22)';ctx.fillRect(-11,-70,3,16);ctx.fillRect(-11,-30,3,10);
+            ctx.restore();
+        }
+        // A MOUNTAIN: base centred on (cx,baseY), s = size. Falls out of the sky, then ends up half sunk into the floor.
+        function mountain(cx,baseY,s){
+            const Hm=170*s,Bw=100*s,P=(a,b)=>[cx+a*Bw,baseY+b*Hm],path=pts=>{ctx.beginPath();pts.forEach((q,i)=>{const [x,y]=P(q[0],q[1]);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.closePath()};
+            const sil=[[-1,0],[-.74,-.26],[-.52,-.46],[-.34,-.6],[-.14,-.88],[0,-1],[.16,-.8],[.3,-.68],[.52,-.44],[.76,-.2],[1,0]];
+            ctx.save();ctx.lineJoin='round';
+            ctx.fillStyle='#8a8278';path(sil);ctx.fill();   // sunlit face
+            ctx.fillStyle='#54504a';path([[0,-1],[.16,-.8],[.3,-.68],[.52,-.44],[.76,-.2],[1,0],[.18,0],[.1,-.34],[.02,-.62]]);ctx.fill();   // shadowed face
+            ctx.strokeStyle='rgba(40,36,32,.55)';ctx.lineWidth=Math.max(1.6,1.3*s);ctx.beginPath();
+            [[[-.14,-.88],[-.2,-.6],[-.34,-.3],[-.3,0]],[[0,-1],[-.06,-.6],[-.12,-.28],[-.08,0]],[[.02,-.62],[.2,-.4],[.34,-.2]]].forEach(r=>r.forEach((q,i)=>{const [x,y]=P(q[0],q[1]);i?ctx.lineTo(x,y):ctx.moveTo(x,y)}));ctx.stroke();   // ridges
+            ctx.fillStyle='#f1f4f8';path([[0,-1],[-.12,-.9],[-.22,-.76],[-.12,-.8],[-.06,-.7],[.03,-.79],[.1,-.7],[.218,-.77],[.16,-.82]]);ctx.fill();   // snow cap
+            ctx.fillStyle='#cfd6e0';path([[0,-1],[.16,-.82],[.218,-.77],[.1,-.7],[.03,-.79]]);ctx.fill();
+            ctx.strokeStyle='#2a2622';ctx.lineWidth=Math.max(2,1.6*s);path(sil);ctx.stroke();
             ctx.restore();
         }
         // A fiery PORTAL in the ceiling that the nuke drops out of. (cx,cy) = centre, rx/ry = size, open 0..1
@@ -2768,9 +2782,9 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 burst(2.9,mx,fy-150*M);burst(3.8,mx,fy-150*M);burst(5.2,mx,fy-150*M);burst(6.8,mx,fy-150*M);
                 // the two demons: both carry him, then one steps back and one cranks the handle
                 const ax0=kx-52,bx0=kx+52,ax=ax0+(mx-110*M-ax0)*lift-220*(1-ez(cl(t/.9,0,1)))*1,bxp=bx0+(mx+98*M-bx0)*lift+220*(1-ez(cl(t/.9,0,1))),dsc=.88*M;
-                const dn=(w)=>t<.9?28+Math.floor(now/110+w*3)%12:(lift>0&&lift<1)?28+Math.floor(now/110+w*3)%12:Math.floor(now/180+w)%6;
+                const dn=(w)=>t<.9?28+Math.floor(now/110+w*3)%12:(lift>0&&lift<1)?28+Math.floor(now/110+w*3)%12:Math.floor(now/150+w)%6;
                 const bn=(t>2.4&&t<8.8)?40+Math.floor(now/80)%15:dn(1);
-                const dd=(px,n,v,flip)=>{const mx2=cl(px,45,W-45);ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(mx2,fy+8,34*dsc,6,0,0,7);ctx.fill();drawMon(mx2,fy+14,n,dsc,v,flip,1)};
+                const dd=(px,n,v,flip)=>{const mx2=cl(px,45,W-45),lau=t>2.4,sx=lau?Math.sin(now/35+px)*2:0,sy=lau?-Math.abs(Math.sin(now/90+px*.05))*7:0;ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(mx2,fy+8,34*dsc,6,0,0,7);ctx.fill();drawMon(mx2+sx,fy+14+sy,n,dsc,v,flip,1)};   // once they laugh they shake and bounce like every other laughing demon
                 dd(ax,dn(0),G.hv[0],true);dd(bxp,bn,G.hv[1],false);
                 if(t>2.4){const hd=fy+14-100*dsc;haha(cl(ax,45,W-45),hd,now,6,40,24);haha(cl(bxp,45,W-45),hd,now+250,6,40,24)}   // the two grinder demons laugh with the red HA HA
                 break}
@@ -2899,17 +2913,20 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 ctx.save();ctx.globalCompositeOperation='lighter';glow(x,cy-u*90,85,'110,190,255',.32);ctx.restore();
                 ctx.save();ctx.filter='hue-rotate(280deg) brightness(1.3) saturate(1.2)';cell('soul',48,64,Math.floor(u*7)%16,0,x-55,fy-20-u*60,4,.8);cell('soul',48,64,(Math.floor(u*7)+5)%16,0,x+55,fy-10-u*50,4,.8);ctx.restore();
                 for(let j=0;j<6;j++)R('#9fd8ff',x-30+j*12+Math.sin(now/200+j)*6,cy-((now/20+j*30)%110),3,3);break}
-            case 5:{ // BOULDER: a magic circle on the floor under him, the boulder drops from above straight onto it
-                const BB=G.bs?3:1,kx=x-13*F,u=Math.min(1,Math.max(0,(t-.5)/.35)),hit=t>.85,bY=-230+u*((fy-30-(BB-1)*34)+230),rgb=hexRgb(DC[5]);
+            case 5:{ // MOUNTAIN: a magic circle on the floor under him, a whole mountain drops from above onto it, crushes him, then sinks halfway into the floor and stays there
+                const BB=G.bs?3:1,MS=G.bs?1.7:1,kx=x-13*F,TH=1,u=Math.min(1,Math.max(0,(t-.45)/(TH-.45))),hit=t>=TH,rgb=hexRgb(DC[5]),Hm=170*MS,sk=Math.min(1,Math.max(0,(t-TH)/.9)),skE=sk*sk*(3-2*sk);
                 {const a=Math.min(1,t/.2);   // circle stays under him until respawn
                     ctx.save();ctx.globalAlpha=a*(hit?.7:1);ctx.strokeStyle='rgba('+rgb+',.95)';ctx.fillStyle='rgba('+rgb+',.18)';ctx.lineWidth=2;
                     ctx.beginPath();ctx.ellipse(kx,fy-1,62*BB,16*BB,0,0,7);ctx.fill();ctx.stroke();
                     for(let j=0;j<8;j++){const q=now/500+j*.785;ctx.beginPath();ctx.moveTo(kx+Math.cos(q)*44*BB,fy-1+Math.sin(q)*11*BB);ctx.lineTo(kx+Math.cos(q)*62*BB,fy-1+Math.sin(q)*16*BB);ctx.stroke()}
                     ctx.globalCompositeOperation='lighter';glow(kx,fy-1,80*BB,rgb,.3);ctx.restore()}
                 if(!hit)spr({idle:1});else spr({t0:-9,my:.25,dx:F*44});   // he stands there until it lands, then is flattened right under it
-                if(hit)burst(.85,kx,fy-20);
-                if(t>=.5){O('#6d655c',kx,bY,34*BB);O('#8a8278',kx-9*BB,bY-9*BB,10*BB)}
-                if(hit&&t<2)for(let j=0;j<8*(G.bs?2:1);j++)R('rgba(180,170,150,'+Math.max(0,2-t)+')',kx-40*BB+j*11*BB,fy-4-((t-.85)*60+j*5)%30,6,6);break}
+                if(hit)burst(TH,kx,fy-20);
+                if(hit){ctx.fillStyle='rgba(8,6,6,'+(.55*skE)+')';ctx.beginPath();ctx.ellipse(kx,fy+4,74*MS,14*MS,0,0,7);ctx.fill()}   // the crater opens up under it
+                if(t>=.45){const baseY=(hit?fy:-Hm-20+u*u*(fy+Hm+20))+skE*Hm*.5,shk=hit?Math.sin(now/25)*3*Math.max(0,1-(t-TH)/.6)*MS:0;   // falls from above the screen, lands, then sinks until half of it is under the floor
+                    ctx.save();ctx.beginPath();ctx.rect(0,0,W,fy+3);ctx.clip();mountain(kx+shk,baseY,MS);ctx.restore();
+                    if(hit){const rx=30+(58*MS-30)*skE;ctx.fillStyle='#4a443b';ctx.beginPath();ctx.ellipse(kx,fy+3,rx,9*MS,0,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle='#5f584c';ctx.beginPath();ctx.ellipse(kx-4*MS,fy+2,rx*.78,5*MS,0,Math.PI,Math.PI*2);ctx.fill()}}   // dirt heaps up around the edge it sank into
+                if(hit&&t<2.6)for(let j=0;j<10*(G.bs?2:1);j++)R('rgba(180,170,150,'+Math.max(0,2.6-t)+')',kx-80*MS+j*16*MS,fy-4-((t-TH)*60+j*5)%34,6,6);break}
             case 6:{ // ARROW: shot by the demon's bow (bowDraw), sticks in the chest and tilts as he falls
                 if(G.cast>0&&G.ba!=null){
                     const k2=Math.min(1,t/.9),Ex=x-13*F,ax=Ex+(bx+F*6-Ex)*k2,ay=cy+(fy-18-cy)*k2;
