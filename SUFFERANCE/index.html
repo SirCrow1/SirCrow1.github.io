@@ -148,6 +148,8 @@
                 <button id="rp" type="button" style="display:none;right:.5rem;top:2.75rem" class="absolute z-20 px-3 py-1 rounded-md bg-black/70 border border-emerald-700/70 text-emerald-300 text-xs font-mono hover:bg-emerald-900/60">↺ Replay (R)</button>
                 
                 <button id="galx" type="button" style="display:none;left:.5rem;top:.5rem" class="absolute z-20 px-3 py-1 rounded-md bg-black/70 border border-emerald-700/70 text-emerald-300 text-xs font-mono hover:bg-emerald-900/60">← Gallery</button>
+                <button id="galprev" type="button" title="Previous death (←)" style="display:none;left:.5rem;top:2.75rem" class="absolute z-20 px-3 py-1 rounded-md bg-black/70 border border-emerald-700/70 text-emerald-300 text-xs font-mono hover:bg-emerald-900/60">◀ Prev</button>
+                <button id="galnext" type="button" title="Next death (→)" style="display:none;left:4.9rem;top:2.75rem" class="absolute z-20 px-3 py-1 rounded-md bg-black/70 border border-emerald-700/70 text-emerald-300 text-xs font-mono hover:bg-emerald-900/60">Next ▶</button>
                 <button id="pz" type="button" style="display:none" class="absolute top-2 right-2 z-20 px-3 py-1 rounded-md bg-black/70 border border-emerald-700/70 text-emerald-300 text-xs font-mono hover:bg-emerald-900/60">⏸ Pause (P)</button>
             </div>
             <p class="text-[11px] text-emerald-500/80 mt-2 font-mono animate-pulse" id="respawn-hint" style="display:none;">Click anywhere on screen to respawn...</p>
@@ -195,44 +197,44 @@
         ];
         const DN=['The demon poisoned you','The demon decapitated you','The demon devoured you','The demon melted you with acid','The demon ripped out your soul','The demon crushed you with a mountain','The demon shot you with an arrow','The demon burned you to cinders','The demon froze and shattered you','The demon struck you with lightning','The demon sent an isekai truck at you','The demon dragged you into the swamp','The demon blew you up','The demon collapsed the floor beneath you','You suffered self-inflicted damage','The demon drowned you','The mimic chest devoured you','The demon summoned a horde that tore you apart','The demon crushed you in an iron maiden','The demons summoned cockroaches to eat you alive','The demon crushed you with an anvil','The demon boiled you in hot oil','The demon sucked you into a black hole','The demon cursed you with a voodoo doll'];
         const TAUNTS=['HAHAHA! Skill issue.','LOL. Did you even study?','You died. Again. Hehehe.','Imagine missing that one...','Too easy. HA HA HA!','GG. Go read your notes!','Bwahaha! Nice try, noob.','LMAO. Ouch.','That was the EASY one!','Do you need a tissue? Heh.'];
-        const MIMIC_TAUNTS=['HAHAHA! It was a MIMIC!','Greedy little knight! Hehehe!','Did that chest look friendly?! HA HA!','Nom nom nom! Hahaha!','Never trust a chest, fool!'];
+        const MIMIC_TAUNTS=["You got digested by furniture! We're literally dying of laughter!","That chest ate your last two brain cells, and now it's dumber just from digesting you!","That chest took one bite of you, checked your IQ, and instantly regretted the meal!","Eaten alive by a box! Your stats are officially lower than the floorboards!","You got outplayed by a hungry piece of wood! Go back to the spawn screen!"];
         const BOMB_TAUNTS=['BOOM! Hahaha!','Loot goes boom! HA HA HA!','Greedy AND dead! Hehehe!','Open another one! Hahaha!','Smells like burnt knight! HA!'];
         // taunts that match HOW you died (index = death type, same order as DN)
         const DT=[
-            ['Tastes like wrong answer, huh?','Should have checked the label!','Poison: now with extra regret.','Drink up, little knight!','You look a bit green. Hehehe!'],
-            ['Lost your head over that one!','Off with your head AND your grade!','Think fast! Oh wait, you cannot.','Heads up! ...Too late. HA!','Nothing up there anyway!'],
-            ['Nom nom nom! Delicious mistake!','You were a tasty snack!','Burp. Pardon me!','Chewy. Needs more studying.','Mmm, knight-flavored regret!'],
-            ['You are dissolving! Hehehe!','Acid test: you failed it!','That is a burn! Literally!','Melting down already?','Sizzle sizzle, little knight!'],
-            ['Your soul is MINE now!','Nice soul. I will keep it!','Soul get! Hahaha!','Who needs a soul to study?','Ghost mode: unlocked. HA!'],
-            ['Mountain beats knight!','What a mountain of regret! Hehehe!','You got ROCKED! Hahaha!','Flattened under a mountain of homework!','Nice view from down there? HA HA!'],
-            ['Right through the knee! Hehehe!','Should have dodged, hero!','Bullseye! Hahaha!','Arrow-gant exit, knight!','Pointy end goes in YOU.'],
-            ['You are toast! Hahaha!','Burn notice: you failed!','Smells like burnt knight!','Too hot to handle? HA HA!','Crispy! Just how I like them!'],
-            ['Chill out! Oh wait, you did.','Cold hard facts. You missed them!','Shattered! Like your grade!','You really froze up there!','Ice to meet you! Hahaha!'],
-            ['Shocking performance!','That answer was electrifying!','Zap! Hahaha!','Your hair looks great! Hehehe!','Lightning never strikes twice. You wish!'],
-            ['Truck-kun sends his regards!','Isekai time! Bye bye!','Beep beep! Hahaha!','Next life: study more!','You got TRUCKED! HA HA!'],
-            ['Swamp sinks, knight stinks!','Glug glug glug! Hahaha!','Mud in your armor, fool!','Sinking feeling, huh?','The swamp wins again!'],
-            ['BOOM! Hahaha!','Loot goes boom! HA HA HA!','Smells like burnt knight! HA!','Kaboom! Nice flying!','You blew it! Literally!'],
-            ['Watch your step! Hehehe!','The floor is lava. And gone.','You fell for it! HA HA!','Falling grades, falling knight!','Down you go! Hahaha!'],
-            ['You hit YOURSELF? Hahaha!','Stop hitting yourself!','Your worst enemy is you!','Self-inflicted! So sad. HA!','Even I did not do that one!'],
-            ['Glub glub! Swimming lessons?','You are all WET! Hahaha!','Drowning in wrong answers!','Sink or swim! You sank!','Hope you can hold your breath!'],
-            ['HAHAHA! It was a MIMIC!','Greedy little knight! Hehehe!','Did that chest look friendly?! HA HA!','Nom nom nom! Hahaha!','Never trust a chest, fool!'],
-            ['You brought ONE sword to a horde!','Reinforcements! Hahaha!','Many hands make light work of you!','Outnumbered AND outstudied!','My minions say thanks for the snack!'],
-            ['Iron Maiden: the world\'s tightest hug!','Squeezed into a tight spot, hehehe!','Maiden voyage: one way trip!','You should have stayed OUT of the box! HA!','Nice and snug in there, knight!'],
-            ['Roach to conclusions much? HA HA!','Skin deep? Not anymore! Hahaha!','Bug off! ...Oh wait, THEY ate YOU!','Bon appetit, little bugs!','Nothing but bones now! Hehehe!'],
-            ['Heavy metal! HA HA HA!','Anvil-able for a smackdown!','You just got ACME\'d! Hehehe!','Flat out wrong! Hahaha!','Your grades hit rock bottom... literally!'],
-            ['Out of the frying pan, into the OIL!','Deep fried knight! Hehehe!','Getting crispy in there? Hahaha!','Extra crispy! HA!','Do not worry, it is only 350 degrees!'],
-            ['Gravity always wins! Hahaha!','Spaghettification: now with extra regret!','You really sucked at that one!','Nothing escapes! Not even your grades!','Down the drain... of SPACE! HA HA!'],
-            ['Pin cushion! Hahaha!','Voodoo? More like voo-DOOMED!','You got stuck on that question! Hehehe!','Do not worry, it only hurts a LOT!','Ouch! Somebody felt that one!']
+            ["Toxicity levels rising, intelligence levels dropping!","Even the poison is struggling to find a brain to rot in there!","Careful, your last functional brain cell just dissolved in the venom.","That poison is doing more active processing than your actual brain ever did!","The venom finished you off faster than your brain ever finished a thought."],
+            ["That skull was so hollow it bounced!","I said keep your head in the game, not on the floor!","Look on the bright side, you finally dropped the dead weight.","Heads up!!!!!","You won't be losing anything... remember, 0 x 0 is 0."],
+            ["Our stomach acid is dumber now just from touching you!","We've eaten scraps off the floor with more substance.","We swallowed your head and felt our own brain cells actively dying!","We chewed through your skull and felt our IQ drop to absolute zero!","Eating you just cost us 100 IQ points."],
+            ["Watching your skin melt off is the most progress your look has ever seen!","The acid tried to dissolve your intelligence, but hit a total blank!","Your skin's melting off, but honestly, it's an improvement.","The acid is eating through your head, but it ran out of brain to melt.","Your skin melted off, but honestly? You look much better as a puddle!"],
+            ["We ripped out your soul and found out it's just as empty as your head!","We snatched your soul, but it's so small we almost dropped it!","We ripped out your soul, but honestly? It's even cheaper than your gear!","Checked your spirit for talent and found absolute zero.","Snatched your spirit so fast your last two brain cells didn't even notice."],
+            ["What a mountain of regret!","Five thousand feet of solid stone, and your skull gave out on the very first inch.","An entire mountain fell on your head, and it died of utter boredom inside!","We flattened you into the dirt, leaving a skull as hollow as the cave we buried you inside.","We dropped an entire mountain on you, and your head bounced off like an empty container!"],
+            ["That arrow went straight through your head and didn't hit a single obstacle!","Bullseye! That shaft passed through your head so fast your last two brain cells didn't even notice!","That arrow pinned your forehead to the dirt, exposing just how hollow your head was!","That arrow drilled through your head so clean it didn't even pick up a thought!","That arrow entered your forehead, looked for a brain cell, and exited in disgust!"],
+            ["We cooked you down to ashes, and your last two brain cells popped like popcorn!","Burned down to a cinder! Your empty skull made a fantastic campfire.","Your head turned into a furnace, and there was nothing inside to put it out!","Burnt to a crisp, now you're air pollution! Wait, never mind, you were already toxic garbage.","Reduced to a smoldering pile! Even the ashes look embarrassed of you."],
+            ["Frozen solid, and your brain was already at absolute zero!","We froze your body, and your last two brain cells snapped like ice cubes!","Shattered! Your body was so brittle it collapsed under its own frozen weight.","Shattered to dust! Even the frost had an easier time breaking your head than finding a thought.","Shattered into a thousand pieces with an empty skull."],
+            ["Struck by lightning! The bolt searched your skull for a single wire and short-circuited.","Lightning hit your head, looked for intelligence, and grounded out in disgust!","A direct strike to the skull! Turns out hollow heads make great lightning rods.","We fried your brain with pure lightning, but honestly? There wasn't much to burn out.","That lightning bolt passed through your head so fast it didn't even pick up a spark!"],
+            ["Hit by a truck! Even in another world, nobody wants you on their team!","Reincarnation canceled! Even the goddess took one look at your soul and passed.","That truck didn't send you to a fantasy world. It just cleared out trash!","Truck-kun sent you straight to the grave: no cheat codes, no magic, just trash!","Run down by Truck-kun! You had the reaction time of a traffic cone."],
+            ["Dragged into the mud! Even the swamp tried to spit your brain out!","Drowned in sludge! Turns out your brain and the mud are exactly the same.","Dragged down to the bottom! The mud didn't even have to fight your weight.","Choked on swamp water! Your last brain cell drowned before your lungs did.","You sank into the muck so fast the leech didn't even have time to bite!"],
+            ["Blown to smithereens! The crater left behind has more brainpower than you ever did.","Your head detonated and sprayed pure air everywhere!","Vaporized! The explosion did you a favor and erased your worthless existence.","The explosion tore you into confetti, and honestly, it's the most festive you've ever looked.","Boom! Your last two brain cells left your body before the shockwave even arrived."],
+            ["The floor collapsed, and your brain cell hit absolute zero before you even touched the bottom!","Down to the pit! You had the reaction time of a brick.","The floor gave out under you and your skull stayed hollow the whole way down, so at least it was a quiet fall.","You walked onto the one tile that was obviously hollow, which makes sense because you're used to hollow things.","Dropped through the floor! Even the ground gave up trying to carry your dead weight."],
+            ["You wiped yourself off the map! Best tactical decision you've made all day.","You ended your own match because even you couldn't stand watching yourself play!","Self-eliminated! Your last two brain cells finally agreed on a strategy and gave up.","You killed yourself, and it was still the most effective move you made all game!","Self-inflicted defeat! You put more effort into taking yourself out than playing the game."],
+            ["Drowned! You couldn't even master basic buoyancy, let alone combat skills.","The bubble swallowed you whole and instantly lost water pressure from how hollow you are.","Drowned in three feet of water! Your reaction speed was as dead as your floating corpse.","Drowned! You had the swimming capability and structural survival instincts of a brick.","You stink so bad the water's drowning you double-time just to wash off the smell!"],
+            ["You got digested by furniture! We're literally dying of laughter!","That chest ate your last two brain cells, and now it's dumber just from digesting you!","That chest took one bite of you, checked your IQ, and instantly regretted the meal!","Eaten alive by a box! Your stats are officially lower than the floorboards!","You got outplayed by a hungry piece of wood! Go back to the spawn screen!"],
+            ["You couldn't even make it to a boss fight. You died to street-tier fodder while we watched!","You got jumped by the whole squad and didn't even land a single scratch on anyone!","The minions are feasting on your corpse while we debate whether you're even worth looting!","You died to the background noise while the real bosses haven't even drawn a weapon!","You couldn't even clear the tutorial wave, and now you're feed for the street cleaners!"],
+            ["Dying trapped in a box where nobody will ever find your worthless corpse.","All that training just to get outsmarted by a stationary piece of furniture.","Your entire bloodline ends as a bad smell in a rusted locker.","Dying alone in the dark because you were too stupid to look up.","You spent your whole life prepping for war just to get folded by a locker."],
+            ["Stripped down to bare bone by pests that don't even know your name.","Your grand legacy: becoming a snack for things that live under the floorboards.","Dying stripped down to a skeleton by bugs because you couldn't survive the base-tier trash.","Your legacy is just getting chewed to pieces by things smaller than your thumbnail.","Your shiny knight armor is just a tin-foil lunchbox for the local floor-crawlers."],
+            ["Your entire bloodline erased by Looney Tunes physics.","Dying to a cartoon trap because your combat IQ is lower than a falling block of iron.","Dying to a gag trap while your ancestors watch you get flattened into a doormat.","Your glorious crusade ends with a literal anvil drop and a cartoon sound effect.","Crushed flat into a paper-thin puddle because you stood under a falling block like a dumbass cartoon extra."],
+            ["You tried to pull an Oden execution, but you just dissolved into watery garbage like a nameless fodder extra.","Melted down to a nameless grease puddle in a boiling vat because your existence was an insult to everyone who ever shared your last name.","Frying alive in burning fat while your family refuses to claim the grease stain you left behind.","Boiling down to absolute waste in an iron tub, dying a death so repulsive your own relatives pretend you were stillborn.","Cooking like garbage in burning oil while your mother frames the vacancy notice of your room as the happiest day of her life."],
+            ["Erased from the universe by a collapsing star because not even empty space wanted to leave a trace of your worthless legacy.","Compressed into a subatomic particle of absolute shame, vanishing into the dark because empty space itself couldn't stand your presence.","Sucked into a black hole with zero witnesses, leaving behind a universe that breathes a collective sigh of relief now that you're gone.","Erased from reality by a collapsing star, wiping out a family name so universally despised that physics had to step in and handle it.","Spaghettified into a microscopic thread of cosmic trash because not even the fabric of space wanted to keep a single atom of your failure."],
+            ["Every needle driven through that cursed doll rips straight through your useless skin, translating your agony into a family tragedy nobody is going to cry over.","Stabbed through the heart by a voodoo curse because dying a normal, honorable death was way too high an expectation for a complete loser like you.","A voodoo doll taking hits for a guy whose entire existence was already a total accident.","Your organs shredded from across the room because nobody even wanted to get close enough to touch your pathetic body.","Every needle straight to your organs, proving your body is finally good for something: target practice."]
         ];
         const DC=['#b46bff','#ff4a4a','#ff5a1f','#a8ff3c','#9fd8ff','#d2b48c','#ffb347','#ff8c1a','#8fe8ff','#ffe14a','#ff6bd6','#b8864a','#ffa21f','#9d8cff','#ff5a7a','#4aa8ff','#e0a040','#e05bff','#aab2c2','#c98a3c','#9aa5b8','#ff7a4a','#8f5cff','#6ee0a0'];
         DN[24]='The demons summoned your dead family members';DN[25]='The demons fed you into the meat grinder';DN[26]='The demons fed you to the Life Tree';DC[26]='#7be07a';
-        DT[26]=['Eat your greens... or be them!','You really grew on us!','Fresh fruit, courtesy of you!','Who knew you would make such good fertilizer?','Somebody save me a slice!'];DC[25]='#e0707f';
-        DT[25]=['We turned you into paste!','Fresh ground!','Hope you taste good in the stew!','Meat for the soup tonight!','Now that is what we call a grind!'];DC[24]='#9fd47a';
-        DT[24]=['We revived your dead family!','Say hi to your dead family! We dug them up for you!','Look who we dug up for you!','We brought your whole family back. You are welcome!','Your relatives send their regards. We woke them up just for you!'];
+        DT[26]=["You got absorbed into a tree and turned into a fruit, really trying to copy Sasuke's Ten-Tails look from Boruto, except you're just a sad little berry nobody wants.","You got absorbed into a tree and turned into a fruit so pathetic that even dungeon rats took one sniff and kept walking.","Bro really spent his whole run leveling up just to get recycled into a stationary plant, bearing a fruit so foul that scavengers walk right past it.","Bro really skipped the boss fight mechanics and went straight to photosynthesis, sprouting a sad little fruit that even starving scavengers refuse to digest.","All that combat gear and skill tree progression, only to literally become a tree whose fruit is so repulsive that scavenging beasts would rather starve than eat you."];DC[25]='#e0707f';
+        DT[25]=["Ground up and pressed into a sad little burger patty, proving your entire existence was only ever worth the cheapest value-pack price.","Ground down into a greasy burger patty, rejected by every fast-food joint on earth for tasting too much like pure failure.","Turned into breakfast sausage links, but nobody touches them because the ingredient label just says 'unadulterated loser residue.'","Mincemeat wrapped in a sausage link, then left on the counter to rot because not even flies want to touch meat this pathetic.","Fed into the grinder and came out the other side as pet food, which is still more useful than you ever were alive."];DC[24]='#9fd47a';
+        DT[24]=["We dug up your parents, your grandparents, and your great-grandparents just so they could watch you fail one last time.","Your entire ancestral line rose from the grave, and every single generation is collectively ashamed they share your DNA.","We brought your dead parents, grandparents, and great-grandparents back to life, and they immediately asked if they could crawl back into their coffins to escape you.","Look who we woke up: your entire family tree, crawling out of the dirt just to watch you get put down like a dog.","Your great-grandparents crawled out of the earth alongside your parents and grandparents, and they all agree you are the worst thing to ever happen to the bloodline."];
         DN[27]='The demons dropped a nuke on you';DC[27]='#ffd23f';
-        DT[27]=['Nuclear option! Hahaha!','You really bombed that one!','Overkill? Never! HA HA!','Fallout: knight edition!','Nothing left but ash! Hehehe!'];
+        DT[27]=["Vaporized into absolute nothingness by a point-blank nuke, leaving behind a steaming crater of pure failure.","Hit with a clean nuke that deleted your entire build, leaving only a smoking pile of radioactive garbage.","Got completely obliterated by the blast, reducing your legacy to a scorched, glowing hole in the ground.","Took a full nuclear payload straight to the face, turning your entire character into radioactive ash.","Blasted into atomic dust by the nuke, leaving nothing behind but a foul stench and a smoking crater."];
         DN[28]='The demon stabbed you in slow motion for 100 years';DC[28]='#d6a8ff';
-        DT[28]=['One second. One hundred years of agony!','A hundred years to think about that wrong answer!','You had a whole century to dodge. HA HA!','Took you long enough to die! Hehehe!','Plenty of time to study now. Hahaha!','Your whole life flashed before you... slowly!'];
+        DT[28]=["A century of getting poked with a butter knife while you stand there frozen like a complete idiot.","Stabbed in slow motion for a hundred years because even the blade couldn't be bothered to finish you quickly.","A glacial 100-year poke that wastes your entire lifespan on a single miserable papercut.","Stabbed so slowly you watched your own hair turn gray and fall out before the point even hit bone.","A century-long slow stab that pins you to the wall while you stand there looking like an absolute dumbass for ten decades."];
         
         const DEFAULT_DECK = {
             id: 'default_starter_pool',
@@ -887,7 +889,7 @@
             if(!b.dataset.sure){b.dataset.sure=1;b.textContent='⚠️ Click again to abandon this run and start over';clearTimeout(nrT);nrT=setTimeout(()=>{delete b.dataset.sure;b.textContent='🔄 Start a new run instead'},4000);return}
             clearTimeout(nrT);delete b.dataset.sure;b.textContent='🔄 Start a new run instead';
             const d=S.decks[S.deck];if(!d||!d.qs.length)return;
-            if(SAVED){SAVED=null;const nav=document.querySelector('#hub nav');if(nav)nav.style.display='';$('#galink').style.display='';$('#galx').style.display='none'}   // drop the parked run / scorecard
+            if(SAVED){SAVED=null;const nav=document.querySelector('#hub nav');if(nav)nav.style.display='';$('#galink').style.display='';$('#galx').style.display=$('#galprev').style.display=$('#galnext').style.display='none'}   // drop the parked run / scorecard
             G=null;keys={};   // the old loop stops by itself once G is empty
             $('#bc').style.display='none';$('#respawn-hint').style.display='none';$('#pz').style.display='none';$('#rp').style.display='none';
             $('#run').classList.remove('on');$('#score').classList.remove('on');
@@ -926,10 +928,11 @@
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${sc}</div>`;
         }
         window.galPlay=function(kind,id){
+            if(G&&G.gal){G=null;keys={};setTimeout(()=>galPlay(kind,id),80);return}   // a replay is already running: stop it cleanly, then play the new one straight away
             if(G&&!G.gal&&!SAVED)galOpen();   // safety: never let a replay overwrite a live run
             const d=S.decks.find(x=>x.qs&&x.qs.some(q=>q.t!='mt'))||DEFAULT_DECK,q=rnd(d.qs.filter(q=>q.t!='mt'));
             startRun(q);if(!G)return;
-            $('#galx').style.display='block';G.hx=200;G.hy=330;G.face=1;
+            $('#galx').style.display=$('#galprev').style.display=$('#galnext').style.display='block';G.galK=[kind,id];G.hx=200;G.hy=330;G.face=1;
             let label;
             if(kind=='n'){
                 label=galNName(id);
@@ -947,11 +950,22 @@
                 srHurt(c,type);
             }
             $('#q').textContent='💀 Death Gallery: '+label;
-            const h=$('#respawn-hint');h.textContent='Click anywhere to return to the Death Gallery...';h.style.display='block';
+            const h=$('#respawn-hint');h.textContent='Click anywhere to return to the Death Gallery, or use Prev / Next (← →) to jump to another death...';h.style.display='block';
         };
         function galExit(){if(G)G.galX=1}
+        // Jump straight to the previous / next unlocked death while a replay is on screen (one click, no trip back to the list)
+        window.galStep=function(dir){
+            if(!G||!G.gal||!G.galK)return;
+            const L=GN.filter(k=>S.seen[k]).map(k=>['n',k]).concat(GSK.filter(k=>S.seen['s:'+k]).map(k=>['s',k]));
+            if(L.length<2)return;
+            let i=L.findIndex(x=>x[0]==G.galK[0]&&x[1]==G.galK[1]);i=((i<0?0:i)+dir+L.length)%L.length;
+            const nx=L[i];
+            G=null;keys={};   // the old loop stops by itself once G is empty
+            $('#bc').style.display='none';$('#pz').style.display='none';$('#rp').style.display='none';$('#respawn-hint').style.display='none';
+            setTimeout(()=>galPlay(nx[0],nx[1]),80);
+        };
         function galDone(){
-            G=null;$('#run').classList.remove('on');$('#galx').style.display='none';$('#respawn-hint').style.display='none';$('#respawn-hint').textContent='Click anywhere on screen to respawn...';$('#bc').style.display='none';
+            G=null;$('#run').classList.remove('on');$('#galx').style.display=$('#galprev').style.display=$('#galnext').style.display='none';$('#respawn-hint').style.display='none';$('#respawn-hint').textContent='Click anywhere on screen to respawn...';$('#bc').style.display='none';
             $('#hub').classList.add('on');hub();
             const tb=document.querySelector('.tab-btn[data-t="h"]');if(tb)tb.click();scrollTo(0,0);
         }
@@ -978,7 +992,7 @@
             const s=SAVED;SAVED=null;
             keys={};
             const nav=document.querySelector('#hub nav');if(nav)nav.style.display='';
-            $('#galink').style.display='';$('#galx').style.display='none';
+            $('#galink').style.display='';$('#galx').style.display=$('#galprev').style.display=$('#galnext').style.display='none';
             $('#hub').classList.remove('on');
             if(s.screen=='score'){$('#score').classList.add('on');return}
             G=s.G;const u=s.ui;
@@ -994,6 +1008,7 @@
         $('#galink').addEventListener('click',e=>{e.stopPropagation();e.currentTarget.blur();galOpen()});   // blur: Space/Enter must not re-press it mid-run
         $('#galx').addEventListener('click',e=>{e.stopPropagation();galExit()});
         $('#galx').addEventListener('mousedown',e=>e.stopPropagation());
+        [['#galprev',-1],['#galnext',1]].forEach(([id,d])=>{$(id).addEventListener('mousedown',e=>e.stopPropagation());$(id).addEventListener('click',e=>{e.stopPropagation();e.currentTarget.blur();galStep(d)})});
 
         // ================= DUNGEON ROOM: animated fire, props, barrels, secret passage =================
         function tflame(cx,base,w,h,ph){ctx.beginPath();ctx.moveTo(cx-w/2,base);ctx.bezierCurveTo(cx-w/2,base-h*.4,cx-w*.15+Math.sin(ph)*w*.3,base-h*.6,cx+Math.sin(ph*1.3)*w*.35,base-h);ctx.bezierCurveTo(cx+w*.15+Math.sin(ph)*w*.2,base-h*.55,cx+w/2,base-h*.35,cx+w/2,base);ctx.closePath();ctx.fill()}
@@ -1728,7 +1743,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 b.textContent='▶ Resume (P)';if(h)h.textContent='Paused. Press P or Resume to continue...';
             }else{
                 G.paused=0;G.t0+=performance.now()-G.pz0;   // the run timer does not count the pause
-                b.textContent='⏸ Pause (P)';if(h)h.textContent=G.gal?'Click anywhere to return to the Death Gallery...':'Click anywhere on screen to respawn...';
+                b.textContent='⏸ Pause (P)';if(h)h.textContent=G.gal?'Click anywhere to return to the Death Gallery, or use Prev / Next (← →) to jump to another death...':'Click anywhere on screen to respawn...';
             }
         }
         // replay the death: restart the whole cutscene from its first frame (also un-pauses it)
@@ -1777,6 +1792,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if((G.state=='clear'||G.state=='bclear')&&e.code=='KeyR'){killReplay();return}
             if((G.state=='dying'||G.state=='secretDie')&&e.code=='KeyR'){replayDeath();return}
             if(G.mvrep&&(e.code=='Escape'||e.code=='Space'||e.code=='Enter'||e.code=='KeyJ')){G.mvrep=null;return}
+            if(G.gal&&(G.state=='dying'||G.state=='secretDie')&&!G.paused&&(e.code=='ArrowLeft'||e.code=='ArrowRight')){e.preventDefault();galStep(e.code=='ArrowRight'?1:-1);return}
             if((G.state=='dying'||G.state=='secretDie')&&G.paused)return;
             if(G.state=='dying' && (e.code=='Space'||e.code=='Enter'||e.code=='KeyJ')) { triggerRespawn(); return; }
             if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
@@ -3340,7 +3356,8 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             const t=G.dt,k=G.kt,x=G.dx,fy=G.dy+15,ew=G.ew,tx=x+55,sx=k.x,sy=k.y+24,w=Math.min(1,t/ew),px=sx+(tx-sx)*w,py=sy+(fy-sy)*w,v=k.v||0,sc=SZ[(k.z||0)%4];
             let n;if(t<ew)n=28+Math.floor(now/80)%12;else if(t<ew+.6)n=40+Math.min(14,Math.floor((t-ew)*22));else n=Math.floor(now/150)%6;
             ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(px,py+1,34*sc,7,0,0,7);ctx.fill();
-            G.bp=[px,py];const lg=t>ew+.6;drawMon(px+(lg?Math.sin(now/35)*2:0),py-(lg?Math.abs(Math.sin(now/90))*6:0),n,sc,v,0);
+            G.bp=[px,py,py-126*sc*((VAR[v%NV]||{}).s||1)];const lg=t>ew+.6;   // [x, feet, top of head]
+            drawMon(px+(lg?Math.sin(now/35)*2:0),py-(lg?Math.abs(Math.sin(now/90))*6:0),n,sc,v,0);
             const cut=ew+.25,hy=fy-90;
             if(G.dk==2&&t>ew-.05&&t<cut+.05){const o=Math.max(0,1-(t-(ew-.05))/.3)*16+2;
                 ctx.fillStyle='#5a0f14';ctx.fillRect(x-14,hy-o,36,o*2);ctx.fillStyle='#f2ecd8';
@@ -3492,21 +3509,32 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 ctx.fillStyle=j%3?'#ff3b3b':'#ff6b5a';ctx.fillText('HA',px,py)}
             ctx.restore();
         }
+        // Taunts can be long. Use the biggest font (down to 9px) that fits them in a bubble at most mw px wide, so nothing is ever cut off.
+        function bubWrap(t,mw){
+            const words=(t+'').split(' ');let best=null;
+            for(const [fs,maxL] of [[12,3],[11,4],[10,5],[9.5,6],[9,9]]){
+                ctx.save();ctx.font='bold '+fs+'px sans-serif';
+                const out=[];let l='';words.forEach(wd=>{const n=l?l+' '+wd:wd;if(ctx.measureText(n).width>mw&&l){out.push(l);l=wd}else l=n});out.push(l);
+                const w=Math.max(...out.map(x=>ctx.measureText(x).width));ctx.restore();
+                best={ls:out,fs,lh:Math.round(fs*1.28),w};
+                if(out.length<=maxL)break}
+            return best}
         function laugh(x,y,now,below,txt,letters){
-            ctx.save();ctx.font='bold 12px sans-serif';
-            let ls=wrap(txt||G.tt,150);
-            let w=Math.max(...ls.map(l=>ctx.measureText(l).width))+20,h=ls.length*15+14;
-            ctx.restore();
+            const nD=(G.tg&&G.tg.length)||4,rm=G.rooms&&G.rooms[G.i],MW=(rm&&rm.boss)?210:Math.min(170,Math.max(125,W/nD-26));   // bubble width: fits between neighbouring door demons
+            const B0=bubWrap(txt||G.tt,MW);let ls=B0.ls,fs=B0.fs,lh=B0.lh;
+            let w=B0.w+20,h=ls.length*lh+14;
             let bx=Math.max(8,Math.min(W-8-w,x-w/2));
             let by;
             if(below){by=Math.min(H-h-8,y+16)}                          // bubble hangs UNDER the plate, tail points up at the demon's door
-            else{by=Math.max(50,y-h-18);if(by+h>y-4)y=by+h+14}         // tail always points away from the text
+            else{by=Math.max(54,y-h-18);if(by+h>y-4)y=by+h+14}         // tail always points away from the text
             if(G.avoid){   // something big (the iron maiden) is in the way: find a spot beside it where the bubble overlaps nothing, narrowing the text if it has to
                 const A=G.avoid,R2=G.bubR||(G.bubR=[]),free=(a,b,ww,hh)=>!(a<A[2]&&a+ww>A[0]&&b<A[3]&&b+hh>A[1])&&!R2.some(r=>a<r[2]&&a+ww>r[0]&&b<r[3]&&b+hh>r[1]),opts=[];
-                [150,100,78].forEach(mw=>{const l2=wrap(txt||G.tt,mw);ctx.save();ctx.font='bold 12px sans-serif';const w2=Math.max(...l2.map(l=>ctx.measureText(l).width))+20;ctx.restore();const h2=l2.length*15+14,b2=below?Math.min(H-h2-8,y+16):by;
+                [MW,110,90].forEach(mw=>{const l2=bubWrap(txt||G.tt,mw),w2=l2.w+20,h2=l2.ls.length*l2.lh+14,b2=below?Math.min(H-h2-8,y+16):by;
                     [Math.max(8,Math.min(W-8-w2,x-w2/2)),A[0]-w2-6,A[2]+6].forEach(a=>{if(a>=8&&a<=W-8-w2)opts.push([a,b2,w2,h2,l2])})});
-                const ok=opts.find(o=>free(o[0],o[1],o[2],o[3]));if(ok){bx=ok[0];by=ok[1];w=ok[2];h=ok[3];ls=ok[4]}
-                R2.push([bx,by,bx+w,by+h])}
+                const ov=(a,b,ww,hh)=>{const q=(r)=>Math.max(0,Math.min(a+ww,r[2])-Math.max(a,r[0]))*Math.max(0,Math.min(b+hh,r[3])-Math.max(b,r[1]));let sc2=q(A)*3;R2.forEach(r=>{sc2+=q(r)});return sc2};
+                const ok=opts.find(o=>free(o[0],o[1],o[2],o[3]))||opts.reduce((m,o)=>(!m||ov(o[0],o[1],o[2],o[3])<ov(m[0],m[1],m[2],m[3]))?o:m,null);   // no clear spot: take the one that covers the least
+                if(ok){bx=ok[0];by=ok[1];w=ok[2];h=ok[3];ls=ok[4].ls;fs=ok[4].fs;lh=ok[4].lh}
+                R2.push([bx,by,bx+w,by+h])}else if(G.bubR)G.bubR.push([bx,by,bx+w,by+h]);
             ctx.save();ctx.fillStyle='#fff';ctx.strokeStyle='#111';ctx.lineWidth=2;
             const tx=Math.max(bx+12,Math.min(bx+w-12,x));
             if(below){   // tail on TOP edge, pointing up
@@ -3518,7 +3546,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 ctx.beginPath();ctx.moveTo(tx-6,by+h-1);ctx.lineTo(x,y);ctx.lineTo(tx+6,by+h-1);ctx.closePath();ctx.fillStyle='#fff';ctx.fill();ctx.stroke();
                 ctx.fillStyle='#fff';ctx.fillRect(tx-5,by+h-2,10,3);
             }
-            ctx.fillStyle='#111';ctx.textAlign='center';ctx.font='bold 12px sans-serif';ls.forEach((l,i)=>ctx.fillText(l,bx+w/2,by+17+i*15));ctx.restore();
+            ctx.fillStyle='#111';ctx.textAlign='center';ctx.font='bold '+fs+'px sans-serif';ls.forEach((l,i)=>ctx.fillText(l,bx+w/2,by+7+Math.round(fs*.85)+i*lh));ctx.restore();
         }
 
         // ---------- REPLAY OF THE KNIGHT'S LAST MOVES (slow motion) ----------
@@ -3591,7 +3619,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 if(G.dk==17&&!r.boss&&G.dt>3.4){G.avoid=null;G.bubR=[];G.tg.forEach(t=>{if(t.y>140)return;laugh(t.px??t.x,(t.ply??t.y)+26,now,true,t.tt,t===(G.kt||G.lt))})}   // horde death: the door demons' speech bubbles are drawn FIRST, so the horde stands in front of them
                 ctx.save();ctx.beginPath();ctx.rect(0,0,(r.boss||G.wide)?W:515,H);ctx.clip();deathDraw();ctx.restore();if(G.dk==23&&!(G.cast&&G.dt<G.cast))vdDraw(now);if(walkKill())eatDemon(now);if(G.bk)bossKillFx(now);
                 ctx.fillStyle=DC[G.dk]||'#facc15';ctx.shadowColor='#000';ctx.shadowBlur=6;ctx.textAlign='center';{const tx=(G.dn||(r.boss?(G.dk==14?'The Demon Lord made you hurt yourself':DN[G.dk].replace(/^The demon /,'The Demon Lord ')):DN[G.dk])).toUpperCase();   // when the boss kills you, it says the BOSS killed you
-                ctx.font='bold 22px Cinzel, serif';const mw=ctx.measureText(tx).width;ctx.font='bold '+(mw>770?Math.floor(22*770/mw):22)+'px Cinzel, serif';ctx.fillText(tx,W/2,40)}ctx.shadowBlur=0;
+                ctx.font='bold 22px Cinzel, serif';const mw=ctx.measureText(tx).width;ctx.font='bold '+(mw>770?Math.floor(22*770/mw):22)+'px Cinzel, serif';{const fw=ctx.measureText(tx).width;ctx.save();ctx.shadowBlur=0;ctx.fillStyle='rgba(0,0,0,.62)';rr(W/2-fw/2-16,12,fw+32,38,10);ctx.fill();ctx.strokeStyle=(DC[G.dk]||'#facc15')+'88';ctx.lineWidth=1.5;ctx.stroke();ctx.restore()}ctx.fillText(tx,W/2,40)}ctx.shadowBlur=0;
                 late=()=>{
                     let hp=null;
                     if(G.dk==17&&G.sm&&G.sv!=1){const sm=G.sm,tt=G.dt;   // the summoner's lines
@@ -3600,11 +3628,13 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                         else if(tt>=3.4)haha(sm[0],sm[1]-130,now)}   // the attackers only laugh
                     if(r.boss){if(G.dt>(G.dk==17?3.4:(G.bk?G.ew+.65:.35+(G.cast||0)))){hp=G.bh||[BZ.cx,BZ.hy];laugh(hp[0],hp[1],now,false);haha(hp[0]-30,hp[1]+80,now)}}   // the Demon Lord laughs at you
                     else{
-                        if(walkKill()&&G.dt>G.ew+.65&&G.bp){laugh(G.bp[0],G.bp[1]-100,now,false);haha(G.bp[0],G.bp[1]-75,now)}   // the one that ate you
+                        G.bubR=[];G.avoid=null;
+                        if(walkKill()&&G.dt>G.ew+.65&&G.bp){laugh(G.bp[0],(G.bp[2]??G.bp[1]-120)-8,now,false);haha(G.bp[0],G.bp[1]-75,now,6,36,26)}   // the one that did it: his bubble sits above his head, not on it
                         // EVERY demon in a doorway laughs, each under his own answer plate
                         if(G.dt>(G.dk==17?3.4:.35+(G.cast||0))){
                             const hz=(G.dk==17&&G.mpA&&G.mpA.length)?G.mpA:null;
-                            G.avoid=(G.dk==18&&G.mbox)?G.mbox:null;G.bubR=[];
+                            G.avoid=(()=>{if(G.dk==18&&G.mbox)return G.mbox;if(G.dk==17)return null;const f2=G.dy+15,x2=G.dx;let z=[x2-95,f2-105,x2+95,f2+10];   // everyone else keeps their bubble out of the death scene (the knight, and the demon walking up to him)
+                                if(walkKill()&&G.bp)z=[Math.min(z[0],G.bp[0]-60),Math.min(z[1],(G.bp[2]??G.bp[1]-120)-8),Math.max(z[2],G.bp[0]+60),z[3]];return z})();
                             if(hz)hz.forEach(p=>haha(p[0],p[1]-100*(G.rooms[G.i].boss?1.7:1),now));   // the horde's HAs go first, so the speech bubbles always sit on top of them
                             G.tg.forEach(t=>{if(t.y>140||((walkKill()||lifeKill())&&t===G.kt))return;{if(G.dk!=17)laugh(t.px??t.x,(t.ply??t.y)+26,now,true,t.tt,t===(G.kt||G.lt));haha(t.x,t.y-38,now,6,22,30)}});G.avoid=null}   // all 4 doorway demons taunt you from their answer plates, horde death included
                     }
