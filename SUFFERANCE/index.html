@@ -69,9 +69,480 @@
         </div>
         <div class="flex items-center space-x-4 pixel-font text-sm">
             <button id="galink" type="button" title="Death Gallery (your run stays paused and safe)" class="bg-zinc-900 px-3 py-1.5 rounded border border-emerald-900/50 text-emerald-300 hover:bg-emerald-950 transition whitespace-nowrap">💀<span class="hidden sm:inline"> Gallery</span></button>
+            <button id="sndbtn" type="button" title="Sound & music settings (M = mute)" class="bg-zinc-900 px-3 py-1.5 rounded border border-emerald-900/50 text-emerald-300 hover:bg-emerald-950 transition">🔊</button>
             <div id="gold" class="bg-zinc-900 px-3 py-1.5 rounded border border-emerald-900/50 text-emerald-400 shadow-[inset_0_0_6px_rgba(16,185,129,0.2)]">🪙 150</div>
         </div>
     </header>
+<!-- ===== SOUND ENGINE: synthesized music + death + laugh, switchable, with "use my own file" ===== -->
+<script>
+const SND=(()=>{
+const LS='sufference_snd_v1';
+let cfg={on:1,mon:1,music:'crypt',death:'fit',laugh:'cackle',mv:.5,sv:.8};
+try{Object.assign(cfg,JSON.parse(localStorage[LS]||'{}'))}catch(e){}
+if(!cfg.v){cfg.v=2;if(cfg.death=='doom')cfg.death='fit'}
+const cust={music:null,death:null,laugh:null};
+if(cfg.music=='custom')cfg.music='crypt';if(cfg.death=='custom')cfg.death='fit';if(cfg.laugh=='custom')cfg.laugh='cackle';
+let ac,B={},rvb,nb,tm=null,nt=0,st=0,spd=1,src=null,ready=0;
+const save=()=>{try{localStorage[LS]=JSON.stringify(cfg)}catch(e){}};
+const mf=n=>440*Math.pow(2,(n-69)/12),CH={m:[0,3,7],M:[0,4,7]};
+const safe=f=>(...a)=>{try{return f(...a)}catch(e){console.warn('sound:',e)}};
+
+function init(){
+  if(ac)return;
+  try{ac=new(window.AudioContext||window.webkitAudioContext)()}catch(e){return}
+  const mst=ac.createGain(),cp=ac.createDynamicsCompressor();mst.connect(cp);cp.connect(ac.destination);
+  const len=ac.sampleRate*2.2,buf=ac.createBuffer(2,len,ac.sampleRate);
+  for(let c=0;c<2;c++){const d=buf.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6)}
+  rvb=buf;['m','s'].forEach(k=>{
+    const d=ac.createGain();d.connect(mst);
+    const cv=ac.createConvolver();cv.buffer=buf;const rg=ac.createGain();rg.gain.value=.45;cv.connect(rg);rg.connect(d);
+    B[k]={d,r:cv};
+  });
+  vol();
+}
+function vol(){if(!ac)return;B.m.d.gain.value=cfg.on&&cfg.mon?cfg.mv:0;B.s.d.gain.value=cfg.on?cfg.sv:0}
+
+// ---------- tiny synth kit ----------
+function note(b,type,f,t,dur,v,rev,lp,hz){
+  const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=hz?f:mf(f);
+  let n=o;if(lp){const F=ac.createBiquadFilter();F.type='lowpass';F.frequency.value=lp;o.connect(F);n=F}
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  n.connect(g);g.connect(B[b].d);if(rev)g.connect(B[b].r);o.start(t);o.stop(t+dur+.05);
+}
+function noise(b,t,dur,v,type,f0,f1,q,rev){
+  if(!nb){nb=ac.createBuffer(1,ac.sampleRate*1.5,ac.sampleRate);const d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}
+  const s=ac.createBufferSource(),F=ac.createBiquadFilter(),g=ac.createGain();s.buffer=nb;F.type=type||'lowpass';F.Q.value=q||1;
+  F.frequency.setValueAtTime(f0,t);if(f1)F.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  s.connect(F);F.connect(g);g.connect(B[b].d);if(rev)g.connect(B[b].r);s.start(t,Math.random());s.stop(t+dur+.05);
+}
+function sweep(b,type,f0,f1,t,dur,v,rev){
+  const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(B[b].d);if(rev)g.connect(B[b].r);o.start(t);o.stop(t+dur+.05);
+}
+const kick=(b,t,v)=>sweep(b,'sine',150,40,t,.22,v);
+const snare=(b,t,v)=>{noise(b,t,.16,v*.6,'highpass',1800);sweep(b,'triangle',220,110,t,.1,v*.4)};
+
+// ---------- DEATH sounds ----------
+const DEATH={
+  doom(t){sweep('s','sine',90,28,t,1.7,.9,1);noise('s',t,1.3,.5,'lowpass',900,60,1,1);
+    [220,233,277].forEach(f=>note('s','sawtooth',f/2,t+.02,1.9,.1,1,500,1));sweep('s','sawtooth',440,60,t,1.3,.1,1)},
+  retro(t){[880,740,622,523,440,370,311,262,196,131].forEach((f,i)=>note('s','square',f,t+i*.085,.1,.14,0,0,1))},
+  cartoon(t){sweep('s','triangle',1400,170,t,.95,.33);sweep('s','sine',1380,160,t,.95,.1);
+    sweep('s','sine',320,70,t+.97,.22,.8);noise('s',t+.97,.08,.4,'lowpass',3000,300)},
+  splat(t){noise('s',t,.4,.9,'lowpass',2600,180);sweep('s','sine',170,45,t,.3,.9);
+    for(let i=0;i<5;i++)noise('s',t+.12+i*.07,.06,.4,'bandpass',600+Math.random()*900,0,4)}
+};
+// ---------- LAUGHS (voiced "ha-ha-ha": sawtooth through vowel formants) ----------
+const LG={cackle:[7,.14,310,190,[800,1300],.5,.1],witch:[6,.12,560,430,[900,2200],.4,.09,1],chuckle:[4,.25,125,85,[480,900],.7,.18]};
+function laugh(k,t,low){
+  if(k=='skeleton'){for(let i=0;i<12;i++){const tt=t+i*.055;noise('s',tt,.03,.5,'bandpass',2500+Math.random()*1500,0,6);note('s','square',900+Math.random()*500,tt,.03,.07,0,0,1)}return}
+  const[n,gap,p0,p1,fm,v,du,vb]=LG[k]||LG.cackle,P=low?.6:1;
+  for(let i=0;i<n;i++){
+    const tt=t+i*gap*(1+i*.03),p=(p0+(p1-p0)*i/(n-1))*P,o=ac.createOscillator(),g=ac.createGain();
+    o.type='sawtooth';o.frequency.setValueAtTime(p*1.15,tt);o.frequency.exponentialRampToValueAtTime(p*.88,tt+du);
+    if(vb){const l=ac.createOscillator(),lg=ac.createGain();l.frequency.value=22;lg.gain.value=p*.04;l.connect(lg);lg.connect(o.frequency);l.start(tt);l.stop(tt+du+.05)}
+    g.gain.setValueAtTime(0,tt);g.gain.linearRampToValueAtTime(v*.8*(1-i*.07),tt+.02);g.gain.exponentialRampToValueAtTime(.0001,tt+du);
+    fm.forEach((f,j)=>{const F=ac.createBiquadFilter(),fg=ac.createGain();F.type='bandpass';F.frequency.value=f*(low?.8:1);F.Q.value=5;fg.gain.value=j?1.2:2.6;o.connect(F);F.connect(fg);fg.connect(g)});
+    g.connect(B.s.d);g.connect(B.s.r);o.start(tt);o.stop(tt+du+.05);noise('s',tt,du,.08,'bandpass',3000,0,1);
+  }
+}
+// ---------- other effects ----------
+const SFX={
+  right(t){noise('s',t,.22,.4,'bandpass',3000,800,2);[523,659,784,1047].forEach((f,i)=>note('s','triangle',f,t+.05+i*.07,.35,.2,1,0,1))},
+  bosshit(t){sweep('s','sine',200,45,t,.35,.9);noise('s',t,.3,.5,'lowpass',2000,200);SFX.right(t+.05)},
+  swing(t){noise('s',t,.18,.28,'bandpass',2200,600,1.5)},
+  click(t){note('s','square',1200,t,.04,.05,0,0,1)},
+  chest(t){sweep('s','sawtooth',90,160,t,.35,.1);noise('s',t,.3,.15,'bandpass',600,1200,3);[1319,1568,1976,2349].forEach((f,i)=>note('s','sine',f,t+.3+i*.05,.3,.14,1,0,1))},
+  respawn(t){[392,523,659].forEach((f,i)=>note('s','sine',f,t+i*.08,.6,.15,1,0,1))},
+  ding(t){note('s','sine',1568,t,.5,.12,1,0,1);note('s','sine',2093,t+.09,.6,.1,1,0,1)},
+  win(t){[[523,0],[659,.14],[784,.28],[1047,.42],[784,.62],[1047,.76],[1319,.9]].forEach(([f,d])=>{note('s','triangle',f,t+d,.7,.2,1,0,1);note('s','square',f/2,t+d,.5,.05,1,900,1)});
+    [523,659,784,1047].forEach(f=>note('s','triangle',f,t+1.1,2,.1,1,0,1))}
+};
+
+// ================= PER-DEATH SOUNDS: a one-shot "hit" + a looping bed that keeps playing until you respawn =================
+let SS=null,lbuf=null;
+const rnd=(a,b)=>a+Math.random()*(b-a);
+function ensureNb(){if(!nb){nb=ac.createBuffer(1,ac.sampleRate*1.5,ac.sampleRate);const d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}}
+function lbuffer(){if(!lbuf){const n=ac.sampleRate*4;lbuf=ac.createBuffer(1,n,ac.sampleRate);const d=lbuf.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1}return lbuf}
+// --- one-shot building blocks (all play on the current death session bus B.k) ---
+function nz(t,dur,v,type,f0,f1,q,rev){ensureNb();const P=B.k,s=ac.createBufferSource(),F=ac.createBiquadFilter(),g=ac.createGain();s.buffer=nb;s.loop=true;F.type=type||'lowpass';F.Q.value=q||1;F.frequency.setValueAtTime(f0,t);if(f1)F.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(F);F.connect(g);g.connect(P.d);if(rev)g.connect(P.r);s.start(t,Math.random());s.stop(t+dur+.05)}
+function swl(t,dur,v,type,f0,f1,att,q,rev){ensureNb();const P=B.k,s=ac.createBufferSource(),F=ac.createBiquadFilter(),g=ac.createGain();s.buffer=nb;s.loop=true;F.type=type||'bandpass';F.Q.value=q||1;F.frequency.setValueAtTime(f0,t);F.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+dur*(att==null?.4:att));g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(F);F.connect(g);g.connect(P.d);if(rev)g.connect(P.r);s.start(t,Math.random());s.stop(t+dur+.05)}
+function ping(t,f,v,dur,f1,type){const P=B.k,o=ac.createOscillator(),g=ac.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.004);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(P.d);g.connect(P.r);o.start(t);o.stop(t+dur+.05)}
+function tone(t,dur,f,v){const P=B.k,o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.01);g.gain.setValueAtTime(v,t+dur-.03);g.gain.linearRampToValueAtTime(0,t+dur);o.connect(g);g.connect(P.d);o.start(t);o.stop(t+dur+.05)}
+const VW={a:[800,1150,2900],o:[450,800,2830],u:[325,700,2530],e:[400,1700,2600]};
+function vox(t,dur,f0,f1,v,w,o){o=o||{};ensureNb();const P=B.k,os=ac.createOscillator(),g=ac.createGain(),vb=ac.createOscillator(),vg=ac.createGain();
+  os.type='sawtooth';os.frequency.setValueAtTime(f0,t);
+  if(o.path)o.path.forEach(p=>os.frequency.linearRampToValueAtTime(p[1],t+p[0]*dur));else os.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  vb.frequency.value=o.vr||5.5;vg.gain.value=f0*(o.vd==null?.025:o.vd);vb.connect(vg);vg.connect(os.frequency);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+Math.min(o.att||.06,dur/3));g.gain.setValueAtTime(v,t+dur*.55);g.gain.exponentialRampToValueAtTime(o.end||.0001,t+dur);
+  const ns=ac.createBufferSource(),ng=ac.createGain();ns.buffer=nb;ns.loop=true;ng.gain.value=(o.breath||0)*3;ns.connect(ng);
+  VW[w||'a'].forEach((f,j)=>{const F=ac.createBiquadFilter(),fg=ac.createGain();F.type='bandpass';F.frequency.value=f;F.Q.value=j?8:6;fg.gain.value=[1.5,1,.5][j];os.connect(F);ng.connect(F);F.connect(fg);fg.connect(g)});
+  g.connect(P.d);if(o.rev!==0)g.connect(P.r);
+  if(o.jit){const j=ac.createOscillator(),jg=ac.createGain();j.frequency.value=37;jg.gain.value=f0*.05;j.connect(jg);jg.connect(os.frequency);j.start(t);j.stop(t+dur+.05)}
+  if(o.am){const a=ac.createOscillator(),ag=ac.createGain();a.frequency.value=o.am;ag.gain.value=v*.7;a.connect(ag);ag.connect(g.gain);a.start(t);a.stop(t+dur+.05)}
+  if(o.br)nz(t,dur,o.br,'bandpass',1400,0,.8);
+  ns.start(t,Math.random());ns.stop(t+dur+.05);os.start(t);vb.start(t);os.stop(t+dur+.05);vb.stop(t+dur+.05)}
+function creak(t,dur,f,v){const P=B.k,o=ac.createOscillator(),g=ac.createGain(),F=ac.createBiquadFilter(),l=ac.createOscillator(),lg=ac.createGain();
+  o.type='sawtooth';o.frequency.setValueAtTime(f,t);o.frequency.linearRampToValueAtTime(f*rnd(.7,1.4),t+dur);l.type='square';l.frequency.value=rnd(18,40);lg.gain.value=f*.12;l.connect(lg);lg.connect(o.frequency);
+  F.type='bandpass';F.frequency.value=f*4;F.Q.value=4;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+dur*.3);g.gain.linearRampToValueAtTime(0,t+dur);o.connect(F);F.connect(g);g.connect(P.d);g.connect(P.r);o.start(t);l.start(t);o.stop(t+dur+.05);l.stop(t+dur+.05)}
+const bub=(t,f,v)=>ping(t,f,v,rnd(.04,.09),f*rnd(1.6,2.4));
+const gloop=(t,f,v)=>{ping(t,f,v,.17,f*1.8);nz(t,.1,v*.4,'lowpass',500,120)};
+const drip=(t,v,f)=>{f=f||rnd(800,1400);ping(t,f,v,.09,f*.55)};
+const blood=(t,v)=>{drip(t,v,rnd(380,700));nz(t,.05,v*.3,'bandpass',900,300,2)};
+const crk=(t,v)=>nz(t,rnd(.004,.02),v*rnd(.4,1),'bandpass',rnd(800,5500),0,1.2);
+const popf=(t,v)=>{nz(t,.03,v,'bandpass',rnd(300,900),150,2);ping(t,rnd(180,300),v*.5,.04,90)};
+const sz=(t,v)=>nz(t,rnd(.02,.05),v,'highpass',rnd(4500,9000),0,.7);
+const tk=(t,v,f)=>nz(t,.012,v,'bandpass',f||rnd(3500,6500),0,3);
+const thud=(t,v,f)=>{sweep('k','sine',f||130,35,t,.32,v);nz(t,.14,v*.55,'lowpass',700,100)};
+const wet=(t,v)=>{nz(t,.18,v,'bandpass',600,150,2);sweep('k','sine',220,60,t,.15,v*.6)};
+const crunch=(t,v)=>{for(let i=0;i<3;i++)nz(t+i*.022,.03,v*rnd(.6,1),'bandpass',rnd(1500,3500),700,2.5);sweep('k','sine',180,60,t,.09,v*.5)};
+const metal=(t,v,f,d)=>{[1,2.76,5.4,8.9,11.3].forEach((m,i)=>note('k','sine',f*m,t,d/(1+i*.35),v/(1+i*.7),1,0,1));nz(t,.05,v*.8,'highpass',3000)};
+const boom=(t,v,len)=>{sweep('k','sine',90,24,t,len||1.2,v,1);nz(t,len||1.3,v*.8,'lowpass',3000,70,1,1)};
+const zap=(t,v)=>{nz(t,.05,v,'highpass',1500,0);ping(t,rnd(1500,3000),v*.3,.03,200,'sawtooth')};
+const cough=(t,v)=>{nz(t,.13,v,'bandpass',1000,500,2);vox(t,.13,rnd(180,240),140,v*.8,'e',{rev:0})};
+const growl=(t,dur,v,f)=>vox(t,dur,f||85,(f||85)*.65,v,'a',{am:28,vd:.05,br:v*.4,rev:0});
+const scream=(t,dur,f0,f1,v)=>vox(t,dur,f0,f1,v,'a',{path:[[.15,f0*1.3],[.55,(f0+f1)/2*1.15],[1,f1]],vr:7,vd:.03,jit:1,breath:.35,att:.04});
+const moan=(t,dur,f0,f1,v,w)=>vox(t,dur,f0,f1,v,w||'o',{breath:.2,jit:1});
+const pain=(t,dur,v,f)=>scream(t,dur,f,f*.55,v);
+const gasp=(t,v)=>swl(t,.32,v,'bandpass',1100,2400,.75,1.2);
+const breathe=(t,v)=>{swl(t,.4,v,'bandpass',900,2000,.6,1);swl(t+.5,.5,v*.8,'bandpass',1800,800,.3,1)};
+const retch=(t,v)=>{vox(t,.35,95,70,v,'a',{am:22,vd:.06,breath:.8,rev:0});nz(t+.05,.3,v*.5,'bandpass',500,200,2)};
+const tear=(t,v)=>{for(let i=0;i<5;i++)nz(t+i*.045+rnd(0,.02),.07,v*rnd(.5,1),'bandpass',rnd(400,1100),200,2)};
+const stab=(t,v)=>{nz(t,.04,v,'highpass',2500,0);wet(t+.01,v*.8);thud(t+.03,v*.6,170)};
+const shing=(t,v)=>{swl(t,.3,v*.6,'bandpass',2500,9000,.15,1.5);[4300,5700,7900].forEach((f,i)=>ping(t+i*.01,f,v*.1,.5-i*.1));nz(t,.05,v*.5,'highpass',5000,0)};
+const slash=(t,v)=>{swl(t,.14,v,'bandpass',2000,6500,.5,1.4);nz(t+.08,.1,v*.4,'bandpass',900,300,2)};
+const bone=(t,v)=>{nz(t,.025,v,'bandpass',rnd(1500,2600),0,4);ping(t,rnd(700,1100),v*.5,.04,300);crunch(t+.01,v*.6)};
+const glass=(t,v,n)=>{nz(t,.06,v,'highpass',1500,0);for(let i=0;i<n;i++){const s=t+Math.pow(Math.random(),1.6)*.8;nz(s,rnd(.05,.12),v*rnd(.15,.4),'highpass',rnd(3500,8000),0,.8);ping(s,rnd(2500,8000),v*.1,rnd(.1,.35))}};
+const slurp=(t,v)=>{ping(t,rnd(120,200),v,.12,rnd(500,800));nz(t,.1,v*.5,'bandpass',500,250,3)};
+const splash=(t,v)=>swl(t,rnd(.12,.25),v,'bandpass',rnd(700,1400),rnd(1800,3000),.3,.9);
+const hiss=(t,v)=>swl(t,rnd(.3,.6),v,'bandpass',rnd(2500,4000),rnd(2000,3000),.15,.8);
+const shuf=t=>{nz(t,.12,.18,'bandpass',900,300,2);thud(t,.12,100)};
+const zom=(t,dur,v,f)=>vox(t,dur,f,f*.6,v,pick(['o','a']),{vr:3.5,vd:.06,jit:1,breath:.6,am:9});
+function horn(t,dur,v){const P=B.k;nz(t,.08,v*.4,'bandpass',900,400,1);[233,294,349,415].forEach((f,i)=>{const o=ac.createOscillator(),F=ac.createBiquadFilter(),g=ac.createGain();o.type=i%2?'square':'sawtooth';o.frequency.setValueAtTime(f*.9,t);o.frequency.linearRampToValueAtTime(f,t+.07);o.detune.value=(i-1.5)*4;F.type='lowpass';F.frequency.value=2200;const a=v*(i%2?.12:.2);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(a,t+.03);g.gain.setValueAtTime(a,t+dur-.12);g.gain.linearRampToValueAtTime(0,t+dur);o.connect(F);F.connect(g);g.connect(P.d);g.connect(P.r);o.start(t);o.stop(t+dur+.05)})}
+function boing(t,v){const P=B.k,o=ac.createOscillator(),l=ac.createOscillator(),lg=ac.createGain(),g=ac.createGain();o.frequency.setValueAtTime(380,t);o.frequency.exponentialRampToValueAtTime(220,t+.9);l.frequency.value=11;lg.gain.setValueAtTime(160,t);lg.gain.exponentialRampToValueAtTime(5,t+.9);l.connect(lg);lg.connect(o.frequency);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+.9);o.connect(g);g.connect(P.d);o.start(t);l.start(t);o.stop(t+1);l.stop(t+1)}
+function slidewhistle(t,dur,f0,f1,v){const P=B.k,o=ac.createOscillator(),l=ac.createOscillator(),lg=ac.createGain(),g=ac.createGain();o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+dur);l.frequency.value=6;lg.gain.value=40;l.connect(lg);lg.connect(o.frequency);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.04);g.gain.setValueAtTime(v,t+dur-.05);g.gain.linearRampToValueAtTime(0,t+dur);o.connect(g);g.connect(P.d);o.start(t);l.start(t);o.stop(t+dur+.05);l.stop(t+dur+.05)}
+const thunder=(t,v)=>{sweep('k','sine',80,28,t,2.2,v*.7,1);[[0,2.2,.55],[.5,2.5,.45],[1.1,2.6,.4],[1.9,2.4,.3]].forEach(([d,len,a])=>swl(t+d,len,v*a,'lowpass',rnd(250,450),rnd(45,70),rnd(.05,.2),1,1));for(let i=0;i<16;i++)nz(t+rnd(0,2.5),rnd(.05,.15),v*rnd(.1,.3),'bandpass',rnd(80,350),0,2)};
+// --- looping beds ---
+function cn(type,f,q,v,o){o=o||{};const S=B.k,s=ac.createBufferSource(),F=ac.createBiquadFilter(),g=ac.createGain(),t0=S.t0;
+  s.buffer=lbuffer();s.loop=true;F.type=type;F.frequency.value=f;F.Q.value=q;g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(v,t0+(o.fade||.5));s.connect(F);F.connect(g);g.connect(S.d);if(o.rev)g.connect(S.r);
+  if(o.lf){const l=ac.createOscillator(),lg=ac.createGain();l.frequency.value=o.lf;lg.gain.value=o.ld;l.connect(lg);lg.connect(F.frequency);l.start(t0);S.srcs.push(l)}
+  if(o.al){const l=ac.createOscillator(),lg=ac.createGain();l.frequency.value=o.al;lg.gain.value=v*(o.ad==null?.8:o.ad);l.connect(lg);lg.connect(g.gain);l.start(t0);S.srcs.push(l)}
+  s.start(t0,Math.random()*3);S.srcs.push(s)}
+function co(type,f,v,o){o=o||{};const S=B.k,s=ac.createOscillator(),F=ac.createBiquadFilter(),g=ac.createGain(),t0=S.t0;
+  s.type=type;s.frequency.value=f;F.type='lowpass';F.frequency.value=o.lp||8000;g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(v,t0+(o.fade||.5));s.connect(F);F.connect(g);g.connect(S.d);if(o.rev)g.connect(S.r);
+  if(o.fm){const l=ac.createOscillator(),lg=ac.createGain();l.frequency.value=o.fm;lg.gain.value=o.fd;l.connect(lg);lg.connect(s.frequency);l.start(t0);S.srcs.push(l)}
+  if(o.al){const l=ac.createOscillator(),lg=ac.createGain();l.frequency.value=o.al;lg.gain.value=v*(o.ad==null?.8:o.ad);l.connect(lg);lg.connect(g.gain);l.start(t0);S.srcs.push(l)}
+  s.start(t0);S.srcs.push(s)}
+const ev=(r,f)=>B.k.em.push({r,f}),rg=(p,f,n)=>B.k.em.push({p,f,n:n||0}),at=(a,f)=>B.k.em.push({a,f});
+const ONES={},BEDS={},pick=a=>a[(Math.random()*a.length)|0];
+const FIRE=()=>{cn('lowpass',450,.7,.34,{lf:.8,ld:180,al:3,ad:.3});cn('bandpass',1500,.5,.09,{lf:5,ld:600});cn('highpass',5000,.5,.03);ev(20,(t)=>crk(t,.22));ev(1.4,(t)=>popf(t,.3));ev(.35,(t)=>swl(t,.9,.18,'lowpass',250,1600,.4,1))};
+const ICE=()=>{cn('bandpass',900,6,.08,{lf:.25,ld:450});cn('highpass',7000,.5,.012);ev(3,(t)=>ping(t,rnd(2500,6200),.07,.18,0,'sine'));ev(.5,(t)=>{creak(t,.5,rnd(500,900),.05)});ev(4,(t)=>tk(t,.08,rnd(5000,9000)))};
+const PEBBLES=(r)=>{ev(r,(t)=>{tk(t,.14,rnd(900,2600));thud(t+.02,.05,rnd(150,260))});cn('highpass',3000,.5,.02);cn('lowpass',90,1,.14,{al:.3})};
+const DRIPS=(r)=>ev(r,(t)=>blood(t,.2));
+// ---------- ONE-SHOT hits ----------
+ONES[0]=t=>{sweep('k','sine',300,90,t,.18,.35);for(let i=0;i<10;i++)bub(t+.1+i*.08,rnd(180,420),.22);cough(t+.4,.4);cough(t+.7,.35);moan(t+.5,1,230,90,.17);thud(t+1.4,.4,90)};
+ONES[1]=t=>{swl(t,.24,.55,'bandpass',800,4500,.8,1.6);const c=t+.24;nz(c,.12,.8,'lowpass',2800,300);thud(c,.9,125);wet(c+.03,.5);[.34,.52,.62].forEach((d,i)=>thud(c+d,.4/(i+1),170-i*15));swl(c,.5,.18,'bandpass',1200,500,.1,1)};
+ONES[2]=t=>{growl(t,.8,.4,100);[.5,.8,1.1].forEach(d=>{crunch(t+d,.55);wet(t+d+.03,.3)});scream(t+.55,.6,600,260,.07);sweep('k','sine',320,90,t+1.4,.22,.35);growl(t+1.6,.4,.25,70)};
+ONES[3]=t=>{nz(t,.3,.4,'bandpass',2500,800);for(let i=0;i<16;i++)sz(t+rnd(0,.7),.12);scream(t+.1,1.2,600,250,.18);for(let i=0;i<5;i++)bub(t+.2+i*.13,rnd(150,330),.2)};
+ONES[4]=t=>{[880,1320,1760,2640].forEach((f,i)=>ping(t+i*.05,f,.06,1.4));swl(t,.9,.25,'bandpass',300,3500,.5,2,1);scream(t+.15,1.4,800,300,.14);thud(t+.9,.3,90)};
+ONES[5]=t=>{ping(t,1000,.1,.55,180);boom(t+.55,.95,1.6);for(let i=0;i<7;i++)crunch(t+.6+i*.07,.5);nz(t+.55,1.8,.3,'lowpass',200,40,1,1)};
+ONES[6]=t=>{ping(t,300,.35,.2,150,'triangle');nz(t,.1,.2,'bandpass',2500,900,2);for(let i=0;i<4;i++){const s=t+.12+i*.09;swl(s,.26,.18,'bandpass',3500,1800,.5,1.2);thud(s+.27,.5,260);wet(s+.28,.35)}moan(t+.85,.6,210,90,.15)};
+ONES[7]=t=>{swl(t,.7,.7,'lowpass',200,2800,.35,1,1);for(let i=0;i<14;i++)crk(t+rnd(0,.8),.3);scream(t+.2,1.5,750,320,.17)};
+ONES[8]=t=>{[3200,4200,5200].forEach((f,i)=>ping(t+i*.04,f,.06,.9));swl(t,.5,.15,'highpass',6000,3000,.5);for(let i=0;i<10;i++)tk(t+rnd(0,.6),.12,rnd(4000,9000));
+  for(let i=0;i<22;i++){const s=t+.7+rnd(0,.35);nz(s,.07,.3,'bandpass',rnd(3000,9000),0,2);ping(s,rnd(2000,6500),.06,.25)}thud(t+.7,.4,200)};
+ONES[9]=t=>{nz(t,.3,.9,'highpass',800,0);ping(t,4000,.3,.25,60,'sawtooth');for(let i=0;i<8;i++)zap(t+rnd(0,.5),.35);swl(t+.12,2.4,.75,'lowpass',500,50,.08,1,1)};
+ONES[10]=t=>{note('k','sawtooth',233,t,.7,.17,0,1800,1);note('k','sawtooth',294,t,.7,.17,0,1800,1);sweep('k','sawtooth',50,160,t,1.0,.14);nz(t+.5,.55,.25,'bandpass',2200,1500,6);
+  thud(t+1.0,.95,90);metal(t+1.0,.3,180,.7);[0,.03,.06].forEach(d=>crunch(t+1.0+d,.5));for(let i=0;i<8;i++)ping(t+1.05+rnd(0,.3),rnd(2500,5000),.05,.2);
+  [523,659,784,988,1319].forEach((f,i)=>ping(t+1.6+i*.09,f,.09,.9,0,'triangle'))};
+ONES[11]=t=>{ping(t,150,.4,.5,450);for(let i=0;i<6;i++)gloop(t+.15+i*.13,rnd(90,200),.3);nz(t,1,.2,'lowpass',500,120,1,1);ping(t+1.2,420,.35,.3,90)};
+ONES[12]=t=>{boom(t,.95,1.6);nz(t,.2,.7,'highpass',1500,400);for(let i=0;i<20;i++)crk(t+.1+rnd(0,1.2),.3);thud(t+.05,.9,60)};
+ONES[13]=t=>{for(let i=0;i<8;i++)nz(t+i*.1,.09,.8,'bandpass',rnd(200,600),100,2);swl(t,1.6,.5,'lowpass',150,60,.2,1,1);ping(t+.4,700,.08,1.2,80);for(let i=0;i<10;i++)crunch(t+.5+rnd(0,1),.35);boom(t+1.5,.8,.8)};
+ONES[14]=t=>{for(let i=0;i<4;i++)ping(t+i*.22,330+(i%2)*110,.12,.5);thud(t+.95,.6,110);wet(t+.98,.55);moan(t+1.0,.6,190,80,.22)};
+ONES[15]=t=>{nz(t,.5,.5,'lowpass',3000,300);ping(t+.5,260,.3,.25,90);sweep('k','sine',900,300,t+4.6,.09,.35);nz(t+4.6,.4,.5,'lowpass',2600,300);swl(t+4.7,.7,.3,'lowpass',1200,300,.2,1,1)};
+ONES[16]=t=>{creak(t,.35,150,.14);thud(t+.35,.5,230);[.5,.8,1.1].forEach(d=>{crunch(t+d,.55);thud(t+d,.35,240)});ping(t+1.5,300,.35,.22,90);thud(t+1.75,.6,150);nz(t+1.75,.1,.6,'bandpass',800,300,2);growl(t+1.95,.35,.25,75)};
+ONES[17]=t=>{for(let i=0;i<16;i++)growl(t+.2+i*.17,rnd(.25,.5),.12,rnd(60,110));for(let i=0;i<5;i++)scream(t+.5+i*.5,.35,rnd(500,800),rnd(900,1300),.07);for(let i=0;i<10;i++)thud(t+rnd(.4,2.8),.3,rnd(100,180))};
+ONES[18]=t=>{creak(t,.6,90,.18);metal(t+.6,.45,300,1.5);[.85,1.0,1.15].forEach(d=>{wet(t+d,.4);ping(t+d,rnd(700,1000),.05,.15)});scream(t+.9,.8,400,250,.08);metal(t+1.4,.15,700,.35)};
+ONES[19]=t=>{scream(t,.7,650,300,.14);for(let i=0;i<45;i++)tk(t+.15+rnd(0,.9),.14);for(let i=0;i<6;i++)note('k','sawtooth',rnd(130,170),t+rnd(0,.8),.25,.04,0,900,1)};
+ONES[20]=t=>{ping(t,1800,.09,.45,350);metal(t+.45,.55,520,1.8);metal(t+.45,.3,780,1.2);thud(t+.45,.9,85);wet(t+.5,.5);ping(t+.95,200,.12,.2,700,'square')};
+ONES[21]=t=>{for(let i=0;i<5;i++)gloop(t+i*.1,rnd(250,400)-i*20,.25);swl(t+.3,.8,.35,'highpass',4000,6000,.2);for(let i=0;i<30;i++)sz(t+.3+rnd(0,1),.14);scream(t+.4,1.3,800,300,.18)};
+ONES[22]=t=>{sweep('k','sawtooth',30,500,t,1.6,.22);swl(t,1.6,.45,'bandpass',150,4000,.9,2);[220,330,440,660].forEach(f=>sweep('k','sine',f/4,f*2,t,1.6,.04));sweep('k','sine',300,20,t+1.6,.5,.9);nz(t+1.6,.4,.6,'lowpass',2000,60)};
+ONES[23]=t=>{for(let i=0;i<5;i++){thud(t+i*.45,.45,70);thud(t+i*.45+.16,.3,65)}[.2,.55,.9,1.25].forEach(s=>{ping(t+s,1500,.2,.05,600);wet(t+s+.02,.2);scream(t+s,.25,rnd(420,620),250,.06)});nz(t+1.7,.06,.8,'bandpass',1800,500,2);ping(t+1.7,3000,.25,.08,200,'triangle')};
+ONES[24]=t=>{swl(t,1.5,.35,'lowpass',200,50,.3,1,1);for(let i=0;i<6;i++)nz(t+i*.12,.08,.6,'bandpass',rnd(200,500),100,2);for(let i=0;i<5;i++)moan(t+.4+i*.25,1.4,rnd(150,380),rnd(90,200),.12,i%2?'u':'o');swl(t+1.9,.4,.3,'bandpass',300,2500,.5);for(let i=0;i<6;i++){thud(t+2.2+i*.17,.35,rnd(100,170));growl(t+2.2+i*.17,.3,.1,rnd(70,110))}};
+ONES[25]=t=>{sweep('k','sawtooth',40,90,t,.8,.12);for(let i=0;i<30;i++){nz(t+.5+i*.06,.05,.18,'bandpass',400,200,2);ping(t+.5+i*.06,rnd(60,80),.05,.05,0,'square')}[.9,1.2,1.5,1.9].forEach(d=>{crunch(t+d,.5);tk(t+d,.35,rnd(2000,3500))});metal(t+.3,.2,260,.4);wet(t+2.4,.4)};
+ONES[26]=t=>{creak(t,.9,70,.2);creak(t+.9,.8,100,.14);swl(t,1.8,.12,'highpass',4000,6500,.4);[660,880,1100,1320].forEach((f,i)=>ping(t+.6+i*.15,f,.08,1.1));crunch(t+1.6,.45);crunch(t+1.9,.4);ping(t+2.6,600,.3,.1,250)};
+ONES[27]=t=>{swl(t,1.4,.3,'bandpass',200,3000,.9,1.2);ping(t+.6,2400,.08,1.0,300);nz(t+1.6,.25,.7,'highpass',500,0);boom(t+1.6,.95,3);swl(t+1.7,3.4,.7,'lowpass',4000,60,.1,1,1);ping(t+1.8,7000,.04,2.5)};
+ONES[28]=t=>{for(let i=0;i<10;i++)ping(t+i*(.25-.02*i),1800,.07,.04,0,'square');for(let i=0;i<4;i++)thud(t+1.2+i*.9,.35,70);sweep('k','sawtooth',600,40,t+1.5,2.5,.12,1);nz(t+1.5,2.5,.3,'lowpass',400,100,1,1);metal(t+1.5,.2,110,3.4);metal(t+4.5,.2,140,2.4)};
+ONES[29]=t=>{[.1,.45,.8].forEach(s=>cough(t+s,.45));swl(t+1.3,.35,.3,'highpass',3000,1500,.3);for(let i=0;i<14;i++)bub(t+.2+i*.12,rnd(160,360),.16);moan(t+1.5,.7,300,150,.12,'e');[.4,1.0,1.7].forEach(d=>tone(t+d,.12,1000,.1))};
+ONES['s:spike']=t=>{nz(t,.06,.5,'highpass',3000,0);[0,.1,.2].forEach(d=>{wet(t+d,.45);thud(t+d,.35,130)});moan(t+.1,.8,230,90,.18);nz(t+.4,.12,.15,'bandpass',3000,1500,3)};
+ONES['s:axe']=t=>{swl(t,.2,.55,'bandpass',800,4500,.8,1.6);nz(t+.2,.15,.8,'lowpass',2600,300);thud(t+.2,.95,130);wet(t+.25,.5);thud(t+.55,.3,100);thud(t+.7,.25,120)};
+ONES['s:boulder']=t=>{swl(t,.6,.45,'lowpass',150,60,.9,1,1);boom(t+.55,.9,.9);for(let i=0;i<6;i++)crunch(t+.56+i*.06,.5);wet(t+.62,.4)};
+ONES['s:lava']=t=>{nz(t,.5,.5,'bandpass',800,300,1.5);swl(t+.1,1,.25,'highpass',4000,6000,.3);for(let i=0;i<5;i++)gloop(t+.1+i*.2,rnd(70,150),.3);scream(t+.1,1.0,520,210,.15)};
+ONES['s:ghost']=t=>{moan(t,1.8,900,260,.15);moan(t+.05,1.8,930,270,.1,'u');swl(t,1.2,.2,'bandpass',500,2500,.5,3,1);[880,1320].forEach(f=>ping(t+1.2,f,.06,1.5))};
+ONES['s:fire']=ONES[7];
+ONES['s:dart']=t=>{for(let i=0;i<6;i++){const s=t+.1+i*.1;tk(s,.3,3500);ping(s,1500,.1,.05,600);wet(t+.35+i*.1,.2)}moan(t+.9,.7,230,100,.14)};
+ONES['s:gas']=t=>{swl(t,1.9,.3,'highpass',5000,2500,.15);[.5,.85,1.2,1.5].forEach(d=>cough(t+d,.35));for(let i=0;i<6;i++)bub(t+1.0+i*.1,rnd(150,300),.12);thud(t+1.8,.5,100)};
+ONES['s:ice']=t=>{for(let i=0;i<14;i++)tk(t+rnd(0,.6),.2,rnd(4000,9000));for(let i=0;i<5;i++)ping(t+.1+i*.06,rnd(2500,5000),.07,.6);wet(t+.35,.5);thud(t+.35,.4,140);moan(t+.4,.7,260,110,.14)};
+ONES['s:fall']=t=>{ping(t,800,.1,1.6,90);scream(t,1.5,650,200,.12);boom(t+1.7,.7,.8);for(let i=0;i<10;i++)crk(t+1.7+rnd(0,.8),.2)};
+// ---------- LOOPING BEDS (play until you respawn) ----------
+BEDS[0]=()=>{cn('lowpass',200,1,.07,{al:.5});ev(7,t=>bub(t,rnd(120,300),.2));ev(.5,t=>cough(t,.3));ev(.3,t=>moan(t,.8,200,110,.09))};
+BEDS[1]=()=>{rg(1.0,t=>swl(t,.25,.14,'bandpass',1000,500,.2,1.5));ev(2.2,t=>blood(t,.2));cn('highpass',2500,1,.01)};
+BEDS[2]=()=>{ev(2.4,t=>{crunch(t,.4);wet(t+.03,.2)});ev(.6,t=>growl(t,.5,.14,rnd(70,95)));ev(.5,t=>ping(t,rnd(220,320),.25,.2,80));cn('lowpass',180,1,.05)};
+BEDS[3]=()=>{cn('highpass',6000,.5,.05,{al:25,ad:.9});ev(50,t=>sz(t,.1));ev(5,t=>bub(t,rnd(150,380),.18));cn('bandpass',3000,.6,.03,{al:.4});ev(.4,t=>drip(t,.15))};
+BEDS[4]=()=>{cn('bandpass',1200,8,.06,{lf:.3,ld:400});[392,394,523,659].forEach(f=>co('sine',f,.025,{fm:5,fd:f*.01,al:.15,rev:1}));ev(.5,t=>moan(t,1.6,rnd(300,600),rnd(150,300),.07,'u'))};
+BEDS[5]=()=>{PEBBLES(r=>Math.max(1,9-0*r));ev(.35,t=>thud(t,.3,rnd(60,90)));ev(.5,t=>swl(t,.8,.1,'lowpass',300,80,.3,1,1))};
+BEDS[6]=()=>{ev(1.4,t=>ping(t,rnd(160,320),.2,.4,0,'triangle'));ev(.4,t=>moan(t,.8,rnd(160,230),90,.1));DRIPS(1.1);cn('lowpass',150,1,.04)};
+BEDS[7]=FIRE;
+BEDS[8]=ICE;
+BEDS[9]=()=>{ev(16,t=>zap(t,.2));cn('bandpass',2000,4,.04,{al:40,ad:.9});co('sawtooth',100,.05,{lp:300,al:.5});co('sine',60,.1);ev(.7,t=>{note('k','sawtooth',110,t,.16,.12,0,2500,1);nz(t,.12,.3,'bandpass',2500,800,3)});cn('highpass',7000,.5,.02,{al:25})};
+BEDS[10]=()=>{co('sawtooth',38,.22,{lp:150,al:11,ad:.7});cn('lowpass',300,1,.04);ev(.2,t=>ping(t,rnd(900,2000),.06,.8));ev(.3,t=>swl(t,.5,.06,'highpass',4000,5000,.3));ev(.1,t=>{note('k','sawtooth',233,t,.45,.1,0,1800,1);note('k','sawtooth',294,t,.45,.1,0,1800,1)})};
+BEDS[11]=()=>{ev(5,t=>gloop(t,rnd(80,200),.22));ev(.7,t=>{const f=rnd(100,150);for(let i=0;i<5;i++)ping(t+i*.06,f*(1+i*.04),.12,.07,f*.7,'sawtooth')});ev(8,t=>ping(t,4200,.025,.03));cn('lowpass',250,1,.05)};
+BEDS[12]=()=>{co('sine',6200,.03,{fade:.2});co('sine',6350,.02,{fade:.2});ev(10,t=>crk(t,.18));ev(3,t=>tk(t,.1,rnd(900,2000)));cn('lowpass',400,1,.07,{al:.2});cn('lowpass',70,1,.14,{al:.25})};
+BEDS[13]=()=>{cn('bandpass',400,2,.09,{lf:.2,ld:150,rev:1});ev(2.5,t=>{tk(t,.1,rnd(900,2200));ping(t+.05,rnd(900,1400),.03,.15)});ev(.4,t=>{ping(t,55,.25,.7,40);nz(t,.5,.1,'lowpass',200,60,1,1)})};
+BEDS[14]=()=>{co('sine',220,.08,{fm:5,fd:6,rev:1});co('sine',223,.07,{fm:5,fd:6,rev:1});cn('bandpass',3000,10,.025,{lf:.4,ld:1000});ev(.7,t=>swl(t,.45,.12,'bandpass',2500,1800,.4,6));rg(.5,t=>ping(t,880,.05,.2))};
+BEDS[15]=()=>{cn('lowpass',350,1,.15,{al:.4,ad:.4});ev(6,t=>bub(t,rnd(250,700),.2));ev(.7,t=>gloop(t,rnd(150,260),.2));cn('lowpass',150,1,.07,{al:.2});rg(.9,t=>thud(t,.15,60))};
+BEDS[16]=()=>{ev(2.2,t=>{crunch(t,.4);thud(t,.25,230)});ev(.7,t=>creak(t,rnd(.3,.6),rnd(120,200),.1));ev(.3,t=>growl(t,.35,.2,rnd(65,85)));ev(.6,t=>{thud(t,.3,rnd(200,280));nz(t,.05,.2,'bandpass',900,300,2)})};
+BEDS[17]=()=>{const R=a=>Math.min(1,a/1.5);ev(a=>11*R(a),t=>growl(t,rnd(.25,.6),.11,rnd(60,115)));ev(a=>2.2*R(a),t=>scream(t,.35,rnd(500,800),rnd(800,1300),.06));ev(a=>5*R(a),t=>thud(t,.25,rnd(100,170)));cn('lowpass',700,1,.08,{al:6,ad:.5})};
+BEDS[18]=()=>{ev(.5,t=>moan(t,1.0,rnd(200,300),130,.04));ev(.4,t=>creak(t,.7,rnd(80,130),.07));DRIPS(1.3);ev(.3,t=>metal(t,.05,rnd(500,900),.4))};
+BEDS[19]=()=>{ev(a=>6+34*(.5+.5*Math.sin(a*1.4)),t=>tk(t,.13));ev(2,t=>{note('k','sawtooth',rnd(120,180),t,.25,.04,0,900,1)});ev(3,t=>crunch(t,.2));ev(6,t=>ping(t,rnd(3000,4200),.025,.03))};
+BEDS[20]=()=>{co('sine',330,.025,{rev:1});co('sine',331.6,.02,{rev:1});ev(.5,t=>{ping(t,rnd(1500,3000),.06,.35);});ev(.25,t=>swl(t,.9,.06,'bandpass',700,300,.3,1.5));cn('highpass',2500,1,.01)};
+BEDS[21]=()=>{cn('highpass',5500,.5,.05,{al:30,ad:.9});ev(40,t=>sz(t,.1));ev(5,t=>bub(t,rnd(300,700),.15));cn('lowpass',400,1,.08,{al:2,ad:.6});ev(.9,t=>{nz(t,.025,.3,'bandpass',1500,600,2)})};
+BEDS[22]=()=>{cn('bandpass',300,3,.15,{lf:.5,ld:250});cn('bandpass',1200,2,.06,{lf:.35,ld:700});co('sine',40,.3,{al:.25});co('sawtooth',55,.08,{lp:150});ev(.4,t=>ping(t,rnd(1500,2500),.04,.6,rnd(300,500)))};
+BEDS[23]=()=>{rg(.85,t=>{thud(t,.4,70);thud(t+.16,.28,65)});ev(.35,t=>moan(t,1.5,rnd(105,130),rnd(95,110),.1,'o'));ev(.7,t=>ping(t,2200,.06,.12,0,'triangle'));co('sawtooth',98,.03,{lp:400,rev:1})};
+BEDS[24]=()=>{ev(1.2,t=>moan(t,1.5,rnd(150,400),rnd(90,200),.09,pick(['u','o'])));cn('bandpass',500,4,.06,{lf:.2,ld:200,rev:1});ev(.5,t=>{for(let i=0;i<5;i++)ping(t+i*.04,rnd(1500,2600),.04,.08)});ev(.5,t=>tk(t,.2,rnd(1200,2200)))};
+BEDS[25]=()=>{co('sawtooth',45,.12,{lp:200,al:9});co('square',90,.04,{lp:300,al:9});cn('bandpass',600,1,.06,{al:14});rg(.11,t=>tk(t,.08,rnd(800,1500)));ev(2.5,t=>crunch(t,.35));ev(1.2,t=>metal(t,.07,rnd(300,500),.3));ev(1,t=>wet(t,.25))};
+BEDS[26]=()=>{ev(.9,t=>creak(t,rnd(.5,1.1),rnd(60,100),.1));cn('highpass',4500,.5,.04,{lf:.3,ld:1500});ev(.5,t=>ping(t,pick([660,784,880,1100,1320]),.06,1.2));ev(.4,t=>{crunch(t,.2);wet(t,.15)})};
+BEDS[27]=()=>{ev(a=>8+a*6,t=>{nz(t,.004,.5,'highpass',2000,0);ping(t,3000,.05,.01)});cn('lowpass',200,1,.08);co('sine',6500,.02);cn('bandpass',800,3,.05,{lf:.15,ld:300});ev(.5,t=>swl(t,1.2,.1,'lowpass',200,60,.4,1,1))};
+BEDS[28]=()=>{rg(1.0,(t,a)=>{ping(t,(Math.round(a)%2)?1500:1900,.14,.05,0,'square');nz(t,.02,.15,'bandpass',3000,1500,3)});co('sine',55,.15,{al:.3});cn('bandpass',1800,8,.03,{lf:.1,ld:900,rev:1});ev(.25,t=>metal(t,.15,220,2));ev(.4,t=>swl(t,1.2,.1,'bandpass',200,4000,.95,2,1))};
+BEDS[29]=()=>{rg(.9,(t,a)=>{if(a<7)tone(t,.1,1000,.07)});at(7,t=>{const S=B.k,o=ac.createOscillator(),g=ac.createGain();o.frequency.value=1000;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.05,t+.05);o.connect(g);g.connect(S.d);o.start(t);S.srcs.push(o)});ev(.5,t=>cough(t,.25));ev(3,t=>bub(t,rnd(120,260),.12));ev(.3,t=>moan(t,.6,300,150,.06,'e'))};
+BEDS['s:spike']=()=>{DRIPS(1.3);ev(.35,t=>moan(t,.9,rnd(200,260),90,.1));ev(.3,t=>metal(t,.05,rnd(600,900),.4))};
+BEDS['s:axe']=()=>{DRIPS(1.5);co('sawtooth',190,.012,{lp:600,fm:13,fd:40,al:70,ad:.9});ev(.8,t=>wet(t,.1))};
+BEDS['s:boulder']=()=>{PEBBLES(4);ev(.3,t=>moan(t,.8,rnd(180,240),90,.06))};
+BEDS['s:lava']=()=>{ev(4,t=>gloop(t,rnd(70,160),.25));cn('lowpass',300,1,.12,{al:.7});cn('highpass',4000,.5,.025);ev(10,t=>crk(t,.1));ev(.6,t=>popf(t,.3))};
+BEDS['s:ghost']=()=>{ev(.45,t=>moan(t,2,rnd(450,900),rnd(220,400),.08,pick(['o','u'])));cn('bandpass',700,10,.05,{lf:.2,ld:500,rev:1});co('sine',1320,.015,{al:.4,rev:1})};
+BEDS['s:fire']=FIRE;
+BEDS['s:dart']=()=>{ev(1,t=>ping(t,rnd(400,700),.2,.25,0,'triangle'));DRIPS(.8);ev(.3,t=>moan(t,.7,rnd(200,260),100,.08))};
+BEDS['s:gas']=()=>{cn('highpass',4500,.5,.12,{al:.3,ad:.4});cn('bandpass',2500,.8,.05);ev(.9,t=>cough(t,.3));ev(3,t=>bub(t,rnd(130,260),.12));ev(.3,t=>moan(t,.7,280,160,.06,'e'))};
+BEDS['s:ice']=()=>{ICE();ev(6,t=>tk(t,.08,rnd(6000,9000)))};
+BEDS['s:fall']=()=>{cn('bandpass',350,3,.07,{lf:.15,ld:120,rev:1});ev(.8,t=>drip(t,.2));ev(1,t=>tk(t,.1,rnd(900,2000)));ev(.2,t=>moan(t,1,rnd(200,260),110,.05))};
+// ---------- v3: sounds tuned per death ----------
+ONES[0]=t=>{sweep('k','sine',300,90,t,.18,.3);gasp(t,.3);for(let i=0;i<8;i++)bub(t+.15+i*.07,rnd(150,300),.16);retch(t+.4,.28);retch(t+.85,.3);pain(t+.5,1.4,.13,330);breathe(t+1.7,.15);moan(t+1.8,1.2,260,120,.12);thud(t+1.2,.3,90)};
+BEDS[0]=()=>{cn('lowpass',200,1,.06,{al:.5});ev(6,t=>bub(t,rnd(120,260),.15));ev(.7,t=>pain(t,rnd(.8,1.6),.1,rnd(240,340)));ev(.6,t=>retch(t,.22));ev(.8,t=>breathe(t,.1));ev(.4,t=>cough(t,.25));ev(.5,t=>moan(t,1,rnd(180,260),110,.08))};
+ONES[1]=t=>{shing(t,.55);slash(t+.35,.8);const c=t+.46;nz(c,.1,.7,'lowpass',3000,400);stab(c,.7);thud(c+.04,.8,120);[.2,.4,.52].forEach((d,i)=>thud(c+d,.4/(i+1),170-i*15));swl(c+.05,.5,.2,'bandpass',1200,500,.1,1)};
+ONES[2]=t=>{growl(t,.7,.4,95);const c=t+.55;nz(c,.04,.6,'bandpass',1500,0,3);[0,.28,.5].forEach(d=>{bone(c+d,.55);tear(c+d+.03,.4)});pain(t+.6,.8,.07,420);ping(c+.9,300,.3,.2,90);growl(c+1.0,.4,.25,70)};
+BEDS[2]=()=>{ev(2.6,t=>{bone(t,.4);tear(t+.02,.25)});ev(.6,t=>growl(t,.5,.14,rnd(70,95)));ev(.5,t=>ping(t,rnd(220,320),.25,.2,80));ev(1.5,t=>wet(t,.14));cn('lowpass',180,1,.05)};
+ONES[3]=t=>{swl(t,.5,.35,'highpass',3000,7000,.1,.8);for(let i=0;i<30;i++)sz(t+rnd(0,1.2),.14);for(let i=0;i<7;i++){gloop(t+.15+i*.14,rnd(90,200),.22);wet(t+.2+i*.14,.15)}pain(t+.1,1.3,.15,640);swl(t+.2,1.4,.2,'bandpass',500,150,.5,2)};
+BEDS[3]=()=>{cn('highpass',6000,.5,.05,{al:25,ad:.9});ev(50,t=>sz(t,.1));ev(3,t=>{wet(t,.14);gloop(t,rnd(90,180),.14)});ev(5,t=>bub(t,rnd(150,380),.15));ev(.5,t=>moan(t,.9,rnd(300,420),180,.08,'a'));cn('bandpass',3000,.6,.03,{al:.4})};
+ONES[4]=t=>{swl(t,1.6,.3,'bandpass',200,6000,.85,1.5,1);[523,659,784,988,1175,1319,1568,1976].forEach((f,i)=>ping(t+.3+i*.12,f,.07,1.0));vox(t+.2,1.8,330,990,.12,'a',{path:[[1,990]],att:.4,vd:.015});vox(t+.2,1.8,412,1240,.07,'o',{path:[[1,1240]],att:.4,vd:.015});ping(t+1.6,2093,.08,1.2)};
+BEDS[4]=()=>{[528,660,792].forEach(f=>co('sine',f,.03,{fm:5,fd:f*.01,al:.15,rev:1}));ev(.7,t=>ping(t,rnd(1000,3000),.05,.8));ev(.35,t=>vox(t,1.8,rnd(300,420),rnd(700,900),.06,'a',{path:[[1,rnd(700,900)]],att:.5,vd:.015}));cn('bandpass',1500,6,.04,{lf:.2,ld:600,rev:1})};
+ONES[5]=t=>{ping(t,1000,.1,.5,200);swl(t+.1,.5,.2,'lowpass',200,900,.9,1,1);const c=t+.55;boom(c,.95,2);nz(c,.5,.7,'lowpass',2500,200,1,1);for(let i=0;i<26;i++){const s=c+Math.pow(i/25,1.4)*1.7+rnd(0,.05),a=.6*(1-i/32);nz(s,.12,a,'bandpass',rnd(200,900),100,2);thud(s,a*.6,rnd(60,160));crunch(s,a*.5)}swl(c+.1,2.2,.35,'bandpass',700,150,.1,1,1)};
+ONES[6]=t=>{ping(t,320,.35,.25,140,'triangle');nz(t,.08,.25,'bandpass',2500,900,2);for(let i=0;i<5;i++){const s=t+.1+i*.08;swl(s,.22,.2,'bandpass',4500,2000,.6,1.3);stab(s+.23,.55);ping(s+.24,rnd(200,320),.2,.4,0,'triangle')}pain(t+.7,.9,.12,380)};
+BEDS[6]=()=>{ev(1.4,t=>ping(t,rnd(160,320),.2,.4,0,'triangle'));ev(.5,t=>pain(t,.9,.08,rnd(300,400)));ev(.4,t=>moan(t,.8,rnd(160,230),90,.1));DRIPS(1.1);cn('lowpass',150,1,.04)};
+ONES[7]=t=>{swl(t,.7,.7,'lowpass',200,2800,.3,1,1);for(let i=0;i<16;i++)crk(t+rnd(0,.9),.3);pain(t+.15,1.7,.2,720);pain(t+1.9,1.2,.16,640)};
+BEDS[7]=()=>{FIRE();ev(a=>.55*Math.max(.35,1-a/20),t=>pain(t,rnd(.8,1.5),.12,rnd(520,740)));ev(.5,t=>moan(t,.7,rnd(260,380),140,.09,'e'))};
+ONES['s:fire']=ONES[7];BEDS['s:fire']=BEDS[7];
+ONES[8]=t=>{swl(t,.7,.25,'highpass',2000,8000,.9,.8);for(let i=0;i<16;i++)tk(t+rnd(0,.7),.14,rnd(3000,9000));ping(t,1200,.05,.7,2600);for(let i=0;i<6;i++)tk(t+.1+i*.06,.2,1800);nz(t+.7,.08,.6,'bandpass',500,150,2);glass(t+.75,.9,40);thud(t+.75,.35,160)};
+BEDS[8]=()=>{ICE();ev(.7,t=>glass(t,.15,7))};ONES['s:ice']=t=>{ONES[8](t)};BEDS['s:ice']=BEDS[8];
+ONES[9]=t=>{nz(t,.3,.9,'highpass',800,0);ping(t,4000,.3,.25,60,'sawtooth');for(let i=0;i<10;i++)zap(t+rnd(0,.5),.35);thunder(t+.15,.8)};
+BEDS[9]=()=>{ev(16,t=>zap(t,.2));cn('bandpass',2000,4,.04,{al:40,ad:.9});co('sawtooth',100,.05,{lp:300,al:.5});co('sine',60,.1);ev(.28,t=>thunder(t,.5));cn('highpass',7000,.5,.02,{al:25})};
+ONES[10]=t=>{horn(t,.55,.3);horn(t+.7,1.3,.34);sweep('k','sawtooth',50,160,t,1.8,.12);nz(t+1.2,.55,.25,'bandpass',2200,1500,6);const c=t+1.9;thud(c,.95,90);metal(c,.3,180,.7);[0,.03,.06].forEach(d=>crunch(c+d,.55));bone(c+.05,.6);glass(c,.3,10)};
+BEDS[10]=()=>{co('sawtooth',38,.2,{lp:150,al:11,ad:.7});cn('lowpass',300,1,.04);rg(2.8,t=>horn(t,rnd(.6,1.3),.22),1.0)};
+ONES[11]=t=>{ping(t,150,.4,.5,450);nz(t,.6,.4,'lowpass',2500,300);for(let i=0;i<8;i++)gloop(t+.15+i*.12,rnd(90,200),.28);for(let i=0;i<10;i++)slurp(t+.4+rnd(0,1.2),.2);moan(t+.8,1,200,100,.12);ping(t+1.5,420,.3,.3,90)};
+BEDS[11]=()=>{ev(5,t=>gloop(t,rnd(80,200),.2));ev(5,t=>slurp(t,.16));ev(2,t=>wet(t,.18));ev(.7,t=>{const f=rnd(100,150);for(let i=0;i<5;i++)ping(t+i*.06,f*(1+i*.04),.12,.07,f*.7,'sawtooth')});ev(8,t=>ping(t,4200,.025,.03));cn('lowpass',250,1,.05);ev(.35,t=>moan(t,.8,rnd(180,240),100,.07))};
+ONES[12]=t=>{boom(t,.95,1.6);nz(t,.2,.7,'highpass',1500,400);thud(t+.05,.9,60);const g=t+.12;for(let i=0;i<22;i++){const s=g+Math.pow(Math.random(),1.5)*1.3;wet(s,rnd(.2,.5));thud(s+.02,rnd(.15,.35),rnd(80,200))}for(let i=0;i<5;i++)bone(g+rnd(0,.6),.4);swl(g,.7,.4,'bandpass',900,300,.1,1);for(let i=0;i<16;i++)crk(t+.2+rnd(0,1.4),.25)};
+BEDS[12]=()=>{co('sine',6200,.03,{fade:.2});co('sine',6350,.02,{fade:.2});ev(a=>Math.max(.5,14-a*2),t=>blood(t,.15));ev(10,t=>crk(t,.18));cn('lowpass',400,1,.07,{al:.2});cn('lowpass',70,1,.14,{al:.25})};
+ONES[13]=t=>{for(let i=0;i<8;i++)nz(t+i*.1,.09,.8,'bandpass',rnd(150,500),100,2);swl(t,1.2,.5,'lowpass',150,60,.2,1,1);for(let i=0;i<8;i++)crunch(t+.2+rnd(0,.8),.4);vox(t+.7,2.0,800,200,.2,'a',{path:[[.12,800],[.5,500],[1,200]],end:.01,vr:7,vd:.035,jit:1,breath:.3});for(let i=0;i<14;i++)crk(t+.5+rnd(0,1.8),.15);boom(t+2.7,.7,.8);for(let i=0;i<6;i++)crunch(t+2.7+i*.06,.4)};
+BEDS[13]=()=>{cn('bandpass',400,2,.09,{lf:.2,ld:150,rev:1});ev(2.5,t=>{tk(t,.1,rnd(900,2200));ping(t+.05,rnd(900,1400),.03,.15)});ev(.4,t=>{ping(t,55,.25,.7,40);nz(t,.5,.1,'lowpass',200,60,1,1)});ev(.3,t=>moan(t,1.2,rnd(180,250),100,.06))};
+ONES[14]=t=>{for(let i=0;i<3;i++)ping(t+i*.2,300+i*40,.1,.4);swl(t,.7,.1,'bandpass',500,1500,.8,4,1);const c=t+.75;shing(c,.35);stab(c+.2,.9);gasp(c+.28,.3);moan(c+.35,.9,220,90,.2);stab(c+.6,.5);thud(c+1.0,.5,100)};
+BEDS[14]=()=>{co('sine',220,.03,{fm:5,fd:6,rev:1});ev(.8,t=>breathe(t,.1));DRIPS(1);ev(.35,t=>moan(t,.8,rnd(180,240),100,.08))};
+ONES[15]=t=>{nz(t,.5,.5,'lowpass',3000,300);ping(t+.4,260,.3,.25,90);for(let i=0;i<14;i++)splash(t+.3+Math.pow(i/13,1.2)*2.2,.25*(1-i/20));for(let i=0;i<5;i++)gasp(t+.7+i*.55,.28);for(let i=0;i<3;i++){cough(t+1.0+i*.7,.3);gloop(t+1.1+i*.7,rnd(150,260),.2)}for(let i=0;i<14;i++)bub(t+.5+rnd(0,3.5),rnd(250,600),.15);sweep('k','sine',900,300,t+4.6,.09,.35);nz(t+4.6,.4,.5,'lowpass',2600,300);swl(t+4.7,.7,.3,'lowpass',1200,300,.2,1,1)};
+BEDS[15]=()=>{cn('lowpass',350,1,.15,{al:.4,ad:.4});ev(a=>Math.max(.3,3-a*.3),t=>splash(t,.18));ev(1,t=>gasp(t,.2));ev(.6,t=>{cough(t,.22);bub(t+.1,300,.12)});ev(6,t=>bub(t,rnd(250,700),.18));ev(.7,t=>gloop(t,rnd(150,260),.18))};
+ONES[16]=t=>{creak(t,.35,150,.14);thud(t+.35,.5,230);for(let i=0;i<5;i++){bone(t+.5+i*.2,.7);tear(t+.55+i*.2,.35)}ping(t+1.6,300,.3,.22,90);thud(t+1.8,.6,150);nz(t+1.8,.1,.6,'bandpass',800,300,2);growl(t+2.0,.35,.25,75)};
+BEDS[16]=()=>{ev(3.5,t=>{bone(t,.45);tear(t+.02,.2)});ev(.7,t=>creak(t,rnd(.3,.6),rnd(120,200),.1));ev(.3,t=>growl(t,.35,.2,rnd(65,85)));ev(.6,t=>{thud(t,.3,rnd(200,280));nz(t,.05,.2,'bandpass',900,300,2)})};
+ONES[17]=t=>{for(let i=0;i<16;i++)growl(t+.2+i*.17,rnd(.3,.6),.14,rnd(55,100));for(let i=0;i<6;i++)vox(t+.3+i*.45,.5,rnd(300,500),rnd(700,1100),.09,'a',{am:35,vd:.05,breath:.5,rev:0});for(let i=0;i<14;i++){const s=t+.5+i*.2;slash(s-.1,.4);stab(s,.5)}pain(t+1.2,1,.08,520);for(let i=0;i<8;i++)thud(t+rnd(.4,2.8),.3,rnd(100,180))};
+BEDS[17]=()=>{const R=a=>Math.min(1,a/1.5);ev(a=>11*R(a),t=>growl(t,rnd(.25,.6),.11,rnd(55,110)));ev(a=>2.2*R(a),t=>vox(t,.45,rnd(300,500),rnd(700,1100),.07,'a',{am:35,vd:.05,breath:.5,rev:0}));ev(a=>4*R(a),t=>{slash(t,.25);stab(t+.08,.35)});ev(.5,t=>pain(t,.8,.07,rnd(400,560)));cn('lowpass',700,1,.07,{al:6,ad:.5})};
+ONES[18]=t=>{for(let i=0;i<4;i++){stab(t+i*.16,.6);ping(t+i*.16,rnd(800,1100),.05,.15)}pain(t+.1,.9,.09,420);creak(t+.8,.7,90,.2);metal(t+1.5,.55,200,2.2);thud(t+1.5,.6,70);metal(t+1.55,.3,310,1.2);nz(t+1.5,.2,.5,'bandpass',900,300,2);metal(t+2.2,.15,720,.4)};
+BEDS[18]=()=>{ev(.6,t=>pain(t,.9,.05,rnd(380,520)));ev(.4,t=>creak(t,.7,rnd(80,130),.07));DRIPS(1.3);ev(.3,t=>metal(t,.05,rnd(500,900),.4))};
+ONES[19]=t=>{pain(t,.7,.09,520);for(let i=0;i<50;i++)tk(t+.1+rnd(0,.9),.14,rnd(3500,7000));for(let i=0;i<4;i++)hiss(t+.1+i*.2,.15);for(let i=0;i<10;i++){const s=t+.7+i*.12;crunch(s,.28);wet(s,.12)}for(let i=0;i<6;i++)note('k','sawtooth',rnd(130,170),t+rnd(0,.8),.25,.04,0,900,1)};
+BEDS[19]=()=>{ev(a=>6+34*(.5+.5*Math.sin(a*1.4)),t=>tk(t,.13,rnd(3500,7000)));ev(6,t=>{crunch(t,.18);wet(t,.08)});ev(.9,t=>hiss(t,.1));ev(2,t=>note('k','sawtooth',rnd(120,180),t,.25,.04,0,900,1));ev(8,t=>ping(t,rnd(3000,4200),.025,.03));ev(.3,t=>pain(t,.7,.04,rnd(420,560)))};
+ONES[20]=t=>{slidewhistle(t,.5,2200,350,.1);const c=t+.5;metal(c,.6,520,2);metal(c,.3,780,1.4);thud(c,.9,85);nz(c,.08,.6,'bandpass',1500,500,2);sweep('k','sine',700,120,c+.05,.18,.25);boing(c+.25,.22);[1568,1976,2349,1976].forEach((f,i)=>ping(c+.9+i*.14,f,.12,.35,0,'triangle'))};
+BEDS[20]=()=>{ev(.9,t=>{ping(t,2800,.07,.06,3800,'triangle');ping(t+.1,2900,.07,.06,3900,'triangle')});rg(.55,t=>ping(t,pick([1568,1976,2349]),.07,.3,0,'triangle'));ev(.3,t=>boing(t,.1));co('sine',330,.02,{rev:1});co('sine',331.6,.015,{rev:1})};
+ONES[21]=t=>{for(let i=0;i<6;i++)gloop(t+i*.09,rnd(250,400)-i*20,.25);swl(t+.3,.9,.4,'highpass',3500,6500,.2);for(let i=0;i<30;i++)sz(t+.3+rnd(0,1),.13);for(let i=0;i<25;i++)bub(t+.3+rnd(0,1.3),rnd(200,600),.14);pain(t+.4,1.3,.14,700)};
+BEDS[21]=()=>{ev(32,t=>bub(t,rnd(120,650),.12));cn('lowpass',600,1,.12,{al:4,ad:.5});cn('highpass',3500,.5,.04);ev(2,t=>gloop(t,rnd(120,260),.2));ev(3,t=>sz(t,.1));cn('lowpass',120,1,.08,{al:1.5})};
+ONES[22]=t=>{sweep('k','sawtooth',30,700,t,1.6,.2);swl(t,1.6,.5,'bandpass',100,5000,.9,2.5);[110,165,220,330].forEach(f=>sweep('k','sine',f/3,f*3,t,1.6,.04));const c=t+1.6;for(let i=0;i<16;i++)bone(c+Math.pow(i/15,.8)*.9,.4+i*.02);creak(c,1.2,60,.28);sweep('k','sine',200,25,c+.9,.6,.9);nz(c+.9,.5,.6,'lowpass',2500,60);metal(c+.9,.2,150,1)};
+BEDS[22]=()=>{cn('bandpass',300,3,.15,{lf:.5,ld:250});cn('bandpass',1200,2,.06,{lf:.35,ld:700});co('sine',40,.3,{al:.25});co('sawtooth',55,.08,{lp:150});ev(1.5,t=>bone(t,.3));ev(.5,t=>creak(t,.8,rnd(50,80),.12));ev(.4,t=>ping(t,rnd(1500,2500),.04,.6,rnd(300,500)))};
+ONES[23]=t=>{for(let i=0;i<4;i++){const s=t+i*.45;creak(s,.4,80+i*15,.18);for(let j=0;j<4;j++)bone(s+.25+j*.05,.5);pain(s+.1,.6,.12,rnd(500,800))}for(let i=0;i<5;i++){thud(t+i*.45,.4,70);thud(t+i*.45+.16,.28,65)}pain(t+1.8,1.4,.16,640)};
+BEDS[23]=()=>{rg(.85,t=>{thud(t,.4,70);thud(t+.16,.28,65)});ev(.7,t=>pain(t,rnd(.8,1.4),.1,rnd(450,750)));ev(.9,t=>{bone(t,.35);creak(t,.5,rnd(70,110),.1)});ev(.6,t=>moan(t,.8,rnd(200,300),110,.08,'a'))};
+ONES[24]=t=>{swl(t,1.5,.35,'lowpass',200,50,.3,1,1);for(let i=0;i<6;i++){nz(t+i*.12,.1,.6,'bandpass',rnd(200,500),100,2);crunch(t+i*.12,.3)}for(let i=0;i<6;i++)zom(t+.4+i*.3,rnd(1.4,2.2),.13,rnd(90,170));for(let i=0;i<8;i++)shuf(t+.8+i*.3);for(let i=0;i<4;i++){bone(t+2.3+i*.15,.4);tear(t+2.3+i*.15,.25)}};
+BEDS[24]=()=>{ev(1.1,t=>zom(t,rnd(1.2,2.2),.12,rnd(85,170)));ev(.5,t=>growl(t,.5,.12,rnd(60,90)));rg(.55,t=>shuf(t));ev(.7,t=>{bone(t,.25);tear(t+.02,.2)});ev(.4,t=>gloop(t,rnd(80,150),.12))};
+// ---------- v4: trap-room (secret) deaths, timed to each trap's animation ----------
+ONES['s:spike']=t=>{tk(t,.5,1800);ping(t,1200,.1,.05,0,'square');swl(t+.02,.2,.4,'bandpass',1500,5000,.3,1.5);[0,.04,.08].forEach(d=>metal(t+d+.08,.12,rnd(900,1400),.25));
+  [.22,.28,.34].forEach(d=>{stab(t+d,.8);bone(t+d+.02,.3)});pain(t+.26,1.2,.2,560);gasp(t+.9,.2);moan(t+1.0,.9,240,100,.14);blood(t+1.3,.2)};
+BEDS['s:spike']=()=>{DRIPS(1.5);ev(.7,t=>breathe(t,.1));ev(.35,t=>moan(t,.9,rnd(200,260),90,.09));ev(.3,t=>metal(t,.04,rnd(600,900),.4));ev(.5,t=>wet(t,.08))};
+ONES['s:axe']=t=>{swl(t,.22,.7,'bandpass',500,3500,.9,1.2);const c=t+.2;nz(c,.12,.9,'lowpass',2800,300);thud(c,.95,125);stab(c+.01,.7);bone(c+.02,.6);swl(c,.35,.3,'bandpass',1200,500,.1,1);
+  swl(c+.25,.5,.2,'bandpass',600,300,.4,1.5);tear(c+.3,.4);pain(c+.05,.9,.12,520);thud(c+.75,.55,100);wet(c+.77,.4);thud(c+1.2,.45,120);crunch(c+1.2,.3)};
+BEDS['s:axe']=()=>{DRIPS(1.6);ev(.6,t=>wet(t,.12));co('sawtooth',190,.012,{lp:600,fm:13,fd:40,al:70,ad:.9});ev(.3,t=>moan(t,.8,rnd(180,240),90,.07))};
+ONES['s:boulder']=t=>{swl(t,.3,.5,'lowpass',200,120,.8,1,1);const c=t+.17;for(let i=0;i<10;i++)bone(c+i*.025,.55);thud(c,.95,60);wet(c+.03,.6);nz(c,.4,.6,'lowpass',2500,100,1,1);boom(c,.8,1);
+  swl(c+.3,1.8,.4,'lowpass',250,60,.2,1,1);for(let i=0;i<10;i++)crk(c+.4+rnd(0,1.4),.2);swl(c+.2,.9,.12,'highpass',3000,5000,.3)};
+BEDS['s:boulder']=()=>{PEBBLES(4);ev(.5,t=>breathe(t,.07));DRIPS(.8);ev(.3,t=>moan(t,.8,rnd(180,240),90,.06))};
+ONES['s:lava']=t=>{nz(t+.2,.6,.6,'bandpass',900,250,1.5);swl(t+.2,1.4,.3,'highpass',3500,7000,.15);for(let i=0;i<30;i++)sz(t+.25+rnd(0,1.4),.12);
+  vox(t+.25,1.5,700,180,.2,'a',{path:[[.15,820],[.6,500],[1,170]],end:.03,vr:7,vd:.035,jit:1,breath:.4});for(let i=0;i<10;i++)gloop(t+.4+i*.14,rnd(60,140),.3);swl(t+.3,1.5,.3,'lowpass',500,120,.3,1.2);
+  for(let i=0;i<8;i++)popf(t+1.35+i*.1,.25);for(let i=0;i<8;i++)sz(t+3.2+i*.15,.12)};
+BEDS['s:lava']=()=>{ev(4,t=>gloop(t,rnd(70,160),.25));cn('lowpass',300,1,.12,{al:.7});cn('highpass',4000,.5,.025);ev(10,t=>crk(t,.1));ev(.6,t=>popf(t,.3))};
+ONES['s:ghost']=t=>{swl(t,.6,.45,'bandpass',2500,500,.5,2,1);moan(t,.7,700,300,.12,'o');swl(t+.6,.4,.5,'bandpass',300,4000,.7,3,1);for(let i=0;i<6;i++)ping(t+.6+i*.05,rnd(1500,4000),.06,.5);
+  vox(t+.6,1.6,500,1200,.14,'a',{path:[[.3,900],[1,1300]],end:.01,vr:8,vd:.03,jit:1,breath:.4});swl(t+.9,1.6,.3,'bandpass',200,2500,.9,2,1);for(let i=0;i<8;i++)ping(t+1.0+i*.18,rnd(900,2200),.05,.8);moan(t+1.8,1.6,rnd(260,320),150,.1,'u')};
+BEDS['s:ghost']=()=>{ev(.45,t=>moan(t,2,rnd(450,900),rnd(220,400),.08,pick(['o','u'])));cn('bandpass',700,10,.05,{lf:.2,ld:500,rev:1});co('sine',1320,.015,{al:.4,rev:1});ev(.5,t=>vox(t,.9,rnd(380,520),rnd(300,420),.04,'u',{vr:11,vd:.04,jit:1,breath:.3}))};
+ONES['s:fire']=t=>{swl(t,.35,.7,'lowpass',300,2500,.4,1,1);nz(t+.1,.3,.5,'bandpass',800,2500,1);pain(t+.25,1.0,.2,780);for(let i=0;i<14;i++)crk(t+rnd(0,1.2),.3);swl(t+.25,.9,.25,'bandpass',500,1500,.5,1);
+  const c=t+1.2;thud(c,.9,90);metal(c,.3,300,.6);crunch(c+.02,.5);pain(c+.1,1.0,.15,640)};
+ONES['s:dart']=t=>{for(let j=0;j<8;j++){const s=t+j*.04+.1;swl(s,.12,.2,'bandpass',4500,2500,.5,1.5);stab(s+.1,.4);ping(s+.1,rnd(220,380),.12,.3,0,'triangle')}
+  pain(t+.4,.9,.12,520);gasp(t+.7,.2);for(let i=0;i<3;i++)cough(t+.9+i*.22,.2);thud(t+1.35,.7,110);metal(t+1.35,.18,260,.4);crunch(t+1.36,.3)};
+BEDS['s:dart']=()=>{ev(.9,t=>ping(t,rnd(250,450),.15,.3,0,'triangle'));ev(.7,t=>breathe(t,.09));ev(.5,t=>cough(t,.18));DRIPS(.8);ev(.3,t=>moan(t,.7,rnd(180,230),90,.07));ev(3,t=>bub(t,rnd(150,300),.08))};
+ONES['s:gas']=t=>{swl(t,1.8,.4,'highpass',4500,2500,.1,.8);[.1,.5,.85,1.15].forEach(d=>cough(t+d,.35));for(let i=0;i<3;i++)gasp(t+.3+i*.4,.18);retch(t+1.1,.22);for(let i=0;i<8;i++)bub(t+.6+i*.1,rnd(130,250),.1);moan(t+.8,.8,260,150,.1,'e');thud(t+1.55,.6,100);metal(t+1.55,.15,280,.4);crunch(t+1.56,.25)};
+BEDS['s:gas']=()=>{cn('highpass',4500,.5,.12,{al:.3,ad:.4});cn('bandpass',2500,.8,.05);ev(.6,t=>cough(t,.2));ev(3,t=>bub(t,rnd(130,260),.1));ev(.4,t=>breathe(t,.08));ev(.3,t=>moan(t,.7,280,160,.06,'e'))};
+ONES['s:fall']=t=>{for(let i=0;i<5;i++)nz(t+i*.025,.09,.7,'bandpass',rnd(150,500),100,2);swl(t,.5,.4,'lowpass',150,60,.1,1,1);for(let i=0;i<8;i++)crunch(t+.1+rnd(0,.5),.4);
+  vox(t+.12,1.6,750,180,.2,'a',{path:[[.15,900],[.5,520],[1,170]],end:.008,vr:7,vd:.035,jit:1,breath:.3});for(let i=0;i<12;i++)crk(t+.2+rnd(0,1.2),.15);
+  thud(t+1.5,.35,70);ping(t+1.5,55,.2,.8,40);crunch(t+1.55,.2);for(let i=0;i<8;i++)ping(t+1.7+rnd(0,1.4),rnd(900,1500),.025,.15)};
+ONES['s:ice']=t=>{swl(t,.15,.3,'highpass',3000,8000,.7,.8);for(let i=0;i<6;i++){const s=t+.12+i*.04;nz(s,.07,.7,'highpass',2500,0);ping(s,rnd(2500,5000),.1,.5);stab(s+.03,.55)}
+  pain(t+.25,1.0,.18,620);thud(t+.4,.5,120);swl(t+.3,.8,.15,'bandpass',2000,6000,.3,1,1);for(let i=0;i<8;i++)tk(t+.3+rnd(0,.8),.12,rnd(4000,9000))};
+BEDS['s:ice']=()=>{ICE();DRIPS(.8);ev(.35,t=>moan(t,.8,rnd(200,260),100,.07))};
+const BA={0:1.8,1:.9,2:1.4,3:1.4,4:2.0,5:1.8,6:1.0,7:1.8,8:1.5,9:.9,10:2.6,11:1.8,12:1.4,13:3.0,14:1.8,15:1.2,16:1.6,17:1.0,18:2.2,19:1.5,20:1.8,21:1.7,22:3.0,23:2.2,24:2.6,25:2.2,26:2.0,27:2.0,28:1.5,29:1.3};
+const KN={0:'Poison',1:'Decapitation',2:'Devoured',3:'Acid',4:'Soul Rip',5:'Mountain',6:'Arrow Volley',7:'Burned',8:'Frozen & Shattered',9:'Lightning',10:'Isekai Truck',11:'Swamp',12:'Explosion',13:'Floor Collapse',14:'Mind Control',15:'Drowned',16:'Mimic Chest',17:'Horde',18:'Iron Maiden',19:'Cockroaches',20:'Anvil',21:'Hot Oil',22:'Black Hole',23:'Voodoo Doll',24:'Dead Family',25:'Meat Grinder',26:'Life Tree',27:'Nuke',28:'Time Warp',29:'Super-Virus','s:spike':'Spike Pit','s:axe':'Axe','s:boulder':'Boulder','s:lava':'Lava','s:ghost':'Ghost','s:fire':'Flame Jets','s:dart':'Darts','s:gas':'Poison Gas','s:ice':'Ice Spikes','s:fall':'Pit Fall'};
+const LD={17:3.4,24:2.8,25:2.6,26:2.8,27:3.4,28:3.4,29:2.6,15:4.9,10:1.7,22:2.0,19:2.4,21:2.2,5:1.4,12:1.2,23:1.9,1:.9,2:1.6};
+Object.assign(BA,{'s:spike':1.2,'s:axe':1.6,'s:boulder':1.5,'s:lava':2.8,'s:ghost':2.8,'s:fire':1.8,'s:dart':1.6,'s:gas':1.7,'s:ice':1.2,'s:fall':1.8});Object.assign(LD,{'s:spike':1.4,'s:axe':1.6,'s:boulder':1.5,'s:lava':3.0,'s:ghost':3.0,'s:fire':1.6,'s:dart':1.6,'s:gas':1.8,'s:ice':1.4,'s:fall':1.8});
+const KO=Object.keys(ONES).map(k=>/^\d+$/.test(k)?+k:k);let tc=0,lastFit='';
+function newSession(){const P={};P.d=ac.createGain();P.d.connect(B.s.d);const cv=ac.createConvolver();cv.buffer=rvb;const rgn=ac.createGain();rgn.gain.value=.45;cv.connect(rgn);rgn.connect(P.d);P.r=cv;P.srcs=[];P.em=[];P.tm=0;P.t0=0;return P}
+function runSession(S){S.nt=S.t0;S.tm=setInterval(safe(()=>{const now=ac.currentTime;if(S.nt<now-.05)S.nt=now;
+  while(S.nt<now+.45){const st=.05,age=S.nt-S.t0;
+    S.em.forEach(e=>{
+      if(e.p){while(e.n<=age+st){if(e.n>=age)e.f(S.t0+e.n,e.n);e.n+=e.p}}
+      else if(e.a!=null){if(!e.done&&age+st>=e.a){e.done=1;e.f(S.t0+e.a)}}
+      else{let k=(typeof e.r=='function'?e.r(age):e.r)*st;while(k>0){if(Math.random()<Math.min(1,k))e.f(S.nt+Math.random()*st,age);k-=1}}});
+    S.nt+=st}}),50)}
+function stopDeath(quick){const S=SS;if(!S)return;SS=null;clearInterval(S.tm);const now=ac.currentTime;
+  try{S.d.gain.cancelScheduledValues(now);S.d.gain.setValueAtTime(S.d.gain.value,now);S.d.gain.linearRampToValueAtTime(0,now+(quick?.05:.25))}catch(e){}
+  setTimeout(()=>{S.srcs.forEach(x=>{try{x.stop()}catch(e){}});try{S.d.disconnect()}catch(e){}},700)}
+function fitPlay(boss,key,cast,walk){
+  const test=(key==null||!ONES[key]);if(test)key=KO[tc++%KO.length];
+  stopDeath(1);const S=newSession();B.k=S;SS=S;S.test=test;
+  const d0=ac.currentTime+.01;let s=d0+.03;
+  if(cast>0){sweep('k','sawtooth',70,260,d0,cast,.09,1);sweep('k','sine',500,1500,d0,cast,.04,1);s=d0+cast*.55}
+  else if(walk!=null)s=d0+walk;
+  ONES[key](s);S.t0=s+(BA[key]!=null?BA[key]:.8);if(BEDS[key])BEDS[key]();runSession(S);
+  if(test)setTimeout(()=>{if(SS===S)stopDeath()},6000);
+  lastFit=KN[key]||'';api.laughNow(boss,(s-ac.currentTime)+(LD[key]||1.1));
+}
+// ---------- MUSIC: each track is a 4-chord loop played by a step sequencer ----------
+const MB=[7,-1,4,-1,5,-1,3,-1,4,-1,2,-1,3,-1,0,-1,7,-1,4,-1,5,-1,3,-1,2,-1,3,-1,4,-1,-1,-1],SC=[0,2,3,5,7,8,11];
+const TR={
+ crypt:{n:'🕯️ Crypt Dirge (slow, haunting)',bpm:68,pr:[[45,'m'],[41,'M'],[48,'M'],[40,'M']],f(s,t,c){const[r,q]=c,iv=CH[q],b=s%16;
+   if(!b){iv.forEach(i=>note('m','triangle',r+12+i,t,3.4,.05,1));note('m','sine',r-12,t,3,.2)}
+   if(!b||b==10)kick('m',t,.45);
+   if(b%4==2&&(s>>4)%2)note('m','sine',r+24+iv[(s>>2)%3],t,1.4,.07,1);
+   if(b==8)note('m','sine',r-12,t,1.4,.12)}},
+ march:{n:'🥁 Demon March (driving, boss-style)',bpm:116,pr:[[38,'m'],[34,'M'],[36,'M'],[33,'M']],f(s,t,c){const[r,q]=c,iv=CH[q],b=s%16;
+   if(b%4==0)kick('m',t,.8);if(b==4||b==12)snare('m',t,.6);if(b%2)noise('m',t,.04,.1,'highpass',7000);
+   if(b%2==0)note('m','sawtooth',r-12,t,.18,.1,0,420);
+   if(b==0||b==6||b==10)CH[q].forEach(i=>note('m','sawtooth',r+12+i,t,.4,.045,1,1800))}},
+ box:{n:'🎠 Haunted Music Box (creepy, gentle)',bpm:96,pr:[[48,'m'],[44,'M'],[43,'M'],[43,'M']],f(s,t,c){const d=MB[s%32];
+   if(d>=0){const m=60+SC[d%7]+12*((d/7)|0);note('m','sine',m,t,.9,.12,1);note('m','triangle',m+12,t,.35,.05,1)}
+   if(s%16==0)note('m','sine',c[0]-12,t,2.2,.12,1)}},
+ drone:{n:'🌫️ Dark Ambient (drone, no beat)',bpm:60,pr:[[41,'m'],[37,'M'],[39,'M'],[36,'m']],f(s,t,c){const r=c[0]-12,b=s%16;
+   if(!b){[0,.6].forEach(d=>note('m','sawtooth',mf(r)+d,t,4.6,.05,1,240,1));note('m','sine',r-12,t,4.6,.25);noise('m',t,4.5,.05,'bandpass',500,900,.6,1)}
+   if((b==8||b==13)&&Math.random()<.6)note('m','sine',c[0]+24+CH[c[1]][(Math.random()*3)|0],t,3,.06,1)}},
+ chip:{n:'👾 8-Bit Dungeon (retro chiptune)',bpm:150,pr:[[40,'m'],[36,'M'],[43,'M'],[38,'M']],f(s,t,c){const[r,q]=c,iv=CH[q],b=s%16;
+   note('m','square',r+24+iv[b%3]+(b%8>3?12:0),t,.11,.05);
+   if(b%2==0)note('m','triangle',r-12,t,.2,.2);
+   if(b%4==0)kick('m',t,.55);if(b%4==2)noise('m',t,.03,.1,'highpass',8000);if(b==4||b==12)snare('m',t,.4)}}
+};
+function playBuf(buf,loop,bus,delay){const s=ac.createBufferSource();s.buffer=buf;s.loop=!!loop;s.connect(B[bus].d);s.start(ac.currentTime+(delay||0));return s}
+function mStop(){clearInterval(tm);tm=null;if(src){try{src.stop()}catch(e){}src=null}}
+function mStart(){
+  mStop();if(!ac||!cfg.on||!cfg.mon||cfg.music=='off')return;
+  if(cfg.music=='custom'){if(cust.music)src=playBuf(cust.music,1,'m');return}
+  const T=TR[cfg.music]||TR.crypt;st=0;nt=ac.currentTime+.08;
+  tm=setInterval(safe(()=>{while(nt<ac.currentTime+.3){T.f(st%64,nt,T.pr[(st>>4)&3]);nt+=60/T.bpm/4/spd;st++}}),80);
+}
+const unlock=safe(()=>{init();if(!ac)return;if(ac.state!='running')ac.resume();if(!ready){ready=1;mStart()}});
+['pointerdown','keydown','touchstart'].forEach(e=>addEventListener(e,unlock,{capture:true,passive:true}));
+document.addEventListener('visibilitychange',()=>{if(ac)document.hidden?ac.suspend():ac.resume()});
+
+const api={
+  cfg,cust,TR,
+  sfx:safe(k=>{if(!ac||!cfg.on||ac.state!='running')return;SFX[k]&&SFX[k](ac.currentTime+.01)}),
+  dead:safe((boss,key,cast,walk)=>{if(!ac||!cfg.on||ac.state!='running')return;api.death(boss,key,cast,walk)}),
+  death:safe((boss,key,cast,walk)=>{init();const t=ac.currentTime+.01;
+    if(cfg.death=='fit'){fitPlay(boss,key,cast,walk);return}
+    if(cfg.death=='custom'&&cust.death)playBuf(cust.death,0,'s');else if(cfg.death!='off'&&DEATH[cfg.death])DEATH[cfg.death](t);
+    api.laughNow(boss,.9)}),
+  laughNow:safe((boss,delay)=>{init();const t=ac.currentTime+delay;
+    if(cfg.laugh=='custom'&&cust.laugh)playBuf(cust.laugh,0,'s',delay);else if(cfg.laugh!='off')laugh(cfg.laugh,t,boss)}),
+  stopDeath:safe(()=>stopDeath()),
+  gate:safe((on,paused)=>{if(!SS||SS.test||!ac)return;if(!on){stopDeath();return}SS.d.gain.setTargetAtTime(paused?0:1,ac.currentTime,.03)}),
+  fast:safe(b=>{const n=b?1.18:1;if(n!=spd){spd=n}}),
+  setMusic:safe(k=>{cfg.music=k;save();unlock();mStart()}),
+  set:safe((k,v)=>{cfg[k]=v;save();vol();if(k=='death'||(k=='on'&&!v))stopDeath();if(k=='on'||k=='mon'){unlock();mStart()}}),
+  loadFile:safe(async(key,file)=>{unlock();const buf=await ac.decodeAudioData(await file.arrayBuffer());cust[key]=buf;cfg[key]='custom';save();
+    if(key=='music')mStart();else api[key=='death'?'death':'laughNow'](0,0)}),
+  test:safe(k=>{unlock();if(k=='music')mStart();else if(k=='death')api.death(0);else api.laughNow(0,.05)}),
+  toggle(){api.set('on',cfg.on?0:1);return cfg.on},
+  get fitName(){return lastFit},DEATH:Object.keys(DEATH),LAUGH:Object.keys(LG).concat('skeleton')
+};
+return api})();
+</script>
+<script>
+// ----- sound panel UI -----
+(function(){
+const L={
+ music:{t:'🎵 Game music',o:Object.entries(SND.TR).map(([k,v])=>[k,v.n]).concat([['off','🔇 No music']])},
+ death:{t:'💀 Death sound',o:[['fit','⚔️ Matches each death (recommended)'],['doom','Doom Boom (dark, heavy)'],['retro','8-Bit Fail (arcade)'],['cartoon','Cartoon Slide-Whistle + Bonk'],['splat','Wet Splat'],['off','🔇 Silent']]},
+ laugh:{t:'😈 Demon laugh',o:[['cackle','Demon Cackle'],['witch','Witch Cackle (high)'],['chuckle','Evil Chuckle (low, slow)'],['skeleton','Skeleton Rattle'],['off','🔇 No laugh']]}
+};
+const SEL='w-full bg-zinc-950 border border-emerald-950 p-2 rounded text-sm text-zinc-200 focus:outline-none focus:border-emerald-500';
+const BTN='bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-3 py-2 rounded text-sm whitespace-nowrap';
+const d=document.createElement('div');d.id='snd';
+d.style.cssText='display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:16px';
+d.innerHTML=`<div class="bg-zinc-900 border border-emerald-800/60 rounded-xl p-5 w-full max-w-md space-y-4 shadow-[0_0_30px_rgba(16,185,129,.2)] max-h-full overflow-y-auto" style="cursor:default">
+ <div class="flex justify-between items-center"><h3 class="title-font text-lg font-bold text-emerald-400">🔊 Sound & Music</h3><button id="snd-x" class="text-zinc-400 hover:text-white px-2 text-xl">✕</button></div>
+ <div class="flex gap-5 text-sm text-zinc-300"><label class="flex items-center gap-2"><input id="snd-on" type="checkbox" class="accent-emerald-600"> Sound on <span class="text-zinc-500 text-xs">(M)</span></label><label class="flex items-center gap-2"><input id="snd-mon" type="checkbox" class="accent-emerald-600"> Music on</label></div>
+ ${Object.keys(L).map(k=>`<div class="space-y-1"><div class="text-xs text-zinc-400">${L[k].t}</div>
+  <div class="flex gap-2"><select id="snd-${k}" class="${SEL}">${L[k].o.map(([v,n])=>`<option value="${v}">${n}</option>`).join('')}</select>
+  <button data-test="${k}" class="${BTN}" title="Preview">▶</button><button data-file="${k}" class="${BTN}" title="Use my own audio file">📁</button></div>
+  <input type="file" accept="audio/*" id="snd-f-${k}" hidden>${k=='death'?'<div id="snd-fitnm" class="text-[11px] text-emerald-500/80"></div>':''}</div>`).join('')}
+ <div class="space-y-2 pt-1"><label class="flex items-center gap-3 text-xs text-zinc-400">Music volume<input id="snd-mv" type="range" min="0" max="1" step=".05" class="flex-1 accent-emerald-600"></label>
+ <label class="flex items-center gap-3 text-xs text-zinc-400">Effects volume<input id="snd-sv" type="range" min="0" max="1" step=".05" class="flex-1 accent-emerald-600"></label></div>
+ <p class="text-[11px] text-zinc-500 leading-relaxed">▶ previews it. 📁 lets you load your own mp3/wav/ogg for that slot (it lasts until you reload the page). Your other choices are remembered.</p></div>`;
+document.body.appendChild(d);
+const $=s=>d.querySelector(s),btn=document.getElementById('sndbtn');
+function sync(){const c=SND.cfg;$('#snd-on').checked=!!c.on;$('#snd-mon').checked=!!c.mon;$('#snd-mv').value=c.mv;$('#snd-sv').value=c.sv;
+  Object.keys(L).forEach(k=>$('#snd-'+k).value=c[k]);if(btn)btn.textContent=c.on?'🔊':'🔇'}
+const open=()=>{sync();d.style.display='flex'},close=()=>{d.style.display='none'};
+if(btn)btn.onclick=e=>{e.stopPropagation();open()};
+d.addEventListener('mousedown',e=>e.stopPropagation());
+d.addEventListener('click',e=>{if(e.target===d)close()});$('#snd-x').onclick=close;
+$('#snd-on').onchange=e=>{SND.set('on',e.target.checked?1:0);sync()};
+$('#snd-mon').onchange=e=>SND.set('mon',e.target.checked?1:0);
+$('#snd-mv').oninput=e=>SND.set('mv',+e.target.value);$('#snd-sv').oninput=e=>SND.set('sv',+e.target.value);
+Object.keys(L).forEach(k=>{
+  $('#snd-'+k).onchange=e=>{k=='music'?SND.setMusic(e.target.value):(SND.set(k,e.target.value),SND.test(k))};
+  d.querySelector(`[data-test="${k}"]`).onclick=()=>{SND.test(k);if(k=='death'){const n=$('#snd-fitnm');if(n)n.textContent=SND.cfg.death=='fit'&&SND.fitName?'Previewing: '+SND.fitName+' (each press plays the next death, ~6s preview; in the game it loops until you respawn)':''}};
+  d.querySelector(`[data-file="${k}"]`).onclick=()=>$('#snd-f-'+k).click();
+  $('#snd-f-'+k).onchange=async e=>{const f=e.target.files[0];if(!f)return;
+    await SND.loadFile(k,f);const s=$('#snd-'+k);let o=s.querySelector('[value=custom]');
+    if(!o){o=document.createElement('option');o.value='custom';s.appendChild(o)}o.textContent='📁 '+f.name;s.value='custom';e.target.value=''};
+});
+addEventListener('keydown',e=>{
+  if(e.code=='Escape'&&d.style.display=='flex'){close();e.stopPropagation();return}
+  if(e.code=='KeyM'&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)){SND.toggle();sync()}
+},true);
+// soft click on menu buttons
+document.addEventListener('click',e=>{if(e.target.closest('button')&&!e.target.closest('#snd'))SND.sfx('click')},true);
+sync();
+})();
+</script>
+
 
     <!-- Main Container Wrapper -->
     <main class="w-full max-w-4xl flex-1 flex flex-col items-center justify-center p-4 relative">
@@ -198,7 +669,6 @@
         const DN=['The demon poisoned you','The demon decapitated you','The demon devoured you','The demon melted you with acid','The demon ripped out your soul','The demon crushed you with a mountain','The demon shot you with an arrow','The demon burned you to cinders','The demon froze and shattered you','The demon struck you with lightning','The demon sent an isekai truck at you','The demon dragged you into the swamp','The demon blew you up','The demon collapsed the floor beneath you','You suffered self-inflicted damage','The demon drowned you','The mimic chest devoured you','The demon summoned a horde that tore you apart','The demon crushed you in an iron maiden','The demons summoned cockroaches to eat you alive','The demon crushed you with an anvil','The demon boiled you in hot oil','The demon sucked you into a black hole','The demon cursed you with a voodoo doll'];
         const TAUNTS=['HAHAHA! Skill issue.','LOL. Did you even study?','You died. Again. Hehehe.','Imagine missing that one...','Too easy. HA HA HA!','GG. Go read your notes!','Bwahaha! Nice try, noob.','LMAO. Ouch.','That was the EASY one!','Do you need a tissue? Heh.'];
         const MIMIC_TAUNTS=["You got digested by furniture! We're literally dying of laughter!","That chest ate your last two brain cells, and now it's dumber just from digesting you!","That chest took one bite of you, checked your IQ, and instantly regretted the meal!","Eaten alive by a box! Your stats are officially lower than the floorboards!","You got outplayed by a hungry piece of wood! Go back to the spawn screen!"];
-        const BOMB_TAUNTS=['BOOM! Hahaha!','Loot goes boom! HA HA HA!','Greedy AND dead! Hehehe!','Open another one! Hahaha!','Smells like burnt knight! HA!'];
         // taunts that match HOW you died (index = death type, same order as DN)
         const DT=[
             ["Toxicity levels rising, intelligence levels dropping!","Even the poison is struggling to find a brain to rot in there!","Careful, your last functional brain cell just dissolved in the venom.","That poison is doing more active processing than your actual brain ever did!","The venom finished you off faster than your brain ever finished a thought."],
@@ -235,6 +705,8 @@
         DT[27]=["Vaporized into absolute nothingness by a point-blank nuke, leaving behind a steaming crater of pure failure.","Hit with a clean nuke that deleted your entire build, leaving only a smoking pile of radioactive garbage.","Got completely obliterated by the blast, reducing your legacy to a scorched, glowing hole in the ground.","Took a full nuclear payload straight to the face, turning your entire character into radioactive ash.","Blasted into atomic dust by the nuke, leaving nothing behind but a foul stench and a smoking crater."];
         DN[28]='The demon stabbed you in slow motion for 100 years';DC[28]='#d6a8ff';
         DT[28]=["A century of getting poked with a butter knife while you stand there frozen like a complete idiot.","Stabbed in slow motion for a hundred years because even the blade couldn't be bothered to finish you quickly.","A glacial 100-year poke that wastes your entire lifespan on a single miserable papercut.","Stabbed so slowly you watched your own hair turn gray and fall out before the point even hit bone.","A century-long slow stab that pins you to the wall while you stand there looking like an absolute dumbass for ten decades."];
+        DN[29]='The demon brewed every disease into a super-virus that killed you';DC[29]='#7dff4a';
+        DT[29]=["The demons blended every disease in existence into one super-virus, and your immune system folded faster than your answer did.","Every plague in history teamed up to kill you. That's how bad that answer was, it took a group project.","Your immune system took one look at that virus, said 'not my problem,' and uninstalled itself.","We cooked up a virus from every disease and it struggled to find a brain cell to infect in there. It settled for your lungs out of pity.","The flu, the plague and the common cold all showed up for you. That's not a death, that's a fan meet-up for your stupidity.","Patient Zero? More like Patient Zero brain cells. The virus had nothing up there to damage.","Ebola, smallpox, the black plague and twenty other horrors merged into one virus just for you. Overkill, but you did make it look easy.","That virus came with a get-well-soon card. It got returned to sender because you didn't make it."];
         
         const DEFAULT_DECK = {
             id: 'default_starter_pool',
@@ -898,18 +1370,18 @@
 
         // ================= DEATH GALLERY =================
         let SAVED=null;   // whatever screen you were on (a live run, or the scorecard) while the Death Gallery page is open
-        const GN=[...Array(29).keys()].map(String).concat(['bomb']);
-        const GNI=['☠️','🪓','🦷','🧪','👻','⛰️','🏹','🔥','❄️','⚡','🚚','🐊','💥','🕳️','⚔️','🌊','📦','👹','⚙️','🪳','🔨','🍲','🌀','🪆','🪦','🥩','🌳','☢️','⏳','🧨'];
+        const GN=[...Array(30).keys()].map(String);
+        const GNI=['☠️','🪓','🦷','🧪','👻','⛰️','🏹','🔥','❄️','⚡','🚚','🐊','💥','🕳️','⚔️','🌊','📦','👹','⚙️','🪳','🔨','🍲','🌀','🪆','🪦','🥩','🌳','☢️','⏳','🦠'];
         const GSK=['spike','axe','boulder','lava','ghost','fire','dart','gas','ice','fall'];
         const GSI={spike:'🗡️',axe:'🪓',boulder:'🪨',lava:'🌋',ghost:'👻',fire:'🔥',dart:'🎯',gas:'☁️',ice:'🧊',fall:'🕳️'};
         const SRIDX={spike:0,boulder:1,axe:2,fire:3,dart:4,gas:5,fall:6,lava:7,ghost:8,ice:9};
-        const galNName=k=>k=='bomb'?'The trapped chest blew you up':k=='24'?'Family Reunion':k=='25'?'Meat Grinder':k=='26'?'The Life Tree':k=='27'?'Nuclear Strike':k=='28'?'The Hundred-Year Second':DN[+k];
+        const galNName=k=>k=='24'?'Family Reunion':k=='25'?'Meat Grinder':k=='26'?'The Life Tree':k=='27'?'Nuclear Strike':k=='28'?'The Hundred-Year Second':k=='29'?'Patient Zero':DN[+k];
         const galTitle=t=>t.toLowerCase().replace(/(^|\s)\S/g,m=>m.toUpperCase());
         let toastT=0;
         function toast(msg){const el=$('#toast');if(!el)return;el.textContent=msg;el.style.transform='translate(-50%,0)';clearTimeout(toastT);toastT=setTimeout(()=>{el.style.transform='translate(-50%,-90px)'},3400)}
         function unlock(key,sec){
             const n=S.seen[key]||0;S.seen[key]=n+1;save();
-            if(!n){const nm=sec?galTitle(SDN[key.slice(2)][0]):galNName(key);toast('🔓 '+(sec?'Secret death':'Death')+' unlocked: '+nm)}
+            if(!n){SND.sfx('ding');const nm=sec?galTitle(SDN[key.slice(2)][0]):galNName(key);toast('🔓 '+(sec?'Secret death':'Death')+' unlocked: '+nm)}
         }
         function galCard(open,icon,name,col,cnt,args,lockTxt){
             if(!open)return `<div class="bg-zinc-950 border border-zinc-800 rounded-lg p-3 flex flex-col items-center justify-center text-center min-h-[118px] opacity-80"><div class="text-2xl text-zinc-600">🔒</div><div class="title-font text-xl font-black text-zinc-600 tracking-widest">???</div><div class="text-[10px] text-zinc-600 mt-1">${lockTxt}</div></div>`;
@@ -918,7 +1390,7 @@
         function galRender(){
             const el=$('#t-h');if(!el)return;
             const ns=GN.filter(k=>S.seen[k]).length,ss=GSK.filter(k=>S.seen['s:'+k]).length;
-            const nc=GN.map((k,i)=>galCard(!!S.seen[k],GNI[i],galNName(k),k=='bomb'?DC[12]:DC[+k],S.seen[k],`'n','${k}'`,'Die to unlock')).join('');
+            const nc=GN.map((k,i)=>galCard(!!S.seen[k],GNI[i],galNName(k),DC[+k],S.seen[k],`'n','${k}'`,'Die to unlock')).join('');
             const sc=GSK.map(k=>galCard(!!S.seen['s:'+k],GSI[k],galTitle(SDN[k][0]),SDN[k][1],S.seen['s:'+k],`'s','${k}'`,'Not discovered yet')).join('');
             el.innerHTML=(SAVED?`<button type="button" onclick="galResume()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-zinc-950 font-bold py-2.5 rounded title-font text-sm shadow-[0_0_10px_rgba(16,185,129,0.4)]">▶ Back to ${SAVED.G?'your run':'where you were'}</button><p class="text-xs text-emerald-400/80 text-center">${SAVED.G?'Your run is paused and safe. ':''}Nothing here counts.</p>`:'')+`<h3 class="title-font text-lg font-bold text-emerald-400 border-b border-emerald-950 pb-2 flex justify-between items-end"><span>💀 Death Gallery</span><span class="text-xs text-zinc-400 font-mono">${ns}/${GN.length} found</span></h3>
                 <p class="text-xs text-zinc-500">Every new way to die unlocks here. Tap Replay to watch it again.</p>
@@ -936,8 +1408,8 @@
             let label;
             if(kind=='n'){
                 label=galNName(id);
-                if(id=='bomb'||id=='16'){const b={x:350,y:WB+9,st:1,t0:performance.now(),kind:id=='bomb'?'bomb':'mimic',gone:1,g:0};G.chs.push(b);
-                    if(id=='bomb'){die(null,12,'The trapped chest blew you up');G.bomb=1}else die(null,16);G.ch=b}
+                if(id=='16'){const b={x:350,y:WB+9,st:1,t0:performance.now(),kind:'mimic',gone:1,g:0};G.chs.push(b);
+                    die(null,16);G.ch=b}
                 else{GAL_DK=+id;try{die(G.tg.find(o=>o.y<=140)||G.tg[0])}finally{GAL_DK=null}}
             }else{
                 const type=id,d2=SRM[SRIDX[type]];label=galTitle(SDN[type][0]);
@@ -1099,7 +1571,6 @@
             if(gap>0){
                 ctx.fillStyle=kind=='mimic'?'#5a0f1e':'#0a0810';ctx.fillRect(x-20*s,Yu,40*s,gap);
                 if(kind=='mimic'){ctx.fillStyle='#d6285a';ctx.beginPath();ctx.ellipse(x+Math.sin(now/120)*5*s,Yb-1*s,11*s,Math.max(1,gap*.4),0,0,7);ctx.fill()}
-                else if(kind=='bomb'){ctx.fillStyle='#16161c';ctx.beginPath();ctx.arc(x,Yb-3*s,10*s,0,7);ctx.fill();ctx.fillStyle='#e6dcc0';ctx.fillRect(x-1,Yb-16*s,2,7*s)}
                 else if(!looted){ctx.fillStyle='#c9a227';ctx.fillRect(x-18*s,Yb-5*s,36*s,5*s);for(let i=0;i<7;i++){ctx.fillStyle='#ffd84a';ctx.fillRect(x-16*s+i*5*s,Yb-7*s-(i%2)*2*s,4*s,3*s)}}
                 else{ctx.fillStyle='#8a6a1c';for(let i=0;i<3;i++)ctx.fillRect(x-10*s+i*8*s,Yb-3*s,4*s,2*s)}
             }
@@ -1120,18 +1591,17 @@
         function mkChests(){
             if(G.rooms[G.i].boss)return[];
             const slots=G.wide?sh(gapXs()):sh([180,350,520]),n=Math.min(slots.length,1+Math.floor(Math.random()*2)),a=[];
-            for(let i=0;i<n;i++){const r=Math.random();a.push({x:slots[i],y:WB+9,st:0,kind:r<.5?'gold':r<.75?'mimic':'bomb',g:10+Math.floor(Math.random()*21)})}
+            for(let i=0;i<n;i++){const r=Math.random();a.push({x:slots[i],y:WB+9,st:0,kind:r<.6?'gold':'mimic',g:10+Math.floor(Math.random()*21)})}
             return a}
         function openChest(tc){
             let b=tc||null,bd=95;
             if(!b)(G.chs||[]).forEach(c=>{if(c.st||c.gone)return;const d=Math.hypot(c.x-G.hx,c.y-G.hy);if(d<bd){bd=d;b=c}});
-            if(!b||b.st||b.gone)return;
+            if(!b||b.st||b.gone)return;SND.sfx('chest');
             b.st=1;b.t0=performance.now();
             if(b.kind=='gold'){G.xg+=b.g;G.fl.push({x:b.x,y:b.y-50,t:0,txt:'+'+b.g+' gold'});
                 for(let i=0;i<Math.min(12,b.g);i++)G.cn.push({x:b.x,y:b.y-30,vx:(Math.random()-.5)*240,vy:-140-Math.random()*200,l:.9});return}
             b.gone=1;
-            if(b.kind=='mimic'){die(null,16);G.ch=b}
-            else{die(null,12,'The trapped chest blew you up');G.bomb=1;G.ch=b}
+            die(null,16);G.ch=b
         }
         // ----- the secret door: a faint seam in the back wall (only 1 in 4 rooms has one) -----
         function secretDoorDraw(now){
@@ -1158,7 +1628,7 @@
         const srNear=(ax,ay,r)=>Math.hypot(G.hx-ax,(G.hy-8)-ay)<r;
         const SDN={spike:['IMPALED ON SPIKES','#ff4a4a'],axe:['CHOPPED IN HALF','#ff8c1a'],boulder:['SQUISHED BY A BOULDER','#d2b48c'],lava:['SWALLOWED BY LAVA','#ff6a1a'],ghost:['LIFE DRAINED BY A GHOST','#9fd8ff'],fire:['LAUNCHED BY FLAME JETS','#ff8c1a'],dart:['RIDDLED WITH DARTS','#ffb347'],gas:['GASSED','#a8ff3c'],ice:['PIERCED BY ICE SPIKES','#8fe8ff'],fall:['FELL INTO THE PIT','#c9b8ff']};
         const SRC={stone:'#ffd84a',moss:'#86efac',lava:'#ff8c1a',ice:'#8fe8ff'};
-        function srHurt(c,type){type=SDN[type]?type:'spike';c.dead={type,t:0,x:(type=='spike'&&c.spx!=null)?c.spx:G.hx,spx:type=='spike'?c.spx:null,y:G.hy,f:G.face,sp:[0,1,2].map(()=>Math.random()*23|0),click:false,bi:type=='boulder'&&c.hit?c.hit.i:null,blx:type=='boulder'&&c.hit?c.hit.x:null,bly:type=='boulder'&&c.hit?c.hit.ly:null,bv:type=='boulder'&&c.hit?c.hit.v:200};G.deaths++;$('#dc').textContent='Deaths: '+G.deaths;G.state='secretDie';G.moving=0;c.vx=0;c.vy=0;if(!G.gal)unlock('s:'+type,1)}
+        function srHurt(c,type){type=SDN[type]?type:'spike';SND.dead(0,'s:'+type);c.dead={type,t:0,x:(type=='spike'&&c.spx!=null)?c.spx:G.hx,spx:type=='spike'?c.spx:null,y:G.hy,f:G.face,sp:[0,1,2].map(()=>Math.random()*23|0),click:false,bi:type=='boulder'&&c.hit?c.hit.i:null,blx:type=='boulder'&&c.hit?c.hit.x:null,bly:type=='boulder'&&c.hit?c.hit.ly:null,bv:type=='boulder'&&c.hit?c.hit.v:200};G.deaths++;$('#dc').textContent='Deaths: '+G.deaths;G.state='secretDie';G.moving=0;c.vx=0;c.vy=0;if(!G.gal)unlock('s:'+type,1)}
         addEventListener('mousedown',()=>{if(G&&G.state=='secretDie'&&!G.paused&&G.sc&&G.sc.dead)G.sc.dead.click=true});
         function srDeathDraw(c,now){
             const D=c.dead,t=D.t,x=D.x,fy=D.y+15,F=D.f,type=D.type,bx=x-57*F;
@@ -1546,7 +2016,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         }
 
         function mkRoom(){
-            const r=G.rooms[G.i];
+            const r=G.rooms[G.i];SND.fast(r.boss);
             G.tg=[];G.sel=null;G.dr=null;G.w0=null;G.ka=1;G.last=0;G.hx=150;G.hy=320;G.moving=0;if(G.i>0)G.fin=.5;G.bar=mkBarrels();G.chs=[];G.deb=[];G.cn=[];G.fl=[];G.sec=null;
             G.maxX=r.boss?745:470;if(r.boss){G.hx=400;G.hy=390;G.bar=[]}   // boss room: knight starts below the boss, no barrels
             if(r.boss)useBg(buildBossBg());
@@ -1677,7 +2147,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         }
 
         function adv(){
-            const n=performance.now(),ok=G.tg.find(t=>t.ok),r=G.rooms[G.i];
+            const n=performance.now(),ok=G.tg.find(t=>t.ok),r=G.rooms[G.i];SND.sfx(r.boss?'bosshit':'right');
             if(r.boss){
                 // right answer: the stone shatters, the Demon Lord flinches, next question (or he falls)
                 if(ok)ok.dyAt=n;G.tg.forEach(t=>{if(!t.ok)t.fz=n});
@@ -1699,7 +2169,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 else{av.push([px-95,py-32,px+95,py+40]);av.push([px-92,py+36,px+92,py+106])}});
             if(r.boss)av.push([310,60,490,306]);
             const circ=(G.bl||[]).filter(b=>b.room===G.i).map(b=>[b.x+57*G.face,b.y-14,46]).concat((G.bar||[]).map(o=>[o.x,o.y,52])).concat((G.chs||[]).filter(c=>!c.gone).map(c=>[c.x,c.y,52]))
-                .concat((G.rem||[]).filter(o=>o.room===G.i&&o.kind!='bomb'&&o.kind!='mimic').map(o=>[o.x,o.y,({summon:105,maiden:80,anvil:80,cauldron:80,blackhole:70,nuke:100,tracks:110,boulder:110,icicles:75,hole:75,bones:70,armor:70}[o.kind]||60)]));
+                .concat((G.rem||[]).filter(o=>o.room===G.i&&o.kind!='mimic').map(o=>[o.x,o.y,({summon:105,maiden:80,anvil:80,cauldron:80,blackhole:70,nuke:100,tracks:110,boulder:110,icicles:75,hole:75,bones:70,armor:70}[o.kind]||60)]));
             const xMax=r.boss?690:455;let best=[x0,G.hy],bc=1e12;
             for(let x=80;x<=xMax;x+=10)for(let y=316;y<=418;y+=8){
                 let c=0;const x1=x-62,x2=x+62,y1=y-22,y2=y+24;
@@ -1710,12 +2180,14 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             return{x:best[0],y:best[1]}
         }
         let GAL_DK=null;
+        setInterval(()=>{const on=!!(G&&(G.state=='dying'||G.state=='secretDie'));SND.gate(on,!!(G&&G.paused))},50);   // the death sound loops until you leave the death scene (respawn / gallery exit); pause mutes it
+        function deathSnd(){const w=(G.dk==1||G.dk==2)?((G.bk||(G.kt&&!G.bs))?Math.max(.3,G.ew||.4):.3):null;SND.dead(G.bs,G.dk,G.cast||0,w)}
         function die(t,fk,dname){
             const r=G.rooms[G.i];
             if(fk==null&&!r.boss&&r.q)G.mq.set(r.q,(G.mq.get(r.q)||0)+1);   // remember what is hurting you
             G.deaths++;
             G.state='dying';
-            G.kt=t||null;G.hv=null;G.zv=null;G.ba=null;G.dn=dname||null;G.bomb=0;G.ch=null;G.dk=fk!=null?fk:GAL_DK!=null?GAL_DK:(()=>{const q=Math.random()*28|0;return q==27?28:q==26?27:q==25?26:q==24?25:q==23?24:q==16?17:q==17?18:q==18?19:q==19?20:q==20?21:q==21?22:q==22?23:q})();if(G.dk==2&&!G.kt&&!r.boss)G.dk=Math.random()<.5?0:1;G.dt=0;G.dx=r.boss?Math.min(G.hx,700):Math.min(G.hx,290);if(fk!=null)G.dx=Math.min(G.hx,470);if(G.dk==17||G.dk==24||G.dk==25||G.dk==26)G.dx=r.boss?400:257;   // the horde needs room on BOTH sides of him
+            G.kt=t||null;G.hv=null;G.zv=null;G.ba=null;G.dn=dname||null;G.ch=null;G.dk=fk!=null?fk:GAL_DK!=null?GAL_DK:(()=>{const q=Math.random()*29|0;return q==28?29:q==27?28:q==26?27:q==25?26:q==24?25:q==23?24:q==16?17:q==17?18:q==18?19:q==19?20:q==20?21:q==21?22:q==22?23:q})();if(G.dk==2&&!G.kt&&!r.boss)G.dk=Math.random()<.5?0:1;G.dt=0;G.dx=r.boss?Math.min(G.hx,700):Math.min(G.hx,290);if(fk!=null)G.dx=Math.min(G.hx,470);if(G.dk==17||G.dk==24||G.dk==25||G.dk==26)G.dx=r.boss?400:257;   // the horde needs room on BOTH sides of him
                 {const sp=openSpot(r,G.dx);G.dx=sp.x;G.dy=sp.y}G.ew=G.kt?Math.max(.4,(G.kt.x-(G.dx+55))/260):1;G.sk=Math.random()*4|0;G.ss=Math.random()*100;G.sp=[0,0,0].map(()=>Math.random()*23|0);
             const DP=DT[G.dk]||TAUNTS;G.sel=null;G.tt=r.boss?(Math.random()<.7?rnd(DP):rnd(bossTaunts(r))):rnd(DP);
             G.lt=(fk!=null&&!r.boss&&G.tg&&G.tg.length)?rnd(G.tg):null;   // died to a chest: one of the demons laughs
@@ -1728,7 +2200,8 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                     G.bk={x1,y1,flip:x1<G.dx?1:0};G.ew=Math.max(.8,Math.hypot(x1-BZ.cx,y1-BZ.base)/230)}}
             if(!r.boss&&G.tg){const tp=sh(DP.filter(x=>x!==G.tt));G.tg.forEach((t,i)=>t.tt=(t===(G.kt||G.lt))?G.tt:tp[i%tp.length])}
             G.rep=(G.rec||[]).slice();G.mvrep=null;   // keep his last moves for the slow-motion replay
-            if(!G.gal)unlock((fk==12&&dname)?'bomb':String(G.dk));   // Death Gallery
+            deathSnd();   // each death plays its own matching sound
+            if(!G.gal)unlock(String(G.dk));   // Death Gallery
             $('#dc').textContent='Deaths: '+G.deaths;
             $('#respawn-hint').style.display='block';
         }
@@ -1751,8 +2224,8 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(!G||(G.state!='dying'&&G.state!='secretDie'))return;
             G.mvrep=null;
             if(G.paused)togglePause();
-            if(G.state=='secretDie'){if(G.sc&&G.sc.dead){G.sc.dead.t=0;G.sc.dead.click=false}}   // secret-room trap deaths have their own timer
-            else{G.dt=0;G.ba=null;G.bp=null}
+            if(G.state=='secretDie'){if(G.sc&&G.sc.dead){G.sc.dead.t=0;G.sc.dead.click=false;SND.dead(0,'s:'+G.sc.dead.type)}}   // secret-room trap deaths have their own timer
+            else{G.dt=0;G.ba=null;G.bp=null;deathSnd()}
         }
         $('#rp').addEventListener('click',e=>{e.stopPropagation();if(G&&(G.state=='clear'||G.state=='bclear'))killReplay();else replayDeath()});
         $('#rp').addEventListener('mousedown',e=>e.stopPropagation());
@@ -1761,7 +2234,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         function triggerRespawn() {
             if(!G || G.state!='dying') return;
             if(G.gal){galExit();return}
-            G.state='resp';stainAdd();G.rec=[];G.mvrep=null;
+            SND.sfx('respawn');G.state='resp';stainAdd();G.rec=[];G.mvrep=null;
             G.rt=0;
             G.hx=G.rooms[G.i].boss?400:150;
             G.hy=G.rooms[G.i].boss?390:320;
@@ -1770,7 +2243,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
 
         function atk(){
             if(G.state!='play'||G.cd>0)return;
-            G.cd=.4;G.sw=.3;G.face=1;
+            G.cd=.4;G.sw=.3;G.face=1;SND.sfx('swing');
             let b=null,bd=180;
             G.tg.forEach(t=>{const d=Math.hypot(t.x-G.hx,t.y-G.hy);if(d<bd){bd=d;b=t}});
             // a chest only wins if it is clearly the NEAREST thing: under a door you answer that door, by a chest you open it
@@ -1894,7 +2367,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         }
 
         function winStart(){
-            G.state='win';G.wt=0;G.tg=[];G.dr=null;G.w0=null;G.hearts=[];G.kiss=0;G.moving=0;G.sw=.35;G.ka=1;G.face=1;
+            SND.sfx('win');G.state='win';G.wt=0;G.tg=[];G.dr=null;G.w0=null;G.hearts=[];G.kiss=0;G.moving=0;G.sw=.35;G.ka=1;G.face=1;
             $('#q').textContent='The Demon Lord has fallen! The great gate creaks open...';
             bossSay('NOOOO! My gate... my princess... ARGH!!',2.4);
         }
@@ -2020,15 +2493,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             ctx.restore()}
         // what is left of a trapped chest / mimic after it killed you (stays in the room, like the stain)
         function remDraw(o){const x=o.x,b=o.y,now=performance.now(),rr=k=>{const v=Math.sin(o.sd*999+k*127.1)*43758.5453;return v-Math.floor(v)};
-            if(o.kind=='bomb'){
-                ctx.fillStyle='rgba(8,6,6,.75)';ctx.beginPath();ctx.ellipse(x,b+4,54,13,0,0,7);ctx.fill();ctx.fillStyle='rgba(40,30,26,.6)';ctx.beginPath();ctx.ellipse(x,b+4,34,8,0,0,7);ctx.fill();
-                for(let j=0;j<9;j++){const px=x+(rr(j)-.5)*104,py=b+2+rr(j+20)*10,a=(rr(j+40)-.5)*1.4,w=10+rr(j+60)*16;ctx.save();ctx.translate(px,py);ctx.rotate(a);ctx.fillStyle=j%3?'#2a1b10':'#3b2616';ctx.fillRect(-w/2,-2,w,4);if(j%4==0){ctx.fillStyle='#4a4a56';ctx.fillRect(-w/2,-2,w*.5,2)}ctx.restore()}   // charred planks and bent bands
-                ctx.fillStyle='#2a1b10';ctx.fillRect(x-24,b-8,48,10);ctx.fillStyle='#14100c';ctx.fillRect(x-24,b-8,48,3);ctx.fillStyle='#4a4a56';ctx.fillRect(x-24,b-3,48,2);
-                ctx.beginPath();ctx.moveTo(x-24,b-8);for(let j=0;j<5;j++){ctx.lineTo(x-24+j*9.6+4.8,b-8-4-(j%2)*7);ctx.lineTo(x-24+(j+1)*9.6,b-8)}ctx.fillStyle='#2a1b10';ctx.fill();   // jagged broken chest bottom
-                ctx.save();ctx.translate(x+36,b+3);ctx.rotate(.5);ctx.fillStyle='#3b2616';ctx.fillRect(-14,-6,28,9);ctx.fillStyle='#4a4a56';ctx.fillRect(-14,-3,28,2);ctx.restore();   // blown-off lid
-                for(let j=0;j<4;j++){const ph=(now/2200+j/4)%1;O('rgba(60,56,56,'+(.28*(1-ph))+')',x-12+j*8+Math.sin(ph*5+j)*8,b-12-ph*60,5+ph*10)}   // smoke
-                for(let j=0;j<3;j++)R('rgba(255,'+(110+j*30)+',40,'+(.5+.4*Math.sin(now/200+j))+')',x-14+j*13,b-9,2,2)}   // embers
-            else if(o.kind=='arrow'){ // the arrow that killed him, lying where he fell
+            if(o.kind=='arrow'){ // the arrow that killed him, lying where he fell
                 const F=o.f||1;ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(x+F*18,b+3,30,4,0,0,7);ctx.fill();
                 ctx.save();ctx.translate(x-F*4,b-3);ctx.scale(F,1);ctx.rotate(-.1+(rr(1)-.5)*.2);
                 R('#6b4f2a',0,-1,46,3);R('#e6dcc0',44,-4,8,3);R('#e6dcc0',44,1,8,3);R('#ccc',-6,-3,8,7);R('#8a141c',40,-1,6,3);ctx.restore()}
@@ -2159,6 +2624,11 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.ellipse(x,b+4,36*(M/1.5),6,0,0,7);ctx.fill();
                 voodooDoll(x,b-1,M,1.45*(o.hs||1),now,1,[0,1,2,3].map(i=>({i,p:1})),true);
                 for(let j=0;j<3;j++){const ph=(now/2400+j/3)%1;O('rgba(120,230,170,'+(.4*(1-ph))+')',x+(j-1)*8*(M/1.5),b-8-ph*34,1.4+(1-ph)*1.4)}}
+            else if(o.kind=='virus'){ // a puddle of toxic infection with a few dead virus particles and spores drifting off it
+                const M=o.m||1,pu=.5+.5*Math.sin(now/500);
+                ctx.fillStyle='rgba(40,90,16,.75)';ctx.beginPath();ctx.ellipse(x,b+4,46*M,9*M,0,0,7);ctx.fill();ctx.fillStyle='rgba(150,255,60,'+(.25+.12*pu)+')';ctx.beginPath();ctx.ellipse(x-5,b+3,28*M,5*M,0,0,7);ctx.fill();
+                for(let j=0;j<4;j++){const vx=x+(rr(j)-.5)*70*M,vy=b+3+rr(j+9)*5,vr=(3+rr(j+20)*2)*M;ctx.strokeStyle='rgba(120,230,50,.8)';ctx.lineWidth=1;for(let q=0;q<8;q++){const a=q*.785;ctx.beginPath();ctx.moveTo(vx+Math.cos(a)*vr,vy+Math.sin(a)*vr*.5);ctx.lineTo(vx+Math.cos(a)*(vr+3),vy+Math.sin(a)*(vr+3)*.5);ctx.stroke()}O('rgba(90,190,40,.95)',vx,vy,vr*.8)}
+                for(let j=0;j<5;j++){const ph=(now/2400+j/5)%1;O('rgba(160,255,80,'+(.35*(1-ph))+')',x-26*M+j*13*M+Math.sin(ph*5+j)*5,b-ph*44*M,2+ph*3)}}
             else if(o.kind=='clock'){ // a faint violet clock face etched into the floor, its hands stopped
                 const M=(o.m||1),pu=.5+.5*Math.sin(now/900);
                 ctx.save();ctx.translate(x,b+4);ctx.scale(1,.28);ctx.strokeStyle='rgba(194,139,255,'+(.3+.15*pu)+')';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(0,0,62*M,0,7);ctx.stroke();ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(0,0,52*M,0,7);ctx.stroke();
@@ -2279,8 +2749,8 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             ctx.fillStyle='#2e3038';ctx.beginPath();ctx.moveTo(hx-7*m,hy+8*m);ctx.lineTo(hx-7*m,hy-1*m);ctx.arc(hx,hy-1*m,7*m,Math.PI,0);ctx.lineTo(hx+7*m,hy+8*m);ctx.closePath();ctx.fill();
             ctx.fillStyle='#0d0d10';ctx.fillRect(hx-5*m,hy-1.5*m,10*m,2*m);ctx.fillRect(hx-.7*m,hy-1.5*m,1.4*m,8*m);   // visor slit and nose guard
             ctx.fillStyle='#b8860b';ctx.fillRect(hx-.8*m,hy-9*m,1.6*m,4*m);ctx.restore()}
-        function stainAdd(){if(G.ch&&(G.ch.kind=='bomb'||G.ch.kind=='mimic')){G.rem.push({x:G.ch.x,y:G.ch.y,kind:G.ch.kind,room:G.i,sd:Math.random()*100});G.ch=null}
-            {const RK={6:'arrow',14:'sword',10:'tracks',2:'armor',7:'scorch',8:'icicles',12:'bones',5:'boulder',1:'helmet',9:'strike',13:'hole',4:'soul',15:'puddle',17:'summon',18:'maiden',19:'roachrem',20:'anvil',21:'cauldron',22:'blackhole',23:'voodoo',24:'grave',25:'paste',26:'lifetree',27:'nuke',28:'clock'}[G.dk];if(RK){G.rem.push({x:(RK=='blackhole'||RK=='voodoo')?bhPos().x:(RK=='hole'||RK=='maiden')?G.dx:(RK=='anvil'||RK=='cauldron'||RK=='grave'||RK=='nuke'||RK=='boulder')?G.dx-13*G.face:RK=='paste'?G.dx-13*G.face+72*(G.bs?1.25:1):RK=='lifetree'?G.dx-13*G.face+80*(G.bs?1.25:1):G.dx-57*G.face,y:G.dy+14,f:G.face,hs:RK=='voodoo'?bhPos().s:1,kind:RK,m:G.bs?1.7:1,room:G.i,sd:Math.random()*100})}}
+        function stainAdd(){if(G.ch&&G.ch.kind=='mimic'){G.rem.push({x:G.ch.x,y:G.ch.y,kind:G.ch.kind,room:G.i,sd:Math.random()*100});G.ch=null}
+            {const RK={6:'arrow',14:'sword',10:'tracks',2:'armor',7:'scorch',8:'icicles',12:'bones',5:'boulder',1:'helmet',9:'strike',13:'hole',4:'soul',15:'puddle',17:'summon',18:'maiden',19:'roachrem',20:'anvil',21:'cauldron',22:'blackhole',23:'voodoo',24:'grave',25:'paste',26:'lifetree',27:'nuke',28:'clock',29:'virus'}[G.dk];if(RK){G.rem.push({x:(RK=='blackhole'||RK=='voodoo')?bhPos().x:(RK=='hole'||RK=='maiden')?G.dx:(RK=='anvil'||RK=='cauldron'||RK=='grave'||RK=='nuke'||RK=='boulder')?G.dx-13*G.face:RK=='paste'?G.dx-13*G.face+72*(G.bs?1.25:1):RK=='lifetree'?G.dx-13*G.face+80*(G.bs?1.25:1):G.dx-57*G.face,y:G.dy+14,f:G.face,hs:RK=='voodoo'?bhPos().s:1,kind:RK,m:G.bs?1.7:1,room:G.i,sd:Math.random()*100})}}
             if(G.rem.length>40)G.rem.shift();
             if(G.dk!=13&&G.dk!=22&&G.dk!=27){G.bl.push({x:G.dx-57*G.face,y:G.dy+14,room:G.i,sd:G.ss||Math.random()*100,k:G.dk});if(G.bl.length>80)G.bl.shift()}}
 
@@ -2305,7 +2775,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         // Every effect keeps playing (loops or holds) until the player clicks to respawn.
         // The knight's final death frame is a pile centred 57px behind where he died (bx), so body effects use bx.
         // ---------- THE DEMON CASTS THE SPELL THAT KILLS YOU ----------
-        const CASTN=['Venom Hex!','Off With Your Head!','','Acid Rain!','Soul Snatch!','Mountain Summon!','Arrow Volley!','Inferno!','Frost Nova!','Thunder Call!','Isekai Portal!','Swamp Grasp!','Detonate!','Quake!','Mind Control!','Flood!','','','Iron Maiden!','Roach Swarm!','Anvil Drop!','Hot Oil!','Black Hole!','Voodoo Curse!'];CASTN[27]='Nuke Launch!';CASTN[28]='Time Warp!';
+        const CASTN=['Venom Hex!','Off With Your Head!','','Acid Rain!','Soul Snatch!','Mountain Summon!','Arrow Volley!','Inferno!','Frost Nova!','Thunder Call!','Isekai Portal!','Swamp Grasp!','Detonate!','Quake!','Mind Control!','Flood!','','','Iron Maiden!','Roach Swarm!','Anvil Drop!','Hot Oil!','Black Hole!','Voodoo Curse!'];CASTN[27]='Nuke Launch!';CASTN[28]='Time Warp!';CASTN[29]='Virus Brew!';BK[29]=['rgba(50,105,18,.9)','rgba(160,255,70,.55)',1.2,6,1];
         const hexRgb=h=>{const n=parseInt(h.slice(1),16);return(n>>16)+','+((n>>8)&255)+','+(n&255)};
         // THE DEMON SHOOTS YOU: raises a bow, draws the string back, lets go, and the arrow flies from the bow into the knight
         function bowDraw(now){
@@ -2622,6 +3092,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 ctx.fillStyle='rgba(255,0,0,'+(.07*g*pu)+')';ctx.fillRect(0,0,W,H)}   // a red target locks on to him, the room flashes like a siren, something glints in the sky
             else if(dk==28){const R0=26+g*44,cx0=tx,cy0=ty-50;ctx.save();ctx.strokeStyle='rgba('+rgb+',.9)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx0,cy0,R0,0,7);ctx.stroke();for(let j=0;j<12;j++){const a=j*.5236;ctx.beginPath();ctx.moveTo(cx0+Math.cos(a)*R0*.85,cy0+Math.sin(a)*R0*.85);ctx.lineTo(cx0+Math.cos(a)*R0,cy0+Math.sin(a)*R0);ctx.stroke()}
                 ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(cx0,cy0);ctx.lineTo(cx0+Math.cos(-now/140)*R0*.8,cy0+Math.sin(-now/140)*R0*.8);ctx.moveTo(cx0,cy0);ctx.lineTo(cx0+Math.cos(-now/1700)*R0*.5,cy0+Math.sin(-now/1700)*R0*.5);ctx.stroke();ctx.restore()}   // a clock opens around him, its hands spinning backwards
+            else if(dk==29){for(let j=0;j<10;j++){const a=now/300+j*.628,rr=18+g*40+(j%3)*6;O('rgba('+rgb+','+(.5+.3*Math.sin(now/90+j))+')',tx+Math.cos(a)*rr,ty-60+Math.sin(a)*rr*.45-g*20,2.5+(j%3))}}   // green spores swirl up around him
             if(B)ctx.restore();
             if(dk==22)bhCast(now,u);
             if(dk==23)vdCast(now,u);
@@ -2630,8 +3101,8 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             ctx.save();ctx.globalAlpha=Math.min(1,u*3)*(1-Math.max(0,(u-.8)*5));ctx.textAlign='center';ctx.font='bold '+(B?20:14)+'px sans-serif';ctx.lineWidth=B?4:3;ctx.strokeStyle='#000';ctx.strokeText(CASTN[dk],mx,B?66:mfy-128*sc);ctx.fillStyle=col;ctx.fillText(CASTN[dk],mx,B?66:mfy-128*sc);ctx.restore()}
 
         function deathDraw(){
-            const t=Math.max(0,G.dt-(G.bomb?.6:(G.cast||0))),k=G.dk,x=G.dx,y=G.dy,fy=y+15,now=performance.now(),F=G.face,bx=x-57*F,cy=fy-48,BS=G.bs?1.9:1,AOE=G.bs?1.3:1;
-            {const ts0=k==15?4.6:0;if(k!=22&&k!=25&&k!=26&&k!=27&&k!=28&&t>ts0+.03)bloodStain(bx,y+14,G.ss||0,1.2*Math.min(1,(t-ts0)*1.6),k)}   // the water bubble death: nothing pools on the floor until the bubble pops
+            const t=Math.max(0,G.dt-(G.cast||0)),k=G.dk,x=G.dx,y=G.dy,fy=y+15,now=performance.now(),F=G.face,bx=x-57*F,cy=fy-48,BS=G.bs?1.9:1,AOE=G.bs?1.3:1;
+            {const ts0=k==15?4.6:0;if(k!=22&&k!=25&&k!=26&&k!=27&&k!=28&&k!=29&&t>ts0+.03)bloodStain(bx,y+14,G.ss||0,1.2*Math.min(1,(t-ts0)*1.6),k)}   // the water bubble death: nothing pools on the floor until the bubble pops
             // the Demon Lord's spell circle: a huge one stays under the knight until he respawns (boulder + lightning draw their own, bigger)
             if(G.bs&&G.cast>0&&k!=5&&k!=9&&k!=6&&k!=20&&t>0){const rgb=hexRgb(DC[k]||'#e05bff'),kx=x-13*F,a=Math.min(1,t/.25);ctx.save();ctx.globalAlpha=a*.85;ctx.strokeStyle='rgba('+rgb+',.95)';ctx.fillStyle='rgba('+rgb+',.16)';ctx.lineWidth=3;
                 ctx.beginPath();ctx.ellipse(kx,fy-1,120,31,0,0,7);ctx.fill();ctx.stroke();ctx.beginPath();ctx.ellipse(kx,fy-1,84,22,0,0,7);ctx.stroke();
@@ -2643,13 +3114,6 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 ctx.translate(x+(o.dx||0),fy+(o.dy||0));ctx.rotate(o.rot||0);ctx.scale(F,o.my??1);ctx.drawImage(im.img,n*120,0,120,80,-132,-176,264,176);ctx.restore()};
             const burst=(t0,px,py)=>{if(t<t0)return;const u=Math.min(1,(t-t0)/.7);for(let j=0;j<3;j++)sprayAt(j,px+(j-1)*18*AOE,py-j*6,(.7+u*.8)*AOE,1-u*.9,j==1?-1:1)};
             const bubble=(txt,px,py)=>{ctx.font='12px sans-serif';const w=ctx.measureText(txt).width+14;R('#fff',px-w/2,py-18,w,22);R('#fff',px-3,py+4,6,6);ctx.fillStyle='#111';ctx.textAlign='center';ctx.fillText(txt,px,py-3)};
-            if(G.bomb&&G.ch){const c=G.ch,cx=c.x,cb=c.y,gt=G.dt;   // the trapped chest: fuse hisses, then it blows
-                if(gt<.6){chestRaw(cx,cb,1,Math.min(1,gt/.15),0,'bomb',now);
-                    for(let j=0;j<6;j++)O('rgba(255,'+(150+j*18)+',60,'+(.9-j*.12)+')',cx+Math.sin(now/40+j)*8,cb-44-j*4-((now/20+j*9)%14),3.2-j*.35);
-                    if(Math.floor(gt*20)%2)O('rgba(255,120,30,.3)',cx,cb-24,28+gt*25)}
-                else{const e=Math.min(1,(gt-.6)/.6);R('#1a1210',cx-22,cb-8,44,8);R('#2a1a10',cx-16,cb-14,12,6);
-                    O('rgba(255,170,50,'+(1-e)+')',cx,cb-24,20+e*95);O('rgba(255,255,255,'+(1-e)+')',cx,cb-24,e*50);
-                    for(let j=0;j<5;j++){const a=j*1.3,d=e*(40+j*12);R('#5a3a1c',cx+Math.cos(a)*d,cb-24-Math.abs(Math.sin(a))*d*1.2+e*e*30,5,4)}}}
             if(G.cast&&G.dt<G.cast){spr({idle:1});return}   // still casting: the knight just stands there, the spell has not landed yet
             switch(k){
             case 17:{ // SUMMONED: a demon calls up minions, the minions call up MORE, and the whole horde mauls him
@@ -2997,7 +3461,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                     R('#d8d2c0',tx,fy-62,100,52);R('#a8a290',tx,fy-62,100,6);R('#7f1d1d',tx+100,fy-48,40,38);R('#8fd8ff',tx+118,fy-44,18,14);R('#ffe14a',tx+136,fy-22,4,6);O('#111',tx+22,fy-8,10);O('#111',tx+112,fy-8,10);O('#777',tx+22,fy-8,4);O('#777',tx+112,fy-8,4);ctx.restore()}break}
             case 12:{ // EXPLOSION: the knight bursts into spinning jagged chunks and bones that land on the floor
                 const v=Math.min(1,(t-.25)/.7);
-                if(t<.25)spr({idle:1,f:(G.bomb&&G.dt<.6)?'':(Math.floor(t*30)%2?'brightness(3)':'sepia(1) saturate(5)')});
+                if(t<.25)spr({idle:1,f:(Math.floor(t*30)%2?'brightness(3)':'sepia(1) saturate(5)')});
                 else{if(t<.95){O('rgba(255,160,40,'+(1-v)+')',x,cy,v*130*AOE);O('rgba(255,255,255,'+(1-v)+')',x,cy,v*65*AOE)}
                     burst(.25,x,cy);
                     const u=Math.min(1,(t-.25)/.8),ez=1-Math.pow(1-u,2);
@@ -3109,6 +3573,32 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                     for(let j=0;j<10;j++){const a=j*.63+.3,v=(150+j*17)*AM;R('#ffe08a',kx+Math.cos(a)*v*e*.9,fy-14*AM-(Math.abs(Math.sin(a))*v*e-420*e*e),3,3)}
                     ctx.save();ctx.globalAlpha=Math.max(0,1-e/.8);ctx.textAlign='center';ctx.font='bold '+Math.round(26*Math.sqrt(AM)*(1+.5*Math.max(0,1-e*8)))+'px Cinzel, serif';ctx.lineWidth=5;ctx.strokeStyle='#000';ctx.strokeText('CLANG!',kx,fy-(66*AM+14)-e*24);ctx.fillStyle='#ffe08a';ctx.fillText('CLANG!',kx,fy-(66*AM+14)-e*24);ctx.restore()}
                 break}
+            case 29:{const T0=t;{const t=T0*.45;   // the whole scene runs at 45% speed so you can read the diseases and follow it
+                // SUPER-VIRUS: the names of every disease fly into a brew, it becomes one spiked virus that flies into him; he turns green, coughs, shakes and drops. The Demon Lord's is bigger.
+                const VM=G.bs?1.5:1,kx=x-13*F,cy2=fy-50,cl=(v,a,b)=>Math.max(a,Math.min(b,v)),ez=v=>v*v*(3-2*v),rgb=hexRgb(DC[29]);
+                const px=kx,py=cy2-95*VM,Tg=2.7,Tf=3.6,Ts=5.6,sick=cl((t-Tf)/1.4,0,1);   // brew point floats above his head; the virus is ready at Tg, hits him at Tf, he drops at Ts
+                const GF='sepia('+(.9*sick)+') hue-rotate('+Math.round(38*sick)+'deg) saturate('+(1+2.2*sick)+')';
+                ctx.fillStyle='rgba('+rgb+','+(.1*sick*(t<Ts+1.2?1:cl(1-(t-Ts-1.2)/.8,0,1)))+')';ctx.fillRect(0,0,W,H);   // the room goes sickly
+                const dsc=.88*(G.bs?1.25:1),arr=ez(cl(t/.5,0,1)),rel=ez(cl((t-Ts)/.5,0,1)),str=Math.sin(now/55)*(.8+2.5*ez(cl((t-Tg)/(Tf-Tg),0,1))+2*sick)*ez(cl((t-.5)/.4,0,1));   // arr: demons walk in; rel: they let go; str: he struggles harder as the virus nears
+                if(!G.hv)G.hv=[Math.floor(Math.random()*NV),Math.floor(Math.random()*NV)];
+                const dpos=[[-1,true,0],[1,false,1]].map(([sd,fl,w])=>{const mx2=cl(kx+sd*((52+34*rel)+240*(1-arr)),45,W-45),lau=t>Ts+.2,sx=lau?Math.sin(now/35+w*2)*2:(t>.5?Math.sin(now/45+w*2)*1.2:0),sy=lau?-Math.abs(Math.sin(now/90+w*3))*7:0;
+                    ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(mx2,fy+8,34*dsc,6,0,0,7);ctx.fill();
+                    drawMon(mx2+sx,fy+14+sy,t<.5?28+Math.floor(now/110+w*3)%12:Math.floor(now/150+w)%6,dsc,G.hv[w],fl,1);return[mx2+sx,sy,sd]});   // two demons walk in and pin his arms; when he is done they let go and laugh
+                if(t<Ts)spr({idle:1,dx:str,rot:str*.012*F,f:GF});else spr({fr:Math.min(9,Math.floor((t-Ts)*9)),f:GF});   // he fevers in their grip, then falls
+                if(t>=.5&&t<Ts+.3){ctx.save();ctx.lineCap='round';dpos.forEach(([dx2,sy,sd])=>{const ex=kx+sd*13+str*.5,ey=fy-58,ax2=dx2-sd*16*dsc,ay2=fy-72*dsc+sy,rl=1-rel;ctx.globalAlpha=rl;ctx.strokeStyle='#4a2430';ctx.lineWidth=7*dsc;ctx.beginPath();ctx.moveTo(ax2,ay2);ctx.lineTo(ex,ey);ctx.stroke();O('#2d1a20',ex,ey,5*dsc)});ctx.restore()}   // their arms clamp onto his
+                if(t>Tf&&t<Ts+.4){for(let j=0;j<7;j++){const ph=((t-Tf)*1.8+j/7)%1;O('rgba('+rgb+','+(.6*(1-ph))+')',kx+F*(8+ph*46)+Math.sin(j*5)*5,cy2-34+Math.sin(j*2+ph*3)*8-ph*10,2+ph*4)}}   // coughing green spores
+                if(t>.3&&t<Tf){   // the virus grows in the brew, then flies into his chest
+                    const gr=cl((t-.3)/(Tg-.3),0,1),fl=ez(cl((t-Tg)/(Tf-Tg),0,1)),ox=px+(kx-px)*fl,oy=py+(cy2-py)*fl,r=(5+gr*17)*VM;
+                    ctx.save();ctx.globalCompositeOperation='lighter';glow(ox,oy,r*2.6,rgb,.35);ctx.restore();
+                    ctx.strokeStyle='#4fae2a';ctx.lineWidth=2*VM;for(let j=0;j<12;j++){const a=j*.5236+now/500;ctx.beginPath();ctx.moveTo(ox+Math.cos(a)*r,oy+Math.sin(a)*r);ctx.lineTo(ox+Math.cos(a)*r*1.5,oy+Math.sin(a)*r*1.5);ctx.stroke();O('#b6ff5a',ox+Math.cos(a)*r*1.5,oy+Math.sin(a)*r*1.5,2*VM)}
+                    O('#2f7a1c',ox,oy,r);O('#58b830',ox-r*.25,oy-r*.25,r*.6);O('#d6ff8a',ox-r*.4,oy-r*.4,r*.2);O('rgba(20,60,10,.6)',ox+r*.35,oy+r*.2,r*.22);O('rgba(20,60,10,.6)',ox-r*.1,oy+r*.45,r*.15);
+                    if(t>Tg-.4&&t<Tf-.15){ctx.save();ctx.globalAlpha=cl((t-Tg+.4)/.3,0,1);ctx.textAlign='center';ctx.font='bold 14px sans-serif';ctx.lineWidth=3;ctx.strokeStyle='#000';ctx.strokeText('SUPER-VIRUS',ox,oy-r*1.5-12);ctx.fillStyle='#d6ff8a';ctx.fillText('SUPER-VIRUS',ox,oy-r*1.5-12);ctx.restore()}}
+                {const NM=['BLACK PLAGUE','SMALLPOX','EBOLA','RABIES','CHOLERA','MALARIA','TUBERCULOSIS','LEPROSY','HIV/AIDS','SPANISH FLU','TYPHOID','ANTHRAX','DENGUE','POLIO','MEASLES','MARBURG','YELLOW FEVER','COVID-19','SARS','MERS','HANTAVIRUS','LASSA FEVER','MENINGITIS','DIPHTHERIA'];ctx.save();ctx.textAlign='center';ctx.font='bold 12px sans-serif';ctx.lineWidth=3;ctx.strokeStyle='#000';   // every disease flies into the brew
+                    NM.forEach((nm,j)=>{const u=cl((t-(.15+j*.085))/.7,0,1);if(u<=0||u>=1)return;const e=ez(u),a=j*.2618+.4,rd=150+(j%3)*35,ax=px+Math.cos(a)*rd,ay=py-20+Math.sin(a)*(60+(j%2)*25),nx=ax+(px-ax)*e,ny=ay+(py-ay)*e;ctx.globalAlpha=1-u*.4;ctx.strokeText(nm,nx,ny);ctx.fillStyle=j%2?'#b6ff5a':'#7dff4a';ctx.fillText(nm,nx,ny)});ctx.restore()}
+                if(t>Tf&&t<Tf+.25){ctx.fillStyle='rgba('+rgb+','+(.35*cl(1-(t-Tf)/.25,0,1))+')';ctx.fillRect(0,0,W,H)}   // it hits him
+                if(t>Ts+.35)bloodStain(bx,y+14,G.ss||0,1.2*Math.min(1,(t-Ts-.35)*1.6),k);
+                if(t>Ts+.7)remDraw({x:bx,y:fy-1,kind:'virus',sd:G.ss||1,m:VM});
+                }break}
             case 28:{ // ONE ETERNAL SECOND: time crawls, a long spectral blade creeps toward his chest for an age and he feels all of it; then time snaps back and he falls. The Demon Lord's is bigger.
                 const SM=G.bs?1.6:1,kx=x-13*F,cy2=fy-50,cl=(v,a,b)=>Math.max(a,Math.min(b,v)),rgb=hexRgb(DC[28]),T0=.4,TT=6,Tr=T0+TT,s=cl((t-T0)/TT,0,1),dist=210*SM-(210*SM+26)*s,s0=(210*SM-14)/(210*SM+26),h=cl((s-s0)/(1-s0),0,1),AF='sepia('+(.6*s)+') grayscale('+(.5*s)+')';
                 const ca=cl(t/.5,0,1)*(t<Tr+1.6?1:cl(1-(t-Tr-1.6)/1,0,1)),R0=78*SM;
@@ -3509,15 +3999,36 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 ctx.fillStyle=j%3?'#ff3b3b':'#ff6b5a';ctx.fillText('HA',px,py)}
             ctx.restore();
         }
+        // ROAST CAPTION: the demons' taunts are shown one at a time in a wide bar along the bottom of the screen, drawn on top of everything, so no death scene can ever hide the words
+        function capFit(txt,mw){
+            for(const [fs,maxL] of [[14,2],[13,2],[12,3],[11,3],[10,4]]){
+                ctx.save();ctx.font='bold '+fs+'px sans-serif';
+                const out=[];let l='';(txt+'').split(' ').forEach(wd=>{const n=l?l+' '+wd:wd;if(ctx.measureText(n).width>mw&&l){out.push(l);l=wd}else l=n});out.push(l);
+                ctx.restore();if(out.length<=maxL||fs==10)return{ls:out,fs,lh:Math.round(fs*1.3)}}}
+        function roastCaption(now,list,t0){   // list: [{txt,col:[fill,border],mark:[x,y,dir]}]; each demon takes a turn, then it loops
+            if(!list.length)return;
+            let tot=0;list.forEach(l=>{l.d=Math.max(3.2,Math.min(8,2.2+l.txt.length/38));tot+=l.d});
+            let tt=(((G.dt-t0)%tot)+tot)%tot,i=0;while(i<list.length-1&&tt>=list[i].d){tt-=list[i].d;i++}
+            const L=list[i],al=Math.max(0,Math.min(1,tt/.25,(L.d-tt)/.25));
+            const bw=748,bx=26,B=capFit(L.txt,bw-76),h=B.ls.length*B.lh+16,by=H-8-h,cy=by+h/2;
+            ctx.save();ctx.globalAlpha=al;
+            if(L.mark){const [mx,my,dr]=L.mark,pu=.75+.25*Math.sin(now/120);ctx.fillStyle=L.col[1];ctx.strokeStyle='#000';ctx.lineWidth=1.5;ctx.globalAlpha=al*pu;ctx.beginPath();if(dr>0){ctx.moveTo(mx,my);ctx.lineTo(mx-9,my+14);ctx.lineTo(mx+9,my+14)}else{ctx.moveTo(mx,my);ctx.lineTo(mx-9,my-14);ctx.lineTo(mx+9,my-14)}ctx.closePath();ctx.fill();ctx.stroke();ctx.globalAlpha=al}   // a little arrow marks who is talking
+            ctx.fillStyle='rgba(255,255,255,.97)';rr(bx,by,bw,h,12);ctx.fill();ctx.strokeStyle=L.col[1];ctx.lineWidth=3;ctx.stroke();
+            ctx.fillStyle=L.col[0];ctx.beginPath();ctx.arc(bx+30,cy,17,0,7);ctx.fill();ctx.strokeStyle=L.col[1];ctx.lineWidth=2;ctx.stroke();   // a chip in the speaker's own plate colour
+            ctx.font='18px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff';ctx.fillText('\u{1F479}',bx+30,cy+1);ctx.textBaseline='alphabetic';
+            ctx.fillStyle='#111';ctx.font='bold '+B.fs+'px sans-serif';ctx.textAlign='left';
+            B.ls.forEach((l,k)=>ctx.fillText(l,bx+60,by+(h-B.ls.length*B.lh)/2+Math.round(B.fs*.9)+k*B.lh));
+            ctx.restore()}
         // Taunts can be long. Use the biggest font (down to 9px) that fits them in a bubble at most mw px wide, so nothing is ever cut off.
         function bubWrap(t,mw){
             const words=(t+'').split(' ');let best=null;
             for(const [fs,maxL] of [[12,3],[11,4],[10,5],[9.5,6],[9,9]]){
+                if(G&&G.bubFS&&fs>G.bubFS)continue;
                 ctx.save();ctx.font='bold '+fs+'px sans-serif';
                 const out=[];let l='';words.forEach(wd=>{const n=l?l+' '+wd:wd;if(ctx.measureText(n).width>mw&&l){out.push(l);l=wd}else l=n});out.push(l);
                 const w=Math.max(...out.map(x=>ctx.measureText(x).width));ctx.restore();
                 best={ls:out,fs,lh:Math.round(fs*1.28),w};
-                if(out.length<=maxL)break}
+                if(out.length<=maxL||(G&&G.bubFS))break}
             return best}
         function laugh(x,y,now,below,txt,letters){
             const nD=(G.tg&&G.tg.length)||4,rm=G.rooms&&G.rooms[G.i],MW=(rm&&rm.boss)?210:Math.min(170,Math.max(125,W/nD-26));   // bubble width: fits between neighbouring door demons
@@ -3616,7 +4127,6 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
 
             if(G.state=='dying'){
                 if(G.cast&&G.dt<G.cast&&(G.kt||G.bs))castDraw(now);
-                if(G.dk==17&&!r.boss&&G.dt>3.4){G.avoid=null;G.bubR=[];G.tg.forEach(t=>{if(t.y>140)return;laugh(t.px??t.x,(t.ply??t.y)+26,now,true,t.tt,t===(G.kt||G.lt))})}   // horde death: the door demons' speech bubbles are drawn FIRST, so the horde stands in front of them
                 ctx.save();ctx.beginPath();ctx.rect(0,0,(r.boss||G.wide)?W:515,H);ctx.clip();deathDraw();ctx.restore();if(G.dk==23&&!(G.cast&&G.dt<G.cast))vdDraw(now);if(walkKill())eatDemon(now);if(G.bk)bossKillFx(now);
                 ctx.fillStyle=DC[G.dk]||'#facc15';ctx.shadowColor='#000';ctx.shadowBlur=6;ctx.textAlign='center';{const tx=(G.dn||(r.boss?(G.dk==14?'The Demon Lord made you hurt yourself':DN[G.dk].replace(/^The demon /,'The Demon Lord ')):DN[G.dk])).toUpperCase();   // when the boss kills you, it says the BOSS killed you
                 ctx.font='bold 22px Cinzel, serif';const mw=ctx.measureText(tx).width;ctx.font='bold '+(mw>770?Math.floor(22*770/mw):22)+'px Cinzel, serif';{const fw=ctx.measureText(tx).width;ctx.save();ctx.shadowBlur=0;ctx.fillStyle='rgba(0,0,0,.62)';rr(W/2-fw/2-16,12,fw+32,38,10);ctx.fill();ctx.strokeStyle=(DC[G.dk]||'#facc15')+'88';ctx.lineWidth=1.5;ctx.stroke();ctx.restore()}ctx.fillText(tx,W/2,40)}ctx.shadowBlur=0;
@@ -3629,14 +4139,16 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                     if(r.boss){if(G.dt>(G.dk==17?3.4:(G.bk?G.ew+.65:.35+(G.cast||0)))){hp=G.bh||[BZ.cx,BZ.hy];laugh(hp[0],hp[1],now,false);haha(hp[0]-30,hp[1]+80,now)}}   // the Demon Lord laughs at you
                     else{
                         G.bubR=[];G.avoid=null;
-                        if(walkKill()&&G.dt>G.ew+.65&&G.bp){laugh(G.bp[0],(G.bp[2]??G.bp[1]-120)-8,now,false);haha(G.bp[0],G.bp[1]-75,now,6,36,26)}   // the one that did it: his bubble sits above his head, not on it
+                        if(walkKill()&&G.dt>G.ew+.65&&G.bp){haha(G.bp[0],G.bp[1]-75,now,6,36,26)}   // the one that did it: his bubble sits above his head, not on it
                         // EVERY demon in a doorway laughs, each under his own answer plate
                         if(G.dt>(G.dk==17?3.4:.35+(G.cast||0))){
                             const hz=(G.dk==17&&G.mpA&&G.mpA.length)?G.mpA:null;
-                            G.avoid=(()=>{if(G.dk==18&&G.mbox)return G.mbox;if(G.dk==17)return null;const f2=G.dy+15,x2=G.dx;let z=[x2-95,f2-105,x2+95,f2+10];   // everyone else keeps their bubble out of the death scene (the knight, and the demon walking up to him)
-                                if(walkKill()&&G.bp)z=[Math.min(z[0],G.bp[0]-60),Math.min(z[1],(G.bp[2]??G.bp[1]-120)-8),Math.max(z[2],G.bp[0]+60),z[3]];return z})();
+                            G.avoid=(G.dk==18&&G.mbox)?G.mbox:null;
                             if(hz)hz.forEach(p=>haha(p[0],p[1]-100*(G.rooms[G.i].boss?1.7:1),now));   // the horde's HAs go first, so the speech bubbles always sit on top of them
-                            G.tg.forEach(t=>{if(t.y>140||((walkKill()||lifeKill())&&t===G.kt))return;{if(G.dk!=17)laugh(t.px??t.x,(t.ply??t.y)+26,now,true,t.tt,t===(G.kt||G.lt));haha(t.x,t.y-38,now,6,22,30)}});G.avoid=null}   // all 4 doorway demons taunt you from their answer plates, horde death included
+                            G.tg.forEach(t=>{if(t.y>140||((walkKill()||lifeKill())&&t===G.kt))return;{haha(t.x,t.y-38,now,6,22,30)}});G.avoid=null;
+                            {const cl2=[];G.tg.filter(t=>t.y<=140).sort((a,b)=>a.x-b.x).forEach((t,i)=>{const isK=walkKill()&&t===G.kt;if(lifeKill()&&t===G.kt)return;if(isK&&!(G.bp&&G.dt>G.ew+.65))return;
+                                cl2.push({txt:t.tt||G.tt,col:PLC[((t.c??i)%6)]||PLC[0],mark:isK?[G.bp[0],(G.bp[2]??G.bp[1]-120)-6,-1]:[t.px??t.x,(t.ply??t.y)+29,1]})});
+                                roastCaption(now,cl2,G.dk==17?3.4:.35+(G.cast||0))}}   // all 4 doorway demons taunt you from their answer plates, horde death included
                     }
                 };
             }else if(G.state=='resp'){
