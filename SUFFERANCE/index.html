@@ -1003,13 +1003,13 @@ d.innerHTML=`<div class="bg-zinc-900 border border-emerald-800/60 rounded-xl p-5
  <div class="flex flex-wrap gap-x-5 gap-y-2 text-sm text-zinc-300"><label class="flex items-center gap-2"><input id="snd-on" type="checkbox" class="accent-emerald-600"> Sound on <span class="text-zinc-500 text-xs">(M)</span></label><label class="flex items-center gap-2"><input id="snd-mon" type="checkbox" class="accent-emerald-600"> Music on</label></div>
  ${Object.keys(L).map(k=>`<div class="space-y-1"><div class="text-xs text-zinc-400">${L[k].t}</div>
   <div class="flex gap-2"><select id="snd-${k}" class="${SEL}">${L[k].o.map(([v,n])=>`<option value="${v}">${n}</option>`).join('')}</select>
-  <button data-test="${k}" class="${BTN}" title="Preview">▶</button><button data-file="${k}" class="${BTN}" title="Use my own audio file">📁</button></div>
-  <input type="file" accept="audio/*" id="snd-f-${k}" hidden>${k=='death'?'<div id="snd-fitnm" class="text-[11px] text-emerald-500/80"></div>':''}</div>`).join('')}
+  <button data-test="${k}" class="${BTN}" title="Preview">▶</button></div>
+  ${k=='death'?'<div id="snd-fitnm" class="text-[11px] text-emerald-500/80"></div>':''}</div>`).join('')}
  <div class="space-y-1"><div class="text-xs text-zinc-400">⚔️ Sword-art sound effects (each move sounds different)</div>
   <div class="flex gap-2"><select id="snd-sk" class="${SEL}">${SND.SKN.map((n,i)=>`<option value="${i}">${n}</option>`).join('')}</select><button id="snd-skgo" class="${BTN}" title="Preview">▶</button></div></div>
  <div class="space-y-2 pt-1"><label class="flex items-center gap-3 text-xs text-zinc-400">Music volume<input id="snd-mv" type="range" min="0" max="1" step=".05" class="flex-1 accent-emerald-600"></label>
  <label class="flex items-center gap-3 text-xs text-zinc-400">Effects volume<input id="snd-sv" type="range" min="0" max="1" step=".05" class="flex-1 accent-emerald-600"></label></div>
- <p class="text-[11px] text-zinc-500 leading-relaxed">▶ previews it. 📁 lets you load your own mp3/wav/ogg for that slot (it lasts until you reload the page). Your other choices are remembered.</p></div>`;
+ <p class="text-[11px] text-zinc-500 leading-relaxed">▶ previews it. Your choices are remembered.</p></div>`;
 document.body.appendChild(d);
 const $=s=>d.querySelector(s),btn=document.getElementById('sndbtn');
 function sync(){const c=SND.cfg;$('#snd-on').checked=!!c.on;$('#snd-mon').checked=!!c.mon;$('#snd-mv').value=c.mv;$('#snd-sv').value=c.sv;
@@ -1025,10 +1025,6 @@ $('#snd-mv').oninput=e=>SND.set('mv',+e.target.value);$('#snd-sv').oninput=e=>SN
 Object.keys(L).forEach(k=>{
   $('#snd-'+k).onchange=e=>{k=='music'?SND.setMusic(e.target.value):(SND.set(k,e.target.value),SND.test(k))};
   d.querySelector(`[data-test="${k}"]`).onclick=()=>{SND.test(k);if(k=='death'){const n=$('#snd-fitnm');if(n)n.textContent=SND.cfg.death=='fit'&&SND.fitName?'Previewing: '+SND.fitName+' (each press plays the next death, ~9s preview; in the game it loops until you respawn)':''}};
-  d.querySelector(`[data-file="${k}"]`).onclick=()=>$('#snd-f-'+k).click();
-  $('#snd-f-'+k).onchange=async e=>{const f=e.target.files[0];if(!f)return;
-    await SND.loadFile(k,f);const s=$('#snd-'+k);let o=s.querySelector('[value=custom]');
-    if(!o){o=document.createElement('option');o.value='custom';s.appendChild(o)}o.textContent='📁 '+f.name;s.value='custom';e.target.value=''};
 });
 addEventListener('keydown',e=>{
   if(e.code=='Escape'&&d.style.display=='flex'){close();e.stopPropagation();return}
@@ -1603,6 +1599,83 @@ sync();
         }
 
         // ================= FLOOR LITTER: real bones, ribcages, skulls, knight helmets, swords, spears, axes, shields =================
+        // ================= damaged treasures lying around the dungeon (plain original props, no emblems or markings) =================
+        function relicJunk(g,rng,n,rect,skip){
+            const q=(c,x,y,w,h)=>{g.fillStyle=c;g.fillRect(x,y,w,h)};
+            const ell=(c,x,y,rx,ry)=>{g.fillStyle=c;g.beginPath();g.ellipse(x,y,rx,ry,0,0,7);g.fill()};
+            const poly=(c,pts)=>{g.fillStyle=c;g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();g.fill()};
+            const line=(c,w,pts)=>{g.strokeStyle=c;g.lineWidth=w;g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.stroke()};
+            const shadow=(x,y,rx)=>ell('rgba(0,0,0,.32)',x,y,rx,Math.max(2,rx*.28));
+            const at=(x,y,a,fn)=>{g.save();g.translate(x,y);g.rotate(a);fn();g.restore()};
+            const R={
+                // plain woven straw hat, brim torn, crown dented
+                hat:()=>{shadow(0,6,26);
+                    ell('#a8803a',0,0,26,11);ell('#c9a24c',0,-1,23,9);for(let i=-4;i<=4;i++)line('rgba(110,80,30,.5)',1,[[i*5,-9],[i*5+2,8]]);
+                    ell('#d8b560',0,-5,13,6);ell('#b08a3e',0,-6,10,4);q('#8a6a2c',-12,-1,24,1);
+                    poly('#1a0f12',[[14,-3],[22,1],[17,5],[12,2]]);line('#c9a24c',1,[[8,6],[11,9],[14,7]]);line('rgba(70,50,15,.7)',1,[[-6,-8],[-2,-3],[-7,0]])},
+                // big black katana snapped in two: long black blade halves, bright edge, wrapped grip
+                katana:()=>{shadow(0,5,46);
+                    poly('#1b1d24',[[-48,-1],[-8,-5],[-4,0],[-9,2],[-6,6],[-48,3]]);q('#8c93a3',-47,0,38,1);q('#3a3e4a',-47,-1,38,1);   // tip half with a lit edge
+                    poly('#1b1d24',[[8,-5],[34,-4],[34,5],[10,6],[14,2],[7,-1]]);q('#8c93a3',11,3,22,1);q('#3a3e4a',9,-3,24,1);        // hilt half
+                    q('#c9a227',33,-6,3,12);q('#2a2018',36,-4,22,8);for(let i=0;i<6;i++)q('#5a4a3a',38+i*3.5,-4,1.5,8);q('#1b1d24',58,-4,3,8);   // guard + wrapped grip + pommel
+                    line('#050507',1,[[-6,6],[-4,0],[-9,2]]);line('rgba(255,255,255,.18)',.8,[[-30,-2],[-10,-4]])},
+                // metal headband: plate with scratches and dents, torn cloth ends
+                band:()=>{shadow(0,5,26);
+                    q('#3a3f4a',-28,-3,22,6);q('#2a2e38',-28,1,22,2);q('#3a3f4a',10,-2,22,5);q('#2a2e38',10,1,22,2);poly('#3a3f4a',[[30,-2],[36,1],[32,5]]);poly('#3a3f4a',[[-28,-3],[-34,0],[-30,4]]);
+                    q('#aab2bd',-8,-6,18,12);q('#e8edf2',-8,-6,18,1);q('#6b7380',-8,5,18,1);q('#8d96a3',-8,-5,3,10);[[-6,-4],[8,-4],[-6,3],[8,3]].forEach(p=>q('#4a5360',p[0],p[1],1,1));
+                    line('#1d2128',1.3,[[-7,-5],[9,5]]);line('#1d2128',1,[[-7,3],[3,-4]]);poly('rgba(0,0,0,.35)',[[4,-6],[10,-6],[10,-1]])},
+                // red and white round shield split down the middle, two halves apart
+                shield:()=>{shadow(0,7,30);
+                    poly('#d8d8de',[[-26,-2],[-20,-14],[-3,-19],[-2,18],[-18,13],[-26,4]]);                                       // left half (white outer ring)
+                    poly('#c93030',[[-21,-2],[-17,-11],[-3,-14],[-3,13],[-15,10],[-21,3]]);poly('#e8e8ee',[[-14,-2],[-12,-7],[-3,-9],[-3,8],[-11,6],[-14,2]]);poly('#c93030',[[-9,0],[-7,-3],[-3,-4],[-3,4],[-7,3]]);
+                    poly('#d8d8de',[[3,-19],[20,-14],[27,-2],[27,4],[19,13],[2,18]]);
+                    poly('#c93030',[[4,-14],[18,-11],[22,-2],[22,3],[17,10],[4,13]]);poly('#e8e8ee',[[4,-9],[13,-7],[16,-2],[16,2],[13,6],[4,8]]);poly('#c93030',[[4,-4],[8,-3],[10,0],[8,3],[4,4]]);
+                    line('#2a2d36',1.2,[[-3,-19],[-1,-9],[-3,0],[-1,9],[-2,18]]);line('#2a2d36',1,[[14,-9],[10,-2]]);line('#2a2d36',1,[[-16,6],[-11,2]])},
+                // red bo staff snapped in half: two long red poles, splintered ends, gold caps
+                bo:()=>{shadow(0,4,48);
+                    poly('#a82424',[[-50,-3],[-6,-3],[-3,0],[-8,1],[-5,3],[-50,3]]);q('#d64a4a',-50,-3,44,1);q('#6e1414',-50,2,44,1);q('#c9a227',-50,-3,3,6);q('#c9a227',-30,-3,2,6);
+                    poly('#a82424',[[6,-3],[48,-3],[48,3],[8,3],[12,0]]);q('#d64a4a',8,-3,40,1);q('#6e1414',8,2,40,1);q('#c9a227',45,-3,3,6);q('#c9a227',26,-3,2,6);
+                    line('#e8d2a0',1,[[-6,-3],[-3,0],[-5,3]]);line('#e8d2a0',1,[[6,-3],[9,-1],[12,0]]);[[-1,-5],[-4,4],[3,5]].forEach(p=>q('#e8d2a0',p[0],p[1],2,1))},   // wood splinters
+                // an old spell book torn into pieces: loose cover, page scraps, spine
+                grimoire:()=>{shadow(0,7,32);
+                    poly('#3a1a4a',[[-30,-6],[-10,-9],[-8,6],[-28,8]]);poly('#5a2a70',[[-28,-5],[-12,-7],[-11,4],[-27,6]]);q('#c9a227',-26,-3,14,1);q('#c9a227',-26,3,14,1);   // cover piece
+                    poly('#e9e2cf',[[-4,-8],[12,-6],[10,4],[-2,6]]);poly('#d5ccb3',[[2,0],[16,2],[14,10],[4,9]]);poly('#e9e2cf',[[18,-8],[28,-6],[26,2],[19,0]]);
+                    line('#8a7a5a',.8,[[-1,-4],[9,-3]]);line('#8a7a5a',.8,[[0,0],[8,0]]);line('#8a7a5a',.8,[[5,4],[12,6]]);
+                    q('#2a1238',2,-14,5,22);q('#c9a227',2,-10,5,1);q('#c9a227',2,-2,5,1)},   // spine
+                // the legendary longsword of the old king-and-the-stone tale: gold cross-guard and pommel, broken blade, notched edge, a dull gem
+                excalibur:()=>{shadow(0,5,50);
+                    poly('#c9d3df',[[-50,-1],[-22,-6],[-20,-1],[-26,1],[-22,5],[-50,3]]);q('#f4f8fc',-49,0,26,1);q('#8a95a5',-49,2,26,1);   // broken tip, bright fuller line
+                    poly('#c9d3df',[[-2,-6],[14,-6],[14,6],[-2,6],[-6,2],[-3,-1]]);q('#f4f8fc',-2,-5,16,1);q('#8a95a5',-2,4,16,1);q('#6a7686',2,-1,10,1);   // blade stump above the guard
+                    [[-13,-3],[-12,2],[-20,0]].forEach(p=>poly('#07080c',[[p[0],p[1]-1],[p[0]+2,p[1]],[p[0],p[1]+1]]));   // nicks along the edge
+                    q('#d4aa2a',14,-14,5,28);q('#f4d868',14,-14,5,1);q('#7a5c10',14,12,5,2);q('#d4aa2a',11,-16,3,4);q('#d4aa2a',11,12,3,4);q('#d4aa2a',19,-16,3,4);q('#d4aa2a',19,12,3,4);   // cross-guard
+                    q('#2b3d6e',19,-3,26,6);for(let i=0;i<7;i++)q('#d4aa2a',21+i*3.5,-3,1,6);   // grip with gold wire
+                    ell('#d4aa2a',48,0,5,5);ell('#7a5c10',48,1,3,3);ell('#274a8a',48,0,2.4,2.4);q('#6fa0e8',47,-1,1,1);   // pommel with a dull blue gem
+                    ell('#1d3a78',16.5,0,2,2.5)},
+                // a green ring (jade), cracked open
+                ring:()=>{shadow(0,5,12);
+                    g.lineWidth=5;g.strokeStyle='#1f7a45';g.beginPath();g.arc(0,0,9,.45,6.0);g.stroke();g.lineWidth=2;g.strokeStyle='#5fd68a';g.beginPath();g.arc(0,-1,9,3.6,5.6);g.stroke();
+                    g.strokeStyle='#c9a227';g.lineWidth=1.2;g.beginPath();g.arc(0,0,11.2,.45,6.0);g.stroke();
+                    poly('#1f7a45',[[11,2],[16,5],[12,8]]);q('#5fd68a',-4,-12,2,1);q('#2a2d36',9,-1,2,3)},
+                // a golden glove (gauntlet), dented, a finger and the cuff bent
+                glove:()=>{shadow(0,8,22);
+                    poly('#b8901e',[[-22,-6],[-10,-8],[-10,8],[-22,8]]);q('#e8c548',-21,-6,11,1);q('#7a5c10',-21,6,11,2);   // cuff
+                    poly('#d4aa2a',[[-10,-8],[8,-9],[10,-5],[8,7],[-10,8]]);q('#f4d868',-9,-8,16,1);   // back of the hand
+                    for(let i=0;i<4;i++){const y=-8+i*5;poly(i==2?'#a8821a':'#d4aa2a',[[8,y],[i==1?15:19,y+(i==2?3:0)],[i==1?15:19,y+3+(i==2?3:0)],[8,y+3]]);q('#7a5c10',8,y+3,i==1?7:11,1)}
+                    poly('#d4aa2a',[[-6,8],[0,14],[6,12],[4,6]]);line('#5a420a',1,[[-2,-8],[1,-2],[-3,6]]);line('#5a420a',1,[[10,-1],[14,2]])},
+                // a medium hammer with a cracked head and chipped haft
+                hammer:()=>{shadow(0,5,26);
+                    q('#6b4a24',-4,-2,32,5);q('#4a3216',-4,1,32,2);q('#2a1c0a',4,-2,1,5);q('#2a1c0a',16,-2,1,5);   // haft
+                    poly('#8d96a3',[[-24,-8],[-8,-8],[-6,0],[-6,9],[-22,9],[-26,0]]);q('#c9d1d9',-23,-8,15,1);q('#5a6370',-24,8,17,1);
+                    line('#1d2128',1.2,[[-14,-8],[-12,-2],[-15,4],[-13,9]]);poly('rgba(0,0,0,.35)',[[-8,-8],[-6,-4],[-9,-3]]);q('#c9d1d9',-20,-3,1,1)},
+            };
+            const names=['hat','katana','band','shield','bo','grimoire','ring','glove','hammer','excalibur'],used=new Set(),placed=[];
+            for(let i=0,tries=0;i<n&&tries<400;tries++){
+                const x=rect[0]+rng()*(rect[2]-rect[0]),y=rect[1]+rng()*(rect[3]-rect[1]);
+                if(skip&&skip(x,y))continue;if(placed.some(p=>Math.hypot(p[0]-x,p[1]-y)<100))continue;
+                const nm=names[(rng()*names.length)|0];if(used.has(nm))continue;used.add(nm);placed.push([x,y]);i++;
+                g.save();g.translate(x,y);g.scale(1.35,1.35);g.translate(-x,-y);at(x,y,(rng()-.5)*.6,R[nm]);g.restore();
+            }
+        }
         function floorJunk(g,rng,n,rect,skip){
             const q=(c,x,y,w,h)=>{g.fillStyle=c;g.fillRect(x,y,w,h)};
             const ell=(c,x,y,rx,ry)=>{g.fillStyle=c;g.beginPath();g.ellipse(x,y,rx,ry,0,0,7);g.fill()};
@@ -1801,6 +1874,7 @@ sync();
                 for(let r=1;r<4;r++){g.beginPath();g.moveTo(cx+s*r*12,cy+0);g.quadraticCurveTo(cx+s*r*7,cy+r*7,cx,cy+r*12);g.stroke()}}});
             // ---- floor litter: bones, a ribcage, skulls, a knight helmet, swords / spears, shields ...
             floorJunk(g,rng,15+((rng()*5)|0),[40,WB+24,XM-40,H-26],(x,y)=>plateBand(y));
+            relicJunk(g,rng,2+((rng()*2)|0),[70,WB+30,XM-70,H-34],(x,y)=>plateBand(y));
             // vignette
             const v=g.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,W*.62);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.55)');g.fillStyle=v;g.fillRect(0,0,W,H);
             return{cv,P,torches};
@@ -1830,6 +1904,7 @@ sync();
             g.strokeStyle='rgba(150,20,50,.35)';g.lineWidth=2;[[96,22],[64,15]].forEach(([rx,ry])=>{g.beginPath();g.ellipse(400,292,rx,ry,0,0,7);g.stroke()});
             for(let i=0;i<6;i++){const a=i*Math.PI/3;g.beginPath();g.moveTo(400+Math.cos(a)*64,292+Math.sin(a)*15);g.lineTo(400+Math.cos(a+2.1)*96,292+Math.sin(a+2.1)*22);g.stroke()}
             floorJunk(g,rng,14,[40,WB+30,W-40,H-24],(x,y)=>(x>320&&x<480)||(y<235&&(x<230||x>570)));
+            relicJunk(g,rng,3,[70,WB+30,W-70,H-34],(x,y)=>(x>320&&x<480)||(y<235&&(x<230||x>570)));
             const v=g.createRadialGradient(W/2,H/2,150,W/2,H/2,520);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.6)');g.fillStyle=v;g.fillRect(0,0,W,H);
             return{cv,P,torches};
             }finally{WB=oldWB}
@@ -1838,7 +1913,7 @@ sync();
 
 
 
-        function start(){if(SAVED){galResume();return}if(G&&!G.gal){$('#run').scrollIntoView();return}startRun()}
+        function start(){if(SAVED){galResume();return}G=null;keys={};startRun()}   // every click on Descend re-rolls: the questions are shuffled into a new order and every room is generated again
         function startRun(gq){   // gq = a question: this is a Death Gallery replay (one plain room, nothing counts)
             const d=S.decks[S.deck];
             if(!gq&&(!d||!d.qs.length))return;
@@ -2146,6 +2221,22 @@ sync();
             for(let j=0;j<26;j++){const u=j/25;L.push({off:(u-.5)*92+(r(j)-.5)*5,h:(16+r(j+40)*30)*(1.2-Math.abs(u-.5)*.9),lean:(r(j+80)-.5)*.55,w:5+r(j+120)*3,thru:Math.abs(u-.5)<.38,rank:Math.abs(j-12.5)})}
             for(let j=0;j<16;j++){const side=j%2?1:-1;L.push({off:side*(50+r(j+200)*38),h:6+r(j+240)*9,lean:(r(j+280)-.5)*.5,w:4+r(j+320)*2,thru:false,rank:14+j*.4})}
             return L})();
+        // ICE SLIDE: the 3-spike clusters that are already on the floor, textured as real ice. bl (0..1) = how much of the spikes is covered in blood (when someone hangs on them)
+        function iceSpikeDraw(px,py,now,bl){
+            for(let k=-1;k<=1;k++){
+                const bx=px+k*16,ty=py-18,by=py+14,path=()=>{ctx.beginPath();ctx.moveTo(bx-8,by);ctx.lineTo(bx,ty);ctx.lineTo(bx+8,by);ctx.closePath()};
+                const g=ctx.createLinearGradient(0,ty,0,by);g.addColorStop(0,'#f6feff');g.addColorStop(.4,'#b4e8fc');g.addColorStop(1,'#4ba5dc');
+                ctx.fillStyle=g;path();ctx.fill();
+                ctx.fillStyle='rgba(30,110,180,.4)';ctx.beginPath();ctx.moveTo(bx,ty);ctx.lineTo(bx+8,by);ctx.lineTo(bx+1,by);ctx.closePath();ctx.fill();      // shaded right facet
+                ctx.fillStyle='rgba(255,255,255,.85)';ctx.beginPath();ctx.moveTo(bx-.5,ty+1);ctx.lineTo(bx-6.5,by-1);ctx.lineTo(bx-3,by-1);ctx.closePath();ctx.fill();   // bright left highlight
+                ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(bx-1,ty+11);ctx.lineTo(bx+2,by-5);ctx.moveTo(bx+1,ty+16);ctx.lineTo(bx+4,ty+21);ctx.stroke();   // cracks inside the ice
+                if(bl>0){ctx.save();path();ctx.clip();ctx.fillStyle='rgba(150,18,28,.92)';ctx.fillRect(bx-9,ty+3,18,(by-ty)*.62*bl);ctx.fillStyle='rgba(205,50,60,.55)';ctx.fillRect(bx-9,ty+3,5,(by-ty)*.62*bl);ctx.restore();
+                    R('#8a141c',bx-1,ty+(by-ty)*.62*bl,2,3+((k+2)*2))}   // drip running down
+                ctx.strokeStyle='rgba(30,100,165,.95)';ctx.lineWidth=1;path();ctx.stroke();
+                if(Math.sin(now/260+k*2.3+px*.07)>.82){R('#fff',bx-1,ty-3,2,6);R('#fff',bx-3,ty-1,6,2)}   // twinkle on the tip
+            }
+            R('#3b7098',px-28,py+12,56,5);R('#c4ecff',px-28,py+12,56,1);R('#1f4468',px-28,py+16,56,1);   // frozen base
+        }
         function iceMiniDraw(x,fy,gf,now){ICE_MINI.forEach((s,j)=>{const g=gf(s);if(g<=0)return;const h=s.h*g,bx=x+s.off,tx=bx+s.lean*h,ty=fy-h;
                 ctx.fillStyle='rgba(170,232,255,.93)';ctx.beginPath();ctx.moveTo(bx-s.w/2,fy+2);ctx.lineTo(tx,ty);ctx.lineTo(bx+s.w/2,fy+2);ctx.closePath();ctx.fill();
                 ctx.fillStyle='rgba(255,255,255,.55)';ctx.beginPath();ctx.moveTo(bx+.5,fy+2);ctx.lineTo(tx,ty);ctx.lineTo(bx+s.w/2,fy+2);ctx.closePath();ctx.fill();
@@ -2155,7 +2246,8 @@ sync();
                 if(g>=1&&s.h>20&&Math.sin(now/240+j*1.7)>.8){R('#fff',tx-1,ty-3,2,6);R('#fff',tx-3,ty-1,6,2)}})}
         function srSnd(type,blx,x,v,c){let w=0;if(type=='boulder'&&blx!=null)w=Math.max(0,Math.max(.06,(blx-x)/Math.max(150,v||200))-.17);SND.dead(0,'s:'+type,0,w);
             if(type=='axe'&&c&&c.ph&&c.sp){const ts=[];c.ph.forEach((ph,i)=>{const sp=c.sp[i],wv=c.t*sp+ph;let tt=(Math.ceil(wv/Math.PI)*Math.PI-wv)/sp;if(tt<.05)tt+=Math.PI/sp;for(;tt<8;tt+=Math.PI/sp)ts.push(tt)});SND.axeSwings(ts)}}   // each axe passes the bottom of its swing (blade red, scraping the floor) every half period
-        function srHurt(c,type){type=SDN[type]?type:'spike';srSnd(type,c.hit?c.hit.x:null,G.hx,c.hit?c.hit.v:200,c);c.dead={type,t:0,x:(type=='spike'&&c.spx!=null)?c.spx:G.hx,spx:type=='spike'?c.spx:null,y:G.hy,f:G.face,sp:[0,1,2].map(()=>Math.random()*23|0),click:false,bi:type=='boulder'&&c.hit?c.hit.i:null,blx:type=='boulder'&&c.hit?c.hit.x:null,bly:type=='boulder'&&c.hit?c.hit.ly:null,bv:type=='boulder'&&c.hit?c.hit.v:200};G.deaths++;$('#dc').textContent='Deaths: '+G.deaths;G.state='secretDie';G.moving=0;c.vx=0;c.vy=0;if(!G.gal)unlock('s:'+type,1)}
+        function srHurt(c,type){type=SDN[type]?type:'spike';srSnd(type,c.hit?c.hit.x:null,G.hx,c.hit?c.hit.v:200,c);c.dead={type,t:0,x:(type=='spike'&&c.spx!=null)?c.spx:G.hx,spx:type=='spike'?c.spx:null,y:G.hy,f:G.face,sp:[0,1,2].map(()=>Math.random()*23|0),click:false,bi:type=='boulder'&&c.hit?c.hit.i:null,blx:type=='boulder'&&c.hit?c.hit.x:null,bly:type=='boulder'&&c.hit?c.hit.ly:null,bv:type=='boulder'&&c.hit?c.hit.v:200};if(type=='ice'&&c.sx){let bp=null,bd=1e9;c.sx.forEach(p=>{const d=Math.hypot(p[0]-G.hx,p[1]-G.hy);if(d<bd){bd=d;bp=p}});if(bp){c.dead.x=bp[0];c.dead.y=bp[1]}}   // he lands ON the nearest spike cluster that was already there
+            G.deaths++;$('#dc').textContent='Deaths: '+G.deaths;G.state='secretDie';G.moving=0;c.vx=0;c.vy=0;if(!G.gal)unlock('s:'+type,1)}
         addEventListener('mousedown',()=>{if(G&&G.state=='secretDie'&&!G.paused&&G.sc&&G.sc.dead)G.sc.dead.click=true});
         function srDeathDraw(c,now){
             const D=c.dead,t=D.t,x=D.x,fy=D.y+15,F=D.f,type=D.type,bx=x-57*F;
@@ -2287,12 +2379,12 @@ sync();
                 for(let j=0;j<12;j++){const ph=(t*1.3+j*.083)%1;if(t<1.6)R('rgba(170,160,150,'+(.6*(1-ph))+')',x-30+((j*29)%60),fy-ph*50,3+j%3,3+j%3)}
                 if(t>1.2){const e=cl((t-1.2)/.5,0,1);ctx.strokeStyle='rgba(200,190,230,'+(.5*(1-e))+')';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,fy-4,10+e*40,3+e*8,0,0,7);ctx.stroke()}}
 
-            else if(type=='ice'){ // lots of TINY sharp ice spikes burst out of the floor and pierce his whole body; he hangs there frozen
+            else if(type=='ice'){ // he lands on the ice spikes that were already on the floor and is run through by THEM (no new spikes appear)
                 const fz='saturate(.5) brightness(1.15) hue-rotate(150deg)',lf=cl((t-.12)/.25,0,1);
-                ctx.fillStyle='rgba(200,240,255,.22)';ctx.beginPath();ctx.ellipse(x,fy+3,Math.min(1,t*3)*72,Math.min(1,t*3)*14,0,0,7);ctx.fill();
+                ctx.fillStyle='rgba(200,240,255,.22)';ctx.beginPath();ctx.ellipse(x,fy+3,Math.min(1,t*3)*60,Math.min(1,t*3)*11,0,0,7);ctx.fill();
                 if(t<.12)sp({idle:1,f:fz,dx:Math.sin(now/30)*2});
-                else sp({idle:1,n:0,f:fz,pv:50,dy:-lf*8,rot:F*lf*.2});   // lifted a little and hanging on the spikes
-                iceMiniDraw(x,fy,sk=>cl((t-.1-sk.rank*.012)/.12,0,1),now);
+                else sp({idle:1,n:0,f:fz,pv:50,dy:-lf*6,rot:F*lf*.12});   // sinks onto the spikes and hangs there
+                iceSpikeDraw(x,fy-15,now,cl((t-.12)/.3,0,1));   // the same spikes, drawn in front of his body so he is skewered on them
                 if(t>.3)for(let j=0;j<5;j++)R('#7a121b',x-16+j*8,fy-100+((now/14+j*23)%100),2,5);
                 for(let j=0;j<10;j++){const ph=(now/1600+j*.1)%1;R('rgba(220,245,255,'+(.6*(1-ph))+')',x-70+j*15+Math.sin(now/500+j)*6,fy-ph*70,3,3)}}
         }
@@ -2365,7 +2457,7 @@ sync();
          draw(c,now){SRL.forEach((ly,i)=>{if(c.dead&&G.state=='secretDie'&&c.dead.type=='boulder'&&c.dead.bi===i)return;const x=this.bx(c,i);ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(x,ly+24,26,7,0,0,7);ctx.fill();
                 const g=ctx.createRadialGradient(x-8,ly-10,4,x,ly,28);g.addColorStop(0,'#9a9486');g.addColorStop(1,'#4a463e');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,ly,26,0,7);ctx.fill();
                 ctx.strokeStyle='#2d2a25';ctx.lineWidth=3;ctx.beginPath();const a=x/16;ctx.moveTo(x+Math.cos(a)*6,ly+Math.sin(a)*6);ctx.lineTo(x+Math.cos(a)*22,ly+Math.sin(a)*22);ctx.moveTo(x-Math.cos(a+1)*6,ly-Math.sin(a+1)*6);ctx.lineTo(x-Math.cos(a+1)*20,ly-Math.sin(a+1)*20);ctx.stroke()})}},
-        {name:'Axe Gauntlet',axes:true,hint:'Four axes swing at different speeds. Hold SHIFT (or C) to crawl under the HIGH swings, but when a blade glows red it is sweeping the floor and crawling will not save you!',pal:'stone',init(c){c.ph=[0,1,2,3].map(()=>Math.random()*6.283);c.sp=[0,1,2,3].map(()=>1.6+Math.random()*.9)},
+        {name:'Axe Gauntlet',axes:true,hint:'Dodge the axes! Hold SHIFT or C to crawl under high swings.',pal:'stone',init(c){c.ph=[0,1,2,3].map(()=>Math.random()*6.283);c.sp=[0,1,2,3].map(()=>1.6+Math.random()*.9)},
          upd(c){return[230,380,530,670].map((x,i)=>srAxe(c,x,c.ph[i],0,false,c.sp[i])).some(Boolean)?'axe':false},
          draw(c,now){[230,380,530,670].forEach((x,i)=>srAxe(c,x,c.ph[i],now,true,c.sp[i]))}},
         {name:'Simon Torches',hint:'Watch the torches flash, then step on the matching coloured plates in the SAME order. A wrong plate wakes the Chaos Melody, one terrible note that tears you apart, then the sequence replays.',pal:'moss',
@@ -2404,7 +2496,8 @@ sync();
             const keep=new Set();path.forEach((p,i)=>{keep.add(i*3+p);if(i<11&&path[i+1]!==p)keep.add((i+1)*3+p)});   // a walkable route always exists
             for(let k=0;k<36;k++)c.tl.push({h:!keep.has(k)&&Math.random()<.4,s:0,tm:0,gt:0});this.reset(c)},
          reset(c){c.tl.forEach(t=>{t.s=t.h?2:0;t.tm=0;t.gt=t.h?9:0})},
-         upd(c,dt){c.tl.forEach(t=>{if(t.s==1){t.tm+=dt;if(t.tm>.6){t.s=2;t.gt=0}}else if(t.s==2)t.gt+=dt});
+         tick(c,dt){c.tl.forEach(t=>{if(t.s==1){t.tm+=dt;if(t.tm>.6){t.s=2;t.gt=0}}else if(t.s==2)t.gt+=dt})},   // also runs on the death screen, so crumbling tiles finish falling and stay gone until you respawn
+         upd(c,dt){this.tick(c,dt);
             const i=Math.floor((G.hx-100)/50),j=Math.floor((G.hy+12-268)/50);if(i<0||i>=12||j<0||j>2)return false;
             const t=c.tl[i*3+j];if(t.s==0){t.s=1;t.tm=0}
             return (t.s==2&&t.gt>.1)?'fall':false},
@@ -2417,7 +2510,8 @@ sync();
                     ctx.strokeStyle='rgba(0,0,0,.75)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x+25+sh,y+22);ctx.lineTo(x+8+sh,y+6);ctx.moveTo(x+25+sh,y+22);ctx.lineTo(x+44+sh,y+12);ctx.moveTo(x+25+sh,y+22);ctx.lineTo(x+20+sh,y+46);if(u>.4){ctx.moveTo(x+25+sh,y+22);ctx.lineTo(x+46+sh,y+40);ctx.moveTo(x+25+sh,y+22);ctx.lineTo(x+4+sh,y+34)}ctx.stroke();
                     for(let d=0;d<3;d++)R('rgba(170,160,150,.55)',x+8+((k*13+d*17)%34),y+44+((now/18+d*9)%14),3,3)}
                 else if(t.gt<.7){const u=t.gt/.7;ctx.save();ctx.globalAlpha=1-u;ctx.translate(x+25,y+25+u*u*90);ctx.rotate((k%2?1:-1)*u*.9);ctx.scale(1-u*.5,1-u*.5);ctx.translate(-x-25,-y-25);tile(x,y,k);ctx.restore()}});
-            R('rgba(255,255,255,.05)',100,268,600,2)}},
+            R('rgba(255,255,255,.05)',100,268,600,2);
+            c.bl.forEach(b=>bloodStain(b.x,b.y,b.sd||0,1));c.rem.forEach(remDraw)}},   // the pit paints over everything before it, so the marks of earlier falls (rubble, a dropped gauntlet) go on top; the tiles themselves still come back on respawn
         {name:'Lava Crossing',hint:'Three platforms bob up and down. Hop across, never touch the lava!',pal:'lava',sup:-1,init(c){c.sup=-1;c.py=null;c.lp=[0,1,2].map(()=>Math.random()*6.283);c.ls=sh([1.6,1.9,2.2])},
          upd(c){const PX=[345,405,465],ys=PX.map((_,i)=>337+Math.sin(c.t*c.ls[i]+c.lp[i])*52);
             if(c.sup>=0&&c.py)G.hy=Math.max(275,Math.min(405,G.hy+(ys[c.sup]-c.py[c.sup])));
@@ -2437,11 +2531,12 @@ sync();
             ctx.strokeStyle='rgba(255,255,255,.4)';ctx.lineWidth=2;for(let y=268;y<H;y+=44){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}for(let x=0;x<W;x+=80){ctx.beginPath();ctx.moveTo(x,232);ctx.lineTo(x,H);ctx.stroke()}
             ctx.strokeStyle='rgba(50,100,150,.55)';ctx.lineWidth=1.5;[[120,300],[330,350],[540,290],[700,380],[460,415],[40,380]].forEach(([cx,cy])=>{ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+22,cy+12);ctx.lineTo(cx+14,cy+30);ctx.lineTo(cx+40,cy+44);ctx.moveTo(cx+22,cy+12);ctx.lineTo(cx+48,cy+6);ctx.stroke()});
             for(let i=0;i<5;i++){const sx=((i*190+now/18)%(W+200))-100;ctx.fillStyle='rgba(255,255,255,.2)';ctx.beginPath();ctx.moveTo(sx,232);ctx.lineTo(sx+40,232);ctx.lineTo(sx-30,H);ctx.lineTo(sx-70,H);ctx.fill()}
-            R('rgba(255,255,255,.65)',0,232,W,6);R('rgba(255,255,255,.5)',0,H-8,W,8);c.sx.forEach(p=>{for(let k=-1;k<=1;k++){ctx.fillStyle='#c9d1d9';ctx.beginPath();ctx.moveTo(p[0]+k*16-8,p[1]+14);ctx.lineTo(p[0]+k*16,p[1]-18);ctx.lineTo(p[0]+k*16+8,p[1]+14);ctx.fill()}R('#2a3a50',p[0]-28,p[1]+12,56,5)})}}
+            R('rgba(255,255,255,.65)',0,232,W,6);R('rgba(255,255,255,.5)',0,H-8,W,8);c.bl.forEach(b=>bloodStain(b.x,b.y,b.sd||0,1));c.rem.forEach(remDraw);   // (the floor covers what was drawn before, so stains and remains go on top of it)
+            c.sx.forEach(p=>iceSpikeDraw(p[0],p[1],now,c.rem.some(o=>o.kind=='iceimpale'&&Math.abs(o.x-p[0])<2&&Math.abs(o.y-14-p[1])<2)?1:0))}}
         ];
         function enterSecret(){
             let k;do{k=Math.random()*SRM.length|0}while(k==lastSR&&SRM.length>1);lastSR=k;const d=SRM[k];
-            G.sec.used=1;G.qtxt=$('#q').textContent;$('#q').textContent='🗝️ '+d.name+'! '+d.hint+(d.axes?' (SHIFT or C = crawl under high swings. Red blade = low sweep, it hits crawlers too!)':'')+' Traps only knock you back.';
+            G.sec.used=1;G.qtxt=$('#q').textContent;$('#q').textContent='🗝️ '+d.name+'! '+d.hint+(d.axes?' Red blade = low sweep, don\'t crawl.':' Traps only knock you back.');
             G.state='secret';G.sc={t:0,hurt:0,out:0,bl:[],rem:[],gold:0,k,def:d,vx:0,vy:0,sup:-1};d.init(G.sc);G.hx=70;G.hy=320;G.moving=0}
         function updSecret(dt){
             const c=G.sc;c.t+=dt;
@@ -2457,7 +2552,7 @@ sync();
                 const bad=d.upd(c,dt);if(bad&&c.hurt<=0)srHurt(c,typeof bad=='string'?bad:'spike');
                 if(G.state=='secret'&&G.hx>=715){c.gold=35+Math.floor(Math.random()*26);G.xg+=c.gold;G.state='secretOut';c.out=0;G.moving=0;
                     for(let i=0;i<30;i++)G.cn.push({x:745,y:320,vx:(Math.random()-.5)*300,vy:-Math.random()*320,l:1.3})}
-            }else if(G.state=='secretDie'){const D=c.dead;D.t+=dt;G.moving=0;if(G.gal&&D.click&&D.t>.6){galExit();return}if(D.click&&D.t>.6){c.bl.push({x:D.x,y:D.y+12,sd:Math.random()*100});c.rem.push({x:D.x,y:D.y+14,f:D.f,kind:({spike:'impale',axe:'chop',boulder:'smear',lava:'lavacrust',ghost:'soul',fire:'scorch',dart:'darts',gas:'toxic',ice:'iceimpale',fall:'rubble'})[D.type]||'rubble',nohusk:1,sd:Math.random()*100});G.state='secret';G.hx=70;G.hy=320;c.hurt=.8;c.vx=0;c.vy=0;c.dead=null;if(c.def.reset)c.def.reset(c)}}else{c.out+=dt;if(c.out>1.8){G.state='play';$('#q').textContent=G.qtxt;G.hx=G.sec.x;G.hy=186;G.face=1}}}
+            }else if(G.state=='secretDie'){const D=c.dead;D.t+=dt;G.moving=0;if(c.def.tick)c.def.tick(c,dt);if(G.gal&&D.click&&D.t>.6){galExit();return}if(D.click&&D.t>.6){c.bl.push({x:D.x,y:D.y+12,sd:Math.random()*100});c.rem.push({x:D.x,y:D.y+14,f:D.f,kind:({spike:'impale',axe:'chop',boulder:'smear',lava:'lavacrust',ghost:'soul',fire:'scorch',dart:'darts',gas:'toxic',ice:'iceimpale',fall:'rubble'})[D.type]||'rubble',nohusk:1,sd:Math.random()*100});G.state='secret';G.hx=70;G.hy=320;c.hurt=.8;c.vx=0;c.vy=0;c.dead=null;if(c.def.reset)c.def.reset(c)}}else{c.out+=dt;if(c.out>1.8){G.state='play';$('#q').textContent=G.qtxt;G.hx=G.sec.x;G.hy=186;G.face=1}}}
         function drawSecret(now){
             const c=G.sc,d=c.def,P=SRP[d.pal]||SRP.stone;ctx.fillStyle='#0a0710';ctx.fillRect(0,0,W,H);
             for(let y=0;y<230;y+=20)for(let x=((y/20|0)%2)*25-25;x<W;x+=50){ctx.fillStyle=(Math.abs(x*3+y*5)%4)?P.a:P.b;ctx.fillRect(x+1,y+1,48,18)}
@@ -2915,6 +3010,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         }
 
         function endRun(){
+            G.ended=1;   // this run is over: Descend / Descend Again must start a fresh one (and re-roll the rooms)
             const secs=(performance.now()-G.t0)/1e3,acc=G.right/Math.max(1,G.tries),sc=acc*100-Math.max(0,secs-G.rooms.length*25)/4;
             const g=sc>=90?'S':sc>=75?'A':sc>=55?'B':'C';
             let gold=Math.round(20+{S:150,A:100,B:60,C:30}[g]+acc*80+Math.max(0,G.rooms.length*30-secs)/3);
@@ -3062,8 +3158,8 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 const F=o.f||1;ctx.fillStyle='rgba(30,60,95,.25)';ctx.beginPath();ctx.ellipse(x,b+3,58,10,0,0,7);ctx.fill();
                 ctx.fillStyle='rgba(120,16,28,.7)';ctx.beginPath();ctx.ellipse(x,b+3,42,7,0,0,7);ctx.fill();
                 ctx.strokeStyle='rgba(235,250,255,.85)';ctx.lineWidth=1.4;ctx.beginPath();ctx.ellipse(x,b+3,50,8.5,0,0,7);ctx.stroke();   // frost rim
-                if(sprites.idle.loaded){ctx.save();ctx.filter='saturate(.5) brightness(1.1) hue-rotate(150deg)';ctx.translate(x,b+1-8-50);ctx.rotate(F*.2);ctx.scale(F,1);ctx.drawImage(sprites.idle.img,0,0,120,80,-132,-126,264,176);ctx.restore()}
-                iceMiniDraw(x,b+1,()=>1,now);
+                if(sprites.idle.loaded){ctx.save();ctx.filter='saturate(.5) brightness(1.1) hue-rotate(150deg)';ctx.translate(x,b+1-8-50);ctx.rotate(F*.12);ctx.scale(F,1);ctx.drawImage(sprites.idle.img,0,0,120,80,-132,-126,264,176);ctx.restore()}
+                iceSpikeDraw(x,b-14,now,1);
                 for(let j=0;j<6;j++)R('rgba(120,14,26,.8)',x-34+rr(j+90)*68,b+1+rr(j+95)*5,2+rr(j+99)*3,2)}   // blood spatter
             else if(o.kind=='icicles'){ // tiny ice shards scattered where he shattered (no spikes)
                 ctx.fillStyle='rgba(200,235,250,.28)';ctx.beginPath();ctx.ellipse(x,b+3,50,9,0,0,7);ctx.fill();ctx.fillStyle='rgba(235,250,255,.22)';ctx.beginPath();ctx.ellipse(x-6,b+2,32,5,0,0,7);ctx.fill();
