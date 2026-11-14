@@ -36,7 +36,6 @@ body{
 }
 a{color:var(--hot)}
 
-/* Header Navigation Bar - Aligned to Top Left */
 header{
   display:flex;
   align-items:center;
@@ -72,7 +71,6 @@ h1{font-size:clamp(44px,8vw,92px);line-height:.95;margin:0 0 18px;letter-spacing
 .btn:focus-visible,a:focus-visible{outline:2px solid var(--ice);outline-offset:3px}
 .meta{font:13px var(--mono);color:var(--dim)}
 
-/* Emphasized Badges */
 .badge-free{
   background:var(--glow);
   color:#050304;
@@ -85,7 +83,6 @@ h1{font-size:clamp(44px,8vw,92px);line-height:.95;margin:0 0 18px;letter-spacing
 }
 .badge-free-lg{font-size:1.1em;padding:4px 12px}
 
-/* 3D Canvas Viewport Container */
 .hud-wrapper{
   position:relative;
   width:100%;
@@ -161,7 +158,6 @@ footer{
 </head>
 <body>
 
-<!-- HEADER NAV (Directly Top-Left) -->
 <header>
   <a class="brand" href="#">
     <img src="Necron.jpg" alt="NECRON">
@@ -171,7 +167,6 @@ footer{
 
 <main>
 
-<!-- HERO SECTION -->
 <div class="hero">
   <div>
     <h1>NECRON</h1>
@@ -256,7 +251,6 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 const coreGroup = new THREE.Group();
 scene.add(coreGroup);
 
-// 1. HOLOGRAPHIC WIREFRAME ICOSAHEDRON CORE
 const coreGeo = new THREE.IcosahedronGeometry(1.3, 3);
 const coreMat = new THREE.MeshBasicMaterial({
   color: 0xff2a2a,
@@ -267,7 +261,6 @@ const coreMat = new THREE.MeshBasicMaterial({
 const wireCore = new THREE.Mesh(coreGeo, coreMat);
 coreGroup.add(wireCore);
 
-// 2. INNER PULSING CORE
 const innerGeo = new THREE.SphereGeometry(0.7, 16, 16);
 const innerMat = new THREE.MeshBasicMaterial({
   color: 0x8a0c1a,
@@ -278,7 +271,6 @@ const innerMat = new THREE.MeshBasicMaterial({
 const innerSphere = new THREE.Mesh(innerGeo, innerMat);
 coreGroup.add(innerSphere);
 
-// 3. THREE COUNTER-ROTATING TORUS RINGS
 const createRing = (radius, tube, color, rotX, rotY) => {
   const ringGeo = new THREE.TorusGeometry(radius, tube, 16, 100);
   const ringMat = new THREE.MeshBasicMaterial({
@@ -301,7 +293,6 @@ coreGroup.add(ring1);
 coreGroup.add(ring2);
 coreGroup.add(ring3);
 
-// 4. DENSE CRIMSON PARTICLE NEBULA (12,000 PARTICLES)
 const particleCount = 12000;
 const particleGeo = new THREE.BufferGeometry();
 const positions = new Float32Array(particleCount * 3);
@@ -349,7 +340,6 @@ const particleMat = new THREE.PointsMaterial({
 const particleSystem = new THREE.Points(particleGeo, particleMat);
 coreGroup.add(particleSystem);
 
-// 5. MOUSE & TOUCH DRAG CONTROLS
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 let targetRotationX = 0;
