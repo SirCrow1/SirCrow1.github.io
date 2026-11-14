@@ -77,9 +77,11 @@
 <script>
 const SND=(()=>{
 const LS='sufference_snd_v1';
-let cfg={on:1,mon:1,music:'crypt',death:'fit',laugh:'cackle',mv:.5,sv:.8};
+let cfg={on:1,mon:1,music:'forest',death:'fit',laugh:'sinister',mv:.5,sv:.8};
 try{Object.assign(cfg,JSON.parse(localStorage[LS]||'{}'))}catch(e){}
 if(!cfg.v){cfg.v=2;if(cfg.death=='doom')cfg.death='fit'}
+if(cfg.v<3){cfg.v=3;if(cfg.laugh=='cackle')cfg.laugh='sinister'}
+if(cfg.v<4){cfg.v=4;if(cfg.music=='crypt')cfg.music='forest'}
 const cust={music:null,death:null,laugh:null};
 if(cfg.music=='custom')cfg.music='crypt';if(cfg.death=='custom')cfg.death='fit';if(cfg.laugh=='custom')cfg.laugh='cackle';
 let ac,B={},rvb,nb,tm=null,nt=0,st=0,spd=1,src=null,ready=0;
@@ -135,7 +137,25 @@ const DEATH={
 };
 // ---------- LAUGHS (voiced "ha-ha-ha": sawtooth through vowel formants) ----------
 const LG={cackle:[7,.14,310,190,[800,1300],.5,.1],witch:[6,.12,560,430,[900,2200],.4,.09,1],chuckle:[4,.25,125,85,[480,900],.7,.18]};
-function laugh(k,t,low){
+function laugh(k,t,low,sy){
+  if(k=='sinister'){
+    const P=low?.66:1,V=low?1.25:1;
+    const hit=(tt,p0,p1,du,v,fm,vb)=>{
+      const g=ac.createGain(),am=ac.createOscillator(),ag=ac.createGain();
+      g.gain.setValueAtTime(0,tt);g.gain.linearRampToValueAtTime(v*V,tt+Math.min(.05,du/3));g.gain.exponentialRampToValueAtTime(.0001,tt+du);
+      am.frequency.value=34;ag.gain.value=v*.5;am.connect(ag);ag.connect(g.gain);am.start(tt);am.stop(tt+du+.05);
+      [['sawtooth',1],['sawtooth',1.006],['square',.5]].forEach(([ty,m])=>{
+        const o=ac.createOscillator();o.type=ty;o.frequency.setValueAtTime(p0*P*m,tt);o.frequency.exponentialRampToValueAtTime(p1*P*m,tt+du);
+        if(vb){const l=ac.createOscillator(),lg=ac.createGain();l.frequency.value=5.5;lg.gain.value=p0*P*m*.03;l.connect(lg);lg.connect(o.frequency);l.start(tt);l.stop(tt+du+.05)}
+        fm.forEach((f,j)=>{const F=ac.createBiquadFilter(),fg=ac.createGain();F.type='bandpass';F.frequency.value=f*(low?.8:1);F.Q.value=7;fg.gain.value=[2.4,1.5,.6][j];o.connect(F);F.connect(fg);fg.connect(g)});
+        o.start(tt);o.stop(tt+du+.05)});
+      g.connect(B.s.d);g.connect(B.s.r);noise('s',tt,du,.1*v*V,'bandpass',1800,900,1.2,1)};
+    const O=[450,800,2500],A=[800,1150,2800],X=sy?1.5:0;
+    if(!sy)[0,.42,.9].forEach((d,i)=>hit(t+d,100-i*6,80-i*5,.34,.34,O,0));   // slow "mm... hm... hm..."
+    [1.5,1.68,1.85,2.0,2.14,2.27].forEach((d,i)=>hit(t+d-X,125+i*14,100+i*8,.15,.5-i*.02,A,0));   // accelerating, climbing "ha ha ha ha"
+    hit(t+2.45-X,230,95,1.5,.6,A,1);   // the long drawn-out "HAAAAAAH"
+    sweep('s','sine',60,38,t+2.45-X,1.5,.35*V,1);noise('s',t+2.4-X,1.6,.06,'highpass',4500,2500,.7,1);
+    return}
   if(k=='skeleton'){for(let i=0;i<12;i++){const tt=t+i*.055;noise('s',tt,.03,.5,'bandpass',2500+Math.random()*1500,0,6);note('s','square',900+Math.random()*500,tt,.03,.07,0,0,1)}return}
   const[n,gap,p0,p1,fm,v,du,vb]=LG[k]||LG.cackle,P=low?.6:1;
   for(let i=0;i<n;i++){
@@ -150,8 +170,8 @@ function laugh(k,t,low){
 // ---------- other effects ----------
 const SFX={
   right(t){noise('s',t,.22,.4,'bandpass',3000,800,2);[523,659,784,1047].forEach((f,i)=>note('s','triangle',f,t+.05+i*.07,.35,.2,1,0,1))},
-  bosshit(t){sweep('s','sine',200,45,t,.35,.9);noise('s',t,.3,.5,'lowpass',2000,200);SFX.right(t+.05)},
-  swing(t){noise('s',t,.18,.28,'bandpass',2200,600,1.5)},
+  bosshit(t){sweep('s','sine',200,45,t,.4,1);noise('s',t,.35,.8,'lowpass',2500,200);noise('s',t,.08,.6,'highpass',4000,1800);SFX.right(t+.05)},
+  swing(t){noise('s',t,.22,.75,'bandpass',4200,500,1.3);sweep('s','sawtooth',950,240,t,.14,.12);note('s','sine',3136,t+.02,.3,.07,1,0,1);sweep('s','sine',150,60,t+.1,.12,.35)},
   click(t){note('s','square',1200,t,.04,.05,0,0,1)},
   chest(t){sweep('s','sawtooth',90,160,t,.35,.1);noise('s',t,.3,.15,'bandpass',600,1200,3);[1319,1568,1976,2349].forEach((f,i)=>note('s','sine',f,t+.3+i*.05,.3,.14,1,0,1))},
   respawn(t){[392,523,659].forEach((f,i)=>note('s','sine',f,t+i*.08,.6,.15,1,0,1))},
@@ -162,6 +182,9 @@ const SFX={
 
 // ================= PER-DEATH SOUNDS: a one-shot "hit" + a looping bed that keeps playing until you respawn =================
 let SS=null,lbuf=null;
+let did=0,lplayed=1,lboss=0,lgain=null,lsrc=null,ldeath=0,noLaugh=0,lastD0=0;   // noLaugh: set while the knight is in a secret room (no demon laughs there, ever)
+function stopLaugh(){if(!ldeath)return;ldeath=0;try{if(lgain)lgain.gain.setTargetAtTime(0,ac.currentTime,.04)}catch(e){}try{if(lsrc)lsrc.stop(ac.currentTime+.2)}catch(e){}lgain=lsrc=null}   // a death laugh never carries over into the next room
+function armLaugh(b,d){did++;lplayed=0;lboss=b;const my=did;setTimeout(()=>{if(did==my&&!lplayed)api.laughSync()},(d+1.2)*1000)}   // safety net only: the real trigger is the red HA HA being drawn
 const rnd=(a,b)=>a+Math.random()*(b-a);
 function ensureNb(){if(!nb){nb=ac.createBuffer(1,ac.sampleRate*1.5,ac.sampleRate);const d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}}
 function lbuffer(){if(!lbuf){const n=ac.sampleRate*4;lbuf=ac.createBuffer(1,n,ac.sampleRate);const d=lbuf.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1}return lbuf}
@@ -263,47 +286,16 @@ ONES[12]=t=>{boom(t,.95,1.6);nz(t,.2,.7,'highpass',1500,400);for(let i=0;i<20;i+
 ONES[13]=t=>{for(let i=0;i<8;i++)nz(t+i*.1,.09,.8,'bandpass',rnd(200,600),100,2);swl(t,1.6,.5,'lowpass',150,60,.2,1,1);ping(t+.4,700,.08,1.2,80);for(let i=0;i<10;i++)crunch(t+.5+rnd(0,1),.35);boom(t+1.5,.8,.8)};
 ONES[14]=t=>{for(let i=0;i<4;i++)ping(t+i*.22,330+(i%2)*110,.12,.5);thud(t+.95,.6,110);wet(t+.98,.55);moan(t+1.0,.6,190,80,.22)};
 ONES[15]=t=>{nz(t,.5,.5,'lowpass',3000,300);ping(t+.5,260,.3,.25,90);sweep('k','sine',900,300,t+4.6,.09,.35);nz(t+4.6,.4,.5,'lowpass',2600,300);swl(t+4.7,.7,.3,'lowpass',1200,300,.2,1,1)};
-ONES[16]=t=>{creak(t,.35,150,.14);thud(t+.35,.5,230);[.5,.8,1.1].forEach(d=>{crunch(t+d,.55);thud(t+d,.35,240)});ping(t+1.5,300,.35,.22,90);thud(t+1.75,.6,150);nz(t+1.75,.1,.6,'bandpass',800,300,2);growl(t+1.95,.35,.25,75)};
-ONES[17]=t=>{for(let i=0;i<16;i++)growl(t+.2+i*.17,rnd(.25,.5),.12,rnd(60,110));for(let i=0;i<5;i++)scream(t+.5+i*.5,.35,rnd(500,800),rnd(900,1300),.07);for(let i=0;i<10;i++)thud(t+rnd(.4,2.8),.3,rnd(100,180))};
-ONES[18]=t=>{creak(t,.6,90,.18);metal(t+.6,.45,300,1.5);[.85,1.0,1.15].forEach(d=>{wet(t+d,.4);ping(t+d,rnd(700,1000),.05,.15)});scream(t+.9,.8,400,250,.08);metal(t+1.4,.15,700,.35)};
-ONES[19]=t=>{scream(t,.7,650,300,.14);for(let i=0;i<45;i++)tk(t+.15+rnd(0,.9),.14);for(let i=0;i<6;i++)note('k','sawtooth',rnd(130,170),t+rnd(0,.8),.25,.04,0,900,1)};
-ONES[20]=t=>{ping(t,1800,.09,.45,350);metal(t+.45,.55,520,1.8);metal(t+.45,.3,780,1.2);thud(t+.45,.9,85);wet(t+.5,.5);ping(t+.95,200,.12,.2,700,'square')};
-ONES[21]=t=>{for(let i=0;i<5;i++)gloop(t+i*.1,rnd(250,400)-i*20,.25);swl(t+.3,.8,.35,'highpass',4000,6000,.2);for(let i=0;i<30;i++)sz(t+.3+rnd(0,1),.14);scream(t+.4,1.3,800,300,.18)};
-ONES[22]=t=>{sweep('k','sawtooth',30,500,t,1.6,.22);swl(t,1.6,.45,'bandpass',150,4000,.9,2);[220,330,440,660].forEach(f=>sweep('k','sine',f/4,f*2,t,1.6,.04));sweep('k','sine',300,20,t+1.6,.5,.9);nz(t+1.6,.4,.6,'lowpass',2000,60)};
-ONES[23]=t=>{for(let i=0;i<5;i++){thud(t+i*.45,.45,70);thud(t+i*.45+.16,.3,65)}[.2,.55,.9,1.25].forEach(s=>{ping(t+s,1500,.2,.05,600);wet(t+s+.02,.2);scream(t+s,.25,rnd(420,620),250,.06)});nz(t+1.7,.06,.8,'bandpass',1800,500,2);ping(t+1.7,3000,.25,.08,200,'triangle')};
-ONES[24]=t=>{swl(t,1.5,.35,'lowpass',200,50,.3,1,1);for(let i=0;i<6;i++)nz(t+i*.12,.08,.6,'bandpass',rnd(200,500),100,2);for(let i=0;i<5;i++)moan(t+.4+i*.25,1.4,rnd(150,380),rnd(90,200),.12,i%2?'u':'o');swl(t+1.9,.4,.3,'bandpass',300,2500,.5);for(let i=0;i<6;i++){thud(t+2.2+i*.17,.35,rnd(100,170));growl(t+2.2+i*.17,.3,.1,rnd(70,110))}};
-ONES[25]=t=>{sweep('k','sawtooth',40,90,t,.8,.12);for(let i=0;i<30;i++){nz(t+.5+i*.06,.05,.18,'bandpass',400,200,2);ping(t+.5+i*.06,rnd(60,80),.05,.05,0,'square')}[.9,1.2,1.5,1.9].forEach(d=>{crunch(t+d,.5);tk(t+d,.35,rnd(2000,3500))});metal(t+.3,.2,260,.4);wet(t+2.4,.4)};
-ONES[26]=t=>{creak(t,.9,70,.2);creak(t+.9,.8,100,.14);swl(t,1.8,.12,'highpass',4000,6500,.4);[660,880,1100,1320].forEach((f,i)=>ping(t+.6+i*.15,f,.08,1.1));crunch(t+1.6,.45);crunch(t+1.9,.4);ping(t+2.6,600,.3,.1,250)};
-ONES[27]=t=>{swl(t,1.4,.3,'bandpass',200,3000,.9,1.2);ping(t+.6,2400,.08,1.0,300);nz(t+1.6,.25,.7,'highpass',500,0);boom(t+1.6,.95,3);swl(t+1.7,3.4,.7,'lowpass',4000,60,.1,1,1);ping(t+1.8,7000,.04,2.5)};
-ONES[28]=t=>{for(let i=0;i<10;i++)ping(t+i*(.25-.02*i),1800,.07,.04,0,'square');for(let i=0;i<4;i++)thud(t+1.2+i*.9,.35,70);sweep('k','sawtooth',600,40,t+1.5,2.5,.12,1);nz(t+1.5,2.5,.3,'lowpass',400,100,1,1);metal(t+1.5,.2,110,3.4);metal(t+4.5,.2,140,2.4)};
-ONES[29]=t=>{[.1,.45,.8].forEach(s=>cough(t+s,.45));swl(t+1.3,.35,.3,'highpass',3000,1500,.3);for(let i=0;i<14;i++)bub(t+.2+i*.12,rnd(160,360),.16);moan(t+1.5,.7,300,150,.12,'e');[.4,1.0,1.7].forEach(d=>tone(t+d,.12,1000,.1))};
-ONES['s:spike']=t=>{nz(t,.06,.5,'highpass',3000,0);[0,.1,.2].forEach(d=>{wet(t+d,.45);thud(t+d,.35,130)});moan(t+.1,.8,230,90,.18);nz(t+.4,.12,.15,'bandpass',3000,1500,3)};
-ONES['s:axe']=t=>{swl(t,.2,.55,'bandpass',800,4500,.8,1.6);nz(t+.2,.15,.8,'lowpass',2600,300);thud(t+.2,.95,130);wet(t+.25,.5);thud(t+.55,.3,100);thud(t+.7,.25,120)};
-ONES['s:boulder']=t=>{swl(t,.6,.45,'lowpass',150,60,.9,1,1);boom(t+.55,.9,.9);for(let i=0;i<6;i++)crunch(t+.56+i*.06,.5);wet(t+.62,.4)};
-ONES['s:lava']=t=>{nz(t,.5,.5,'bandpass',800,300,1.5);swl(t+.1,1,.25,'highpass',4000,6000,.3);for(let i=0;i<5;i++)gloop(t+.1+i*.2,rnd(70,150),.3);scream(t+.1,1.0,520,210,.15)};
-ONES['s:ghost']=t=>{moan(t,1.8,900,260,.15);moan(t+.05,1.8,930,270,.1,'u');swl(t,1.2,.2,'bandpass',500,2500,.5,3,1);[880,1320].forEach(f=>ping(t+1.2,f,.06,1.5))};
-ONES['s:fire']=ONES[7];
-ONES['s:dart']=t=>{for(let i=0;i<6;i++){const s=t+.1+i*.1;tk(s,.3,3500);ping(s,1500,.1,.05,600);wet(t+.35+i*.1,.2)}moan(t+.9,.7,230,100,.14)};
-ONES['s:gas']=t=>{swl(t,1.9,.3,'highpass',5000,2500,.15);[.5,.85,1.2,1.5].forEach(d=>cough(t+d,.35));for(let i=0;i<6;i++)bub(t+1.0+i*.1,rnd(150,300),.12);thud(t+1.8,.5,100)};
-ONES['s:ice']=t=>{for(let i=0;i<14;i++)tk(t+rnd(0,.6),.2,rnd(4000,9000));for(let i=0;i<5;i++)ping(t+.1+i*.06,rnd(2500,5000),.07,.6);wet(t+.35,.5);thud(t+.35,.4,140);moan(t+.4,.7,260,110,.14)};
-ONES['s:fall']=t=>{ping(t,800,.1,1.6,90);scream(t,1.5,650,200,.12);boom(t+1.7,.7,.8);for(let i=0;i<10;i++)crk(t+1.7+rnd(0,.8),.2)};
-// ---------- LOOPING BEDS (play until you respawn) ----------
-BEDS[0]=()=>{cn('lowpass',200,1,.07,{al:.5});ev(7,t=>bub(t,rnd(120,300),.2));ev(.5,t=>cough(t,.3));ev(.3,t=>moan(t,.8,200,110,.09))};
-BEDS[1]=()=>{rg(1.0,t=>swl(t,.25,.14,'bandpass',1000,500,.2,1.5));ev(2.2,t=>blood(t,.2));cn('highpass',2500,1,.01)};
-BEDS[2]=()=>{ev(2.4,t=>{crunch(t,.4);wet(t+.03,.2)});ev(.6,t=>growl(t,.5,.14,rnd(70,95)));ev(.5,t=>ping(t,rnd(220,320),.25,.2,80));cn('lowpass',180,1,.05)};
-BEDS[3]=()=>{cn('highpass',6000,.5,.05,{al:25,ad:.9});ev(50,t=>sz(t,.1));ev(5,t=>bub(t,rnd(150,380),.18));cn('bandpass',3000,.6,.03,{al:.4});ev(.4,t=>drip(t,.15))};
-BEDS[4]=()=>{cn('bandpass',1200,8,.06,{lf:.3,ld:400});[392,394,523,659].forEach(f=>co('sine',f,.025,{fm:5,fd:f*.01,al:.15,rev:1}));ev(.5,t=>moan(t,1.6,rnd(300,600),rnd(150,300),.07,'u'))};
-BEDS[5]=()=>{PEBBLES(r=>Math.max(1,9-0*r));ev(.35,t=>thud(t,.3,rnd(60,90)));ev(.5,t=>swl(t,.8,.1,'lowpass',300,80,.3,1,1))};
-BEDS[6]=()=>{ev(1.4,t=>ping(t,rnd(160,320),.2,.4,0,'triangle'));ev(.4,t=>moan(t,.8,rnd(160,230),90,.1));DRIPS(1.1);cn('lowpass',150,1,.04)};
-BEDS[7]=FIRE;
-BEDS[8]=ICE;
-BEDS[9]=()=>{ev(16,t=>zap(t,.2));cn('bandpass',2000,4,.04,{al:40,ad:.9});co('sawtooth',100,.05,{lp:300,al:.5});co('sine',60,.1);ev(.7,t=>{note('k','sawtooth',110,t,.16,.12,0,2500,1);nz(t,.12,.3,'bandpass',2500,800,3)});cn('highpass',7000,.5,.02,{al:25})};
-BEDS[10]=()=>{co('sawtooth',38,.22,{lp:150,al:11,ad:.7});cn('lowpass',300,1,.04);ev(.2,t=>ping(t,rnd(900,2000),.06,.8));ev(.3,t=>swl(t,.5,.06,'highpass',4000,5000,.3));ev(.1,t=>{note('k','sawtooth',233,t,.45,.1,0,1800,1);note('k','sawtooth',294,t,.45,.1,0,1800,1)})};
-BEDS[11]=()=>{ev(5,t=>gloop(t,rnd(80,200),.22));ev(.7,t=>{const f=rnd(100,150);for(let i=0;i<5;i++)ping(t+i*.06,f*(1+i*.04),.12,.07,f*.7,'sawtooth')});ev(8,t=>ping(t,4200,.025,.03));cn('lowpass',250,1,.05)};
-BEDS[12]=()=>{co('sine',6200,.03,{fade:.2});co('sine',6350,.02,{fade:.2});ev(10,t=>crk(t,.18));ev(3,t=>tk(t,.1,rnd(900,2000)));cn('lowpass',400,1,.07,{al:.2});cn('lowpass',70,1,.14,{al:.25})};
-BEDS[13]=()=>{cn('bandpass',400,2,.09,{lf:.2,ld:150,rev:1});ev(2.5,t=>{tk(t,.1,rnd(900,2200));ping(t+.05,rnd(900,1400),.03,.15)});ev(.4,t=>{ping(t,55,.25,.7,40);nz(t,.5,.1,'lowpass',200,60,1,1)})};
-BEDS[14]=()=>{co('sine',220,.08,{fm:5,fd:6,rev:1});co('sine',223,.07,{fm:5,fd:6,rev:1});cn('bandpass',3000,10,.025,{lf:.4,ld:1000});ev(.7,t=>swl(t,.45,.12,'bandpass',2500,1800,.4,6));rg(.5,t=>ping(t,880,.05,.2))};
-BEDS[15]=()=>{cn('lowpass',350,1,.15,{al:.4,ad:.4});ev(6,t=>bub(t,rnd(250,700),.2));ev(.7,t=>gloop(t,rnd(150,260),.2));cn('lowpass',150,1,.07,{al:.2});rg(.9,t=>thud(t,.15,60))};
+ONES[16]=t=>{
+  [0,.12,.24,.36].forEach(d=>{creak(t+d,.3,rnd(90,160),.22);chomp(t+d+.1,.3)});for(let i=0;i<6;i++)tk(t+.05+i*.07,.3,rnd(1500,3000));
+  growl(t+.15,.45,.3,75);swl(t+.45,.5,.35,'bandpass',300,1200,.5,2);ping(t+.45,200,.25,.5,420,'triangle');
+  const c=t+.95;chomp(c,1);thud(c,.9,120);nz(c,.05,.8,'highpass',2000,0);ping(c,180,.4,.25,70,'square');pain(c+.02,.4,.16,520);
+  [.12,.24].forEach(d=>chomp(c+d,.8));gulp(c+.2,.8);
+  [.55,.95,1.35,1.75].forEach(d=>{chomp(c+d,.9);bone(c+d+.03,.45);tear(c+d+.06,.35);wet(c+d-.2,.4);chew(c+d-.2,.5);blood(c+d,.25)});   // each jaw slam
+  for(let j=0;j<6;j++){const s=c+1.75+j*.09,l=s+.72;nz(s,.05,.35,'bandpass',rnd(900,2000),400,2);ping(s,rnd(300,500),.12,.08,150);   // spat out...
+    nz(l,.03,.4,'bandpass',rnd(1800,3200),0,4);ping(l,rnd(700,1300),.14,.1,rnd(300,500),'triangle');if(j==5)metal(l,.15,rnd(500,700),.4);if(j==4)thud(l,.2,200);   // ...land
+    nz(l+.2,.02,.2,'bandpass',rnd(2000,3500),0,4);ping(l+.2,rnd(800,1500),.07,.06,rnd(400,600),'triangle')}   // ...bounce
+  thud(c+2.9,.4,100);growl(c+3.0,.5,.3,70)};
 BEDS[16]=()=>{ev(2.2,t=>{crunch(t,.4);thud(t,.25,230)});ev(.7,t=>creak(t,rnd(.3,.6),rnd(120,200),.1));ev(.3,t=>growl(t,.35,.2,rnd(65,85)));ev(.6,t=>{thud(t,.3,rnd(200,280));nz(t,.05,.2,'bandpass',900,300,2)})};
 BEDS[17]=()=>{const R=a=>Math.min(1,a/1.5);ev(a=>11*R(a),t=>growl(t,rnd(.25,.6),.11,rnd(60,115)));ev(a=>2.2*R(a),t=>scream(t,.35,rnd(500,800),rnd(800,1300),.06));ev(a=>5*R(a),t=>thud(t,.25,rnd(100,170)));cn('lowpass',700,1,.08,{al:6,ad:.5})};
 BEDS[18]=()=>{ev(.5,t=>moan(t,1.0,rnd(200,300),130,.04));ev(.4,t=>creak(t,.7,rnd(80,130),.07));DRIPS(1.3);ev(.3,t=>metal(t,.05,rnd(500,900),.4))};
@@ -327,7 +319,7 @@ BEDS['s:fire']=FIRE;
 BEDS['s:dart']=()=>{ev(1,t=>ping(t,rnd(400,700),.2,.25,0,'triangle'));DRIPS(.8);ev(.3,t=>moan(t,.7,rnd(200,260),100,.08))};
 BEDS['s:gas']=()=>{cn('highpass',4500,.5,.12,{al:.3,ad:.4});cn('bandpass',2500,.8,.05);ev(.9,t=>cough(t,.3));ev(3,t=>bub(t,rnd(130,260),.12));ev(.3,t=>moan(t,.7,280,160,.06,'e'))};
 BEDS['s:ice']=()=>{ICE();ev(6,t=>tk(t,.08,rnd(6000,9000)))};
-BEDS['s:fall']=()=>{cn('bandpass',350,3,.07,{lf:.15,ld:120,rev:1});ev(.8,t=>drip(t,.2));ev(1,t=>tk(t,.1,rnd(900,2000)));ev(.2,t=>moan(t,1,rnd(200,260),110,.05))};
+BEDS['s:fall']=()=>{cn('bandpass',350,3,.07,{lf:.15,ld:120,rev:1});ev(.8,t=>drip(t,.2));ev(1,t=>tk(t,.1,rnd(900,2000)))};   // far below in the pit: only echoing drips and falling stones
 // ---------- v3: sounds tuned per death ----------
 ONES[0]=t=>{sweep('k','sine',300,90,t,.18,.3);gasp(t,.3);for(let i=0;i<8;i++)bub(t+.15+i*.07,rnd(150,300),.16);retch(t+.4,.28);retch(t+.85,.3);pain(t+.5,1.4,.13,330);breathe(t+1.7,.15);moan(t+1.8,1.2,260,120,.12);thud(t+1.2,.3,90)};
 BEDS[0]=()=>{cn('lowpass',200,1,.06,{al:.5});ev(6,t=>bub(t,rnd(120,260),.15));ev(.7,t=>pain(t,rnd(.8,1.6),.1,rnd(240,340)));ev(.6,t=>retch(t,.22));ev(.8,t=>breathe(t,.1));ev(.4,t=>cough(t,.25));ev(.5,t=>moan(t,1,rnd(180,260),110,.08))};
@@ -345,10 +337,13 @@ ONES[7]=t=>{swl(t,.7,.7,'lowpass',200,2800,.3,1,1);for(let i=0;i<16;i++)crk(t+rn
 BEDS[7]=()=>{FIRE();ev(a=>.55*Math.max(.35,1-a/20),t=>pain(t,rnd(.8,1.5),.12,rnd(520,740)));ev(.5,t=>moan(t,.7,rnd(260,380),140,.09,'e'))};
 ONES['s:fire']=ONES[7];BEDS['s:fire']=BEDS[7];
 ONES[8]=t=>{swl(t,.7,.25,'highpass',2000,8000,.9,.8);for(let i=0;i<16;i++)tk(t+rnd(0,.7),.14,rnd(3000,9000));ping(t,1200,.05,.7,2600);for(let i=0;i<6;i++)tk(t+.1+i*.06,.2,1800);nz(t+.7,.08,.6,'bandpass',500,150,2);glass(t+.75,.9,40);thud(t+.75,.35,160)};
-BEDS[8]=()=>{ICE();ev(.7,t=>glass(t,.15,7))};ONES['s:ice']=t=>{ONES[8](t)};BEDS['s:ice']=BEDS[8];
+BEDS[8]=()=>{ICE();ev(.7,t=>glass(t,.15,7))};ONES['s:ice']=t=>{swl(t,.15,.3,'highpass',3000,8000,.7,.8);
+  for(let i=0;i<18;i++){const s=t+.1+i*.016;nz(s,.04,.45,'highpass',3500,0);ping(s,rnd(3000,6500),.07,.4);if(i%2==0)wet(s+.02,.18)}      // many TINY crystal spikes shooting out, each one a small pierce
+  pain(t+.25,.8,.16,640);thud(t+.45,.3,140);swl(t+.3,.8,.15,'bandpass',2000,6000,.3,1,1);for(let i=0;i<10;i++)tk(t+.3+rnd(0,.8),.12,rnd(4000,9000))};
+BEDS['s:ice']=BEDS[8];
 ONES[9]=t=>{nz(t,.3,.9,'highpass',800,0);ping(t,4000,.3,.25,60,'sawtooth');for(let i=0;i<10;i++)zap(t+rnd(0,.5),.35);thunder(t+.15,.8)};
 BEDS[9]=()=>{ev(16,t=>zap(t,.2));cn('bandpass',2000,4,.04,{al:40,ad:.9});co('sawtooth',100,.05,{lp:300,al:.5});co('sine',60,.1);ev(.28,t=>thunder(t,.5));cn('highpass',7000,.5,.02,{al:25})};
-ONES[10]=t=>{horn(t,.55,.3);horn(t+.7,1.3,.34);sweep('k','sawtooth',50,160,t,1.8,.12);nz(t+1.2,.55,.25,'bandpass',2200,1500,6);const c=t+1.9;thud(c,.95,90);metal(c,.3,180,.7);[0,.03,.06].forEach(d=>crunch(c+d,.55));bone(c+.05,.6);glass(c,.3,10)};
+ONES[10]=t=>{const H=window.TH10||1.2;horn(t,Math.min(.55,H*.4),.3);horn(t+H*.4,H*.6,.34);sweep('k','sawtooth',50,160,t,H*.95,.12);nz(t+H*.6,.5,.25,'bandpass',2200,1500,6);const c=t+H;thud(c,.95,90);metal(c,.3,180,.7);[0,.03,.06].forEach(d=>crunch(c+d,.55));bone(c+.05,.6);glass(c,.3,10)};
 BEDS[10]=()=>{co('sawtooth',38,.2,{lp:150,al:11,ad:.7});cn('lowpass',300,1,.04);rg(2.8,t=>horn(t,rnd(.6,1.3),.22),1.0)};
 ONES[11]=t=>{ping(t,150,.4,.5,450);nz(t,.6,.4,'lowpass',2500,300);for(let i=0;i<8;i++)gloop(t+.15+i*.12,rnd(90,200),.28);for(let i=0;i<10;i++)slurp(t+.4+rnd(0,1.2),.2);moan(t+.8,1,200,100,.12);ping(t+1.5,420,.3,.3,90)};
 BEDS[11]=()=>{ev(5,t=>gloop(t,rnd(80,200),.2));ev(5,t=>slurp(t,.16));ev(2,t=>wet(t,.18));ev(.7,t=>{const f=rnd(100,150);for(let i=0;i<5;i++)ping(t+i*.06,f*(1+i*.04),.12,.07,f*.7,'sawtooth')});ev(8,t=>ping(t,4200,.025,.03));cn('lowpass',250,1,.05);ev(.35,t=>moan(t,.8,rnd(180,240),100,.07))};
@@ -381,13 +376,18 @@ BEDS[24]=()=>{ev(1.1,t=>zom(t,rnd(1.2,2.2),.12,rnd(85,170)));ev(.5,t=>growl(t,.5
 // ---------- v4: trap-room (secret) deaths, timed to each trap's animation ----------
 ONES['s:spike']=t=>{tk(t,.5,1800);ping(t,1200,.1,.05,0,'square');swl(t+.02,.2,.4,'bandpass',1500,5000,.3,1.5);[0,.04,.08].forEach(d=>metal(t+d+.08,.12,rnd(900,1400),.25));
   [.22,.28,.34].forEach(d=>{stab(t+d,.8);bone(t+d+.02,.3)});pain(t+.26,1.2,.2,560);gasp(t+.9,.2);moan(t+1.0,.9,240,100,.14);blood(t+1.3,.2)};
-BEDS['s:spike']=()=>{DRIPS(1.5);ev(.7,t=>breathe(t,.1));ev(.35,t=>moan(t,.9,rnd(200,260),90,.09));ev(.3,t=>metal(t,.04,rnd(600,900),.4));ev(.5,t=>wet(t,.08))};
-ONES['s:axe']=t=>{swl(t,.22,.7,'bandpass',500,3500,.9,1.2);const c=t+.2;nz(c,.12,.9,'lowpass',2800,300);thud(c,.95,125);stab(c+.01,.7);bone(c+.02,.6);swl(c,.35,.3,'bandpass',1200,500,.1,1);
-  swl(c+.25,.5,.2,'bandpass',600,300,.4,1.5);tear(c+.3,.4);pain(c+.05,.9,.12,520);thud(c+.75,.55,100);wet(c+.77,.4);thud(c+1.2,.45,120);crunch(c+1.2,.3)};
-BEDS['s:axe']=()=>{DRIPS(1.6);ev(.6,t=>wet(t,.12));co('sawtooth',190,.012,{lp:600,fm:13,fd:40,al:70,ad:.9});ev(.3,t=>moan(t,.8,rnd(180,240),90,.07))};
+BEDS['s:spike']=()=>{DRIPS(1.5);ev(.3,t=>metal(t,.04,rnd(600,900),.4));ev(.5,t=>wet(t,.08))};   // after he is dead: only drips and creaking metal, nothing that sounds alive
+ONES['s:axe']=t=>{
+  swl(t,.22,.8,'bandpass',400,4000,.9,1.3);                                   // 1) the axe swings in: a rising whoosh
+  const c=t+.2;                                                                // 2) it cuts him in two: slice, flesh, bone, a short cry
+  nz(c,.1,.9,'highpass',3500,800);nz(c,.14,.9,'lowpass',2800,300);thud(c,.95,125);stab(c+.01,.7);bone(c+.02,.6);tear(c+.04,.5);pain(c+.05,.7,.14,520);swl(c,.3,.3,'bandpass',1200,500,.1,1);
+  thud(c+.55,.55,100);wet(c+.57,.4);thud(c+1.0,.45,120);crunch(c+1.0,.3);     // 3) the two halves fall
+  swl(c+.5,.38,.55,'bandpass',500,3200,.8,1.2);                                // 4) the axe swings on past him...
+  const f=c+.9;metal(f,.5,380,.7);thud(f,.8,85);nz(f,.12,.8,'bandpass',1800,300,2);for(let i=0;i<6;i++)crk(f+.02+i*.015,.4)};   // ...and bites into the stone floor
+BEDS['s:axe']=()=>{DRIPS(1.6);ev(.6,t=>wet(t,.12))};
 ONES['s:boulder']=t=>{swl(t,.3,.5,'lowpass',200,120,.8,1,1);const c=t+.17;for(let i=0;i<10;i++)bone(c+i*.025,.55);thud(c,.95,60);wet(c+.03,.6);nz(c,.4,.6,'lowpass',2500,100,1,1);boom(c,.8,1);
   swl(c+.3,1.8,.4,'lowpass',250,60,.2,1,1);for(let i=0;i<10;i++)crk(c+.4+rnd(0,1.4),.2);swl(c+.2,.9,.12,'highpass',3000,5000,.3)};
-BEDS['s:boulder']=()=>{PEBBLES(4);ev(.5,t=>breathe(t,.07));DRIPS(.8);ev(.3,t=>moan(t,.8,rnd(180,240),90,.06))};
+BEDS['s:boulder']=()=>{PEBBLES(4);DRIPS(.8);ev(a=>.5*Math.max(.1,1-a/8),t=>crk(t,.14))};   // just settling rubble and drips
 ONES['s:lava']=t=>{nz(t+.2,.6,.6,'bandpass',900,250,1.5);swl(t+.2,1.4,.3,'highpass',3500,7000,.15);for(let i=0;i<30;i++)sz(t+.25+rnd(0,1.4),.12);
   vox(t+.25,1.5,700,180,.2,'a',{path:[[.15,820],[.6,500],[1,170]],end:.03,vr:7,vd:.035,jit:1,breath:.4});for(let i=0;i<10;i++)gloop(t+.4+i*.14,rnd(60,140),.3);swl(t+.3,1.5,.3,'lowpass',500,120,.3,1.2);
   for(let i=0;i<8;i++)popf(t+1.35+i*.1,.25);for(let i=0;i<8;i++)sz(t+3.2+i*.15,.12)};
@@ -396,24 +396,385 @@ ONES['s:ghost']=t=>{swl(t,.6,.45,'bandpass',2500,500,.5,2,1);moan(t,.7,700,300,.
   vox(t+.6,1.6,500,1200,.14,'a',{path:[[.3,900],[1,1300]],end:.01,vr:8,vd:.03,jit:1,breath:.4});swl(t+.9,1.6,.3,'bandpass',200,2500,.9,2,1);for(let i=0;i<8;i++)ping(t+1.0+i*.18,rnd(900,2200),.05,.8);moan(t+1.8,1.6,rnd(260,320),150,.1,'u')};
 BEDS['s:ghost']=()=>{ev(.45,t=>moan(t,2,rnd(450,900),rnd(220,400),.08,pick(['o','u'])));cn('bandpass',700,10,.05,{lf:.2,ld:500,rev:1});co('sine',1320,.015,{al:.4,rev:1});ev(.5,t=>vox(t,.9,rnd(380,520),rnd(300,420),.04,'u',{vr:11,vd:.04,jit:1,breath:.3}))};
 ONES['s:fire']=t=>{swl(t,.35,.7,'lowpass',300,2500,.4,1,1);nz(t+.1,.3,.5,'bandpass',800,2500,1);pain(t+.25,1.0,.2,780);for(let i=0;i<14;i++)crk(t+rnd(0,1.2),.3);swl(t+.25,.9,.25,'bandpass',500,1500,.5,1);
-  const c=t+1.2;thud(c,.9,90);metal(c,.3,300,.6);crunch(c+.02,.5);pain(c+.1,1.0,.15,640)};
+  const c=t+1.2;thud(c,.9,90);metal(c,.3,300,.6);crunch(c+.02,.5);for(let i=0;i<8;i++)crk(c+.1+i*.09,.3)};
 ONES['s:dart']=t=>{for(let j=0;j<8;j++){const s=t+j*.04+.1;swl(s,.12,.2,'bandpass',4500,2500,.5,1.5);stab(s+.1,.4);ping(s+.1,rnd(220,380),.12,.3,0,'triangle')}
   pain(t+.4,.9,.12,520);gasp(t+.7,.2);for(let i=0;i<3;i++)cough(t+.9+i*.22,.2);thud(t+1.35,.7,110);metal(t+1.35,.18,260,.4);crunch(t+1.36,.3)};
-BEDS['s:dart']=()=>{ev(.9,t=>ping(t,rnd(250,450),.15,.3,0,'triangle'));ev(.7,t=>breathe(t,.09));ev(.5,t=>cough(t,.18));DRIPS(.8);ev(.3,t=>moan(t,.7,rnd(180,230),90,.07));ev(3,t=>bub(t,rnd(150,300),.08))};
+BEDS['s:dart']=()=>{ev(a=>.9*Math.max(.1,1-a/5),t=>ping(t,rnd(250,450),.12,.3,0,'triangle'));DRIPS(.8)};   // the darts slowly stop quivering, he is not breathing or coughing any more
 ONES['s:gas']=t=>{swl(t,1.8,.4,'highpass',4500,2500,.1,.8);[.1,.5,.85,1.15].forEach(d=>cough(t+d,.35));for(let i=0;i<3;i++)gasp(t+.3+i*.4,.18);retch(t+1.1,.22);for(let i=0;i<8;i++)bub(t+.6+i*.1,rnd(130,250),.1);moan(t+.8,.8,260,150,.1,'e');thud(t+1.55,.6,100);metal(t+1.55,.15,280,.4);crunch(t+1.56,.25)};
-BEDS['s:gas']=()=>{cn('highpass',4500,.5,.12,{al:.3,ad:.4});cn('bandpass',2500,.8,.05);ev(.6,t=>cough(t,.2));ev(3,t=>bub(t,rnd(130,260),.1));ev(.4,t=>breathe(t,.08));ev(.3,t=>moan(t,.7,280,160,.06,'e'))};
-ONES['s:fall']=t=>{for(let i=0;i<5;i++)nz(t+i*.025,.09,.7,'bandpass',rnd(150,500),100,2);swl(t,.5,.4,'lowpass',150,60,.1,1,1);for(let i=0;i<8;i++)crunch(t+.1+rnd(0,.5),.4);
-  vox(t+.12,1.6,750,180,.2,'a',{path:[[.15,900],[.5,520],[1,170]],end:.008,vr:7,vd:.035,jit:1,breath:.3});for(let i=0;i<12;i++)crk(t+.2+rnd(0,1.2),.15);
-  thud(t+1.5,.35,70);ping(t+1.5,55,.2,.8,40);crunch(t+1.55,.2);for(let i=0;i<8;i++)ping(t+1.7+rnd(0,1.4),rnd(900,1500),.025,.15)};
+BEDS['s:gas']=()=>{cn('highpass',4500,.5,.12,{al:.3,ad:.4});cn('bandpass',2500,.8,.05);ev(3,t=>bub(t,rnd(130,260),.1))};   // only the hissing vents and bubbling
+ONES['s:fall']=t=>{
+  for(let i=0;i<6;i++)nz(t+i*.02,.1,.8,'bandpass',rnd(120,420),80,2.2);swl(t,.7,.55,'lowpass',200,50,.05,1,1);                 // the floor cracks, a deep rumble
+  for(let i=0;i<14;i++)crunch(t+.05+rnd(0,.55),.45);for(let i=0;i<10;i++)ping(t+.05+rnd(0,.5),rnd(500,1200),.04,.1,rnd(200,400),'triangle');   // stone crumbling away
+  vox(t+.12,1.5,950,160,.26,'a',{path:[[.1,1000],[.4,700],[1,230]],end:.008,vr:7,vd:.03,jit:1,breath:.4});                    // a long scream that falls away into the dark
+  swl(t+.12,1.4,.5,'bandpass',1800,250,.15,1.5,1);swl(t+.12,1.3,.25,'highpass',2500,600,.2,.8,1);                              // wind rushing past him
+  const c=t+1.55;thud(c,.55,60);ping(c,48,.3,.9,30);nz(c,.4,.4,'lowpass',1200,60,1,1);crunch(c+.02,.35);                     // far below: a heavy distant impact
+  thud(c+.4,.22,55);thud(c+.85,.12,50);for(let i=0;i<14;i++)ping(c+.1+rnd(0,1.6),rnd(700,1500),.03,.12,rnd(300,600),'triangle');   // echoes up the shaft, stones trickle down
+  swl(c,1.8,.25,'lowpass',400,60,.2,1,1)};
 ONES['s:ice']=t=>{swl(t,.15,.3,'highpass',3000,8000,.7,.8);for(let i=0;i<6;i++){const s=t+.12+i*.04;nz(s,.07,.7,'highpass',2500,0);ping(s,rnd(2500,5000),.1,.5);stab(s+.03,.55)}
   pain(t+.25,1.0,.18,620);thud(t+.4,.5,120);swl(t+.3,.8,.15,'bandpass',2000,6000,.3,1,1);for(let i=0;i<8;i++)tk(t+.3+rnd(0,.8),.12,rnd(4000,9000))};
-BEDS['s:ice']=()=>{ICE();DRIPS(.8);ev(.35,t=>moan(t,.8,rnd(200,260),100,.07))};
+BEDS['s:ice']=()=>{ICE()};   // cold wind, tiny crystal pings and creaking ice
+ONES[0]=t=>{
+  gasp(t,.35);sweep('k','sine',300,90,t,.18,.25);
+  for(let i=0;i<9;i++)bub(t+.15+i*.07,rnd(140,300),.16);
+  moan(t+.2,.9,170,270,.15,'a');
+  [.5,.95,1.4].forEach(d=>retch(t+d,.3));
+  pain(t+.6,1.0,.16,360);
+  [1.1,1.35].forEach(d=>cough(t+d,.3));
+  [.7,.95,1.2,1.5].forEach(d=>{thud(t+d,.3,rnd(90,130));nz(t+d,.08,.15,'bandpass',rnd(300,700),150,2)});   // convulsing on the floor
+  pain(t+1.7,1.5,.2,430);   // the long agonised scream
+  for(let i=0;i<4;i++)breathe(t+2.3+i*.55,.14-i*.025);
+  vox(t+2.5,1.3,210,90,.1,'u',{breath:.6,jit:1,vr:4});thud(t+3.1,.35,80)};
+BEDS[0]=()=>{cn('lowpass',200,1,.06,{al:.5});ev(6,t=>bub(t,rnd(120,260),.15));
+  ev(a=>.6*Math.max(.25,1-a/10),t=>pain(t,rnd(1,1.8),.09,rnd(220,320)));   // the suffering slowly weakens
+  ev(.5,t=>retch(t,.2));ev(.7,t=>breathe(t,.1));ev(.5,t=>cough(t,.22));ev(.4,t=>moan(t,1.2,rnd(160,230),100,.08,'u'))};
+// ---------- v5: punchier death sounds (louder, timed to each animation; laughs sit UNDER them) ----------
+const DG=1.7;   // death-bus gain: every death sound is louder than the demon's laugh
+// --- new building blocks ---
+const castFx=(t,dur,m)=>{m=m||1;   // MAGIC BEING CAST: rising shimmer, crackle and a final release
+  swl(t,dur,.5*m,'bandpass',300,4200,.92,2.2,1);
+  sweep('k','sawtooth',70,330,t,dur,.16*m,1);sweep('k','sine',220,1760,t,dur,.1*m,1);
+  const n=Math.max(6,Math.round(dur*14)),sc=[523,659,784,988,1175,1568,1976,2349];
+  for(let i=0;i<n;i++){const u=i/(n-1),s=t+u*dur*.96;ping(s,sc[i%8]*(1+u*.4),(.05+.07*u)*m,.3,0,'triangle')}
+  for(let i=0;i<Math.round(dur*22);i++){const s=t+rnd(0,dur);tk(s,(.08+.14*(s-t)/dur)*m,rnd(3000,8000))}
+  nz(t,dur,.16*m,'highpass',5000,9000,.7,1);
+  const e=t+dur;nz(e-.04,.35,.4*m,'bandpass',600,5000,1.2,1);ping(e,2093,.14*m,.5,3136);ping(e,1568,.12*m,.6);sweep('k','sine',140,45,e,.4,.4*m)};
+const chomp=(t,v)=>{nz(t,.05,v,'bandpass',1400,500,3);ping(t,rnd(300,420),v*.5,.06,110,'square');thud(t,v*.7,rnd(120,170));crunch(t+.01,v*.5)};
+const chew=(t,v)=>{nz(t,.12,v,'bandpass',rnd(500,900),rnd(250,400),2.2);wet(t+.02,v*.5);ping(t,rnd(110,170),v*.35,.08,rnd(70,100));if(Math.random()<.6)nz(t+.05,.03,v*.5,'bandpass',rnd(1800,3200),0,3)};
+const smack=(t,v)=>{nz(t,.025,v,'bandpass',rnd(1200,2200),600,4);ping(t,rnd(500,800),v*.3,.04,rnd(250,400))};
+const gulp=(t,v)=>{ping(t,rnd(130,180),v,.2,rnd(60,80));nz(t,.2,v*.6,'bandpass',500,150,2);slurp(t+.05,v*.7)};
+const bonesDrop=(t,v,n)=>{for(let i=0;i<n;i++){const s=t+Math.pow(i/Math.max(1,n-1),1.3)*.75+rnd(0,.04);nz(s,.02,v*rnd(.5,1),'bandpass',rnd(1800,3200),0,4);ping(s,rnd(700,1500),v*.35,rnd(.05,.12),rnd(300,600),'triangle')}ping(t+.78,520,v*.8,.1,200,'triangle');thud(t+.78,v*.5,200)};
+const pierce=(t,v)=>{   // an arrow punching through armour
+  metal(t,v*.55,rnd(1200,1500),.16);nz(t,.05,v,'highpass',3500,0,1);ping(t,2300,v*.35,.1,1500,'square');   // plate "tink"
+  nz(t+.02,.07,v*.8,'bandpass',rnd(1800,2600),700,3);crunch(t+.03,v*.7);                                    // plating splitting
+  stab(t+.07,v*.9);thud(t+.08,v*.5,rnd(150,210));                                                            // into the flesh
+  for(let i=0;i<5;i++)ping(t+.1+i*.045,rnd(200,260),v*.12*(1-i*.15),.05,0,'triangle')};                       // shaft quivering
+const warhorn=(t,dur,v,f)=>{f=f||116;const P=B.k;
+  [1,2,3,4].forEach((m,i)=>{const o=ac.createOscillator(),F=ac.createBiquadFilter(),g=ac.createGain(),l=ac.createOscillator(),lg=ac.createGain();
+    o.type=i<2?'sawtooth':'square';o.frequency.setValueAtTime(f*m*.93,t);o.frequency.linearRampToValueAtTime(f*m,t+.25);o.detune.value=(i-1.5)*5;
+    l.frequency.value=5;lg.gain.value=f*m*.012;l.connect(lg);lg.connect(o.frequency);
+    F.type='lowpass';F.frequency.setValueAtTime(500,t);F.frequency.linearRampToValueAtTime(2400,t+dur*.45);F.Q.value=2;
+    const a=v/(1+i*.8);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(a,t+.18);g.gain.setValueAtTime(a,t+Math.max(.2,dur-.25));g.gain.linearRampToValueAtTime(0,t+dur);
+    o.connect(F);F.connect(g);g.connect(P.d);g.connect(P.r);o.start(t);l.start(t);o.stop(t+dur+.05);l.stop(t+dur+.05)});
+  nz(t,.15,v*.5,'bandpass',500,250,1,1)};
+const airhorn=(t,dur,v)=>{const P=B.k;   // truck air-horn: two fat, slightly sour chords
+  [[311,1],[370,.9],[466,.7],[622,.4]].forEach(([f,m])=>['sawtooth','square'].forEach((ty,j)=>{
+    const o=ac.createOscillator(),F=ac.createBiquadFilter(),g=ac.createGain();o.type=ty;o.frequency.setValueAtTime(f*.96,t);o.frequency.linearRampToValueAtTime(f,t+.05);o.detune.value=j?4:-4;
+    F.type='lowpass';F.frequency.value=3200;F.Q.value=1.5;const a=v*m*(j?.5:.7);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(a,t+.025);g.gain.setValueAtTime(a,t+Math.max(.05,dur-.1));g.gain.linearRampToValueAtTime(0,t+dur);
+    o.connect(F);F.connect(g);g.connect(P.d);g.connect(P.r);o.start(t);o.stop(t+dur+.05)}));
+  nz(t,.1,v*.9,'bandpass',1200,500,1,1);nz(t,dur,v*.12,'bandpass',2500,2200,2,1)};
+const siren=(t,dur,v)=>{const P=B.k,o=ac.createOscillator(),o2=ac.createOscillator(),l=ac.createOscillator(),lg=ac.createGain(),lg2=ac.createGain(),g=ac.createGain(),g2=ac.createGain(),F=ac.createBiquadFilter();
+  o.type='sawtooth';o2.type='square';o.frequency.value=620;o2.frequency.value=312;l.frequency.value=.42;lg.gain.value=230;lg2.gain.value=115;l.connect(lg);lg.connect(o.frequency);l.connect(lg2);lg2.connect(o2.frequency);
+  F.type='lowpass';F.frequency.value=1800;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.4);g.gain.setValueAtTime(v,t+dur-.05);g.gain.linearRampToValueAtTime(0,t+dur);g2.gain.value=.5;
+  o.connect(F);o2.connect(g2);g2.connect(F);F.connect(g);g.connect(P.d);g.connect(P.r);o.start(t);o2.start(t);l.start(t);o.stop(t+dur+.05);o2.stop(t+dur+.05);l.stop(t+dur+.05)};
+const dirt=(t,v)=>{nz(t,.35,v,'lowpass',1500,200,1,1);swl(t,.5,v*.7,'bandpass',250,700,.2,1.2);for(let i=0;i<8;i++)nz(t+rnd(0,.4),.05,v*.4,'bandpass',rnd(300,1200),150,2);thud(t+.03,v*.7,rnd(70,110))};
+const rootcreak=(t,dur,v)=>{creak(t,dur,rnd(70,130),v);swl(t,dur*.8,v*.5,'bandpass',200,500,.5,3)};
+const rootsnap=(t,v)=>{nz(t,.03,v,'highpass',2000,0);ping(t,rnd(250,400),v*.6,.1,120,'square');crk(t+.02,v)};
+const leaves=(t,dur,v)=>swl(t,dur,v,'highpass',3500,7000,.5,.7);
+const suck=(t,dur,v)=>{swl(t,dur,v,'bandpass',900,200,.3,3);for(let i=0;i<Math.round(dur*7);i++)slurp(t+rnd(0,dur),v*.6)};
+const tick=(t,v)=>{ping(t,1900,v,.04,1500,'square');nz(t,.02,v*.5,'bandpass',3000,1500,3)};
+const tock=(t,v)=>{ping(t,1300,v,.05,1000,'square');thud(t,v*.3,200)};
+const wheeze=(t,v)=>{swl(t,.7,v,'bandpass',1500,900,.5,3);vox(t,.5,150,110,v*.35,'e',{breath:1.2,vr:4,jit:1,rev:0})};
+const oldcough=(t,v)=>{cough(t,v);vox(t+.05,.25,140,90,v*.4,'a',{breath:.8,rev:0});swl(t+.2,.4,v*.4,'bandpass',1200,700,.4,2)};
+const dust=(t,dur,v)=>swl(t,dur,v,'highpass',2500,5000,.5,.6);
+const rust=(t,dur,v)=>{creak(t,dur,rnd(180,420),v);ping(t+dur*.5,rnd(2000,3500),v*.1,.2)};
+
+// --- POISON: foaming, retching, convulsing, a long scream (loud enough to survive the laugh) ---
+ONES[0]=t=>{
+  gasp(t,.6);sweep('k','sine',300,90,t,.2,.5);
+  for(let i=0;i<14;i++)bub(t+.1+i*.075,rnd(140,320),.3);
+  swl(t,3.2,.28,'bandpass',2500,6000,.3,.8);
+  moan(t+.2,1.0,170,280,.28,'a');
+  [.5,.95,1.4].forEach(d=>retch(t+d,.55));
+  pain(t+.6,1.1,.3,360);
+  [1.1,1.35].forEach(d=>cough(t+d,.5));
+  [.7,.95,1.2,1.5,1.75].forEach(d=>{thud(t+d,.5,rnd(90,130));nz(t+d,.1,.3,'bandpass',rnd(300,700),150,2)});
+  for(let i=0;i<8;i++)gloop(t+.5+i*.25,rnd(100,200),.3);
+  pain(t+1.7,1.6,.34,430);
+  for(let i=0;i<4;i++)breathe(t+2.3+i*.55,.28-i*.05);
+  vox(t+2.5,1.3,210,90,.2,'u',{breath:.6,jit:1,vr:4});thud(t+3.1,.5,80)};
+BEDS[0]=()=>{cn('lowpass',200,1,.1,{al:.5});cn('highpass',5000,.5,.03,{al:20,ad:.9});ev(6,t=>bub(t,rnd(120,260),.25));
+  ev(a=>.6*Math.max(.25,1-a/10),t=>pain(t,rnd(1,1.8),.17,rnd(220,320)));ev(.5,t=>retch(t,.35));ev(.7,t=>breathe(t,.18));ev(.5,t=>cough(t,.4));ev(.4,t=>moan(t,1.2,rnd(160,230),100,.14,'u'))};
+
+// --- DECAPITATION: slash, blood pumping, then the HEAD HITS THE FLOOR, bounces and rolls (cut is at t=.45) ---
+ONES[1]=t=>{shing(t,.6);slash(t+.33,.9);const c=t+.45;
+  nz(c,.1,.8,'lowpass',3000,400);stab(c,.8);thud(c+.04,.8,120);swl(c,.5,.2,'bandpass',1200,500,.1,1);
+  for(let i=0;i<5;i++){blood(c+.1+i*.22,.28*(1-i*.12));swl(c+.1+i*.22,.12,.18*(1-i*.12),'bandpass',700,350,.3,1.5)}
+  swl(c,.5,.2,'bandpass',500,1600,.3,2);                                                  // head spinning through the air
+  const h=c+.64;
+  ping(h,170,.9,.18,70);nz(h,.1,.7,'lowpass',1800,200,1,0);thud(h,.9,150);ping(h+.015,420,.35,.06,160,'square');   // THUNK
+  ping(h+.2,160,.55,.12,75);thud(h+.2,.5,140);ping(h+.34,150,.35,.1,80);thud(h+.34,.3,130);                          // bounces
+  swl(h+.12,.55,.22,'bandpass',300,500,.4,2);for(let i=0;i<4;i++)tk(h+.3+i*.08,.12,rnd(900,1600));                  // rolls to a stop
+  thud(c+.45,.7,90);swl(c+.45,.3,.2,'lowpass',400,120,.2,1,1);[.5,.62].forEach(d=>metal(c+d,.12,rnd(300,500),.3))};  // the body topples
+BEDS[1]=()=>{rg(.9,t=>swl(t,.25,.2,'bandpass',1000,500,.2,1.5));ev(2.5,t=>blood(t,.25));cn('highpass',2500,1,.012)};
+
+// --- DEVOURED: lunge, CHOMP (head bitten off), then proper eating: chewing, smacking lips, gulping (bite is at t=.55) ---
+ONES[2]=t=>{growl(t,.55,.5,95);const c=t+.55;
+  chomp(c,.9);bone(c+.02,.8);tear(c+.04,.6);wet(c+.06,.6);pain(c+.05,.5,.18,520);
+  [.3,.6,.9,1.2,1.5,1.8].forEach((d,i)=>{chew(c+d,.7-i*.05);smack(c+d+.12,.35);if(i%2)bone(c+d+.1,.3)});
+  [.45,1.35].forEach(d=>growl(c+d,.4,.2,rnd(70,95)));
+  gulp(c+2.0,.8);smack(c+2.3,.4);growl(c+2.4,.5,.25,70)};
+BEDS[2]=()=>{ev(1.8,t=>{chew(t,.45);smack(t+.1,.25)});ev(1.1,t=>bone(t,.3));ev(.5,t=>growl(t,.4,.14,rnd(70,95)));ev(.4,t=>gulp(t,.4));cn('lowpass',180,1,.05)};
+
+// --- ACID: sizzling through armour, skin and flesh, then the SKELETON COLLAPSES onto the floor (falls apart at t=3.0) ---
+ONES[3]=t=>{
+  swl(t,.6,.35,'highpass',3000,7000,.1,.8);swl(t+.3,2.4,.4,'highpass',3500,7500,.3,.8);
+  for(let i=0;i<40;i++)sz(t+.4+rnd(0,2.2),.18);
+  for(let i=0;i<9;i++){gloop(t+.5+i*.22,rnd(90,200),.26);wet(t+.55+i*.22,.18)}
+  for(let i=0;i<12;i++)bub(t+.5+rnd(0,2.2),rnd(150,350),.2);
+  for(let i=0;i<5;i++)metal(t+.55+i*.25,.06,rnd(700,1200),.12);
+  pain(t+.3,2.0,.28,650);
+  for(let i=0;i<10;i++)bone(t+2.45+i*.05,.28);                                           // skeleton thrashing
+  const f=t+3.0;bonesDrop(f,.8,16);thud(f,.7,100);nz(f,.2,.4,'lowpass',1200,200,1,1);swl(f+.1,.8,.2,'highpass',3500,6000,.3,.8);   // clatter, skull thunk
+  for(let i=0;i<8;i++)sz(f+.2+i*.1,.15)};
+BEDS[3]=()=>{cn('highpass',6000,.5,.09,{al:25,ad:.9});ev(50,t=>sz(t,.16));ev(3,t=>{wet(t,.18);gloop(t,rnd(90,180),.2)});ev(5,t=>bub(t,rnd(150,380),.2))};
+
+// --- MOUNTAIN: it plummets, lands (impact at t=.55), then GRINDS the body flat as it sinks into the floor ---
+ONES[5]=t=>{
+  swl(t,.55,.6,'lowpass',150,1400,.9,1,1);ping(t,200,.18,.55,90);sweep('k','sine',70,35,t+.1,.45,.35,1);
+  const c=t+.55;
+  boom(c,1,2.2);nz(c,.5,.8,'lowpass',2500,200,1,1);thud(c,1,50);ping(c,45,.7,1.4,25);
+  for(let i=0;i<10;i++)crunch(c+.02+i*.05,.65);for(let i=0;i<4;i++)bone(c+.05+i*.1,.7);
+  wet(c+.05,.8);wet(c+.18,.6);tear(c+.1,.5);pain(c-.02,.35,.2,420);
+  swl(c+.1,1.6,.5,'lowpass',250,60,.2,1,1);
+  for(let i=0;i<14;i++){nz(c+.2+i*.065,.12,.35,'bandpass',rnd(150,450),100,2);thud(c+.2+i*.065,.2,rnd(60,110))}
+  creak(c+.3,.9,55,.22);for(let i=0;i<18;i++)crk(c+.3+rnd(0,1.5),.3);for(let i=0;i<6;i++)wet(c+.4+i*.14,.3);
+  swl(c+.1,2,.18,'highpass',3000,5000,.3,.7)};
+
+// --- ARROW VOLLEY: bow twang, whistling arrows, each one PUNCHES THROUGH THE ARMOUR (hit at t=.4) ---
+ONES[6]=t=>{
+  ping(t,320,.35,.2,150,'triangle');nz(t,.1,.25,'bandpass',2500,900,2);
+  [0,.16,.3].forEach((d,i)=>{const h=t+.4+d;swl(h-.38,.38,.28,'bandpass',2200,6500,.9,1.6);pierce(h,.9-i*.08)});
+  pain(t+.7,.9,.22,380);gasp(t+1.0,.2);moan(t+1.2,.8,230,100,.15);thud(t+1.3,.5,120);metal(t+1.3,.2,260,.4);crunch(t+1.31,.3)};
+
+// --- BURNED: the whoosh of ignition and a roaring, crackling blaze that starts AT ONCE ---
+ONES[7]=t=>{
+  swl(t,.7,.85,'lowpass',200,3000,.3,1,1);nz(t,.25,.7,'bandpass',1000,3000,1);sweep('k','sine',120,50,t,.5,.5,1);
+  swl(t+.1,6,.35,'lowpass',600,1200,.1,.8,1);
+  for(let i=0;i<40;i++)crk(t+rnd(0,3.5),.45);for(let i=0;i<10;i++)popf(t+rnd(.1,3),.4);
+  for(let i=0;i<8;i++)swl(t+.3+i*.4,.8,.2,'lowpass',250,1600,.4,1);
+  pain(t+.15,1.7,.3,720);pain(t+1.9,1.4,.26,640);pain(t+3.3,1.2,.2,560);
+  [.8,1.5,2.4].forEach(d=>{thud(t+d,.3,rnd(90,140));metal(t+d,.08,rnd(300,500),.3)});
+  for(let i=0;i<8;i++)hiss(t+.5+i*.4,.2)};
+BEDS[7]=()=>{FIRE();cn('lowpass',500,.8,.26,{lf:.7,ld:200,al:2,ad:.3});ev(14,t=>crk(t,.35));ev(1.0,t=>popf(t,.35));
+  ev(a=>.55*Math.max(.35,1-a/20),t=>pain(t,rnd(.8,1.5),.14,rnd(520,740)));ev(.5,t=>moan(t,.7,rnd(260,380),140,.1,'e'))};
+ONES['s:fire']=t=>{   // a deafening wrong note: dissonant gong, rattling armour, the POP (t=1.0), then a clattering heap
+  [220,233,311,466].forEach(f=>{note('k','sine',f,t,2.6,.22,1,0,1);note('k','triangle',f*2.76,t,1.6,.08,1,0,1);note('k','sine',f*5.4,t,1.1,.05,1,0,1)});
+  swl(t,1.0,.5,'lowpass',200,1800,.9,.8,1);sweep('k','sawtooth',90,420,t,1.0,.12,1);
+  for(let i=0;i<30;i++)metal(t+.05+i*.03,.1+i*.005,rnd(500,1400),.15);
+  for(let i=0;i<9;i++)ping(t+.1+i*.1,[1318,1568,1760,2093][i%4],.06,.5);
+  const p=t+1.0;nz(p,.12,.9,'highpass',2500,0,1,1);ping(p,3500,.25,.8,2000);boom(p,.9,1.4);glass(p,.5,14);
+  for(let i=0;i<16;i++)metal(p+.1+Math.pow(Math.random(),.8)*1.0,.35,rnd(300,1500),.3);
+  for(let i=0;i<9;i++)thud(p+.2+Math.random()*.9,.4,rnd(80,160));
+  [.5,.7,.85].forEach((d,i)=>ping(p+d,300,.4-i*.1,.15,120));
+  for(let i=0;i<6;i++)note('k','sine',1760*Math.pow(.9,i),p+.7+i*.18,.9,.07,1,0,1)};
+BEDS['s:fire']=()=>{cn('bandpass',1200,6,.03,{lf:.1,ld:300,rev:1});ev(.5,t=>ping(t,pick([880,1175,1568,2093]),.05,1.2));ev(.25,t=>metal(t,.06,rnd(500,1200),.2))};   // faint ringing in the air, a stray rattle now and then
+
+// --- ISEKAI TRUCK: a BIG air-horn, diesel roar, then the impact ---
+ONES[10]=t=>{const H=window.TH10||1.2;
+  airhorn(t,Math.min(.6,H*.5),.3);airhorn(t+H*.5,H*.5+.15,.34);
+  sweep('k','sawtooth',45,150,t,H*.95,.2);swl(t,H,.4,'lowpass',150,900,.9,1,1);nz(t+H*.3,H*.7,.18,'lowpass',900,250,1,1);
+  for(let i=0;i<Math.round(H*10);i++)thud(t+i*.1,.08+.12*i/(H*10),rnd(60,90));
+  const c=t+H;thud(c,1,85);metal(c,.4,170,.8);[0,.03,.06].forEach(d=>crunch(c+d,.7));bone(c+.05,.7);glass(c,.4,12);boom(c+.05,.5,.9);
+  swl(c+.1,.9,.3,'lowpass',900,150,.2,1,1);tear(c+.1,.4)};
+BEDS[10]=()=>{co('sawtooth',38,.28,{lp:160,al:11,ad:.7});cn('lowpass',300,1,.06);const H=window.TH10||1.2;
+  rg(2.4,t=>{airhorn(t,.7,.28);swl(t,.8,.3,'lowpass',150,900,.9,1,1);thud(t+.8,.6,85);metal(t+.8,.15,170,.5);crunch(t+.8,.4)},H-1.0)};
+
+// --- SWAMP: a heavy splash, thick glooping mud, flailing, sinking with deep sucking gurgles ---
+ONES[11]=t=>{
+  ping(t,150,.6,.5,450);nz(t,.7,.7,'lowpass',2500,200,1,1);swl(t,.5,.4,'bandpass',300,900,.3,1.5);thud(t+.05,.7,70);
+  for(let i=0;i<14;i++)gloop(t+.15+i*.1,rnd(70,180),.45);
+  for(let i=0;i<10;i++)splash(t+.2+i*.11,.3);
+  for(let i=0;i<16;i++)slurp(t+.3+rnd(0,1.4),.4);
+  swl(t+1.15,1.2,.45,'lowpass',500,120,.4,1,1);
+  for(let i=0;i<10;i++){const s=t+1.2+i*.1;gloop(s,200-i*10,.4);bub(s+.04,rnd(100,200),.3)}
+  moan(t+.3,1.0,190,110,.3,'u');pain(t+.5,.8,.2,300);for(let i=0;i<3;i++)cough(t+.6+i*.25,.3);
+  vox(t+1.3,1.2,200,90,.25,'o',{breath:.9,jit:1,vr:5});
+  for(let i=0;i<20;i++)bub(t+1.4+rnd(0,1.4),rnd(90,260),.35);
+  gloop(t+2.3,95,.5);thud(t+2.2,.4,60);swl(t+2.2,.6,.3,'lowpass',300,80,.2,1,1)};
+BEDS[11]=()=>{ev(4,t=>gloop(t,rnd(70,180),.4));ev(5,t=>slurp(t,.3));ev(7,t=>bub(t,rnd(100,300),.3));ev(2,t=>wet(t,.25));
+  cn('lowpass',250,1,.1,{al:.4});cn('lowpass',120,1,.1,{al:.2});ev(.4,t=>moan(t,.8,rnd(160,220),90,.1,'u'));ev(.8,t=>swl(t,.6,.15,'bandpass',200,500,.3,2))};
+
+// --- FLOOR COLLAPSE: cracking stone, a huge rumble, the floor gives way (t=.4), long fall, distant crash ---
+ONES[13]=t=>{
+  for(let i=0;i<8;i++){const s=t+i*.06;nz(s,.1,.9,'highpass',2500,600,1);ping(s,rnd(140,260),.3,.1,70,'square');crk(s,.8)}
+  swl(t,.9,.7,'lowpass',250,70,.3,1,1);for(let i=0;i<14;i++)nz(t+rnd(0,.7),.15,.6,'bandpass',rnd(150,500),80,2);creak(t+.05,.7,60,.3);
+  const c=t+.4;boom(c,.8,1.4);nz(c,.5,.8,'lowpass',2500,200,1,1);thud(c,.9,60);
+  for(let i=0;i<24;i++){const s=c+.05+Math.pow(Math.random(),1.3)*1.4;crunch(s,rnd(.3,.6));thud(s,rnd(.2,.4),rnd(70,180))}
+  swl(c,2,.5,'lowpass',500,80,.1,1,1);
+  vox(c+.05,2.2,800,180,.35,'a',{path:[[.12,900],[.5,520],[1,170]],end:.006,vr:7,vd:.035,jit:1,breath:.3});
+  swl(c+.1,2,.3,'bandpass',2500,500,.1,1.2);for(let i=0;i<14;i++)crk(c+.2+rnd(0,1.8),.3);
+  const g=c+2.4;boom(g,.8,1);thud(g,.9,55);for(let i=0;i<8;i++)crunch(g+i*.05,.45);ping(g,50,.5,1,30);swl(g,1,.3,'lowpass',600,100,.1,1,1)};
+BEDS[13]=()=>{cn('bandpass',400,2,.12,{lf:.2,ld:150,rev:1});ev(2.5,t=>{tk(t,.14,rnd(900,2200));ping(t+.05,rnd(900,1400),.05,.15)});ev(.4,t=>{ping(t,55,.3,.7,40);nz(t,.5,.14,'lowpass',200,60,1,1)});ev(.3,t=>moan(t,1.2,rnd(180,250),100,.08))};
+
+// --- MIND CONTROL (suicide): a heavy sigh, heartbeat, the sword is drawn (t=1.15), tension, the STAB (t=2.05), he drops ---
+ONES[14]=t=>{
+  breathe(t+.1,.45);moan(t+.15,1.0,150,95,.25,'o');
+  [.3,.95,1.55].forEach(d=>{thud(t+d,.3,60);thud(t+d+.17,.22,55)});swl(t,1.2,.1,'lowpass',200,500,.5,1,1);
+  shing(t+1.12,.9);swl(t+1.15,.35,.35,'bandpass',2000,6500,.2,2);ping(t+1.3,1800,.1,.8);swl(t+1.3,.8,.15,'bandpass',900,2500,.9,6,1);
+  [1.52,1.62,1.72].forEach(d=>{tk(t+d,.4,3000);metal(t+d,.06,rnd(700,1000),.15)});
+  const c=t+2.05;stab(c,1);wet(c+.02,.9);thud(c+.03,.8,150);nz(c,.08,.7,'highpass',2500,0);metal(c,.2,500,.3);
+  gasp(c+.05,.5);pain(c+.1,.9,.25,420);moan(c+.4,1.0,220,90,.3,'o');blood(c+.15,.4);blood(c+.3,.35);stab(c+.45,.5);thud(c+.5,.4,110);
+  const f=t+2.55;thud(f,.9,90);metal(f,.4,220,.7);crunch(f+.02,.5);[.1,.2].forEach(d=>metal(f+d,.12,rnd(300,600),.3));swl(f,.6,.2,'lowpass',500,100,.2,1,1);
+  for(let i=0;i<3;i++)drip(f+.3+i*.2,.2)};
+BEDS[14]=()=>{co('sine',220,.04,{fm:5,fd:6,rev:1});ev(.8,t=>breathe(t,.16));DRIPS(1);ev(.35,t=>moan(t,.8,rnd(180,240),100,.12));ev(.6,t=>pain(t,.7,.06,rnd(300,380)))};
+
+// --- DROWNING: a deep water surge, desperate thrashing, gasps, deep gurgles, going limp, the bubble pops (t=4.6) ---
+ONES[15]=t=>{
+  nz(t,.5,.7,'lowpass',3000,300,1,1);ping(t+.4,260,.5,.3,90);swl(t,1.4,.3,'lowpass',300,1200,.3,1,1);sweep('k','sine',90,50,t+.3,1.6,.35,1);
+  for(let i=0;i<22;i++)splash(t+.3+Math.pow(i/21,1.1)*3.0,.55*(1-i/34));
+  for(let i=0;i<14;i++){const s=t+.5+i*.28;thud(s,.22,rnd(70,110));nz(s,.2,.3,'bandpass',rnd(200,500),100,2)}
+  for(let i=0;i<5;i++)gasp(t+.7+i*.55,.5);
+  for(let i=0;i<4;i++){cough(t+1.0+i*.65,.45);gloop(t+1.1+i*.65,rnd(90,170),.4)}
+  moan(t+.8,1.0,150,80,.3,'o');vox(t+1.8,1.6,170,70,.28,'u',{breath:.9,jit:1,vr:4});vox(t+3.0,1.4,150,60,.22,'o',{breath:.9,jit:1,vr:3.5});
+  for(let i=0;i<24;i++)bub(t+.5+rnd(0,3.8),rnd(90,300),.32);
+  swl(t+3.2,1.3,.3,'lowpass',250,70,.3,1,1);
+  sweep('k','sine',900,300,t+4.6,.09,.5);nz(t+4.6,.4,.7,'lowpass',2600,300);swl(t+4.7,.7,.4,'lowpass',1200,300,.2,1,1);splash(t+4.9,.6);thud(t+5.0,.4,90)};
+BEDS[15]=()=>{cn('lowpass',350,1,.2,{al:.4,ad:.4});ev(a=>Math.max(.5,3.5-a*.3),t=>splash(t,.3));ev(1,t=>gasp(t,.3));ev(.6,t=>{cough(t,.3);bub(t+.1,300,.2)});ev(6,t=>bub(t,rnd(250,700),.25));ev(.7,t=>gloop(t,rnd(150,260),.25));ev(.4,t=>moan(t,.8,rnd(120,180),70,.1,'o'))};
+
+// --- MIMIC: wood creaks and teeth chatter, it leaps, CHOP (t=.95), swallow, chewing, bones spat out ---
+ONES[16]=t=>{
+  [0,.12,.24,.36].forEach(d=>{creak(t+d,.3,rnd(90,160),.22);chomp(t+d+.1,.3)});for(let i=0;i<6;i++)tk(t+.05+i*.07,.3,rnd(1500,3000));
+  growl(t+.15,.45,.3,75);swl(t+.45,.5,.35,'bandpass',300,1200,.5,2);ping(t+.45,200,.25,.5,420,'triangle');
+  const c=t+.95;chomp(c,1);thud(c,.9,120);nz(c,.05,.8,'highpass',2000,0);ping(c,180,.4,.25,70,'square');pain(c+.02,.4,.16,520);
+  [.12,.24].forEach(d=>chomp(c+d,.8));gulp(c+.2,.8);
+  [.35,.55,.75,.95,1.15].forEach(d=>{chomp(c+d,.8);chew(c+d+.07,.5);bone(c+d+.05,.4);tear(c+d+.1,.3)});
+  for(let i=0;i<6;i++){const s=c+.4+i*.13;ping(s,rnd(800,1300),.1,.1,rnd(300,500),'triangle');nz(s,.02,.3,'bandpass',rnd(1800,3200),0,4)}
+  thud(c+1.5,.5,100);growl(c+1.6,.5,.3,70);gulp(c+1.9,.5)};
+BEDS[16]=()=>{ev(1.7,t=>{chomp(t,.55);chew(t+.1,.35);bone(t+.08,.3)});ev(.7,t=>creak(t,rnd(.3,.6),rnd(90,150),.15));ev(.35,t=>growl(t,.4,.22,rnd(65,85)));ev(.5,t=>smack(t,.3))};
+
+// --- HORDE: the BIG WAR HORN, a pack of growling demons and MANY stabs as they cut him down ---
+ONES[17]=t=>{
+  warhorn(t,1.4,.55);warhorn(t+1.7,1.2,.5,130);warhorn(t+3.1,1.5,.55,100);
+  for(let i=0;i<16;i++)growl(t+.2+i*.17,rnd(.3,.6),.2,rnd(55,100));
+  for(let i=0;i<6;i++)vox(t+.3+i*.45,.5,rnd(300,500),rnd(700,1100),.14,'a',{am:35,vd:.05,breath:.5,rev:0});
+  for(let i=0;i<30;i++){const s=t+.5+i*.095;slash(s-.06,.5);stab(s,.7);if(i%4==0)metal(s,.08,rnd(500,900),.2)}
+  for(let i=0;i<8;i++)pain(t+.8+i*.3,.6,.1,rnd(380,600));pain(t+1.2,1,.16,520);
+  for(let i=0;i<10;i++)thud(t+rnd(.4,3.2),.4,rnd(100,180))};
+BEDS[17]=()=>{const R=a=>Math.min(1,a/1.5);ev(a=>11*R(a),t=>growl(t,rnd(.25,.6),.16,rnd(55,110)));ev(a=>2.2*R(a),t=>vox(t,.45,rnd(300,500),rnd(700,1100),.1,'a',{am:35,vd:.05,breath:.5,rev:0}));
+  ev(a=>6*R(a),t=>{slash(t,.4);stab(t+.08,.55)});ev(.5,t=>pain(t,.8,.09,rnd(400,560)));rg(3.2,t=>warhorn(t,1.1,.42,rnd(100,130)),.3);cn('lowpass',700,1,.09,{al:6,ad:.5})};
+
+// --- IRON MAIDEN: it drops and lands (t=.5), creaks open, the doors swing SHUT (t=1.05) with a huge CLANG (t=1.25) as the spikes pierce him ---
+ONES[18]=t=>{
+  swl(t,.5,.4,'highpass',1500,4000,.9,1,1);ping(t,500,.1,.5,200,'sawtooth');
+  const L=t+.5;thud(L,1,75);metal(L,.7,150,1.5);nz(L,.2,.6,'bandpass',600,200,2);swl(L,.5,.35,'lowpass',500,120,.2,1,1);for(let i=0;i<6;i++)crk(L+.05+i*.04,.4);
+  creak(t+.7,.55,95,.35);creak(t+.95,.5,70,.4);swl(t+.75,.5,.2,'bandpass',300,700,.4,5,1);
+  creak(t+1.05,.2,85,.45);
+  const k=t+1.25;metal(k,1,110,2.4);metal(k,.7,330,1.6);metal(k,.5,640,1.0);nz(k,.12,1,'highpass',2500,500,1);thud(k,1,70);swl(k,.4,.5,'highpass',5000,8000,.3,.8);
+  for(let i=0;i<7;i++){const s=k+.04+i*.05;stab(s,.85);ping(s,rnd(700,1100),.1,.2);bone(s+.02,.35)}
+  pain(k+.02,1.0,.2,400);gasp(k+.05,.3);for(let i=0;i<4;i++)wet(k+.3+i*.1,.5);
+  metal(k+.9,.2,720,.4);for(let i=0;i<3;i++)drip(k+1.1+i*.25,.25)};
+BEDS[18]=()=>{ev(.6,t=>pain(t,.9,.06,rnd(380,520)));ev(.4,t=>creak(t,.7,rnd(80,130),.1));DRIPS(1.3);ev(.3,t=>metal(t,.07,rnd(500,900),.4));ev(.8,t=>wet(t,.15))};
+
+// --- COCKROACHES: a LOUD skittering swarm that gnaws, tears and chews his flesh away until only bones remain ---
+ONES[19]=t=>{
+  swl(t,1.0,.5,'highpass',2000,5500,.9,1,1);
+  for(let i=0;i<150;i++)tk(t+Math.pow(Math.random(),.8)*4.2,.28,rnd(2500,7000));
+  for(let i=0;i<6;i++)hiss(t+.2+i*.3,.25);pain(t+.7,.9,.2,520);
+  for(let i=0;i<30;i++){const s=t+.9+i*.05;nz(s,.04,.45,'bandpass',rnd(1800,3200),0,4);if(i%2)tear(s,.35)}
+  for(let i=0;i<26;i++){const s=t+.9+i*.12+rnd(0,.05);chew(s,.45);if(i%3==0)wet(s,.3)}
+  for(let i=0;i<14;i++)crunch(t+1.0+i*.11,.4);
+  pain(t+1.6,1.0,.18,480);pain(t+2.6,.9,.12,380);thud(t+2.5,.7,100);metal(t+2.5,.2,300,.5);
+  for(let i=0;i<14;i++){const s=t+3.0+i*.1;bone(s,.4);chew(s+.05,.3)}
+  swl(t+3.0,1.5,.25,'highpass',3000,6000,.5,.8)};
+BEDS[19]=()=>{ev(a=>12+30*(.5+.5*Math.sin(a*1.4)),t=>tk(t,.22,rnd(3500,7000)));ev(5,t=>{chew(t,.3);crunch(t,.2)});ev(2,t=>tear(t,.2));ev(.9,t=>hiss(t,.14));cn('highpass',5000,.5,.03,{al:20})};
+
+// --- BOILED ALIVE: a roaring fire, hissing oil, a violent rolling boil ---
+ONES[21]=t=>{
+  nz(t,.6,.6,'lowpass',2500,300,1,1);swl(t,.7,.45,'lowpass',150,900,.4,1,1);swl(t,5,.28,'lowpass',500,900,.1,.8,1);
+  for(let i=0;i<8;i++)gloop(t+i*.09,rnd(250,400)-i*20,.45);
+  swl(t+.2,1.4,.55,'highpass',3000,6500,.2,.8);for(let i=0;i<60;i++)sz(t+.2+rnd(0,1.8),.25);
+  for(let i=0;i<40;i++)bub(t+.2+rnd(0,2.2),rnd(160,600),.3);
+  for(let i=0;i<10;i++){splash(t+.3+i*.15,.4);gloop(t+.3+i*.15,rnd(100,200),.35)}
+  pain(t+.35,1.7,.3,700);pain(t+2.2,1.2,.22,620);for(let i=0;i<8;i++)thud(t+.5+i*.2,.25,rnd(80,130));metal(t+.6,.2,300,.8)};
+BEDS[21]=()=>{ev(45,t=>bub(t,rnd(120,650),.22));cn('lowpass',600,1,.2,{al:4,ad:.5});cn('highpass',3500,.5,.07);cn('bandpass',1200,.6,.08,{lf:3,ld:400});ev(3,t=>gloop(t,rnd(120,260),.3));ev(5,t=>sz(t,.16));cn('lowpass',120,1,.12,{al:1.5});ev(10,t=>crk(t,.2))};
+
+// --- BLACK HOLE: a LOUD building gravity roar, a stretching groan, then the collapse ---
+ONES[22]=t=>{
+  sweep('k','sawtooth',30,700,t,1.6,.4);swl(t,1.6,.8,'bandpass',100,5000,.9,2.5);[110,165,220,330].forEach(f=>sweep('k','sine',f/3,f*3,t,1.6,.1));
+  sweep('k','sine',45,90,t,1.6,.5,1);moan(t+.2,1.4,100,350,.25,'o');pain(t+.3,1.3,.2,500);
+  const c=t+1.6;for(let i=0;i<16;i++)bone(c+Math.pow(i/15,.8)*.9,.55+i*.02);
+  creak(c,1.2,60,.5);sweep('k','sine',200,25,c+.9,.7,1);nz(c+.9,.5,.8,'lowpass',2500,60);metal(c+.9,.3,150,1);boom(c+.95,.8,1.2);swl(c+.95,.8,.4,'highpass',3000,8000,.1,.8)};
+BEDS[22]=()=>{cn('bandpass',300,3,.26,{lf:.5,ld:250});cn('bandpass',1200,2,.1,{lf:.35,ld:700});co('sine',40,.5,{al:.25});co('sawtooth',55,.14,{lp:150});ev(1.5,t=>bone(t,.4));ev(.5,t=>creak(t,.8,rnd(50,80),.18));ev(.4,t=>ping(t,rnd(1500,2500),.06,.6,rnd(300,500)))};
+
+// --- FAMILY REUNION: the ground trembles, hands burst out of the dirt, zombies haul themselves up, groan and shuffle, then pile on ---
+ONES[24]=t=>{
+  swl(t,1.8,.6,'lowpass',200,60,.3,1,1);
+  for(let i=0;i<7;i++){const s=t+.1+i*.2;dirt(s,.6);thud(s,.45,rnd(60,100));crunch(s+.05,.35)}
+  for(let i=0;i<8;i++)creak(t+.4+i*.15,.5,rnd(60,110),.15);
+  for(let i=0;i<8;i++)zom(t+.5+i*.28,rnd(1.4,2.4),.26,rnd(85,170));
+  for(let i=0;i<5;i++)vox(t+.8+i*.4,.9,rnd(110,170),rnd(60,90),.2,'a',{am:12,vd:.06,breath:.8,jit:1,rev:0});
+  for(let i=0;i<10;i++)shuf(t+.9+i*.28);for(let i=0;i<5;i++)dirt(t+1.1+i*.3,.25);
+  for(let i=0;i<6;i++){bone(t+2.4+i*.14,.5);tear(t+2.4+i*.14,.35);wet(t+2.45+i*.14,.3)}
+  growl(t+2.3,.6,.35,65);for(let i=0;i<4;i++)pain(t+2.5+i*.2,.6,.12,rnd(400,560))};
+BEDS[24]=()=>{ev(1.1,t=>zom(t,rnd(1.2,2.2),.22,rnd(85,170)));ev(.5,t=>growl(t,.5,.2,rnd(60,90)));rg(.5,t=>shuf(t));ev(.7,t=>{bone(t,.3);tear(t+.02,.25)});ev(.4,t=>gloop(t,rnd(80,150),.15));ev(.3,t=>dirt(t,.12))};
+
+// --- MEAT GRINDER: machine slams down, demons haul him up and drop him in, the LEVER (t=3.35), the MOTOR SPOOLS UP, gears bite, then grinding ---
+ONES[25]=t=>{
+  swl(t,.7,.4,'lowpass',200,1200,.8,1,1);
+  const L=t+.7;thud(L,1,60);metal(L,.8,150,1.2);boom(L,.5,.7);nz(L,.15,.7,'bandpass',500,200,2);
+  for(let i=0;i<8;i++){const s=t+1.0+i*.17;growl(s,.3,.2,rnd(70,100));thud(s,.2,rnd(100,170));if(i%2)creak(s,.3,rnd(80,140),.1)}
+  for(let i=0;i<5;i++)pain(t+1.1+i*.3,.5,.12,rnd(450,650));
+  metal(t+2.4,.35,260,.8);thud(t+2.5,.4,100);[2.6,2.8,3.0,3.2].forEach(d=>{thud(t+d,.35,rnd(80,130));wet(t+d,.4);crunch(t+d,.3)});pain(t+2.4,1.0,.2,500);
+  const m=t+3.35;
+  ping(m,300,.4,.1,100,'square');metal(m+.02,.3,400,.4);nz(m,.05,.6,'highpass',2000,0);
+  sweep('k','sawtooth',30,160,m+.1,.9,.35);sweep('k','square',60,320,m+.1,.9,.1);swl(m+.1,.9,.35,'bandpass',200,1800,.9,3,1);
+  for(let i=0;i<14;i++){const s=m+.15+i*.07;ping(s,rnd(70,95),.25,.05,0,'square');nz(s,.04,.4,'bandpass',rnd(500,1400),300,2)}
+  const g=m+.9;
+  for(let i=0;i<40;i++){const s=g+i*.075;crunch(s,.55);if(i%2)bone(s+.02,.5);if(i%3==0)wet(s,.5);tear(s+.03,.35)}
+  swl(g,3,.4,'bandpass',300,900,.1,2,1);sweep('k','sawtooth',160,150,g,3,.2);pain(m+.3,1.4,.2,640)};
+BEDS[25]=()=>{co('sawtooth',48,.2,{lp:220,al:9});co('square',96,.07,{lp:350,al:9});cn('bandpass',600,1,.12,{al:14});rg(.11,t=>tk(t,.14,rnd(800,1500)));
+  ev(6,t=>{crunch(t,.5);bone(t+.02,.3)});ev(2.5,t=>metal(t,.12,rnd(300,500),.3));ev(3,t=>wet(t,.4));ev(2,t=>tear(t,.3))};
+
+// --- LIFE TREE: roots burst up and snap, wrap and crush him, then the whole tree groans and SUCKS him dry ---
+ONES[26]=t=>{
+  swl(t,.7,.4,'lowpass',200,700,.4,1,1);for(let i=0;i<6;i++)rootsnap(t+.3+i*.07,.5);
+  for(let i=0;i<8;i++){rootcreak(t+.5+i*.14,.7,.3);dirt(t+.5+i*.14,.2)}
+  swl(t+.5,1.2,.35,'highpass',2500,5500,.4,.8);leaves(t+.6,2.5,.25);
+  for(let i=0;i<9;i++)rootsnap(t+.9+i*.2,.35);
+  thud(t+.8,.6,80);pain(t+.9,1.2,.22,520);for(let i=0;i<4;i++)bone(t+1.0+i*.2,.4);swl(t+1.2,.9,.25,'bandpass',200,500,.4,3,1);
+  suck(t+2.0,3.4,.5);for(let i=0;i<10;i++)rootcreak(t+2.0+i*.35,.8,.18);for(let i=0;i<12;i++)creak(t+2.1+i*.3,.6,rnd(60,110),.14);
+  moan(t+2.4,2.2,200,90,.2,'u');sweep('k','sine',60,90,t+2.2,3.4,.2,1);swl(t+2.2,3.6,.2,'lowpass',300,150,.5,1,1)};
+BEDS[26]=()=>{ev(.9,t=>rootcreak(t,rnd(.5,1.1),.2));ev(1.2,t=>suck(t,.7,.3));cn('highpass',4500,.5,.06,{lf:.3,ld:1500});ev(.6,t=>leaves(t,.9,.12));ev(.5,t=>rootsnap(t,.25));ev(.4,t=>wet(t,.18));ev(.5,t=>ping(t,pick([660,784,880,1100,1320]),.06,1.2))};
+
+// --- NUKE: air-raid siren, Geiger clicks, the bomb's whistle, the FLASH (t=2.2), a huge rolling blast, ringing ears, ash ---
+ONES[27]=t=>{
+  siren(t,2.2,.22);for(let i=0;i<40;i++)tk(t+Math.pow(i/40,1.6)*2.2,.3,rnd(2500,4500));
+  for(let i=0;i<20;i++)ping(t+Math.pow(i/20,1.4)*2.2,3000,.06,.02,0,'square');
+  const sp=t+.5;sweep('k','sawtooth',1500,200,sp,1.7,.12);swl(sp,1.7,.55,'bandpass',4500,500,.9,2,1);sweep('k','sine',4000,500,sp,1.7,.15);
+  const h=t+2.2;nz(h-.02,.12,1,'highpass',500,0);ping(h,7000,.3,.8,6500);
+  boom(h+.02,1,3.4);nz(h,2.8,.9,'lowpass',4000,60,1,1);thud(h,1,40);ping(h,35,.9,2.5,20);
+  swl(h+.1,5,.8,'lowpass',2500,50,.05,1,1);swl(h+.4,5,.55,'lowpass',600,40,.2,1,1);thunder(h+.6,1.1);
+  for(let i=0;i<30;i++)crk(h+.2+rnd(0,3.5),.5);for(let i=0;i<10;i++)crunch(h+.5+rnd(0,2),.5);
+  swl(h+1.2,4,.25,'bandpass',200,500,.5,2,1);ping(h+.5,6500,.08,3.5,0,'sine');for(let i=0;i<40;i++)tk(h+1.5+rnd(0,3),.12,rnd(3500,8000))};
+BEDS[27]=()=>{ev(a=>10+a*5,t=>tk(t,.3,rnd(2500,4500)));ev(a=>8+a*6,t=>{nz(t,.004,.5,'highpass',2000,0);ping(t,3000,.05,.01)});cn('lowpass',200,1,.12);co('sine',6500,.03);cn('bandpass',800,3,.07,{lf:.15,ld:300});ev(.5,t=>swl(t,1.2,.12,'lowpass',200,60,.4,1,1));cn('highpass',5000,.5,.02,{lf:.2,ld:1000})};
+
+// --- TIME WARP: a hundred years of AGING and DECAY (t=.4 to 6.4): slow clock, rusting, rotting, brittle cracks, wheezing, dust, then time snaps back and the blade lands ---
+ONES[28]=t=>{
+  sweep('k','sine',90,50,t,1.2,.3,1);swl(t,1.2,.3,'bandpass',200,1500,.8,3,1);
+  const T0=t+.4,TT=6;
+  for(let i=0;i<22;i++){const u=i/21,s=T0+u*TT;(i%2?tock:tick)(s,.3+.25*u)}
+  swl(T0,TT,.18,'bandpass',300,900,.5,3,1);swl(T0+.5,TT,.14,'bandpass',400,900,.5,2,1);
+  for(let i=0;i<8;i++)rust(T0+.4+i*.7,.9,.13);for(let i=0;i<7;i++)creak(T0+.5+i*.8,.9,rnd(60,120),.12);
+  for(let i=0;i<5;i++)wheeze(T0+.8+i*1.1,.22+.04*i);for(let i=0;i<3;i++)oldcough(T0+2.0+i*1.6,.25);
+  for(let i=0;i<14;i++)crk(T0+1+rnd(0,5),.5);dust(T0+1,5,.15);leaves(T0+2.5,3.5,.12);
+  sweep('k','triangle',300,2400,T0+1,TT-1,.05,1);
+  const r=t+6.4;
+  swl(r-.25,.25,.5,'bandpass',200,6000,.9,2,1);sweep('k','sawtooth',2000,60,r,.5,.3);nz(r,.1,.9,'highpass',800,0);boom(r,.7,1.2);
+  for(let i=0;i<12;i++)tick(r+i*.035,.3*(1-i/14));
+  slash(r+.05,.9);stab(r+.15,1);thud(r+.2,.8,100);pain(r+.2,.9,.22,450);metal(r+.3,.3,500,.6);thud(r+.9,.8,90)};
+BEDS[28]=()=>{co('sine',55,.2,{al:.3});cn('bandpass',1800,8,.04,{lf:.1,ld:900,rev:1});ev(1.4,t=>tick(t,.15));ev(.4,t=>dust(t,.8,.1));ev(.3,t=>creak(t,.9,rnd(60,110),.1))};
+
 const BA={0:1.8,1:.9,2:1.4,3:1.4,4:2.0,5:1.8,6:1.0,7:1.8,8:1.5,9:.9,10:2.6,11:1.8,12:1.4,13:3.0,14:1.8,15:1.2,16:1.6,17:1.0,18:2.2,19:1.5,20:1.8,21:1.7,22:3.0,23:2.2,24:2.6,25:2.2,26:2.0,27:2.0,28:1.5,29:1.3};
+const VO={1:-.2,2:-.3,5:.45,6:.5,8:.15,12:.25,14:.55,18:.5,20:.2,22:.75,27:.6};   // seconds: visual impact time minus the sound's own impact time
 const KN={0:'Poison',1:'Decapitation',2:'Devoured',3:'Acid',4:'Soul Rip',5:'Mountain',6:'Arrow Volley',7:'Burned',8:'Frozen & Shattered',9:'Lightning',10:'Isekai Truck',11:'Swamp',12:'Explosion',13:'Floor Collapse',14:'Mind Control',15:'Drowned',16:'Mimic Chest',17:'Horde',18:'Iron Maiden',19:'Cockroaches',20:'Anvil',21:'Hot Oil',22:'Black Hole',23:'Voodoo Doll',24:'Dead Family',25:'Meat Grinder',26:'Life Tree',27:'Nuke',28:'Time Warp',29:'Super-Virus','s:spike':'Spike Pit','s:axe':'Axe','s:boulder':'Boulder','s:lava':'Lava','s:ghost':'Ghost','s:fire':'Flame Jets','s:dart':'Darts','s:gas':'Poison Gas','s:ice':'Ice Spikes','s:fall':'Pit Fall'};
 const LD={17:3.4,24:2.8,25:2.6,26:2.8,27:3.4,28:3.4,29:2.6,15:4.9,10:1.7,22:2.0,19:2.4,21:2.2,5:1.4,12:1.2,23:1.9,1:.9,2:1.6};
-Object.assign(BA,{'s:spike':1.2,'s:axe':1.6,'s:boulder':1.5,'s:lava':2.8,'s:ghost':2.8,'s:fire':1.8,'s:dart':1.6,'s:gas':1.7,'s:ice':1.2,'s:fall':1.8});Object.assign(LD,{'s:spike':1.4,'s:axe':1.6,'s:boulder':1.5,'s:lava':3.0,'s:ghost':3.0,'s:fire':1.6,'s:dart':1.6,'s:gas':1.8,'s:ice':1.4,'s:fall':1.8});
+BA[0]=3.2;LD[0]=2.8;   // poison: the demon laughs only after the suffering has played out
+Object.assign(BA,{0:3.2,1:1.6,2:3.2,3:4.0,7:.5,11:2.6,13:3.4,14:3.4,16:4.4,18:2.5,19:3.8,21:3.0,24:3.0,25:6.4,26:5.2,27:4.6,28:7.6,10:2.6});
+delete VO[14];delete VO[18];delete VO[27];   // these are now timed in absolute animation time
+Object.assign(BA,{'s:spike':1.2,'s:axe':1.6,'s:boulder':1.5,'s:lava':2.8,'s:ghost':2.8,'s:fire':2.9,'s:dart':1.6,'s:gas':1.7,'s:ice':1.2,'s:fall':1.8});Object.assign(LD,{'s:spike':1.4,'s:axe':1.6,'s:boulder':1.5,'s:lava':3.0,'s:ghost':3.0,'s:fire':1.6,'s:dart':1.6,'s:gas':1.8,'s:ice':1.4,'s:fall':1.8});
 const KO=Object.keys(ONES).map(k=>/^\d+$/.test(k)?+k:k);let tc=0,lastFit='';
-function newSession(){const P={};P.d=ac.createGain();P.d.connect(B.s.d);const cv=ac.createConvolver();cv.buffer=rvb;const rgn=ac.createGain();rgn.gain.value=.45;cv.connect(rgn);rgn.connect(P.d);P.r=cv;P.srcs=[];P.em=[];P.tm=0;P.t0=0;return P}
+function newSession(){const P={};P.d=ac.createGain();P.d.gain.value=DG;P.d.connect(B.s.d);const cv=ac.createConvolver();cv.buffer=rvb;const rgn=ac.createGain();rgn.gain.value=.45;cv.connect(rgn);rgn.connect(P.d);P.r=cv;P.srcs=[];P.em=[];P.tm=0;P.t0=0;return P}
 function runSession(S){S.nt=S.t0;S.tm=setInterval(safe(()=>{const now=ac.currentTime;if(S.nt<now-.05)S.nt=now;
   while(S.nt<now+.45){const st=.05,age=S.nt-S.t0;
     S.em.forEach(e=>{
@@ -424,19 +785,43 @@ function runSession(S){S.nt=S.t0;S.tm=setInterval(safe(()=>{const now=ac.current
 function stopDeath(quick){const S=SS;if(!S)return;SS=null;clearInterval(S.tm);const now=ac.currentTime;
   try{S.d.gain.cancelScheduledValues(now);S.d.gain.setValueAtTime(S.d.gain.value,now);S.d.gain.linearRampToValueAtTime(0,now+(quick?.05:.25))}catch(e){}
   setTimeout(()=>{S.srcs.forEach(x=>{try{x.stop()}catch(e){}});try{S.d.disconnect()}catch(e){}},700)}
+const isSec=k=>typeof k=='string'&&k.slice(0,2)=='s:';   // keys of the secret-room traps look like 's:spike'
 function fitPlay(boss,key,cast,walk){
   const test=(key==null||!ONES[key]);if(test)key=KO[tc++%KO.length];
   stopDeath(1);const S=newSession();B.k=S;SS=S;S.test=test;
-  const d0=ac.currentTime+.01;let s=d0+.03;
-  if(cast>0){sweep('k','sawtooth',70,260,d0,cast,.09,1);sweep('k','sine',500,1500,d0,cast,.04,1);s=d0+cast*.55}
+  const d0=ac.currentTime+.01;lastD0=d0;let s=d0+.03;
+  if(cast>0){castFx(d0,cast,boss?1.5:1);s=d0+cast}
   else if(walk!=null)s=d0+walk;
-  ONES[key](s);S.t0=s+(BA[key]!=null?BA[key]:.8);if(BEDS[key])BEDS[key]();runSession(S);
-  if(test)setTimeout(()=>{if(SS===S)stopDeath()},6000);
-  lastFit=KN[key]||'';api.laughNow(boss,(s-ac.currentTime)+(LD[key]||1.1));
+  s=Math.max(d0,s+(VO[key]||0));ONES[key](s);S.t0=s+(BA[key]!=null?BA[key]:.8);if(BEDS[key])BEDS[key]();runSession(S);
+  if(test)setTimeout(()=>{if(SS===S)stopDeath()},9000);
+  lastFit=KN[key]||'';if(!isSec(key)){const ld=(s-ac.currentTime)+(LD[key]||1.1);if(test)api.laughNow(boss,ld);else armLaugh(boss,ld)}   // secret-room trap deaths: NO demon laugh
 }
 // ---------- MUSIC: each track is a 4-chord loop played by a step sequencer ----------
 const MB=[7,-1,4,-1,5,-1,3,-1,4,-1,2,-1,3,-1,0,-1,7,-1,4,-1,5,-1,3,-1,2,-1,3,-1,4,-1,-1,-1],SC=[0,2,3,5,7,8,11];
+const FS={d:[0,2,3,5,7,9,10],M:[0,2,4,5,7,9,11],m:[0,2,3,5,7,8,10]};
+const mel=(tb,s,root,sc)=>{const d=tb[s%tb.length];return d<0?-1:root+sc[d%7]+12*((d/7)|0)};
+const FM=[4,-1,-1,-1,5,-1,4,-1,2,-1,-1,-1,0,-1,-1,-1,4,-1,-1,-1,6,-1,5,-1,4,-1,-1,-1,-1,-1,-1,-1];
+const HM=[0,-1,-1,2,4,-1,-1,-1,7,-1,-1,6,4,-1,2,-1,3,-1,-1,4,5,-1,-1,-1,4,-1,2,-1,0,-1,-1,-1];
+const LM=[4,-1,-1,-1,2,-1,-1,-1,0,-1,-1,-1,2,-1,-1,-1,4,-1,5,-1,4,-1,-1,-1,2,-1,-1,-1,-1,-1,-1,-1];
 const TR={
+ forest:{n:'🧚 Enchanted Forest (fantasy harp & flute)',bpm:84,pr:[[50,'m'],[48,'M'],[46,'M'],[48,'M']],f(s,t,c){const[r,q]=c,iv=CH[q],b=s%16,m=mel(FM,s,62,FS.d);
+   if(!b){iv.forEach(i=>note('m','triangle',r+i,t,3.6,.035,1));note('m','sine',r-12,t,3,.12)}
+   if(b%2==0)note('m','triangle',r+12+iv[(b>>1)%3]+((b>>1)%6>2?12:0),t,.8,.06,1);
+   if(m>0){note('m','sine',m,t,1,.09,1);note('m','triangle',m+12,t,.4,.025,1)}}},
+ hero:{n:'⚔️ Heroic Quest (fantasy strings, horns & timpani)',bpm:104,pr:[[45,'m'],[41,'M'],[48,'M'],[43,'M']],f(s,t,c){const[r,q]=c,iv=CH[q],b=s%16,m=mel(HM,s,69,FS.m);
+   if(!b)iv.forEach(i=>note('m','sawtooth',r+i,t,3,.03,1,800));
+   if(!b||b==8)note('m','sawtooth',r-12,t,1.8,.1,0,400);
+   if(!b||b==8)sweep('m','sine',110,48,t,.5,.7,1);if(b==12||b==14)sweep('m','sine',110,48,t,.4,.3,1);
+   if(m>0){note('m','sawtooth',m,t,.55,.07,1,2200);note('m','square',m-12,t,.5,.03,1,1200)}}},
+ dragon:{n:"🐉 Dragon's Keep (epic fantasy choir & war drums)",bpm:88,pr:[[40,'m'],[36,'M'],[43,'M'],[38,'M']],f(s,t,c){const[r,q]=c,iv=CH[q],b=s%16;
+   if(!b){iv.forEach(i=>[0,.5].forEach(d=>note('m','sawtooth',mf(r+12+i)+d,t,3.7,.03,1,650,1)));note('m','sawtooth',r-12,t,3.4,.12,1,300)}
+   if(!b||b==6||b==8)sweep('m','sine',100,40,t,.6,.8,1);if(b==10||b==11)sweep('m','sine',90,38,t,.4,.4,1);
+   if(b==8&&(s>>4)%2==0)note('m','sine',r+36,t,2.6,.06,1);
+   if(b==4&&(s>>4)%2)note('m','sawtooth',r,t,1.5,.08,1,900)}},
+ lull:{n:'🌙 Elven Lullaby (soft, dreamy fantasy)',bpm:66,pr:[[43,'M'],[40,'M'],[48,'M'],[50,'M']],f(s,t,c){const[r,q]=c,iv=CH[q],b=s%16,m=mel(LM,s,67,FS.M);
+   if(!b){iv.forEach(i=>note('m','sine',r+12+i,t,3.8,.05,1));note('m','sine',r-12,t,3.6,.1)}
+   if(b%4==0)note('m','triangle',r+24+iv[(b>>2)%3],t,1.2,.06,1);
+   if(m>0){note('m','sine',m,t,1.4,.09,1);note('m','triangle',m+12,t,.5,.03,1)}}},
  crypt:{n:'🕯️ Crypt Dirge (slow, haunting)',bpm:68,pr:[[45,'m'],[41,'M'],[48,'M'],[40,'M']],f(s,t,c){const[r,q]=c,iv=CH[q],b=s%16;
    if(!b){iv.forEach(i=>note('m','triangle',r+12+i,t,3.4,.05,1));note('m','sine',r-12,t,3,.2)}
    if(!b||b==10)kick('m',t,.45);
@@ -469,18 +854,127 @@ const unlock=safe(()=>{init();if(!ac)return;if(ac.state!='running')ac.resume();i
 ['pointerdown','keydown','touchstart'].forEach(e=>addEventListener(e,unlock,{capture:true,passive:true}));
 document.addEventListener('visibilitychange',()=>{if(ac)document.hidden?ac.suspend():ac.resume()});
 
+
+// ---------- v6: EVERY SWORD ART HAS ITS OWN ANIME SOUND ----------
+const R=Math.random;   // (pick() already exists above)
+const SKN=['CRESCENT MOON SLASH','DRAGON FANG RISING','THUNDERCLAP CROSS','VOID SPLITTER','PHOENIX WHIRLWIND','STARFALL JUDGEMENT','AZURE COMET BARRAGE','SUNBREAKER EDGE','CRIMSON REAPER DANCE','GALE OF A THOUSAND CUTS'];
+// a held tone with optional vibrato (vib Hz / vd depth), a filter sweep (lp -> lp1) and a slow attack
+function V(type,f0,f1,t,dur,v,o){o=o||{};
+  const os=ac.createOscillator(),g=ac.createGain();os.type=type;os.frequency.setValueAtTime(f0,t);if(f1&&f1!=f0)os.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  if(o.vib){const l=ac.createOscillator(),lg=ac.createGain();l.frequency.value=o.vib;lg.gain.value=o.vd||20;l.connect(lg);lg.connect(os.frequency);l.start(t);l.stop(t+dur+.05)}
+  let n=os;if(o.lp){const F=ac.createBiquadFilter();F.type='lowpass';F.frequency.setValueAtTime(o.lp,t);if(o.lp1)F.frequency.exponentialRampToValueAtTime(o.lp1,t+dur);os.connect(F);n=F}
+  g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+Math.min(o.att||.01,dur*.9));g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  n.connect(g);g.connect(B.s.d);if(o.rev)g.connect(B.s.r);os.start(t);os.stop(t+dur+.05)}
+// swirling noise (a spinning wind): band-passed noise whose volume pulses hz times a second
+function TN(t,dur,v,f0,f1,q,hz,rev){
+  if(!nb){nb=ac.createBuffer(1,ac.sampleRate*1.5,ac.sampleRate);const d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}
+  const s=ac.createBufferSource(),F=ac.createBiquadFilter(),g=ac.createGain(),m=ac.createGain(),l=ac.createOscillator(),lg=ac.createGain();
+  s.buffer=nb;F.type='bandpass';F.Q.value=q;F.frequency.setValueAtTime(f0,t);F.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  m.gain.value=.55;l.frequency.value=hz;lg.gain.value=.45;l.connect(lg);lg.connect(m.gain);
+  s.connect(F);F.connect(g);g.connect(m);m.connect(B.s.d);if(rev)m.connect(B.s.r);
+  s.start(t,Math.random());s.stop(t+dur+.05);l.start(t);l.stop(t+dur+.05)}
+const bell=(f,t,dur,v)=>[1,2.76,5.4,8.93].forEach((r,j)=>note('s','sine',f*r,t,dur/(1+j*.55),v/(1+j*.9),1,0,1));
+const crackle=(at,a,b,n,v)=>{for(let j=0;j<n;j++)noise('s',at(a+R()*(b-a)),.03+R()*.04,v*(.4+R()*.6),'highpass',3000+R()*5000,1500,1)};
+// timeline (seconds, stretched by k for the slow-motion): 0-.28 charge | .28-.5 the strike | .5 impact | up to ~1 tail
+const SK=[
+ // 0 CRESCENT MOON SLASH: moonlight chimes, a wide silvery arc, a glassy bell
+ (at,k)=>{
+  [76,79,83,86,88,91].forEach((n,j)=>note('s','sine',n,at(.02+j*.04),.55,.06,1));sweep('s','sine',600,2600,at(.02),.26*k,.05,1);
+  noise('s',at(.28),.38*k,.4,'bandpass',7500,600,1.1,1);sweep('s','sine',2400,520,at(.28),.34*k,.08,1);note('s','sine',3951,at(.3),1,.03,1,0,1);
+  bell(880,at(.5),1.6,.11);sweep('s','sine',150,45,at(.5),.3*k,.55,1);noise('s',at(.5),.25*k,.3,'lowpass',2500,200,1,1);
+  for(let j=0;j<7;j++)note('s','sine',3000+R()*3500,at(.52+j*.04),.35,.035,1,0,1)},
+ // 1 DRAGON FANG RISING: a dragon's growl swelling into a roar, the bite crunches
+ (at,k)=>{
+  V('sawtooth',50,95,at(0),.3*k,.16,{att:.12*k,lp:260,lp1:800,vib:20,vd:5,rev:1});noise('s',at(.02),.28*k,.18,'lowpass',200,1000,1,1);
+  V('sawtooth',100,540,at(.26),.4*k,.2,{lp:500,lp1:2800,vib:26,vd:22,rev:1});V('square',150,800,at(.26),.4*k,.06,{lp:900,lp1:3000,vib:26,vd:30});
+  noise('s',at(.28),.38*k,.35,'bandpass',300,3500,1.4,1);
+  [.5,.54,.58].forEach(d=>noise('s',at(d),.07,.55,'lowpass',2500,300,1));sweep('s','sine',130,35,at(.5),.4*k,.8,1);
+  V('sawtooth',320,65,at(.52),.7*k,.17,{lp:1600,lp1:180,vib:17,vd:14,rev:1})},
+ // 2 THUNDERCLAP CROSS: electric buzz, two lightning zaps, a real thunder crack and rumble
+ (at,k)=>{
+  V('square',70,420,at(0),.3*k,.05,{att:.2*k,lp:1800,vib:55,vd:25});crackle(at,0,.28,14,.3);
+  [[.3,4400],[.42,5200]].forEach(([d,f])=>{V('sawtooth',f,160,at(d),.13*k,.1,{lp:6000,rev:1});noise('s',at(d),.12*k,.45,'highpass',7000,2500);crackle(at,d,d+.1,5,.35)});
+  noise('s',at(.5),.55*k,.9,'lowpass',7000,140,.7,1);sweep('s','sine',95,28,at(.5),.5*k,.95,1);noise('s',at(.56),.5*k,.5,'lowpass',500,90,1,1);crackle(at,.52,.9,12,.3)},
+ // 3 VOID SPLITTER: a dark tritone drone is sucked in, then reality tears with glitchy static and a sub drop
+ (at,k)=>{
+  V('sawtooth',130,48,at(0),.42*k,.09,{lp:1100,lp1:120,rev:1});V('sawtooth',184,68,at(0),.42*k,.07,{lp:1100,lp1:120,rev:1});
+  TN(at(.04),.26*k,.3,3500,250,3,17,1);V('sine',2600,110,at(.02),.28*k,.07,{att:.22*k,rev:1});
+  V('sawtooth',1900,55,at(.3),.24*k,.12,{lp:3200,lp1:180,vib:80,vd:260,rev:1});noise('s',at(.3),.26*k,.4,'bandpass',5200,180,7,1);
+  sweep('s','sine',95,24,at(.5),.9*k,.9,1);V('sawtooth',58,41,at(.5),.9*k,.16,{lp:420,vib:6,vd:5,rev:1});noise('s',at(.5),.3*k,.4,'highpass',5000,1200,1,1);
+  for(let j=0;j<7;j++)note('s','square',200+R()*1600,at(.5+j*.03),.04,.05,1,0,1)},
+ // 4 PHOENIX WHIRLWIND: kindling fire, a spinning flame vortex, a phoenix cry, a burst of fire
+ (at,k)=>{
+  crackle(at,0,.28,12,.25);noise('s',at(0),.28*k,.2,'lowpass',200,1500,1,1);
+  TN(at(.26),.5*k,.55,500,2600,1.2,13,1);TN(at(.3),.45*k,.35,900,3200,1.5,9,1);
+  V('triangle',1300,2700,at(.28),.15*k,.1,{vib:14,vd:70,rev:1});V('triangle',2700,1500,at(.42),.34*k,.1,{vib:19,vd:100,rev:1});V('sine',2600,3000,at(.42),.3*k,.04,{vib:25,vd:90,rev:1});
+  noise('s',at(.5),.5*k,.6,'lowpass',5500,300,.8,1);sweep('s','sine',120,38,at(.5),.4*k,.75,1);crackle(at,.5,.95,14,.3)},
+ // 5 STARFALL JUDGEMENT: falling star twinkles, a heavenly choir swells, a meteor lands, bells ring out
+ (at,k)=>{
+  for(let j=0;j<9;j++)note('s','sine',pick([88,91,93,96,100,103]),at(j*.03),.45,.05,1);
+  [64,68,71,76].forEach(n=>V('triangle',mf(n),mf(n),at(.04),.7*k,.045,{att:.25*k,lp:1600,rev:1}));
+  V('sine',3400,420,at(.3),.22*k,.08,{rev:1});V('sine',4200,600,at(.42),.2*k,.07,{rev:1});noise('s',at(.3),.3*k,.2,'highpass',5000,1500,1,1);
+  sweep('s','sine',210,32,at(.5),.6*k,.95,1);noise('s',at(.5),.4*k,.55,'lowpass',4000,160,1,1);
+  [84,88,91,96,100,103,108].forEach((n,j)=>note('s','sine',n,at(.52+j*.05),.9,.07,1))},
+ // 6 AZURE COMET BARRAGE: a rising whine, then seven rapid-fire comet shots, each with its own little impact
+ (at,k)=>{
+  V('sine',380,1900,at(0),.28*k,.07,{rev:1});crackle(at,.05,.28,6,.15);
+  for(let j=0;j<7;j++){const d=.3+j*.03;sweep('s','sawtooth',2600+j*200,650+j*70,at(d),.1*k,.07,1);noise('s',at(d),.06*k,.3,'bandpass',4500+j*300,1400,2.5);noise('s',at(d+.025),.04,.22,'bandpass',900,300,2)}
+  sweep('s','sine',2800,260,at(.44),.3*k,.1,1);sweep('s','sine',170,38,at(.5),.5*k,.85,1);noise('s',at(.5),.35*k,.5,'lowpass',4500,200,1,1);
+  crackle(at,.5,.75,8,.22);bell(1568,at(.52),.9,.05)},
+ // 7 SUNBREAKER EDGE: a rising brass swell, a heroic fanfare stab, a huge gong and a cymbal crash
+ (at,k)=>{
+  [58,62,65,70].forEach(n=>V('sawtooth',mf(n),mf(n),at(.04),.45*k,.04,{att:.3*k,lp:700,lp1:2400,rev:1}));noise('s',at(.04),.26*k,.18,'highpass',2500,9000,1,1);
+  [58,65,70,74].forEach(n=>V('sawtooth',mf(n),mf(n),at(.28),.5*k,.08,{att:.03,lp:900,lp1:4200,rev:1}));sweep('s','triangle',500,2100,at(.28),.24*k,.07,1);
+  bell(98,at(.5),2.4,.2);noise('s',at(.5),.7*k,.35,'highpass',4500,2500,1,1);sweep('s','sine',130,32,at(.5),.6*k,.9,1);
+  [.56,.64].forEach((d,j)=>V('sawtooth',mf(74+j*5),mf(74+j*5),at(d),.4*k,.05,{att:.02,lp:900,lp1:3500,rev:1}))},
+ // 8 CRIMSON REAPER DANCE: a dark cello drone, a heartbeat, four scythe swishes, a dissonant stab
+ (at,k)=>{
+  V('sawtooth',mf(38),mf(38),at(0),.46*k,.09,{att:.2*k,lp:300,vib:5,vd:3,rev:1});V('sawtooth',mf(44),mf(44),at(0),.46*k,.07,{att:.2*k,lp:300,vib:5,vd:3,rev:1});
+  kick('s',at(.04),.5);kick('s',at(.14),.4);
+  for(let j=0;j<4;j++){const d=.27+j*.065,u=j%2;noise('s',at(d),.16*k,.42,'bandpass',u?800:3800,u?3800:800,1.6,1);noise('s',at(d+.03),.08*k,.2,'bandpass',1400,500,3)}
+  [mf(52),mf(53)].forEach(f=>V('sawtooth',f,f,at(.5),.8*k,.1,{att:.02,lp:1300,lp1:200,rev:1}));
+  sweep('s','sine',120,34,at(.5),.5*k,.85,1);noise('s',at(.5),.4*k,.4,'bandpass',2200,500,1.2,1)},
+ // 9 GALE OF A THOUSAND CUTS: a howling wind, a flurry of tiny fast slashes, then the sword sheathes: "chin!"
+ (at,k)=>{
+  TN(at(0),.3*k,.35,300,1500,2.5,6,1);
+  for(let j=0;j<24;j++){const d=.3+.24*Math.pow(j/24,.85);noise('s',at(d),.05,.28+R()*.12,'highpass',3000+R()*4500,1500,2);if(j%3==0)note('s','sine',3500+R()*2500,at(d),.12,.03,1,0,1)}
+  TN(at(.3),.5*k,.4,1600,500,1.5,20,1);sweep('s','sine',140,40,at(.54),.4*k,.7,1);noise('s',at(.54),.3*k,.4,'lowpass',3500,200,1,1);
+  noise('s',at(.62),.03,.5,'highpass',6000,3000);note('s','sine',4186,at(.62),1.1,.07,1,0,1);note('s','sine',6272,at(.62),.9,.04,1,0,1)}
+];
+function playSkill(i,ts,boss){
+  const t0=ac.currentTime+.02,k=ts||1,at=x=>t0+x*k,n=(((+i||0)%SK.length)+SK.length)%SK.length;
+  // LOUD: all of a sword art's sound goes through its own boosted bus so it always stands out over the music
+  const old=B.s,lg=ac.createGain(),lr=ac.createGain();lg.gain.value=2.6;lr.gain.value=2.2;lg.connect(old.d);lr.connect(old.r);B.s={d:lg,r:lr};
+  try{
+    SK[n](at,k);
+    // every sword art also gets a clear whoosh as the blade moves and a heavy hit on impact, so you never miss it
+    noise('s',at(.26),.3*k,.7,'bandpass',1500,5500,1.1,1);sweep('s','sawtooth',700,220,at(.28),.2*k,.1,1);
+    sweep('s','sine',190,38,at(.5),.45*k,1,1);noise('s',at(.5),.2*k,.8,'lowpass',3000,200,1,1);noise('s',at(.5),.07,.7,'highpass',4500,2000,1);
+    if(boss){sweep('s','sine',90,28,at(.5),1,.9,1);note('s','sawtooth',70,at(.55),.8,.12,1,300,1)}   // the Demon Lord is hit: an extra deep boom
+  }finally{B.s=old}
+}
+
 const api={
-  cfg,cust,TR,
+  cfg,cust,TR,SKN,
   sfx:safe(k=>{if(!ac||!cfg.on||ac.state!='running')return;SFX[k]&&SFX[k](ac.currentTime+.01)}),
   dead:safe((boss,key,cast,walk)=>{if(!ac||!cfg.on||ac.state!='running')return;api.death(boss,key,cast,walk)}),
   death:safe((boss,key,cast,walk)=>{init();const t=ac.currentTime+.01;
     if(cfg.death=='fit'){fitPlay(boss,key,cast,walk);return}
     if(cfg.death=='custom'&&cust.death)playBuf(cust.death,0,'s');else if(cfg.death!='off'&&DEATH[cfg.death])DEATH[cfg.death](t);
-    api.laughNow(boss,.9)}),
-  laughNow:safe((boss,delay)=>{init();const t=ac.currentTime+delay;
-    if(cfg.laugh=='custom'&&cust.laugh)playBuf(cust.laugh,0,'s',delay);else if(cfg.laugh!='off')laugh(cfg.laugh,t,boss)}),
+    if(!isSec(key)){if(key==null)api.laughNow(boss,.9);else armLaugh(boss,.9)}}),
+  laughNow:safe((boss,delay,sy,dth)=>{init();const t=ac.currentTime+delay;
+    if(cfg.laugh=='custom'&&cust.laugh){const q=playBuf(cust.laugh,0,'s',delay);if(dth){lsrc=q;ldeath=1}}
+    else if(cfg.laugh!='off'){const old=B.s,lg=ac.createGain(),lr=ac.createGain();lg.gain.value=.4;lr.gain.value=.4;lg.connect(old.d);lr.connect(old.r);B.s={d:lg,r:lr};
+      try{laugh(cfg.laugh,t,boss,sy)}finally{B.s=old}if(dth){lgain=lg;ldeath=1}}}),
+  laughSync:safe(()=>{if(noLaugh||lplayed||!ac||!cfg.on||ac.state!='running')return;lplayed=1;api.laughNow(lboss,.02,1,1)}),
+  // the axes keep swinging over the body: a whoosh and a scrape/clang on the floor each time one sweeps low (times in seconds after the death)
+  axeSwings:safe(ts=>{if(!SS||!ac||!cfg.on)return;B.k=SS;ts.forEach(tt=>{if(tt<1.3)return;const c=lastD0+tt;swl(c-.2,.28,.45,'bandpass',500,3000,.8,1.2);metal(c,.2,rnd(300,420),.45);thud(c,.45,95);nz(c,.18,.3,'bandpass',1800,250,2);for(let i=0;i<3;i++)crk(c+i*.012,.4)})}),
+  setNoLaugh:safe(v=>{v=v?1:0;if(v&&!noLaugh){did++;lplayed=1;stopLaugh()}noLaugh=v}),
   stopDeath:safe(()=>stopDeath()),
-  gate:safe((on,paused)=>{if(!SS||SS.test||!ac)return;if(!on){stopDeath();return}SS.d.gain.setTargetAtTime(paused?0:1,ac.currentTime,.03)}),
+  skill:safe((ty,i,ts,boss)=>{if(!ac||!cfg.on||ac.state!='running')return;playSkill(i,ts,boss)}),
+  skillTest:safe(i=>{unlock();init();if(!ac)return;playSkill(+i||0,1/.62,0)}),
+  gate:safe((on,paused)=>{if(!on){did++;lplayed=1;stopLaugh()}if(!SS||SS.test||!ac)return;if(!on){stopDeath();return}SS.d.gain.setTargetAtTime(paused?0:DG,ac.currentTime,.03)}),
   fast:safe(b=>{const n=b?1.18:1;if(n!=spd){spd=n}}),
   setMusic:safe(k=>{cfg.music=k;save();unlock();mStart()}),
   set:safe((k,v)=>{cfg[k]=v;save();vol();if(k=='death'||(k=='on'&&!v))stopDeath();if(k=='on'||k=='mon'){unlock();mStart()}}),
@@ -498,7 +992,7 @@ return api})();
 const L={
  music:{t:'🎵 Game music',o:Object.entries(SND.TR).map(([k,v])=>[k,v.n]).concat([['off','🔇 No music']])},
  death:{t:'💀 Death sound',o:[['fit','⚔️ Matches each death (recommended)'],['doom','Doom Boom (dark, heavy)'],['retro','8-Bit Fail (arcade)'],['cartoon','Cartoon Slide-Whistle + Bonk'],['splat','Wet Splat'],['off','🔇 Silent']]},
- laugh:{t:'😈 Demon laugh',o:[['cackle','Demon Cackle'],['witch','Witch Cackle (high)'],['chuckle','Evil Chuckle (low, slow)'],['skeleton','Skeleton Rattle'],['off','🔇 No laugh']]}
+ laugh:{t:'😈 Demon laugh',o:[['sinister','Sinister Demon (low, slow, menacing)'],['cackle','Demon Cackle'],['witch','Witch Cackle (high)'],['chuckle','Evil Chuckle (low, slow)'],['skeleton','Skeleton Rattle'],['off','🔇 No laugh']]}
 };
 const SEL='w-full bg-zinc-950 border border-emerald-950 p-2 rounded text-sm text-zinc-200 focus:outline-none focus:border-emerald-500';
 const BTN='bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-3 py-2 rounded text-sm whitespace-nowrap';
@@ -506,11 +1000,13 @@ const d=document.createElement('div');d.id='snd';
 d.style.cssText='display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:16px';
 d.innerHTML=`<div class="bg-zinc-900 border border-emerald-800/60 rounded-xl p-5 w-full max-w-md space-y-4 shadow-[0_0_30px_rgba(16,185,129,.2)] max-h-full overflow-y-auto" style="cursor:default">
  <div class="flex justify-between items-center"><h3 class="title-font text-lg font-bold text-emerald-400">🔊 Sound & Music</h3><button id="snd-x" class="text-zinc-400 hover:text-white px-2 text-xl">✕</button></div>
- <div class="flex gap-5 text-sm text-zinc-300"><label class="flex items-center gap-2"><input id="snd-on" type="checkbox" class="accent-emerald-600"> Sound on <span class="text-zinc-500 text-xs">(M)</span></label><label class="flex items-center gap-2"><input id="snd-mon" type="checkbox" class="accent-emerald-600"> Music on</label></div>
+ <div class="flex flex-wrap gap-x-5 gap-y-2 text-sm text-zinc-300"><label class="flex items-center gap-2"><input id="snd-on" type="checkbox" class="accent-emerald-600"> Sound on <span class="text-zinc-500 text-xs">(M)</span></label><label class="flex items-center gap-2"><input id="snd-mon" type="checkbox" class="accent-emerald-600"> Music on</label></div>
  ${Object.keys(L).map(k=>`<div class="space-y-1"><div class="text-xs text-zinc-400">${L[k].t}</div>
   <div class="flex gap-2"><select id="snd-${k}" class="${SEL}">${L[k].o.map(([v,n])=>`<option value="${v}">${n}</option>`).join('')}</select>
   <button data-test="${k}" class="${BTN}" title="Preview">▶</button><button data-file="${k}" class="${BTN}" title="Use my own audio file">📁</button></div>
   <input type="file" accept="audio/*" id="snd-f-${k}" hidden>${k=='death'?'<div id="snd-fitnm" class="text-[11px] text-emerald-500/80"></div>':''}</div>`).join('')}
+ <div class="space-y-1"><div class="text-xs text-zinc-400">⚔️ Sword-art sound effects (each move sounds different)</div>
+  <div class="flex gap-2"><select id="snd-sk" class="${SEL}">${SND.SKN.map((n,i)=>`<option value="${i}">${n}</option>`).join('')}</select><button id="snd-skgo" class="${BTN}" title="Preview">▶</button></div></div>
  <div class="space-y-2 pt-1"><label class="flex items-center gap-3 text-xs text-zinc-400">Music volume<input id="snd-mv" type="range" min="0" max="1" step=".05" class="flex-1 accent-emerald-600"></label>
  <label class="flex items-center gap-3 text-xs text-zinc-400">Effects volume<input id="snd-sv" type="range" min="0" max="1" step=".05" class="flex-1 accent-emerald-600"></label></div>
  <p class="text-[11px] text-zinc-500 leading-relaxed">▶ previews it. 📁 lets you load your own mp3/wav/ogg for that slot (it lasts until you reload the page). Your other choices are remembered.</p></div>`;
@@ -524,10 +1020,11 @@ d.addEventListener('mousedown',e=>e.stopPropagation());
 d.addEventListener('click',e=>{if(e.target===d)close()});$('#snd-x').onclick=close;
 $('#snd-on').onchange=e=>{SND.set('on',e.target.checked?1:0);sync()};
 $('#snd-mon').onchange=e=>SND.set('mon',e.target.checked?1:0);
+$('#snd-skgo').onclick=()=>SND.skillTest($('#snd-sk').value);$('#snd-sk').onchange=()=>SND.skillTest($('#snd-sk').value);
 $('#snd-mv').oninput=e=>SND.set('mv',+e.target.value);$('#snd-sv').oninput=e=>SND.set('sv',+e.target.value);
 Object.keys(L).forEach(k=>{
   $('#snd-'+k).onchange=e=>{k=='music'?SND.setMusic(e.target.value):(SND.set(k,e.target.value),SND.test(k))};
-  d.querySelector(`[data-test="${k}"]`).onclick=()=>{SND.test(k);if(k=='death'){const n=$('#snd-fitnm');if(n)n.textContent=SND.cfg.death=='fit'&&SND.fitName?'Previewing: '+SND.fitName+' (each press plays the next death, ~6s preview; in the game it loops until you respawn)':''}};
+  d.querySelector(`[data-test="${k}"]`).onclick=()=>{SND.test(k);if(k=='death'){const n=$('#snd-fitnm');if(n)n.textContent=SND.cfg.death=='fit'&&SND.fitName?'Previewing: '+SND.fitName+' (each press plays the next death, ~9s preview; in the game it loops until you respawn)':''}};
   d.querySelector(`[data-file="${k}"]`).onclick=()=>$('#snd-f-'+k).click();
   $('#snd-f-'+k).onchange=async e=>{const f=e.target.files[0];if(!f)return;
     await SND.loadFile(k,f);const s=$('#snd-'+k);let o=s.querySelector('[value=custom]');
@@ -545,7 +1042,7 @@ sync();
 
 
     <!-- Main Container Wrapper -->
-    <main class="w-full max-w-4xl flex-1 flex flex-col items-center justify-center p-4 relative">
+    <main class="w-full flex-1 flex flex-col items-center justify-center p-4 relative" style="max-width:1800px">
 
         <!-- VIEW 1: HUB -->
         <div id="hub" class="scr on w-full max-w-2xl flex flex-col items-center space-y-6 text-center py-6">
@@ -606,7 +1103,7 @@ sync();
         </div>
 
         <!-- VIEW 2: RUN / GAMEPLAY -->
-        <div id="run" class="scr w-full flex flex-col items-center">
+        <div id="run" class="scr w-full flex flex-col items-center" style="max-width:min(100%,max(896px,calc((100vh - 250px)*1.7778)))">
             <div id="hud" class="w-full flex justify-between items-center mb-2 px-2 text-xs font-mono text-zinc-400">
                 <span id="rm">Room 1</span>
                 <span id="tm">0s</span>
@@ -1373,7 +1870,7 @@ sync();
         const GN=[...Array(30).keys()].map(String);
         const GNI=['☠️','🪓','🦷','🧪','👻','⛰️','🏹','🔥','❄️','⚡','🚚','🐊','💥','🕳️','⚔️','🌊','📦','👹','⚙️','🪳','🔨','🍲','🌀','🪆','🪦','🥩','🌳','☢️','⏳','🦠'];
         const GSK=['spike','axe','boulder','lava','ghost','fire','dart','gas','ice','fall'];
-        const GSI={spike:'🗡️',axe:'🪓',boulder:'🪨',lava:'🌋',ghost:'👻',fire:'🔥',dart:'🎯',gas:'☁️',ice:'🧊',fall:'🕳️'};
+        const GSI={spike:'🗡️',axe:'🪓',boulder:'🪨',lava:'🌋',ghost:'👻',fire:'🔔',dart:'🎯',gas:'☁️',ice:'🧊',fall:'🕳️'};
         const SRIDX={spike:0,boulder:1,axe:2,fire:3,dart:4,gas:5,fall:6,lava:7,ghost:8,ice:9};
         const galNName=k=>k=='24'?'Family Reunion':k=='25'?'Meat Grinder':k=='26'?'The Life Tree':k=='27'?'Nuclear Strike':k=='28'?'The Hundred-Year Second':k=='29'?'Patient Zero':DN[+k];
         const galTitle=t=>t.toLowerCase().replace(/(^|\s)\S/g,m=>m.toUpperCase());
@@ -1626,9 +2123,39 @@ sync();
         const SRP={stone:{a:'#231c2e',b:'#2a2236',f:'#1d1627',g:'#241c30'},moss:{a:'#1b2a24',b:'#223329',f:'#142019',g:'#1a2b22'},lava:{a:'#2e1c1c',b:'#3a2222',f:'#241313',g:'#301919'},ice:{a:'#1d2a3a',b:'#243649',f:'#16212f',g:'#1c2b3d'}};
         let lastSR=-1;
         const srNear=(ax,ay,r)=>Math.hypot(G.hx-ax,(G.hy-8)-ay)<r;
-        const SDN={spike:['IMPALED ON SPIKES','#ff4a4a'],axe:['CHOPPED IN HALF','#ff8c1a'],boulder:['SQUISHED BY A BOULDER','#d2b48c'],lava:['SWALLOWED BY LAVA','#ff6a1a'],ghost:['LIFE DRAINED BY A GHOST','#9fd8ff'],fire:['LAUNCHED BY FLAME JETS','#ff8c1a'],dart:['RIDDLED WITH DARTS','#ffb347'],gas:['GASSED','#a8ff3c'],ice:['PIERCED BY ICE SPIKES','#8fe8ff'],fall:['FELL INTO THE PIT','#c9b8ff']};
+        const SDN={spike:['IMPALED ON SPIKES','#ff4a4a'],axe:['CHOPPED IN HALF','#ff8c1a'],boulder:['SQUISHED BY A BOULDER','#d2b48c'],lava:['SWALLOWED BY LAVA','#ff6a1a'],ghost:['LIFE DRAINED BY A GHOST','#9fd8ff'],fire:['TORN APART BY THE CHAOS MELODY','#ff7bd5'],dart:['RIDDLED WITH DARTS','#ffb347'],gas:['GASSED','#a8ff3c'],ice:['PIERCED BY ICE SPIKES','#8fe8ff'],fall:['FELL INTO THE PIT','#c9b8ff']};
         const SRC={stone:'#ffd84a',moss:'#86efac',lava:'#ff8c1a',ice:'#8fe8ff'};
-        function srHurt(c,type){type=SDN[type]?type:'spike';SND.dead(0,'s:'+type);c.dead={type,t:0,x:(type=='spike'&&c.spx!=null)?c.spx:G.hx,spx:type=='spike'?c.spx:null,y:G.hy,f:G.face,sp:[0,1,2].map(()=>Math.random()*23|0),click:false,bi:type=='boulder'&&c.hit?c.hit.i:null,blx:type=='boulder'&&c.hit?c.hit.x:null,bly:type=='boulder'&&c.hit?c.hit.ly:null,bv:type=='boulder'&&c.hit?c.hit.v:200};G.deaths++;$('#dc').textContent='Deaths: '+G.deaths;G.state='secretDie';G.moving=0;c.vx=0;c.vy=0;if(!G.gal)unlock('s:'+type,1)}
+        // ICE SLIDE layout: 7 spike clusters spread over the WHOLE floor. A layout is only used if (1) no straight lane gets through (so walking straight always kills you)
+        // and (2) a weaving path still exists (checked with a flood-fill, keeping a safety margin), so it is hard but never impossible.
+        function iceLayout(){
+            const hit=(L,x,y,m)=>L.some(p=>Math.abs(x-p[0])<30+m&&Math.abs(y-p[1])<26+m);
+            const mk=()=>[0,1,2,3,4,5,6].map(i=>[206+i*78+Math.round(Math.random()*12-6),276+Math.round(Math.random()*128)]);
+            const ok=L=>{
+                for(let y=275;y<=405;y++)if(!L.some(p=>Math.abs(y-p[1])<25))return false;   // every lane is blocked, with 1px to spare
+                const S=8,X0=40,Y0=275,nx=Math.floor((775-X0)/S)+1,ny=Math.floor((405-Y0)/S)+1,seen=new Uint8Array(nx*ny),q=[];
+                for(let j=0;j<ny;j++)if(!hit(L,X0,Y0+j*S,8)){seen[j]=1;q.push([0,j])}
+                while(q.length){const[i,j]=q.pop();if(X0+i*S>=712)return true;
+                    for(let di=-1;di<=1;di++)for(let dj=-1;dj<=1;dj++){const a=i+di,b=j+dj;if(a<0||b<0||a>=nx||b>=ny||seen[a*ny+b]||hit(L,X0+a*S,Y0+b*S,8))continue;seen[a*ny+b]=1;q.push([a,b])}}
+                return false};
+            for(let t=0;t<600;t++){const L=mk();if(ok(L))return L}
+            return [[208,347],[279,380],[367,396],[445,326],[523,307],[594,396],[674,298]];   // (verified layout, only used if 600 random tries all failed)
+        }
+        // the secret deaths' sounds are already built around each animation (spike impale .25s, axe cut .2s, darts .18s...), except the boulder, which hits when it rolls up to him (distance / speed)
+        // ICE: 26 tiny sharp spikes through his body + 16 little ones on the floor around it (same layout for the death and for the remains)
+        const ICE_MINI=(()=>{const r=k=>{const v=Math.sin(k*127.1+3.7)*43758.5453;return v-Math.floor(v)},L=[];
+            for(let j=0;j<26;j++){const u=j/25;L.push({off:(u-.5)*92+(r(j)-.5)*5,h:(16+r(j+40)*30)*(1.2-Math.abs(u-.5)*.9),lean:(r(j+80)-.5)*.55,w:5+r(j+120)*3,thru:Math.abs(u-.5)<.38,rank:Math.abs(j-12.5)})}
+            for(let j=0;j<16;j++){const side=j%2?1:-1;L.push({off:side*(50+r(j+200)*38),h:6+r(j+240)*9,lean:(r(j+280)-.5)*.5,w:4+r(j+320)*2,thru:false,rank:14+j*.4})}
+            return L})();
+        function iceMiniDraw(x,fy,gf,now){ICE_MINI.forEach((s,j)=>{const g=gf(s);if(g<=0)return;const h=s.h*g,bx=x+s.off,tx=bx+s.lean*h,ty=fy-h;
+                ctx.fillStyle='rgba(170,232,255,.93)';ctx.beginPath();ctx.moveTo(bx-s.w/2,fy+2);ctx.lineTo(tx,ty);ctx.lineTo(bx+s.w/2,fy+2);ctx.closePath();ctx.fill();
+                ctx.fillStyle='rgba(255,255,255,.55)';ctx.beginPath();ctx.moveTo(bx+.5,fy+2);ctx.lineTo(tx,ty);ctx.lineTo(bx+s.w/2,fy+2);ctx.closePath();ctx.fill();
+                if(s.thru&&s.h>22&&g>=.6){const r2=q=>({l:bx+s.lean*h*q-s.w*(1-q)/2,r:bx+s.lean*h*q+s.w*(1-q)/2});const a=r2(.45),b=r2(.88);   // blood where it went through him
+                    ctx.fillStyle='rgba(150,18,28,.9)';ctx.beginPath();ctx.moveTo(a.l,fy-h*.45);ctx.lineTo(a.r,fy-h*.45);ctx.lineTo(b.r,fy-h*.88);ctx.lineTo(b.l,fy-h*.88);ctx.closePath();ctx.fill();R('#8a141c',tx-1,ty+1,2,3+(j%3))}
+                ctx.strokeStyle='rgba(40,110,160,.95)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(bx-s.w/2,fy+2);ctx.lineTo(tx,ty);ctx.lineTo(bx+s.w/2,fy+2);ctx.stroke();
+                if(g>=1&&s.h>20&&Math.sin(now/240+j*1.7)>.8){R('#fff',tx-1,ty-3,2,6);R('#fff',tx-3,ty-1,6,2)}})}
+        function srSnd(type,blx,x,v,c){let w=0;if(type=='boulder'&&blx!=null)w=Math.max(0,Math.max(.06,(blx-x)/Math.max(150,v||200))-.17);SND.dead(0,'s:'+type,0,w);
+            if(type=='axe'&&c&&c.ph&&c.sp){const ts=[];c.ph.forEach((ph,i)=>{const sp=c.sp[i],wv=c.t*sp+ph;let tt=(Math.ceil(wv/Math.PI)*Math.PI-wv)/sp;if(tt<.05)tt+=Math.PI/sp;for(;tt<8;tt+=Math.PI/sp)ts.push(tt)});SND.axeSwings(ts)}}   // each axe passes the bottom of its swing (blade red, scraping the floor) every half period
+        function srHurt(c,type){type=SDN[type]?type:'spike';srSnd(type,c.hit?c.hit.x:null,G.hx,c.hit?c.hit.v:200,c);c.dead={type,t:0,x:(type=='spike'&&c.spx!=null)?c.spx:G.hx,spx:type=='spike'?c.spx:null,y:G.hy,f:G.face,sp:[0,1,2].map(()=>Math.random()*23|0),click:false,bi:type=='boulder'&&c.hit?c.hit.i:null,blx:type=='boulder'&&c.hit?c.hit.x:null,bly:type=='boulder'&&c.hit?c.hit.ly:null,bv:type=='boulder'&&c.hit?c.hit.v:200};G.deaths++;$('#dc').textContent='Deaths: '+G.deaths;G.state='secretDie';G.moving=0;c.vx=0;c.vy=0;if(!G.gal)unlock('s:'+type,1)}
         addEventListener('mousedown',()=>{if(G&&G.state=='secretDie'&&!G.paused&&G.sc&&G.sc.dead)G.sc.dead.click=true});
         function srDeathDraw(c,now){
             const D=c.dead,t=D.t,x=D.x,fy=D.y+15,F=D.f,type=D.type,bx=x-57*F;
@@ -1638,7 +2165,7 @@ sync();
                 ctx.save();ctx.globalAlpha=o.a??1;if(o.f)ctx.filter=o.f;if(o.clip){ctx.beginPath();ctx.rect(o.clip[0],o.clip[1],o.clip[2],o.clip[3]);ctx.clip()}
                 const pv=o.pv||0;ctx.translate(x+(o.dx||0),fy+(o.dy||0)-pv);ctx.rotate(o.rot||0);ctx.scale(F*(o.mx||1),o.my??1);if(o.lc){ctx.beginPath();o.lc.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.clip()}ctx.drawImage(im.img,n*120,0,120,80,-132,-176+pv,264,176);ctx.restore()};
             const spray=(t0)=>{if(t<t0)return;const u=Math.min(1,(t-t0)/.7),old=G.sp;G.sp=D.sp;for(let j=0;j<3;j++)sprayAt(j,x+(j-1)*18,fy-50-j*6,.7+u*.8,1-u*.9,j==1?-1:1);G.sp=old};
-            const PT={spike:[0,32],axe:[.2,46],dart:[.9,34],fire:[1.2,34],gas:[1.4,30],ice:[.35,38]};   // blood pool: [starts at, size]
+            const PT={spike:[0,32],axe:[.2,46],dart:[.9,34],gas:[1.4,30],ice:[.35,38]};   // blood pool: [starts at, size]
             if(PT[type]){const pt=PT[type],pu=cl((t-pt[0])/.9,0,1),pcx=type=='fire'?bx:x;if(pu>0){ctx.fillStyle='rgba(110,15,23,.9)';ctx.beginPath();ctx.ellipse(pcx,fy-2,pu*pt[1],pu*pt[1]*.28,0,0,7);ctx.fill()}}
 
             if(type=='spike'){ // impaled on the pit's own spikes (they stay raised, the pit is drawn by the room)
@@ -1708,18 +2235,28 @@ sync();
                 ctx.globalAlpha=.85-.3*ue;ctx.fillStyle='rgba(210,235,255,.9)';ctx.beginPath();ctx.arc(0,0,34,Math.PI,0);ctx.lineTo(34,40);for(let k=0;k<4;k++)ctx.lineTo(34-k*17-8,28+(k%2?12:0)+Math.sin(now/120+k)*3);ctx.lineTo(-34,40);ctx.closePath();ctx.fill();
                 ctx.globalAlpha=1;ctx.fillStyle='#0b1220';ctx.beginPath();ctx.arc(-11,-2,6,0,7);ctx.arc(11,-2,6,0,7);ctx.fill();ctx.beginPath();ctx.ellipse(0,-34*0+16,7,10,0,0,7);ctx.fill();ctx.restore()}
 
-            else if(type=='fire'){ // flame jets blast him straight up, he spins through the air and crashes down charred
-                const char='sepia(1) saturate(4) hue-rotate(-25deg)',T=.95,uu=t-.25;
-                const jh=(t<.25?t*4:Math.max(0,1-(t-.25)/.6))*100;
-                if(jh>0){ctx.save();ctx.globalCompositeOperation='lighter';
-                    for(let j=-3;j<=3;j++){const h=jh*(1-Math.abs(j)*.1)*(.85+.15*Math.sin(now/70+j*2));['rgba(214,58,20,.9)','rgba(255,150,30,.9)','rgba(255,230,120,.9)'].forEach((c2,L)=>{ctx.fillStyle=c2;tflame(x+j*13,fy,14-L*3,h*(1-L*.22),now/110+j)})}
-                    glow(x,fy-30,130,'255,130,30',.4);ctx.restore()}
-                if(t<.25)sp({idle:1,f:char,dx:Math.sin(now/25)*2});
-                else if(uu<T){const p=uu/T;sp({idle:1,f:char,pv:60,dy:-4*p*(1-p)*330,dx:-F*p*60,rot:-F*p*7})}
-                else{ctx.fillStyle='rgba(0,0,0,.4)';ctx.beginPath();ctx.ellipse(bx,fy+2,52,10,0,0,7);ctx.fill();
-                    sp({t0:-9,f:'brightness(.35) sepia(.6)'});flames(bx,fy-6,.45,now,x,2);
-                    for(let j=0;j<6;j++){const ph=(now/1800+j/6)%1;O('rgba(40,36,36,'+(.3*(1-ph))+')',bx+Math.sin(now/400+j)*14,fy-14-ph*80,7+ph*14)}
-                    if(uu<T+.35){for(let j=0;j<8;j++)O('rgba(150,140,120,'+(.6-(uu-T)*1.7)+')',bx-40+j*11,fy-4-(uu-T)*40,6)}}}
+            else if(type=='fire'){ // a deafening WRONG NOTE: the sound shakes him until he bursts out of his armour, which clatters to the floor in a heap
+                const POP=1.0,shk=Math.min(1,t/POP);
+                for(let r=0;r<3;r++){const u=(t*1.1-r*.22)%1;if(t<POP+.9&&u>0){ctx.strokeStyle='rgba(255,123,213,'+(.5*(1-u))+')';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(x,fy-45,20+u*150,10+u*70,0,0,7);ctx.stroke()}}   // shock rings
+                const notes=(a0)=>{ctx.save();ctx.font='bold 20px serif';ctx.textAlign='center';['♪','♫','♩','♬','♪'].forEach((n,q)=>{const ph=((now/900+q*.21)%1);ctx.globalAlpha=Math.max(0,(1-ph)*a0);ctx.fillStyle=q%2?'#7bf0ff':'#ff7bd5';ctx.fillText(n,x+Math.sin(ph*6+q*2)*(36+q*12),fy-55-ph*80)});ctx.restore()};
+                if(t<POP){const j=3+shk*9;[-1,0,1].forEach((o,q)=>sp({idle:1,a:q==1?1:.35,dx:o*j*.5*Math.sin(now/22+q)+Math.sin(now/17)*shk*3,f:'saturate(1.5) contrast(1.2)'}));notes(.9)}   // he vibrates in a blur of double vision
+                else{const u=t-POP;
+                    if(u<.3){ctx.save();ctx.globalCompositeOperation='lighter';glow(x,fy-45,150,'255,210,255',.95*(1-u/.3));ctx.restore()}   // the flash as the armour bursts off
+                    const g=900,y0=fy-45,yf=fy-3;
+                    [['helm',-70,-300,13,5],['plate',40,-260,16,-4],['pauld',-130,-220,11,6],['pauld',120,-240,11,-7],['boot',-30,-200,10,3],['boot',70,-190,10,-3],['sword',150,-280,22,8],['bolt',-100,-150,4,0],['bolt',90,-170,4,0],['glove',-160,-170,8,4]].forEach((p,i)=>{
+                        const vx=p[1],vy=p[2],u1=(-vy+Math.sqrt(vy*vy+2*g*(yf-y0)))/g;let yy,xx;
+                        if(u<u1){yy=y0+vy*u+.5*g*u*u;xx=x+vx*u}else{const w=u-u1,vb=-(vy+g*u1)*.32,u2=2*Math.abs(vb)/g;xx=x+vx*(u1+Math.min(w,u2)*.5);yy=w<u2?yf+vb*w+.5*g*w*w:yf}
+                        ctx.save();ctx.translate(xx,yy+(i%3)*2);ctx.rotate(Math.min(u,u1+.3)*p[4]);const z=p[3];
+                        if(p[0]=='helm'){ctx.fillStyle='#9aa4b0';ctx.beginPath();ctx.arc(0,0,z,0,7);ctx.fill();ctx.fillStyle='#10131a';ctx.fillRect(-z*.7,-z*.15,z*1.4,z*.3);ctx.fillStyle='#c7d0da';ctx.fillRect(-z*.2,-z,z*.4,z*.7)}
+                        else if(p[0]=='plate'){ctx.fillStyle='#7f8996';ctx.fillRect(-z,-z*.8,z*2,z*1.6);ctx.fillStyle='#aab3bf';ctx.fillRect(-z,-z*.8,z*2,3);ctx.fillStyle='#5b6470';ctx.fillRect(-1,-z*.8,2,z*1.6)}
+                        else if(p[0]=='pauld'){ctx.fillStyle='#8a93a0';ctx.beginPath();ctx.arc(0,0,z,Math.PI,0);ctx.fill();ctx.fillStyle='#5b6470';ctx.fillRect(-z,0,z*2,3)}
+                        else if(p[0]=='boot'){ctx.fillStyle='#4a4f5a';ctx.fillRect(-z*.5,-z*.8,z,z*1.6);ctx.fillRect(-z*.5,z*.4,z*1.4,z*.5)}
+                        else if(p[0]=='sword'){ctx.fillStyle='#cfd4da';ctx.fillRect(-z,-1.5,z*1.7,3);ctx.fillStyle='#8a5a2b';ctx.fillRect(z*.7,-4,3,8);ctx.fillRect(z*.7,-1,8,2)}
+                        else if(p[0]=='glove'){ctx.fillStyle='#6b7480';ctx.fillRect(-z*.6,-z*.6,z*1.2,z*1.2)}
+                        else{ctx.fillStyle='#c9a227';ctx.beginPath();ctx.arc(0,0,z*.6,0,7);ctx.fill()}
+                        ctx.restore()});
+                    if(u<.5)for(let j=0;j<8;j++)O('rgba(190,185,200,'+(.5*(1-u*2))+')',x-60+j*17,fy-4-u*30,6+u*10);   // dust as the heap lands
+                    notes(Math.max(0,1-u/2.5))}}
 
             else if(type=='dart'){ // poison darts pin him from both sides; he stays upright like a pincushion, then topples stiff as a board
                 const fall=cl((t-1.05)/.35,0,1),green=t>.6?'hue-rotate(60deg) saturate(1.8)':'';
@@ -1735,8 +2272,10 @@ sync();
 
             else if(type=='gas'){ // toxic gas: he coughs, gets dizzy and falls flat on his face
                 const f='hue-rotate(75deg) saturate(1.8)',q=Math.min(1,t/.8),p=cl((t-1.3)/.4,0,1);
-                for(let j=-1;j<=1;j++){R('#2b2b36',x+j*46-12,fy+1,24,5);R('#0a0810',x+j*46-9,fy+3,18,2)}
+                const gv=GAS_VENTS.filter(v=>Math.abs(v[0]-x)<130&&Math.abs(v[1]-(fy-1))<75).concat([[x,fy-1]]),ge=cl(t/.5,0,1);   // the vents around him, plus one that opens right under his feet
+                gv.forEach((v,i)=>ventGrate(v[0],v[1],t>.12,now,i));
                 if(t<1.3)sp({idle:1,f,rot:Math.sin(now/170)*(.03+t*.07)});else sp({idle:1,n:0,f,rot:F*p*1.55});
+                gv.forEach((v,i)=>{for(let j=0;j<5;j++){const ph=((now/700)+j/5+i*.37)%1,hh=ge*(40+ph*90),rad=(10+ph*22)*ge;ctx.fillStyle='rgba(130,210,70,'+(.34*(1-ph)*ge)+')';ctx.beginPath();ctx.arc(v[0]+Math.sin(now/300+j+i)*(6+ph*14),v[1]-hh,rad,0,7);ctx.fill()}});   // gas pouring out of every one of those vents
                 for(let j=0;j<16;j++){ctx.fillStyle='rgba(120,200,60,'+(.2*q)+')';ctx.beginPath();ctx.arc(x-90+j*12+Math.sin(now/400+j)*8,fy-20-((j*29)%80)-Math.sin(now/600+j)*6,(20+j%4*8)*q,0,7);ctx.fill()}
                 if(t<1.3){ctx.save();ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.lineJoin='round';
                     ['*cough*','*hack!*','*cough*'].forEach((s,j)=>{const ph=((now/700+j*.33)%1);ctx.globalAlpha=Math.max(0,1-ph);ctx.lineWidth=3;ctx.strokeStyle='#0a1a06';ctx.strokeText(s,x+(j-1)*42,fy-105-ph*34);ctx.fillStyle='#d6ff9a';ctx.fillText(s,x+(j-1)*42,fy-105-ph*34)});ctx.restore()}}
@@ -1748,21 +2287,13 @@ sync();
                 for(let j=0;j<12;j++){const ph=(t*1.3+j*.083)%1;if(t<1.6)R('rgba(170,160,150,'+(.6*(1-ph))+')',x-30+((j*29)%60),fy-ph*50,3+j%3,3+j%3)}
                 if(t>1.2){const e=cl((t-1.2)/.5,0,1);ctx.strokeStyle='rgba(200,190,230,'+(.5*(1-e))+')';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,fy-4,10+e*40,3+e*8,0,0,7);ctx.stroke()}}
 
-            else if(type=='ice'){ // jagged ice spikes burst up through the floor and run him through
-                const fz='saturate(.5) brightness(1.15) hue-rotate(150deg)',lf=cl((t-.2)/.3,0,1);
+            else if(type=='ice'){ // lots of TINY sharp ice spikes burst out of the floor and pierce his whole body; he hangs there frozen
+                const fz='saturate(.5) brightness(1.15) hue-rotate(150deg)',lf=cl((t-.12)/.25,0,1);
                 ctx.fillStyle='rgba(200,240,255,.22)';ctx.beginPath();ctx.ellipse(x,fy+3,Math.min(1,t*3)*72,Math.min(1,t*3)*14,0,0,7);ctx.fill();
-                if(t<.2)sp({idle:1,f:fz,dx:Math.sin(now/30)*2});
-                else sp({idle:1,n:0,f:fz,pv:50,dy:-lf*16,rot:F*lf*.22});   // lifted off the floor and slumped over the spikes
-                const CR=[[-58,70,14,-.35],[-34,118,17,-.15],[-12,158,19,.05],[14,172,20,-.05],[36,130,17,.12],[58,82,14,.35]];
-                CR.forEach((o,j)=>{const g=cl((t-.12-j*.04)/.18,0,1);if(g<=0)return;
-                    const cx2=x+o[0],h=o[1]*g,w=o[2],tx=cx2+o[3]*h,ty=fy-h;
-                    ctx.fillStyle='rgba(170,230,255,.6)';ctx.beginPath();ctx.moveTo(cx2-w/2,fy+2);ctx.lineTo(tx,ty);ctx.lineTo(cx2+w/2,fy+2);ctx.closePath();ctx.fill();
-                    ctx.fillStyle='rgba(255,255,255,.45)';ctx.beginPath();ctx.moveTo(cx2+1,fy+2);ctx.lineTo(tx,ty);ctx.lineTo(cx2+w/2,fy+2);ctx.closePath();ctx.fill();
-                    if(j>=1&&j<=4&&g>=1){const xl=r=>cx2+o[3]*h*r-w*(1-r)/2,xr=r=>cx2+o[3]*h*r+w*(1-r)/2;   // blood where the spike passes through him
-                        ctx.fillStyle='rgba(150,18,28,.75)';ctx.beginPath();ctx.moveTo(xl(.3),fy-h*.3);ctx.lineTo(xr(.3),fy-h*.3);ctx.lineTo(xr(.62),fy-h*.62);ctx.lineTo(xl(.62),fy-h*.62);ctx.closePath();ctx.fill()}
-                    ctx.strokeStyle='rgba(225,248,255,.9)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(cx2-w/2,fy+2);ctx.lineTo(tx,ty);ctx.lineTo(cx2+w/2,fy+2);ctx.stroke();
-                    if(g>=1&&Math.sin(now/260+j*2)>.6){R('#fff',tx-1,ty-5,2,10);R('#fff',tx-5,ty-1,10,2)}});
-                if(t>.35)for(let j=0;j<5;j++)R('#7a121b',x-16+j*8,fy-100+((now/14+j*23)%100),2,5);
+                if(t<.12)sp({idle:1,f:fz,dx:Math.sin(now/30)*2});
+                else sp({idle:1,n:0,f:fz,pv:50,dy:-lf*8,rot:F*lf*.2});   // lifted a little and hanging on the spikes
+                iceMiniDraw(x,fy,sk=>cl((t-.1-sk.rank*.012)/.12,0,1),now);
+                if(t>.3)for(let j=0;j<5;j++)R('#7a121b',x-16+j*8,fy-100+((now/14+j*23)%100),2,5);
                 for(let j=0;j<10;j++){const ph=(now/1600+j*.1)%1;R('rgba(220,245,255,'+(.6*(1-ph))+')',x-70+j*15+Math.sin(now/500+j)*6,fy-ph*70,3,3)}}
         }
 
@@ -1785,9 +2316,10 @@ sync();
             R('#0a0810',x-16,top-2,32,10);R('#3a3347',x-16,top-2,32,2);
             ctx.fillStyle=ctx.createLinearGradient(0,top+8,0,top+30);const sg=ctx.createLinearGradient(0,top+8,0,top+30);sg.addColorStop(0,'rgba(0,0,0,.45)');sg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=sg;ctx.fillRect(x-14,top+8,28,22)
         }
-        function srAxe(c,x,ph,now,show){
+        function srAxe(c,x,ph,now,show,spd){
             // long chain mounted high on the wall: the blade now sweeps the WHOLE depth of the corridor
-            const Y0=150,LN=250,w=c.t*1.9+ph,a=Math.sin(w)*.55,sn=Math.sin(a),cs=Math.cos(a),ex=x+sn*LN,ey=Y0+cs*LN,dir=Math.cos(w)>=0?1:-1;
+            const Y0=150,LN=250,w=c.t*(spd||1.9)+ph,a=Math.sin(w)*.55,sn=Math.sin(a),cs=Math.cos(a),ex=x+sn*LN,ey=Y0+cs*LN,dir=Math.cos(w)>=0?1:-1,
+                low=Math.abs(a)<.3;   // the bottom of the swing: the blade scrapes the floor, so crawling under it does NOT save you
             if(show){
                 ctx.strokeStyle='#4b4b5a';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x,Y0);ctx.lineTo(ex,ey);ctx.stroke();
                 ctx.strokeStyle='#6f6f82';ctx.lineWidth=2;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(x,Y0);ctx.lineTo(ex,ey);ctx.stroke();ctx.setLineDash([]);
@@ -1795,17 +2327,27 @@ sync();
                 ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.ellipse(ex,ey+34,30,8,0,0,7);ctx.fill();   // shadow: shows where the blade passes
                 ctx.save();ctx.translate(ex,ey);ctx.rotate(-a);ctx.scale(1.35,1.35);
                 R('#6b4f2a',-3,-12,6,26);                                   // wooden haft
-                ctx.fillStyle='#8a929a';ctx.beginPath();ctx.moveTo(0,-14);ctx.quadraticCurveTo(dir*40,-22,dir*34,0);ctx.quadraticCurveTo(dir*40,22,0,14);ctx.closePath();ctx.fill();   // axe head
+                ctx.fillStyle=low?'#c85a5a':'#8a929a';ctx.beginPath();ctx.moveTo(0,-14);ctx.quadraticCurveTo(dir*40,-22,dir*34,0);ctx.quadraticCurveTo(dir*40,22,0,14);ctx.closePath();ctx.fill();   // axe head (turns red when it is sweeping low)
                 ctx.strokeStyle='#e8edf2';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(dir*30,-14);ctx.quadraticCurveTo(dir*40,0,dir*30,14);ctx.stroke();   // sharp edge
-                R('#2b2b36',-5,-8,10,16);ctx.restore()}
-            if(c.duck)return false;
+                R('#2b2b36',-5,-8,10,16);ctx.restore();
+                if(low){   // low sweep warning: red glow on the floor where it scrapes, and sparks
+                    ctx.fillStyle='rgba(255,70,60,.28)';ctx.beginPath();ctx.ellipse(ex,ey+34,46,12,0,0,7);ctx.fill();
+                    for(let j=0;j<5;j++)R('#ffd08a',ex+dir*(18+j*9),ey+28+((now/18+j*11)%12),2,2)}}
+            if(c.duck&&!low)return false;   // crawling only ducks the HIGH part of the swing
             // deadly part = the lower chain plus the head (a swept line, not a single point), so there is no safe strip along the top or bottom edge
-            const px=G.hx,py=G.hy-22,ax=x+sn*LN*.35,ay=Y0+cs*LN*.35,bx=ex+dir*22,by=ey,vx=bx-ax,vy=by-ay;
+            const px=G.hx,py=G.hy-(c.duck?8:22),ax=x+sn*LN*.35,ay=Y0+cs*LN*.35,bx=ex+dir*22,by=ey,vx=bx-ax,vy=by-ay;
             let tt=((px-ax)*vx+(py-ay)*vy)/(vx*vx+vy*vy);tt=Math.max(0,Math.min(1,tt));
             return Math.hypot(ax+vx*tt-px,ay+vy*tt-py)<26}
         const SRX=[[230,300],[320,390],[410,305],[500,390],[590,310],[670,385]],SRL=[295,350,400],SRSP=[190,235,165];
         const SIM_COL=['#ef4444','#22c55e','#3b82f6'],SIM_RGB=['239,68,68','34,197,94','59,130,246'],SIM_X=[200,350,500],SPK2=[210,330,450,570];
         const SRPL3=[[210,385],[345,295],[480,385]],SRT=[200,420,640];
+        function ventGrate(x,y,open,now,i){   // a flat stone floor grate, not a hole: same tones as the flagstones, slits, a faint toxic stain
+            R('#1b1722',x-18,y-5,36,11);R('#322d3d',x-17,y-4,34,9);R('#403b4e',x-17,y-4,34,1);R('#26222f',x-17,y+4,34,1);
+            for(let k=0;k<6;k++)R(open?'#7fdc45':'#0e0b13',x-13+k*5,y-2,3,6);
+            R(open?'rgba(120,200,60,.35)':'rgba(90,140,50,.2)',x-17,y+3,34,2);
+            if(open){ctx.save();ctx.globalCompositeOperation='lighter';glow(x,y,32,'120,230,60',.35);ctx.restore()}
+            else{const ph=(now/3400+i*.137)%1;if(ph<.3)O('rgba(130,210,70,'+(.08*(1-ph/.3))+')',x+Math.sin(now/600+i)*3,y-3-ph*46,2+ph*8)}}   // closed: only a rare faint wisp seeps out, so a sharp eye can spot them
+        const GAS_VENTS=(()=>{const L=[];for(let r=0;r<3;r++)for(let k=0;k<8;k++)L.push([66+k*90+(r%2)*45,300+r*48]);return L})();   // floor vents over the WHOLE room, so the gas always reaches you wherever you stand
         function srExpr(v){const r=Math.random();for(const d of[2,3,4,5,6])if(v%d==0&&v/d>1&&r<.5)return d+'×'+(v/d);const k=2+Math.floor(Math.random()*9);return r<.75?(v+k)+'−'+k:(v-k>0?(v-k)+'+'+k:v+'+0')}
         const SRM=[
         {name:'Spike Corridor',hint:'Spike plates pop up in a wave. A red flash means they are about to rise, so never linger on a plate!',pal:'stone',init(c){c.so=sh([0,550,1100,1650]).map(v=>(v+Math.random()*300-150+2200)%2200)},
@@ -1823,10 +2365,10 @@ sync();
          draw(c,now){SRL.forEach((ly,i)=>{if(c.dead&&G.state=='secretDie'&&c.dead.type=='boulder'&&c.dead.bi===i)return;const x=this.bx(c,i);ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(x,ly+24,26,7,0,0,7);ctx.fill();
                 const g=ctx.createRadialGradient(x-8,ly-10,4,x,ly,28);g.addColorStop(0,'#9a9486');g.addColorStop(1,'#4a463e');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,ly,26,0,7);ctx.fill();
                 ctx.strokeStyle='#2d2a25';ctx.lineWidth=3;ctx.beginPath();const a=x/16;ctx.moveTo(x+Math.cos(a)*6,ly+Math.sin(a)*6);ctx.lineTo(x+Math.cos(a)*22,ly+Math.sin(a)*22);ctx.moveTo(x-Math.cos(a+1)*6,ly-Math.sin(a+1)*6);ctx.lineTo(x-Math.cos(a+1)*20,ly-Math.sin(a+1)*20);ctx.stroke()})}},
-        {name:'Axe Gauntlet',axes:true,hint:'Four axes swing out of step. Time the swings, or hold SHIFT (or C) and crawl flat under them.',pal:'stone',init(c){c.ph=[0,1,2,3].map(()=>Math.random()*6.283)},
-         upd(c){return[230,380,530,670].map((x,i)=>srAxe(c,x,c.ph[i],0,false)).some(Boolean)?'axe':false},
-         draw(c,now){[230,380,530,670].forEach((x,i)=>srAxe(c,x,c.ph[i],now,true))}},
-        {name:'Simon Torches',hint:'Watch the torches flash, then step on the matching coloured plates in the SAME order. A wrong plate sets off flame jets, then the sequence replays.',pal:'moss',
+        {name:'Axe Gauntlet',axes:true,hint:'Four axes swing at different speeds. Hold SHIFT (or C) to crawl under the HIGH swings, but when a blade glows red it is sweeping the floor and crawling will not save you!',pal:'stone',init(c){c.ph=[0,1,2,3].map(()=>Math.random()*6.283);c.sp=[0,1,2,3].map(()=>1.6+Math.random()*.9)},
+         upd(c){return[230,380,530,670].map((x,i)=>srAxe(c,x,c.ph[i],0,false,c.sp[i])).some(Boolean)?'axe':false},
+         draw(c,now){[230,380,530,670].forEach((x,i)=>srAxe(c,x,c.ph[i],now,true,c.sp[i]))}},
+        {name:'Simon Torches',hint:'Watch the torches flash, then step on the matching coloured plates in the SAME order. A wrong plate wakes the Chaos Melody, one terrible note that tears you apart, then the sequence replays.',pal:'moss',
          init(c){c.len=4;c.seq=[0,1,2,3].map(()=>Math.floor(Math.random()*3));c.n=0;c.ph='show';c.st=-.8;c.last=-1;c.flash=0;c.gate={x:620,open:false,o:0}},
          upd(c,dt){c.flash-=dt;let bad=false;
             if(c.ph=='show'){c.st+=dt;if(c.st>c.len*.9+.2){c.ph='play';c.n=0}}
@@ -1848,10 +2390,10 @@ sync();
          draw(c,now){for(let i=0;i<5;i++){R('#07050a',0,250+i*36,12,6);R('#07050a',W-12,250+i*36,12,6)}
             c.pl.forEach(p=>{R('#17121f',p.x-34,p.y-14,68,30);R(p.ok?'#16a34a':c.flash>0?'#b91c1c':'#3a3347',p.x-32,p.y-16,64,26);if(p.ok)glow(p.x,p.y,56,'80,255,140',.3);
                 ctx.fillStyle='#fff';ctx.font='bold 17px sans-serif';ctx.textAlign='center';ctx.fillText(p.e,p.x,p.y+3)});srGateDraw(c.gate)}},
-        {name:'Torch Order',hint:'The mural shows the order of colours. Walk under the torches in THAT order. The wrong torch releases poison gas!',pal:'stone',noTorch:true,
+        {name:'Torch Order',hint:'The mural shows the order of colours. Walk under the torches in THAT order. The wrong torch opens the floor vents and poison gas pours out right where you stand!',pal:'stone',noTorch:true,
          init(c){c.cols=sh([0,1,2]);c.seq=sh([0,1,2]);c.lit=[0,0,0];c.n=0;c.flash=0;c.gate={x:690,open:false,o:0}},
          upd(c,dt){c.flash-=dt;let bad=false;SRT.forEach((x,i)=>{if(!c.lit[i]&&Math.abs(G.hx-x)<40&&G.hy<=315){if(c.cols[i]==c.seq[c.n]){c.lit[i]=1;c.n++;if(c.n>=3)c.gate.open=true}else{c.lit=[0,0,0];c.n=0;c.flash=.8;bad='gas'}}});return bad},
-         draw(c,now){for(let i=0;i<7;i++){R('#0a0810',100+i*100,428,40,8);R('#2f6f1a',100+i*100,428,40,2)}
+         draw(c,now){GAS_VENTS.forEach((v,i)=>ventGrate(v[0],v[1],false,now,i))
             R('#17121f',340,34,160,44);c.seq.forEach((s,i)=>{R(SIM_COL[s],352+i*50,42,38,28);R('#07050a',352+i*50,66,38,4)});
             ctx.fillStyle=c.flash>0?'#ef4444':'#e6dcc0';ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillText(c.flash>0?'WRONG ORDER!':'LIGHT IN THIS ORDER',420,30);
             SRT.forEach((tx,i)=>{const col=SIM_COL[c.cols[i]];R('#5a3b1c',tx-3,100,6,30);R('#2b2b36',tx-8,118,16,4);O(col,tx,92,7);
@@ -1889,7 +2431,7 @@ sync();
          upd(c){return[0,1,2,3,4].some(i=>{const[x,y]=this.gp(c,i);return Math.hypot(x-G.hx,y-(G.hy-8))<34})?'ghost':false},
          draw(c,now){[0,1,2,3,4].forEach(i=>{const[x,y]=this.gp(c,i);ctx.fillStyle='rgba(200,230,255,.8)';ctx.beginPath();ctx.arc(x,y-8,22,Math.PI,0);ctx.lineTo(x+22,y+22);for(let k=0;k<4;k++)ctx.lineTo(x+22-k*11-5.5,y+14+(k%2?8:0));ctx.lineTo(x-22,y+22);ctx.closePath();ctx.fill();
                 ctx.fillStyle='#0b1220';ctx.beginPath();ctx.arc(x-7,y-8,4,0,7);ctx.arc(x+7,y-8,4,0,7);ctx.fill();glow(x,y,50,'150,200,255',.2)});}},
-        {name:'Ice Slide',hint:'Slippery ice! You cannot stop on a dime. Steer around the six spike clusters.',pal:'ice',ice:true,init(c){c.sx=[0,1,2,3,4,5].map(i=>[225+i*89+Math.round(Math.random()*24-12),285+Math.round(Math.random()*110)])},
+        {name:'Ice Slide',hint:'Slippery ice! You cannot stop on a dime. Steer around the seven spike clusters, there is no straight way through!',pal:'ice',ice:true,init(c){c.sx=iceLayout()},
          upd(c){return c.sx.some(p=>Math.abs(G.hx-p[0])<30&&Math.abs(G.hy-p[1])<26)?'ice':false},
          draw(c,now){const gi=ctx.createLinearGradient(0,232,0,H);gi.addColorStop(0,'#e4f5ff');gi.addColorStop(.5,'#a9d6f5');gi.addColorStop(1,'#6fa8d6');ctx.fillStyle=gi;ctx.fillRect(0,232,W,H-232);
             ctx.strokeStyle='rgba(255,255,255,.4)';ctx.lineWidth=2;for(let y=268;y<H;y+=44){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}for(let x=0;x<W;x+=80){ctx.beginPath();ctx.moveTo(x,232);ctx.lineTo(x,H);ctx.stroke()}
@@ -1899,7 +2441,7 @@ sync();
         ];
         function enterSecret(){
             let k;do{k=Math.random()*SRM.length|0}while(k==lastSR&&SRM.length>1);lastSR=k;const d=SRM[k];
-            G.sec.used=1;G.qtxt=$('#q').textContent;$('#q').textContent='🗝️ '+d.name+'! '+d.hint+(d.axes?' (Hold SHIFT or C to crawl under the axes.)':'')+' Traps only knock you back.';
+            G.sec.used=1;G.qtxt=$('#q').textContent;$('#q').textContent='🗝️ '+d.name+'! '+d.hint+(d.axes?' (SHIFT or C = crawl under high swings. Red blade = low sweep, it hits crawlers too!)':'')+' Traps only knock you back.';
             G.state='secret';G.sc={t:0,hurt:0,out:0,bl:[],rem:[],gold:0,k,def:d,vx:0,vy:0,sup:-1};d.init(G.sc);G.hx=70;G.hy=320;G.moving=0}
         function updSecret(dt){
             const c=G.sc;c.t+=dt;
@@ -1909,13 +2451,13 @@ sync();
                 if(dx)G.face=dx>0?1:-1;const m=dx&&dy?.707:1;
                 if(d.ice){c.vx=(c.vx+dx*1100*m*dt)*(1-1.2*dt);c.vy=(c.vy+dy*1100*m*dt)*(1-1.2*dt);const sp=Math.hypot(c.vx,c.vy);if(sp>280){c.vx*=280/sp;c.vy*=280/sp}
                     let nx=G.hx+c.vx*dt,ny=G.hy+c.vy*dt;if(nx<40||nx>775){nx=Math.max(40,Math.min(775,nx));c.vx=0}if(ny<275||ny>405){ny=Math.max(275,Math.min(405,ny));c.vy=0}G.hx=nx;G.hy=ny;G.moving=Math.hypot(c.vx,c.vy)>30}
-                else{const spd=210*(c.duck?.6:1);G.hx=Math.max(40,Math.min(775,G.hx+dx*spd*m*dt));G.hy=Math.max(275,Math.min(405,G.hy+dy*spd*m*dt));G.moving=(dx||dy)}
+                else{const spd=210*(c.duck?.5:1);G.hx=Math.max(40,Math.min(775,G.hx+dx*spd*m*dt));G.hy=Math.max(275,Math.min(405,G.hy+dy*spd*m*dt));G.moving=(dx||dy)}
                 if(c.gate){if(c.gate.open)c.gate.o=Math.min(1,c.gate.o+dt*1.6);if(c.gate.o<.85)G.hx=Math.min(G.hx,c.gate.x-26)}
                 c.hurt-=dt;
                 const bad=d.upd(c,dt);if(bad&&c.hurt<=0)srHurt(c,typeof bad=='string'?bad:'spike');
-                if(G.hx>=715){c.gold=35+Math.floor(Math.random()*26);G.xg+=c.gold;G.state='secretOut';c.out=0;G.moving=0;
+                if(G.state=='secret'&&G.hx>=715){c.gold=35+Math.floor(Math.random()*26);G.xg+=c.gold;G.state='secretOut';c.out=0;G.moving=0;
                     for(let i=0;i<30;i++)G.cn.push({x:745,y:320,vx:(Math.random()-.5)*300,vy:-Math.random()*320,l:1.3})}
-            }else if(G.state=='secretDie'){const D=c.dead;D.t+=dt;G.moving=0;if(G.gal&&D.click&&D.t>.6){galExit();return}if(D.click&&D.t>.6){c.bl.push({x:D.x,y:D.y+12,sd:Math.random()*100});c.rem.push({x:D.x,y:D.y+14,f:D.f,kind:({spike:'impale',axe:'chop',boulder:'smear',lava:'lavacrust',ghost:'soul',fire:'scorch',dart:'darts',gas:'toxic',ice:'icicles',fall:'rubble'})[D.type]||'rubble',nohusk:1,sd:Math.random()*100});G.state='secret';G.hx=70;G.hy=320;c.hurt=.8;c.vx=0;c.vy=0;c.dead=null;if(c.def.reset)c.def.reset(c)}}else{c.out+=dt;if(c.out>1.8){G.state='play';$('#q').textContent=G.qtxt;G.hx=G.sec.x;G.hy=186;G.face=1}}}
+            }else if(G.state=='secretDie'){const D=c.dead;D.t+=dt;G.moving=0;if(G.gal&&D.click&&D.t>.6){galExit();return}if(D.click&&D.t>.6){c.bl.push({x:D.x,y:D.y+12,sd:Math.random()*100});c.rem.push({x:D.x,y:D.y+14,f:D.f,kind:({spike:'impale',axe:'chop',boulder:'smear',lava:'lavacrust',ghost:'soul',fire:'scorch',dart:'darts',gas:'toxic',ice:'iceimpale',fall:'rubble'})[D.type]||'rubble',nohusk:1,sd:Math.random()*100});G.state='secret';G.hx=70;G.hy=320;c.hurt=.8;c.vx=0;c.vy=0;c.dead=null;if(c.def.reset)c.def.reset(c)}}else{c.out+=dt;if(c.out>1.8){G.state='play';$('#q').textContent=G.qtxt;G.hx=G.sec.x;G.hy=186;G.face=1}}}
         function drawSecret(now){
             const c=G.sc,d=c.def,P=SRP[d.pal]||SRP.stone;ctx.fillStyle='#0a0710';ctx.fillRect(0,0,W,H);
             for(let y=0;y<230;y+=20)for(let x=((y/20|0)%2)*25-25;x<W;x+=50){ctx.fillStyle=(Math.abs(x*3+y*5)%4)?P.a:P.b;ctx.fillRect(x+1,y+1,48,18)}
@@ -1942,7 +2484,7 @@ sync();
             R('#5a3a1c',gx-26,gy-24,52,30);R('#2b2b36',gx-26,gy-14,52,3);R('#0a0810',gx-24,gy-32,48,10);R('#c9a227',gx-20,gy-26,40,6);for(let i=0;i<8;i++)R('#ffd84a',gx-18+i*5,gy-30-(i%3)*3,4,3);
             if(!crawlFirst)drawKnight();
             if(c.duck){ctx.fillStyle='#e6dcc0';ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.fillText('CRAWLING',G.hx,G.hy+34)}
-            if(d.axes&&G.state=='secret'&&!c.duck&&c.t<12){ctx.fillStyle='rgba(230,220,192,'+(.55+.4*Math.sin(now/220))+')';ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.fillText('HOLD SHIFT (or C) TO CRAWL UNDER THE AXES - you cannot be hit while crawling',W/2,220)}
+            if(d.axes&&G.state=='secret'&&!c.duck&&c.t<12){ctx.fillStyle='rgba(230,220,192,'+(.55+.4*Math.sin(now/220))+')';ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.fillText('SHIFT / C = crawl under HIGH swings - but a RED blade sweeps the floor and still hits you!',W/2,220)}
             if(c.hurt>0){ctx.fillStyle='rgba(200,20,30,'+Math.max(0,c.hurt)*.5+')';ctx.fillRect(0,0,W,H)}
             bitsDraw(now);
             const dd=G.state=='secretDie'&&c.dead?SDN[c.dead.type]:null;ctx.fillStyle=dd?dd[1]:(SRC[d.pal]||'#ffd84a');ctx.textAlign='center';ctx.font='bold 22px Cinzel, serif';ctx.shadowColor='#000';ctx.shadowBlur=6;
@@ -2043,7 +2585,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 q.pairs.forEach((p,i)=>G.tg.push({x:95+i*170,px:95+i*170,ply:190,y:122,l:p[0],id:i,k:'m'}));
                 sh(q.pairs.map((p,i)=>[p[1],i])).forEach((p,i)=>G.tg.push({x:585,px:705,y:185+i*90,l:p[0],id:p[1],k:'d'}))
             }
-            {const cs=sh(Array.from({length:NV},(_,k)=>k));G.tg.forEach((t,i)=>{t.z=i;t.v=cs[i%NV]})}
+            {const cs=sh(Array.from({length:NV},(_,k)=>k));G.tg.forEach((t,i)=>{t.z=i;t.v=cs[i%NV]+dSeed()})}
         }
 
         // bonus-trial attempts don't count against your grade accuracy
@@ -2088,7 +2630,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         const ezs=v=>v*v*(3-2*v),clp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
         function startSkill(tx,ty){
             let i;do{i=Math.random()*SKILLS.length|0}while(i===G.lsk&&SKILLS.length>1);G.lsk=i;
-            G.sk={t:0,k:SKILLS[i],tx,ty};G.face=tx>=G.hx?1:-1;
+            G.sk={t:0,k:SKILLS[i],tx,ty};SND.skill(SKILLS[i].ty,i,1/KSLOW,G.rooms[G.i].boss);   // adv() puts the fight into slow-motion right after this, so stretch the sound to matchG.face=tx>=G.hx?1:-1;
         }
         // the knight himself: wind-up, dash forward with afterimages, strike, glide back
         function skKnight(kx,ks){
@@ -2147,7 +2689,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         }
 
         function adv(){
-            const n=performance.now(),ok=G.tg.find(t=>t.ok),r=G.rooms[G.i];SND.sfx(r.boss?'bosshit':'right');
+            const n=performance.now(),ok=G.tg.find(t=>t.ok),r=G.rooms[G.i];
             if(r.boss){
                 // right answer: the stone shatters, the Demon Lord flinches, next question (or he falls)
                 if(ok)ok.dyAt=n;G.tg.forEach(t=>{if(!t.ok)t.fz=n});
@@ -2180,8 +2722,8 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             return{x:best[0],y:best[1]}
         }
         let GAL_DK=null;
-        setInterval(()=>{const on=!!(G&&(G.state=='dying'||G.state=='secretDie'));SND.gate(on,!!(G&&G.paused))},50);   // the death sound loops until you leave the death scene (respawn / gallery exit); pause mutes it
-        function deathSnd(){const w=(G.dk==1||G.dk==2)?((G.bk||(G.kt&&!G.bs))?Math.max(.3,G.ew||.4):.3):null;SND.dead(G.bs,G.dk,G.cast||0,w)}
+        setInterval(()=>{const on=!!(G&&(G.state=='dying'||G.state=='secretDie'));SND.gate(on,!!(G&&G.paused));SND.setNoLaugh(!!(G&&(G.state=='secret'||G.state=='secretDie'||G.state=='secretOut'||G.state=='secretAsk')))},50);   // the death sound loops until you leave the death scene (respawn / gallery exit); pause mutes it
+        function deathSnd(){window.TH10=.5+((G.dx||290)+14)/700;const w=(G.dk==1||G.dk==2)?((G.bk||(G.kt&&!G.bs))?Math.max(.3,G.ew||.4):.3):null;SND.dead(G.bs,G.dk,G.cast||0,w)}
         function die(t,fk,dname){
             const r=G.rooms[G.i];
             if(fk==null&&!r.boss&&r.q)G.mq.set(r.q,(G.mq.get(r.q)||0)+1);   // remember what is hurting you
@@ -2224,7 +2766,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(!G||(G.state!='dying'&&G.state!='secretDie'))return;
             G.mvrep=null;
             if(G.paused)togglePause();
-            if(G.state=='secretDie'){if(G.sc&&G.sc.dead){G.sc.dead.t=0;G.sc.dead.click=false;SND.dead(0,'s:'+G.sc.dead.type)}}   // secret-room trap deaths have their own timer
+            if(G.state=='secretDie'){if(G.sc&&G.sc.dead){G.sc.dead.t=0;G.sc.dead.click=false;{const D=G.sc.dead;srSnd(D.type,D.blx,D.x,D.bv,G.sc)}}}   // secret-room trap deaths have their own timer
             else{G.dt=0;G.ba=null;G.bp=null;deathSnd()}
         }
         $('#rp').addEventListener('click',e=>{e.stopPropagation();if(G&&(G.state=='clear'||G.state=='bclear'))killReplay();else replayDeath()});
@@ -2516,6 +3058,13 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 ctx.strokeStyle='rgba(0,0,0,.5)';ctx.lineWidth=1.2;for(let j=0;j<5;j++){const a=rr(j+60)*6.28;ctx.beginPath();ctx.moveTo(x+Math.cos(a)*8,b+Math.sin(a)*3);ctx.lineTo(x+Math.cos(a)*(26+rr(j+70)*22),b+Math.sin(a)*(8+rr(j+70)*5));ctx.stroke()}   // charred cracks
                 for(let j=0;j<4;j++)R('rgba(255,'+(100+j*30)+',30,'+(.3+.35*Math.sin(now/230+j*2))+')',x-18+j*12+rr(j+40)*6,b-2+rr(j+50)*4,2,2);   // last embers
                 for(let j=0;j<3;j++){const ph=(now/2600+j/3)%1;O('rgba(70,66,64,'+(.2*(1-ph))+')',x-8+j*8+Math.sin(ph*5+j)*5,b-8-ph*50,4+ph*9)}}
+            else if(o.kind=='iceimpale'){ // his frozen body is still there, run through by the tiny ice spikes
+                const F=o.f||1;ctx.fillStyle='rgba(30,60,95,.25)';ctx.beginPath();ctx.ellipse(x,b+3,58,10,0,0,7);ctx.fill();
+                ctx.fillStyle='rgba(120,16,28,.7)';ctx.beginPath();ctx.ellipse(x,b+3,42,7,0,0,7);ctx.fill();
+                ctx.strokeStyle='rgba(235,250,255,.85)';ctx.lineWidth=1.4;ctx.beginPath();ctx.ellipse(x,b+3,50,8.5,0,0,7);ctx.stroke();   // frost rim
+                if(sprites.idle.loaded){ctx.save();ctx.filter='saturate(.5) brightness(1.1) hue-rotate(150deg)';ctx.translate(x,b+1-8-50);ctx.rotate(F*.2);ctx.scale(F,1);ctx.drawImage(sprites.idle.img,0,0,120,80,-132,-126,264,176);ctx.restore()}
+                iceMiniDraw(x,b+1,()=>1,now);
+                for(let j=0;j<6;j++)R('rgba(120,14,26,.8)',x-34+rr(j+90)*68,b+1+rr(j+95)*5,2+rr(j+99)*3,2)}   // blood spatter
             else if(o.kind=='icicles'){ // tiny ice shards scattered where he shattered (no spikes)
                 ctx.fillStyle='rgba(200,235,250,.28)';ctx.beginPath();ctx.ellipse(x,b+3,50,9,0,0,7);ctx.fill();ctx.fillStyle='rgba(235,250,255,.22)';ctx.beginPath();ctx.ellipse(x-6,b+2,32,5,0,0,7);ctx.fill();
                 for(let j=0;j<40;j++){const a=rr(j)*6.283,d=Math.sqrt(rr(j+50))*58,px=x+Math.cos(a)*d*1.15,py=b+4+Math.sin(a)*d*.2,s=1.5+rr(j+100)*3.2;
@@ -3111,7 +3660,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             // knight sprite: idle (standing) or death sheet (plays from t0, 9 fps, holds the last frame)
             const spr=o=>{const im=o.idle?sprites.idle:sprites.death;if(!im.loaded)return;const n=o.fr!=null?o.fr:o.idle?Math.floor(now/100)%10:Math.min(9,Math.floor(Math.max(0,t-(o.t0||0))*9));
                 ctx.save();ctx.globalAlpha=o.a??1;if(o.f)ctx.filter=o.f;if(o.clip){ctx.beginPath();ctx.rect(o.clip[0],o.clip[1],o.clip[2],o.clip[3]);ctx.clip()}
-                ctx.translate(x+(o.dx||0),fy+(o.dy||0));ctx.rotate(o.rot||0);ctx.scale(F,o.my??1);ctx.drawImage(im.img,n*120,0,120,80,-132,-176,264,176);ctx.restore()};
+                ctx.translate(x+(o.dx||0),fy+(o.dy||0));ctx.rotate(o.rot||0);ctx.scale(F,o.my??1);if(o.nh){ctx.beginPath();ctx.rect(-81.4,-400,400,600);ctx.clip()}ctx.drawImage(im.img,n*120,0,120,80,-132,-176,264,176);ctx.restore()};   // nh = no head: the lying frame's helmet is its left 9 columns
             const burst=(t0,px,py)=>{if(t<t0)return;const u=Math.min(1,(t-t0)/.7);for(let j=0;j<3;j++)sprayAt(j,px+(j-1)*18*AOE,py-j*6,(.7+u*.8)*AOE,1-u*.9,j==1?-1:1)};
             const bubble=(txt,px,py)=>{ctx.font='12px sans-serif';const w=ctx.measureText(txt).width+14;R('#fff',px-w/2,py-18,w,22);R('#fff',px-3,py+4,6,6);ctx.fillStyle='#111';ctx.textAlign='center';ctx.fillText(txt,px,py-3)};
             if(G.cast&&G.dt<G.cast){spr({idle:1});return}   // still casting: the knight just stands there, the spell has not landed yet
@@ -3172,7 +3721,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                     const n=(t>.5&&t<3.4)?40+Math.floor(now/110)%15:Math.floor(now/150)%6;   // roaring orders at the floor while he summons
                     drawMon(sx+lx,sy+ly,n,SZ[1],(G.kt&&G.kt.v)||0,S<0);ctx.restore()};
                 const MM=i=>{
-                    const m=MN[i];if(t<m.ts-.3)return;if(!G.hv){G.hv=sh(Array.from({length:NV},(_,k)=>k));G.hs=MN.map(()=>.82+Math.random()*.36);G.hx2=MN.map(()=>'hue-rotate('+Math.floor(Math.random()*360)+'deg) saturate('+(.8+Math.random()*1.2).toFixed(2)+') brightness('+(.8+Math.random()*.6).toFixed(2)+')')}   // every horde is a fresh random mix of breeds and sizes
+                    const m=MN[i];if(t<m.ts-.3)return;if(!G.hv){G.hv=sh(Array.from({length:NV},(_,k)=>k)).map(a=>a+dSeed());G.hs=MN.map(()=>.82+Math.random()*.36);G.hx2=MN.map(()=>'hue-rotate('+Math.floor(Math.random()*360)+'deg) saturate('+(.8+Math.random()*1.2).toFixed(2)+') brightness('+(.8+Math.random()*.6).toFixed(2)+')')}   // every horde is a fresh random mix of breeds and sizes
                     const p=mpos(i,t),mx=cl(p[0],45,W-45),my=p[1],vs=VAR[G.hv[i%NV]%NV].s||1,sc=Math.min(SZ[i%4]*1.0*HS*G.hs[i%G.hs.length]*vs,.88*HS)/vs,pt=t-(m.ts-.3);   // capped so a big breed still never overlaps its neighbour   // same size as the normal demons
                     
                     if(!hsrc&&pt<1.3){const pa=cl(pt/.2,0,1)*cl(1-(t-m.ts)/1,0,1),pr=30*cl(pt/.3,0,1);   // the portal it climbs out of
@@ -3237,7 +3786,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 }break}
             case 25:{ // MEAT GRINDER: two demons haul him up, drop him in the hopper, crank it, and he comes out of the spout as paste. The puddle stays after respawn.
                 const M=G.bs?1.25:1,kx=x-13*F,mx=kx+120*M,sp=mx-48*M,ez=u=>u*u*(3-2*u),cl=(v,a,b)=>Math.max(a,Math.min(b,v)),rimY=fy-142*M;
-                if(!G.hv)G.hv=[Math.floor(Math.random()*NV),Math.floor(Math.random()*NV)];
+                if(!G.hv)G.hv=[Math.floor(Math.random()*NV)+dSeed(),Math.floor(Math.random()*NV)+dSeed()];
                 const drop=ez(cl(t/.7,0,1)),yo=-300*(1-drop),gr=t>3.4&&t<8.6,shk=(gr?Math.sin(now/30)*2.2*M:0)+(t>.65&&t<.95?Math.sin(now/18)*3:0),ca=Math.max(0,Math.min(t,8.8)-3.4)*9;
                 const lift=ez(cl((t-1)/1.4,0,1)),sink=ez(cl((t-2.4)/1,0,1)),flow=cl((t-3.6)/.6,0,1)*(t<8.2?1:cl(1-(t-8.2)/.8,0,1)),pr=ez(cl((t-3.8)/5,0,1));
                 ctx.save();ctx.lineWidth=2;ctx.strokeStyle='#17181d';ctx.translate(mx+shk,fy+yo);
@@ -3270,7 +3819,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 break}
             case 26:{ // THE LIFE TREE: roots grab him and drain him into the tree; the tree turns into a fruit; the demon whose door he picked walks over, takes a bite and spits it out.
                 const bs=G.rooms[G.i].boss,M=bs?1.25:1,kx=x-13*F,tx=kx+80*M,ez=u=>u*u*(3-2*u),cl=(v,a,b)=>Math.max(a,Math.min(b,v)),kd=(!bs&&G.kt)?G.kt:null;
-                if(!G.hv)G.hv=[Math.floor(Math.random()*NV)];
+                if(!G.hv)G.hv=[Math.floor(Math.random()*NV)+dSeed()];
                 const dsc=kd?SZ[(kd.z||0)%4]:.88*M,dv=kd?(kd.v||0):G.hv[0],TS=8.2,sx0=kd?kd.x:(kx<W/2?W-45:45),sy0=kd?kd.y+24:fy+14,dir=sx0>tx?1:-1,ex=tx+dir*44*dsc,ey=fy+14;
                 const wt=Math.max(1,Math.hypot(ex-sx0,ey-sy0)/110),w=ez(cl((t-TS)/wt,0,1)),Ta=TS+wt,Tb=Ta+.35,Ts=Ta+1.7;
                 const sapl=ez(cl(t/.7,0,1)),shrink=ez(cl((t-7)/1.4,0,1)),gT=(.22+.78*ez(cl((t-1.2)/5.4,0,1)))*sapl*(1-shrink),fs=ez(cl((t-7.2)/1.4,0,1));
@@ -3329,7 +3878,8 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             case 2:{ // EATEN: the monster you failed to kill walks up and bites your head off (monster drawn by eatDemon)
                 const cut=G.ew+.25;
                 if(t<cut)spr({idle:1});
-                else{const u=t-cut;if(u<.45)spr({idle:1,clip:[x-70,fy-70,140,90]});else spr({t0:-9});
+                else{const u=t-cut;if(u>.3){const pl=Math.min(1,(u-.3)*.6);ctx.fillStyle='rgba(110,12,20,.85)';ctx.beginPath();ctx.ellipse(x,fy+2,pl*40,pl*9,0,0,7);ctx.fill()}
+                    if(u<.45)spr({idle:1,clip:[x-70,fy-70,140,90]});else{spr({t0:-9,nh:1});ctx.fillStyle='#7a1018';ctx.beginPath();ctx.ellipse(x-F*81,fy-9,5,3.5,0,0,7);ctx.fill()}
                     const q=(u*1.4)%1;if(u<.8)sprayAt(0,x,fy-75,.8+q*.9,1-q*.8,1)}
                 break}
             case 3:{ // ACID, in stages: it eats the armour + skin, then the raw flesh, until only a skeleton is left. The skeleton thrashes in agony, then falls apart into a pile of bones
@@ -3488,16 +4038,25 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                         ctx.save();ctx.translate(px,py);ctx.rotate(ez*F*5);O('#e6dcc0',0,0,7);R('#111',-4,-2,3,4);R('#111',1,-2,3,4);R('#e6dcc0',-3,5,6,3);ctx.restore()}
                     for(let j=0;j<4;j++)O('rgba(60,60,60,.3)',bx-30+j*20+Math.sin(now/300+j)*6,cy-((now/30+j*20)%70),12)}
                 break}
-            case 16:{ // MIMIC: the chest grows teeth, leaps at him, swallows him whole, then spits out his bones
+            case 16:{ // MIMIC: the chest grows teeth, leaps at him, CHOMPS him, chews (jerking, bloody), then spits his bones onto the floor
                 const c=G.ch||{x:x-70,y:WB+9},hop=Math.min(1,Math.max(0,(t-.45)/.5)),eh=hop*hop*(3-2*hop);
-                const mx=c.x+(x-c.x)*eh,mb=c.y+(fy-c.y)*eh-Math.sin(Math.PI*hop)*55,sc=1+.8*eh;
-                const op=t<.95?Math.min(1,t/.35):t<1.1?1-(t-.95)/.15:.12+.1*Math.abs(Math.sin(now/110));
+                const mx=c.x+(x-c.x)*eh,mb0=c.y+(fy-c.y)*eh-Math.sin(Math.PI*hop)*55;
+                const cyc=(t-1.1)/.4,chewing=t>1.1&&t<2.8,cw=chewing?.5-.5*Math.cos(cyc*Math.PI*2):0;   // 0 = jaws shut, 1 = wide open
+                const sc=(1+.8*eh)*(1+.05*cw),mb=mb0-(chewing?3*cw:0),jx=chewing?Math.sin(now/22)*1.6*(1-cw):0;
+                const op=t<.95?Math.min(1,t/.35):t<1.1?1-(t-.95)/.15:chewing?.05+.4*cw:t<3?.1:.06;
                 if(t<1.05)spr({idle:1,dx:t<.45?Math.sin(now/30)*2:0});
-                chestRaw(mx,mb,sc,op,Math.min(1,t/.3),'mimic',now);
+                if(t>1.1){const pl=Math.min(1,(t-1.1)/1.6);ctx.fillStyle='rgba(110,12,20,.85)';ctx.beginPath();ctx.ellipse(mx,fy+2,pl*52,pl*9,0,0,7);ctx.fill()}   // blood pooling under it
+                chestRaw(mx+jx,mb,sc,op,Math.min(1,t/.3),'mimic',now);
                 if(t>1.1){
-                    for(let j=0;j<4;j++)R('#8a1c22',mx-16+j*10,mb-26*sc+((now/8+j*17)%26),2,4);
-                    const v=t-1.3;if(v>0)for(let j=0;j<6;j++){const ex=mx+(((j*37)%90)-45)*Math.min(1,v*1.6),ey=Math.min(fy-2+((j*13)%8),mb-30*sc-170*v+520*v*v);
-                        ctx.save();ctx.translate(ex,ey);ctx.rotate(j+v*3);if(j==5){O('#7d8590',0,0,7);R('#0a0810',-5,-1,10,3)}else{R('#e6dcc0',-8,-1.5,16,3);O('#e6dcc0',-8,0,2.5);O('#e6dcc0',8,0,2.5)}ctx.restore()}
+                    for(let j=0;j<5;j++)R('#8a1c22',mx-16+j*8,mb-8*sc+((now/6+j*17)%22),2,5);   // blood drooling from the mouth
+                    if(chewing&&cw>.5)for(let j=0;j<3;j++)R('#a3242b',mx-12+j*12,mb-26*sc-cw*6-j%2*4,2,3);   // splashes as it chews
+                    for(let j=0;j<6;j++){const u=t-(2.7+j*.09);if(u<=0)continue;   // bones are spat out, bounce once and stay on the floor
+                        const x0=mx+(j-2.5)*3,y0=mb-30*sc,yf=fy-2+((j*13)%8),vx=(j-2.5)*28,vy=-300-(j%3)*35,g=1100;
+                        const u1=(-vy+Math.sqrt(vy*vy+2*g*(yf-y0)))/g,vb=-(vy+g*u1)*.32,u2=2*Math.abs(vb)/g;
+                        let ex,ey;if(u<u1){ex=x0+vx*u;ey=y0+vy*u+.5*g*u*u}else if(u<u1+u2){const w=u-u1;ex=x0+vx*u;ey=yf+vb*w+.5*g*w*w}else{ex=x0+vx*(u1+u2);ey=yf}
+                        ctx.save();ctx.translate(ex,ey);ctx.rotate(j+Math.min(u,u1+u2)*9);
+                        if(j==5){O('#7d8590',0,0,7);R('#0a0810',-5,-1,10,3)}else if(j==4){O('#e6dcc0',0,0,6);R('#0a0810',-3,-1,2,2);R('#0a0810',1,-1,2,2)}else{R('#e6dcc0',-8,-1.5,16,3);O('#e6dcc0',-8,0,2.5);O('#e6dcc0',8,0,2.5)}
+                        ctx.restore()}
                 }
                 break}
             case 13:{ // FLOOR COLLAPSE
@@ -3580,7 +4139,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 const GF='sepia('+(.9*sick)+') hue-rotate('+Math.round(38*sick)+'deg) saturate('+(1+2.2*sick)+')';
                 ctx.fillStyle='rgba('+rgb+','+(.1*sick*(t<Ts+1.2?1:cl(1-(t-Ts-1.2)/.8,0,1)))+')';ctx.fillRect(0,0,W,H);   // the room goes sickly
                 const dsc=.88*(G.bs?1.25:1),arr=ez(cl(t/.5,0,1)),rel=ez(cl((t-Ts)/.5,0,1)),str=Math.sin(now/55)*(.8+2.5*ez(cl((t-Tg)/(Tf-Tg),0,1))+2*sick)*ez(cl((t-.5)/.4,0,1));   // arr: demons walk in; rel: they let go; str: he struggles harder as the virus nears
-                if(!G.hv)G.hv=[Math.floor(Math.random()*NV),Math.floor(Math.random()*NV)];
+                if(!G.hv)G.hv=[Math.floor(Math.random()*NV)+dSeed(),Math.floor(Math.random()*NV)+dSeed()];
                 const dpos=[[-1,true,0],[1,false,1]].map(([sd,fl,w])=>{const mx2=cl(kx+sd*((52+34*rel)+240*(1-arr)),45,W-45),lau=t>Ts+.2,sx=lau?Math.sin(now/35+w*2)*2:(t>.5?Math.sin(now/45+w*2)*1.2:0),sy=lau?-Math.abs(Math.sin(now/90+w*3))*7:0;
                     ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(mx2,fy+8,34*dsc,6,0,0,7);ctx.fill();
                     drawMon(mx2+sx,fy+14+sy,t<.5?28+Math.floor(now/110+w*3)%12:Math.floor(now/150+w)%6,dsc,G.hv[w],fl,1);return[mx2+sx,sy,sd]});   // two demons walk in and pin his arms; when he is done they let go and laugh
@@ -3787,6 +4346,51 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             {f:'hue-rotate(150deg) saturate(1.8) brightness(.85)',au:'40,255,190',s:.9}, // 16 Spectre: teal ghost
             {f:'sepia(1) saturate(3) hue-rotate(-50deg) brightness(.6) contrast(1.3)',s:1.1} // 17 Blood: dried-blood red-brown
         ],NV=VAR.length;
+        // ---------- demon individuality: every demon rolls its own head item, face item, body item, proportions and tint ----------
+        // v = colour breed (v%NV, as before) + NV * seed. Seed 0 = a plain demon; any other seed picks a unique combination.
+        const DANCH=[[52,66],[52,64],[52,62],[52,60],[52,62],[52,64],0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,[52,68],[52,70],[52,70],[52,70],[52,70],[52,68],[52,68],[52,68],[52,68],[52,70],[52,70],[52,68],[52,66],[54,62],[76,63],[88,64],[88,64],[90,64],[90,66],[90,66],[90,66],[26,76],[26,74],[26,76],[28,76],[48,66],[52,66]];   // eye-midpoint of the head in each sprite frame (so items follow the head)
+        const dSeed=()=>NV*(1+Math.floor(Math.random()*5000)),dRnd=(e,k)=>{const q=Math.sin(e*12.9898+k*78.233)*43758.5453;return q-Math.floor(q)};
+        function demonTraits(v){const e=Math.floor(v/NV);if(!e)return null;const r=k=>dRnd(e,k);
+            return{hd:r(1)<.38?0:1+Math.floor(r(2)*10),fc:r(3)<.45?0:1+Math.floor(r(4)*10),bd:r(5)<.5?0:1+Math.floor(r(6)*10),sw:.9+.26*r(7),sh:.94+.14*r(8),hue:Math.round(r(9)*60-30),br:.92+.2*r(10)}}
+        function demonItems(T,E,sc,now){
+            // all offsets are sprite pixels from the eye midpoint E. Measured on the real model: head centre dx-2.5, head top dy-8 (~16px wide), chin dy+8; chest centre dx+8/dy+15; shoulder tops (-12,+7) & (+35,+10); belt row dy+31 (dx+3..+35)
+            const q=(c,dx,dy,w,h)=>{ctx.fillStyle=c;ctx.fillRect((-65+E[0]+dx)*sc,(-126+E[1]+dy)*sc,w*sc,h*sc)},P=(dx,dy)=>[(-65+E[0]+dx)*sc,(-126+E[1]+dy)*sc];
+            const poly=(c,pts)=>{ctx.fillStyle=c;ctx.beginPath();pts.forEach((p,i)=>{const z=P(p[0],p[1]);i?ctx.lineTo(z[0],z[1]):ctx.moveTo(z[0],z[1])});ctx.closePath();ctx.fill()};
+            const ring=(c,dx,dy,r,w)=>{const z=P(dx,dy);ctx.save();ctx.strokeStyle=c;ctx.lineWidth=w*sc;ctx.beginPath();ctx.arc(z[0],z[1],r*sc,0,7);ctx.stroke();ctx.restore()};
+            const dot=(c,dx,dy,r)=>{const z=P(dx,dy);ctx.fillStyle=c;ctx.beginPath();ctx.arc(z[0],z[1],r*sc,0,7);ctx.fill()};
+            // ---- head (centred on the skull, dx-2.5; sits ON the skull, between the horns) ----
+            if(T.hd==1){q('#d9a520',-8,-10,11,3);q('#ffd84a',-8,-13,2.4,3);q('#ffd84a',-4.2,-14,2.4,4);q('#ffd84a',-.4,-13,2.4,3);q('#d6285a',-4,-9,2,1.6)}                                // crown
+            else if(T.hd==2){q('#14141a',-9,-9,13,2);q('#14141a',-7,-19,9,10);q('#a3242b',-7,-11.5,9,1.6)}                                                                              // top hat
+            else if(T.hd==3){poly('#ff5ac8',[[-7.5,-8],[2.5,-8],[-2.5,-23]]);poly('#ffe14a',[[-5.5,-13],[.5,-13],[-.4,-16],[-4.6,-16]]);dot('#ffe14a',-2.5,-23.5,1.6)}                // party hat
+            else if(T.hd==4){const c=P(-2.5,-13);ctx.save();ctx.strokeStyle='#ffe66b';ctx.lineWidth=1.3*sc;ctx.shadowColor='#fff3a0';ctx.shadowBlur=5*sc;ctx.beginPath();ctx.ellipse(c[0],c[1],6.5*sc,2*sc,0,0,7);ctx.stroke();ctx.restore()}   // halo (hugs the head)
+            else if(T.hd==5){q('#e8e0cc',-9,-6,13,2.4);q('#c9c0a8',-9,-4,13,.8);q('#e8e0cc',3,-5,2.4,5)}                                                                                  // bandage
+            else if(T.hd==6){poly('#3a4fd6',[[-8.5,-8],[3.5,-8],[-2.5,-27]]);q('#2a3aa0',-10,-9,15,2);q('#ffe14a',-3.4,-17,1.8,1.8)}                                                       // wizard hat
+            else if(T.hd==7){q('#f4f4f0',-8,-11,11,3);dot('#f4f4f0',-6.5,-14,2.8);dot('#f4f4f0',-2.5,-16,3.2);dot('#f4f4f0',1.5,-14,2.8);q('#d8d8d2',-8,-9,11,1.4)}                    // chef hat
+            else if(T.hd==8){for(let i=0;i<5;i++)poly(i%2?'#ffb02e':'#ff5a1a',[[-8+i*2.8,-8],[-5.6+i*2.8,-8],[-6.8+i*2.8,-15-(i%3)*2.5-Math.sin(now/90+i)*1.2]])}                // flame mohawk
+            else if(T.hd==9){q('#d62a2a',-8,-11,11,4);q('#a01a1a',1,-8,8,1.6);q('#ffe14a',-3.2,-12.2,1.6,1.4)}                                                                          // cap
+            else if(T.hd==10){poly('#d62a2a',[[-7.5,-8],[2.5,-8],[-.5,-21]]);q('#f4f4f0',-8,-9,11,2.4);dot('#f4f4f0',-.5,-21.5,1.9)}                                                      // santa hat
+            // ---- face (eyes at dx-2.5 / dx+2.5, mouth at dx+2.5/dy+4.5: a small face) ----
+            if(T.fc==1){q('#0a0810',-5,-3,4,3.6);q('#0a0810',-7.5,-4.4,13,.9)}                                                                                                        // eye patch
+            else if(T.fc==2){for(let i=0;i<8;i++)q('#e6dcc0',1+i*.7,-6+i*1.5,1.1,1.5)}                                                                                               // scar
+            else if(T.fc==3){ring('#ffd84a',2.5,-.5,2.7,.8);q('#ffd84a',4.8,1.6,.7,6)}                                                                                              // monocle
+            else if(T.fc==4){const z=P(-.2,-5);ctx.save();ctx.fillStyle='#ffe14a';ctx.shadowColor='#ffe14a';ctx.shadowBlur=6*sc;ctx.fillRect(z[0]-.8*sc,z[1]-.8*sc,1.6*sc,1.6*sc);ctx.restore()}   // third eye
+            else if(T.fc==5){q('#0a0810',-5.5,-2.5,11,2.6);q('#6fe8ff',-4.5,-2.5,1.6,.8)}                                                                                          // sunglasses
+            else if(T.fc==6){q('#1a0f0a',-2.5,3,8,1.5);q('#1a0f0a',-4,4,2,1.5);q('#1a0f0a',5,4,2,1.5)}                                                                           // moustache
+            else if(T.fc==7){q('#2a1a12',.2,6.5,4.4,3.4);q('#2a1a12',1.2,9.5,2.4,2)}                                                                                              // goatee
+            else if(T.fc==8){q('#f0f0f0',-6,1,3,.9);q('#f0f0f0',-5.5,2.6,3,.9);q('#f0f0f0',3.5,1,3,.9);q('#f0f0f0',4,2.6,3,.9)}                                                    // war paint
+            else if(T.fc==9){ring('#9aa0aa',-2.5,.5,2.5,.8);ring('#9aa0aa',2.5,-.5,2.5,.8);q('#9aa0aa',-.2,-.2,.8,.7)}                                                             // round glasses
+            else if(T.fc==10){q('#fff',.6,5.6,1.3,2.8);q('#fff',3.6,5.6,1.3,2.8)}                                                                                                  // fangs
+            // ---- body (the chest is up and to the RIGHT of the head: hunched) ----
+            if(T.bd==1){q('#6b4f2a',1,13,15,.9);[[3,14.5],[8.5,16],[14,14.5]].forEach(a=>{dot('#e6dcc0',a[0],a[1],1.7);q('#0a0810',a[0]-1,a[1]-.5,.7,.7);q('#0a0810',a[0]+.3,a[1]-.5,.7,.7)})}                  // skull necklace
+            else if(T.bd==2){q('#2a6fd6',-8,7,13,3);const w=Math.sin(now/200)*1.5;poly('#2a6fd6',[[1,9],[5+w,9],[7+w,17],[3+w,16]])}                                                  // scarf
+            else if(T.bd==3){poly('#9aa0aa',[[-12,9],[-4,9],[-8,1]]);poly('#9aa0aa',[[30,13],[38,13],[34,4]])}                                                                      // shoulder spikes
+            else if(T.bd==4){for(let i=0;i<8;i++){q('#ffd84a',-6+i*1.6,8+i*.9,1.1,1.1);q('#ffd84a',18-i*1.6,8+i*.9,1.1,1.1)}q('#ffd84a',5,16,3.6,3.6)}                              // gold chain
+            else if(T.bd==5){for(let i=0;i<9;i++){q('#6b4f2a',-8+i*4,8+i*2.7,3.4,2.4);if(i%2)q('#ffd84a',-7+i*4,9+i*2.7,1.3,1.3)}}                                                    // bandolier
+            else if(T.bd==6){poly('#ffd84a',[[-15,10],[-14,6],[-10,4],[-5,5],[-3,10]]);poly('#d9a520',[[-15,10],[-3,10],[-4,12],[-14,12]]);poly('#ffd84a',[[31,14],[32,10],[36,8],[41,9],[43,14]]);poly('#d9a520',[[31,14],[43,14],[42,16],[32,16]])}                                                       // gold pauldrons
+            else if(T.bd==7){poly('#d62a2a',[[-2.5,10],[-9,6.5],[-9,13.5]]);poly('#d62a2a',[[-2.5,10],[4,6.5],[4,13.5]]);q('#8a1a1a',-3.8,8.7,2.6,2.6)}                                       // bow tie
+            else if(T.bd==8){q('#4a2f1a',3,31,32,3);q('#ffd84a',17,30.5,6,4);q('#0a0810',19,32,2,1.5)}                                                                           // belt with buckle
+            else if(T.bd==9){q('#2a2a30',-8,7,13,1.8);for(let i=0;i<5;i++)poly('#cfd4da',[[-8+i*2.6,7],[-6+i*2.6,7],[-7+i*2.6,3.5]])}                                              // spiked collar
+            else if(T.bd==10){q('#d62a2a',2,13,2.4,4);q('#2a6fd6',5.2,13,2.4,4);q('#2fb85a',8.4,13,2.4,4);dot('#ffd84a',3.2,18.2,1.4);dot('#ffd84a',6.4,18.2,1.4);dot('#ffd84a',9.6,18.2,1.4)}}   // medals
         function drawMon(x,fy,n,sc,v,flip,noAura,xf){
             if(!MON.ok)return;
             const V=VAR[v%NV];sc*=(V.s||1);
@@ -3796,8 +4400,12 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 g.addColorStop(0,'rgba('+V.au+','+(.42*pu)+')');g.addColorStop(1,'rgba('+V.au+',0)');
                 ctx.save();ctx.globalCompositeOperation='lighter';ctx.fillStyle=g;ctx.fillRect(-90*sc,-130*sc,180*sc,140*sc);ctx.restore()}
             if(V.sh)ctx.translate(Math.sin(performance.now()/70+x)*1.4,0);
-            ctx.filter=(V.f||'')+(xf?' '+xf:'')||'none';
-            ctx.drawImage(MON.img,n*160,0,160,128,-65*sc,-126*sc,160*sc,128*sc);ctx.restore();
+            const T=demonTraits(v);
+            ctx.filter=(V.f||'')+(T?' hue-rotate('+T.hue+'deg) brightness('+T.br+')':'')+(xf?' '+xf:'')||'none';
+            if(T){ctx.scale(T.sw,T.sh)}   // wider/narrower, taller/shorter: feet stay planted
+            ctx.drawImage(MON.img,n*160,0,160,128,-65*sc,-126*sc,160*sc,128*sc);
+            if(T&&(T.hd||T.fc||T.bd)&&DANCH[n]){ctx.filter='none';demonItems(T,DANCH[n],sc,performance.now())}
+            ctx.restore();
         }
         function archD(x0,y0,w,by){const R=w/2;ctx.beginPath();ctx.moveTo(x0,by);ctx.lineTo(x0,y0+R);ctx.arc(x0+R,y0+R,R,Math.PI,0);ctx.lineTo(x0+w,by);ctx.closePath()}
         // masonry frame that is made of the SAME stone as the wall: voussoirs round the arch, quoins down the sides, no outline, no gap
@@ -3854,6 +4462,12 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(x-14+i*7.5,hy-o);ctx.lineTo(x-10+i*7.5,hy-o+8);ctx.lineTo(x-6+i*7.5,hy-o);ctx.fill();
                     ctx.beginPath();ctx.moveTo(x-14+i*7.5,hy+o);ctx.lineTo(x-10+i*7.5,hy+o-8);ctx.lineTo(x-6+i*7.5,hy+o);ctx.fill()}}
             if(t>cut)for(let j=0;j<6;j++)R('#a3242b',px-18+j*4,fy-86+((now/6+j*23)%60),2,4);
+            if(G.dk==2&&t>cut){const u=t-cut,mx=px-18*sc,my=G.bp[2]+(py-G.bp[2])*.24,ch=Math.abs(Math.sin(u/.3*Math.PI)),r=Math.max(0,1-u/1.9)*11*sc;   // he CHEWS the head: jaws pump, it shrinks bite by bite
+                const o2=2+7*ch;ctx.fillStyle='#5a0f14';ctx.fillRect(mx-12,my-o2,24,o2*2);ctx.fillStyle='#f2ecd8';
+                for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(mx-12+i*6,my-o2);ctx.lineTo(mx-9+i*6,my-o2+5);ctx.lineTo(mx-6+i*6,my-o2);ctx.fill();ctx.beginPath();ctx.moveTo(mx-12+i*6,my+o2);ctx.lineTo(mx-9+i*6,my+o2-5);ctx.lineTo(mx-6+i*6,my+o2);ctx.fill()}
+                if(r>1){ctx.save();ctx.translate(mx+Math.sin(u*40)*1.5,my+ch*2);O('#9aa4b0',0,0,r);R('#10131a',-r*.7,-r*.15,r*1.4,r*.28);ctx.restore()}
+                for(let j=0;j<4;j++){const v=u-(.3+j*.45);if(v>0&&v<.9){ctx.save();ctx.translate(mx-34*v*(1+j*.3),my-170*v+520*v*v);ctx.rotate(v*9+j);R(j%2?'#e6dcc0':'#9aa4b0',-3,-2,6,4);ctx.restore()}}   // bits fly out
+                for(let j=0;j<4;j++)R('#a3242b',mx-8+j*5,my+o2+((now/5+j*19)%36),2,4)}
         }
         // ---------- BOSS ROOM DRAWING ----------
 
@@ -3991,6 +4605,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
         // red HA HA HA pouring out of a laughing demon's mouth
         function haha(x,y,now,n=6,rise=64,side=8){
+            SND.laughSync();   // the laugh sounds exactly when the red HA HA starts pouring out
             ctx.save();ctx.textAlign='center';ctx.lineJoin='round';
             for(let j=0;j<n;j++){const ph=(now/700+j/6)%1,sd=j%2?1:-1,sz=13+ph*9;
                 ctx.globalAlpha=Math.min(1,(1-ph)*1.6);ctx.font='900 '+sz.toFixed(0)+'px sans-serif';
@@ -4013,6 +4628,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             const bw=748,bx=26,B=capFit(L.txt,bw-76),h=B.ls.length*B.lh+16,by=H-8-h,cy=by+h/2;
             ctx.save();ctx.globalAlpha=al;
             if(L.mark){const [mx,my,dr]=L.mark,pu=.75+.25*Math.sin(now/120);ctx.fillStyle=L.col[1];ctx.strokeStyle='#000';ctx.lineWidth=1.5;ctx.globalAlpha=al*pu;ctx.beginPath();if(dr>0){ctx.moveTo(mx,my);ctx.lineTo(mx-9,my+14);ctx.lineTo(mx+9,my+14)}else{ctx.moveTo(mx,my);ctx.lineTo(mx-9,my-14);ctx.lineTo(mx+9,my-14)}ctx.closePath();ctx.fill();ctx.stroke();ctx.globalAlpha=al}   // a little arrow marks who is talking
+            ctx.setTransform(1,0,0,1,0,0);   // the box itself ignores the death-scene shrink
             ctx.fillStyle='rgba(255,255,255,.97)';rr(bx,by,bw,h,12);ctx.fill();ctx.strokeStyle=L.col[1];ctx.lineWidth=3;ctx.stroke();
             ctx.fillStyle=L.col[0];ctx.beginPath();ctx.arc(bx+30,cy,17,0,7);ctx.fill();ctx.strokeStyle=L.col[1];ctx.lineWidth=2;ctx.stroke();   // a chip in the speaker's own plate colour
             ctx.font='18px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff';ctx.fillText('\u{1F479}',bx+30,cy+1);ctx.textBaseline='alphabetic';
@@ -4108,7 +4724,15 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             ctx.textAlign='right';ctx.fillStyle='rgba(230,247,239,.75)';ctx.fillText('click or Space to skip',W-12,20);
             ctx.fillStyle='rgba(255,255,255,.15)';ctx.fillRect(0,H-6,W,6);ctx.fillStyle='#ff4a4a';ctx.fillRect(0,H-6,W*Math.min(1,k.t/k.n),6);
             ctx.restore()}
-        function draw(now){if(G&&G.kr)drawKill(now);else if(G&&G.mvrep&&G.state=='dying')drawMoves(now);else drawScene(now)}
+        let CSV=1,CST=0;   // scene scale: while a doorway-demon death plays the whole scene eases down to 84% from the top, leaving the bottom strip free for the caption box
+        function draw(now){
+            const r=G&&G.rooms&&G.rooms[G.i],special=!!(G&&(G.kr||(G.mvrep&&G.state=='dying')));
+            const tg=(!special&&G&&G.state=='dying'&&r&&!r.boss&&G.tg&&G.tg.some(t=>t.y<=140))?.84:1;
+            const dtt=Math.min(.1,Math.max(0,(now-CST)/1000));CST=now;CSV+=(tg-CSV)*Math.min(1,dtt*10);if(Math.abs(CSV-tg)<.002)CSV=tg;
+            const sh=CSV<.999&&!special;
+            if(sh){ctx.fillStyle='#09090b';ctx.fillRect(0,0,W,H);ctx.save();ctx.translate(W/2,0);ctx.scale(CSV,CSV);ctx.translate(-W/2,0)}
+            if(G&&G.kr)drawKill(now);else if(G&&G.mvrep&&G.state=='dying')drawMoves(now);else drawScene(now);
+            if(sh)ctx.restore()}
         function drawScene(now){
             const r=G.rooms[G.i]||G.rooms[G.rooms.length-1],isB=r.boss||G.state=='win';let late=null;
             if(G.state=='secret'||G.state=='secretOut'||G.state=='secretDie'){drawSecret(now);return}
