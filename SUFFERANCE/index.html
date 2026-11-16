@@ -1057,6 +1057,7 @@ sync();
                     <button data-t="s" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-4 py-2 rounded transition title-font text-sm">Armory</button>
                     <button data-t="g" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-4 py-2 rounded transition title-font text-sm">Question Pool</button>
                     <button data-t="h" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-4 py-2 rounded transition title-font text-sm">💀 Death Gallery</button>
+                    <button data-t="a" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-4 py-2 rounded transition title-font text-sm">🏅 Achievements</button>
                 </nav>
 
                 <!-- Tab: Dungeon -->
@@ -1077,7 +1078,13 @@ sync();
                 <!-- Tab: Armory -->
                 <section id="t-s" hidden class="space-y-6 text-center py-8">
                     <h3 class="title-font text-lg font-bold text-emerald-400 border-b border-emerald-950 pb-2 text-left">Armor & Skins</h3>
-                    <p class="text-xs text-zinc-500 italic">Armory skins and dungeon companions are currently vaulted. Check back in future updates!</p>
+                    <div id="armory-shop"></div>
+                </section>
+
+                <!-- Tab: Achievements -->
+                <section id="t-a" hidden class="space-y-4">
+                    <h3 class="title-font text-lg font-bold text-emerald-400 border-b border-emerald-950 pb-2 text-left flex justify-between items-end"><span>🏅 Achievements</span><span id="achcount" class="text-xs text-zinc-400 font-normal"></span></h3>
+                    <div id="badges" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
                 </section>
 
                 <!-- Tab: Death Gallery (filled by galRender) -->
@@ -1118,6 +1125,7 @@ sync();
                 <button id="galx" type="button" style="display:none;left:.5rem;top:.5rem" class="absolute z-20 px-3 py-1 rounded-md bg-black/70 border border-emerald-700/70 text-emerald-300 text-xs font-mono hover:bg-emerald-900/60">← Gallery</button>
                 <button id="galprev" type="button" title="Previous death (←)" style="display:none;left:.5rem;top:2.75rem" class="absolute z-20 px-3 py-1 rounded-md bg-black/70 border border-emerald-700/70 text-emerald-300 text-xs font-mono hover:bg-emerald-900/60">◀ Prev</button>
                 <button id="galnext" type="button" title="Next death (→)" style="display:none;left:4.9rem;top:2.75rem" class="absolute z-20 px-3 py-1 rounded-md bg-black/70 border border-emerald-700/70 text-emerald-300 text-xs font-mono hover:bg-emerald-900/60">Next ▶</button>
+                <button id="skipbtn" type="button" style="display:none;right:.5rem;bottom:.5rem" class="absolute z-30 px-3 py-1 rounded-md bg-black/70 border border-emerald-700/70 text-emerald-300 text-xs font-mono hover:bg-emerald-900/60">Skip ⏭ (Esc)</button>
                 <button id="pz" type="button" style="display:none" class="absolute top-2 right-2 z-20 px-3 py-1 rounded-md bg-black/70 border border-emerald-700/70 text-emerald-300 text-xs font-mono hover:bg-emerald-900/60">⏸ Pause (P)</button>
             </div>
             <div id="pp" style="display:none" class="w-full flex items-center gap-3 mt-2 px-3 py-2 rounded-lg bg-black/60 border border-violet-900/70"><div id="pporb"></div><div id="pptxt" class="text-sm italic text-violet-200 min-h-[1.25rem]"></div></div>
@@ -1161,7 +1169,7 @@ sync();
         const PR=[
             {n:'The Princess',say:'...You actually did it? Y-you idiot. Took you long enough. ...Thank you for coming back every time.'},
             {n:'The Princess',say:'You died so many times for me. D-don\'t do that again. ...Okay, you can. But I\'ll be watching.'},
-            {n:'The Princess',say:'I watched every single death through the orb. I never once looked away. ...Don\'t make this weird.'},
+            {n:'The Princess',say:'I told you to leave. I never meant it. ...Don\'t make this weird.'},
             {n:'The Princess',say:'My idiot. ...Forget I said that. Don\'t forget it.'}
         ];
         const DN=['The demon poisoned you','The demon decapitated you','The demon devoured you','The demon melted you with acid','The demon ripped out your soul','The demon crushed you with a mountain','The demon shot you with an arrow','The demon burned you to cinders','The demon froze and shattered you','The demon struck you with lightning','The demon sent an isekai truck at you','The demon dragged you into the swamp','The demon blew you up','The demon collapsed the floor beneath you','You suffered self-inflicted damage','The demon drowned you','The mimic chest devoured you','The demon summoned a horde that tore you apart','The demon crushed you in an iron maiden','The demons summoned cockroaches to eat you alive','The demon crushed you with an anvil','The demon boiled you in hot oil','The demon sucked you into a black hole','The demon cursed you with a voodoo doll'];
@@ -1202,7 +1210,7 @@ sync();
         DN[27]='The demons dropped a nuke on you';DC[27]='#ffd23f';
         DT[27]=["Vaporized into absolute nothingness by a point-blank nuke, leaving behind a steaming crater of pure failure.","Hit with a clean nuke that deleted your entire build, leaving only a smoking pile of radioactive garbage.","Got completely obliterated by the blast, reducing your legacy to a scorched, glowing hole in the ground.","Took a full nuclear payload straight to the face, turning your entire character into radioactive ash.","Blasted into atomic dust by the nuke, leaving nothing behind but a foul stench and a smoking crater."];
         DN[28]='The demon stabbed you in slow motion for 100 years';DC[28]='#d6a8ff';
-        DT[28]=["A century of standing there stuck in time while the blade slowly crawls toward you, frozen like a complete idiot.","Stabbed in slow motion for a hundred years because even the blade couldn't be bothered to finish you quickly.","A glacial 100-year poke that wastes your entire lifespan on a single miserable papercut.","Stabbed so slowly you watched your own hair turn gray and fall out before the point even hit bone.","A century-long slow stab that pins you to the wall while you stand there looking like an absolute dumbass for ten decades."];
+        DT[28]=["A century of getting poked with a butter knife while you stand there frozen like a complete idiot.","Stabbed in slow motion for a hundred years because even the blade couldn't be bothered to finish you quickly.","A glacial 100-year poke that wastes your entire lifespan on a single miserable papercut.","Stabbed so slowly you watched your own hair turn gray and fall out before the point even hit bone.","A century-long slow stab that pins you to the wall while you stand there looking like an absolute dumbass for ten decades."];
         DN[29]='The demon brewed every disease into a super-virus that killed you';DC[29]='#7dff4a';
         DT[29]=["The demons blended every disease in existence into one super-virus, and your immune system folded faster than your answer did.","Every plague in history teamed up to kill you. That's how bad that answer was, it took a group project.","Your immune system took one look at that virus, said 'not my problem,' and uninstalled itself.","We cooked up a virus from every disease and it struggled to find a brain cell to infect in there. It settled for your lungs out of pity.","The flu, the plague and the common cold all showed up for you. That's not a death, that's a fan meet-up for your stupidity.","Patient Zero? More like Patient Zero brain cells. The virus had nothing up there to damage.","Ebola, smallpox, the black plague and twenty other horrors merged into one virus just for you. Overkill, but you did make it look easy.","That virus came with a get-well-soon card. It got returned to sender because you didn't make it."];
         
@@ -1241,9 +1249,12 @@ sync();
             S.decks = S.decks.map(d => d.id === 'default_starter_pool' ? DEFAULT_DECK : d);
             if (!S.completedBonus) S.completedBonus = [];
             if (!S.seen) S.seen = {};
+            if (!S.badges) S.badges = {good:0,bad:0};
             if (!S.mem) S.mem = {tot:0,k:{},last:[],runs:0,ld:0,ll:''};   // the demon's memory of you
         } catch(e){}
         if (!S.mem) S.mem = {tot:0,k:{},last:[],runs:0,ld:0,ll:''};
+        if (!S.badges) S.badges = {good:0,bad:0};
+        S.st = Object.assign({sol:{},bdk:0,adr:0,bp:0,tot:0,fr:0,nd:0,sp:0,pm:0,ng:0,bs:0,bsp:0,bng:0}, S.st||{}); if(!S.st.sol) S.st.sol={};   // badge stats: solved questions, best distinct deaths in one run, all-deaths-in-one-run flag, best puzzles in one run, run-finished flag
         const save=()=>localStorage.sufference_save_v14=JSON.stringify(S);
 
         // Load Sprite Sheets
@@ -1287,15 +1298,99 @@ sync();
                 const t = btn.dataset.t;
                 btn.classList.add('on', 'bg-emerald-600', 'text-zinc-950', 'shadow-[0_0_10px_rgba(16,185,129,0.4)]');
                 btn.classList.remove('bg-zinc-800', 'text-zinc-200');
-                ['d','s','g','h'].forEach(id => {
+                ['d','s','g','h','a'].forEach(id => {
                     const sec = $('#t-' + id);
                     if (sec) sec.hidden = (id !== t);
                 });
                 if (t === 'h' && window.galRender) galRender();
+                if (t === 'a') renderBadges();
             };
         });
 
+        // ---------- RANKED BADGES (League-style emblems) ----------
+        // tier palettes: [name, light, mid, dark]
+        const TIERS=[['Iron','#c5cbd1','#7d848b','#3a3e43'],['Bronze','#f0b183','#b2692f','#5a2f13'],['Silver','#f8fafc','#b9c3ce','#66717e'],['Gold','#fff2a8','#f2b52b','#8a5800'],['Platinum','#c3fff2','#35cdbd','#0d5f66'],['Emerald','#c5ffd6','#22c765','#0a5a2c'],['Diamond','#dcecff','#5a9cff','#1b3c96'],['Master','#f6d2ff','#b25cf2','#511a8a'],['Grandmaster','#ffd2d2','#f04848','#730d0d'],['Challenger','#fff4b8','#4fd8ff','#c28a10']];
+        const WINGS=[0,1,1,2,2,3,3,4,4,4];
+        const ENDPAL={good:['Savior','#ffe3f1','#ff5fa8','#7a1040','heart'],bad:['Overlord','#ffb8b8','#d81f2f','#2a0508','crown']};
+        let _eid=0;
+        function emblem(pal,wings,glyph,locked){
+            const id='em'+(++_eid),[c1,c2,c3]=locked?['#6b7280','#3f4650','#1f242b']:pal;
+            const FE=['M31 36C16 28 8 16 6 2C18 6 27 14 34 26Z','M30 48C12 42 2 32 0 18C12 20 24 28 33 38Z','M30 60C12 56 2 48 -2 36C10 36 22 42 32 50Z','M31 72C16 70 6 64 1 54C12 52 22 56 32 62Z'];
+            const wing=FE.slice(0,wings).map(d=>`<path d="${d}" fill="url(#${id}w)" stroke="${c3}" stroke-width="1"/>`).join('');
+            const G={
+                heart:`<path d="M60 79C38 63 40 42 52 42C57 42 60 46 60 49C60 46 63 42 68 42C80 42 82 63 60 79Z" fill="${c1}" stroke="${c3}" stroke-width="1.5"/>`,
+                crown:`<path d="M41 75L43 49L53 62L60 45L67 62L77 49L79 75Z" fill="${c1}" stroke="${c3}" stroke-width="1.5" stroke-linejoin="round"/><circle cx="43" cy="48" r="2.6" fill="${c1}"/><circle cx="60" cy="44" r="2.6" fill="${c1}"/><circle cx="77" cy="48" r="2.6" fill="${c1}"/>`,
+                skull:`<path d="M60 40C47 40 42 49 43 58C44 63 47 65 50 67L50 75L70 75L70 67C73 65 76 63 77 58C78 49 73 40 60 40Z" fill="${c1}" stroke="${c3}" stroke-width="1.5"/><circle cx="52.5" cy="57" r="5" fill="${c3}"/><circle cx="67.5" cy="57" r="5" fill="${c3}"/><path d="M60 62L57 68L63 68Z" fill="${c3}"/><path d="M55 75V70M60 75V70M65 75V70" stroke="${c3}" stroke-width="1.4"/>`,
+                bones:`<path d="M40 40L80 78M80 40L40 78" stroke="${c1}" stroke-width="5" stroke-linecap="round"/><path d="M40 40L80 78M80 40L40 78" stroke="${c3}" stroke-width="1.5" stroke-linecap="round" opacity=".6"/><path d="M60 41C50 41 46 48 47 55C48 59 50 60 52 62L52 69L68 69L68 62C70 60 72 59 73 55C74 48 70 41 60 41Z" fill="${c1}" stroke="${c3}" stroke-width="1.5"/><circle cx="54.5" cy="54" r="4" fill="${c3}"/><circle cx="65.5" cy="54" r="4" fill="${c3}"/>`,
+                rune:`<path d="M60 39L81 60L60 81L39 60Z" fill="none" stroke="${c1}" stroke-width="3.5" stroke-linejoin="round"/><path d="M60 47L73 60L60 73L47 60Z" fill="${c2}" opacity=".35"/><path d="M50 60L57.5 68L72 50" fill="none" stroke="${c1}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`,
+                shield:`<path d="M60 40L78 47V60C78 70 70 77 60 82C50 77 42 70 42 60V47Z" fill="${c1}" stroke="${c3}" stroke-width="1.5" stroke-linejoin="round"/><path d="M60 48V74M50 58H70" stroke="${c3}" stroke-width="3.5" stroke-linecap="round"/>`,
+                clock:`<circle cx="60" cy="59" r="20" fill="${c2}" fill-opacity=".3" stroke="${c1}" stroke-width="4"/><path d="M60 59V45M60 59L70 65" fill="none" stroke="${c1}" stroke-width="4" stroke-linecap="round"/><path d="M56 36H64" stroke="${c1}" stroke-width="3.5" stroke-linecap="round"/>`,
+                flame:`<path d="M60 36C62 47 75 51 73 66C72 76 67 81 60 81C53 81 47 76 47 66C47 60 51 56 54 49C56 53 58 55 59 54C60 49 58 43 60 36Z" fill="${c1}" stroke="${c3}" stroke-width="1.5" stroke-linejoin="round"/><path d="M60 62C63.5 66 66 69 63.5 73.5C62 75.5 58 75.5 56.5 73.5C54 69 57 66 60 62Z" fill="${c2}"/>`,
+                eye:`<path d="M37 60C46 46 74 46 83 60C74 74 46 74 37 60Z" fill="${c1}" stroke="${c3}" stroke-width="1.5" stroke-linejoin="round"/><circle cx="60" cy="60" r="9" fill="${c2}" stroke="${c3}" stroke-width="1.5"/><circle cx="60" cy="60" r="4" fill="${c3}"/>`,
+                sword:`<path d="M60 36L65 49V69H55V49Z" fill="${c1}" stroke="${c3}" stroke-width="1.5" stroke-linejoin="round"/><rect x="47" y="69" width="26" height="5" rx="2" fill="${c1}" stroke="${c3}" stroke-width="1.5"/><rect x="57" y="74" width="6" height="9" fill="${c2}" stroke="${c3}" stroke-width="1.2"/><circle cx="60" cy="86" r="3.5" fill="${c1}" stroke="${c3}" stroke-width="1.2"/>`,
+                duality:`<circle cx="60" cy="59" r="20" fill="none" stroke="${c1}" stroke-width="3.5"/><path d="M60 39A20 20 0 0 0 60 79Z" fill="${c1}"/><circle cx="60" cy="49" r="3.4" fill="${c3}"/><circle cx="60" cy="69" r="3.4" fill="${c1}"/>`,
+                bolt:`<path d="M65 38L47 63L58 63L53 82L74 55L62.5 55Z" fill="${c1}" stroke="${c3}" stroke-width="1.5" stroke-linejoin="round"/>`
+            }[glyph];
+            return `<svg viewBox="-12 -2 144 114" class="w-full h-auto block" style="filter:drop-shadow(0 0 ${locked?0:7}px ${c2}aa)${locked?' grayscale(1)':''}" aria-hidden="true">
+<defs><linearGradient id="${id}f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset=".45" stop-color="${c2}"/><stop offset="1" stop-color="${c3}"/></linearGradient>
+<linearGradient id="${id}w" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c2}"/><stop offset="1" stop-color="${c1}"/></linearGradient>
+<radialGradient id="${id}r" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="${c2}" stop-opacity=".55"/><stop offset="1" stop-color="#05080a" stop-opacity="1"/></radialGradient></defs>
+<g>${wing}</g><g transform="translate(120,0) scale(-1,1)">${wing}</g>
+<path d="M60 12L94 28V68L60 102L26 68V28Z" fill="url(#${id}f)" stroke="${c3}" stroke-width="2" stroke-linejoin="round"/>
+<path d="M60 20L87 33V65L60 92L33 65V33Z" fill="url(#${id}r)" stroke="${c1}" stroke-width="1.6" stroke-linejoin="round"/>
+<path d="M60 26L82 36.5V62.5L60 85.5L38 62.5V36.5Z" fill="none" stroke="${c2}" stroke-width=".8" opacity=".7"/>
+${G}
+<path d="M60 1L67 11L60 21L53 11Z" fill="${c1}" stroke="${c3}" stroke-width="1.4" stroke-linejoin="round"/>
+<path d="M26 40L19 46L26 52M94 40L101 46L94 52" fill="none" stroke="${c1}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="${wings?0:.9}"/>
+</svg>`}
+        const endEmblem=k=>{const E=ENDPAL[k];return emblem([E[1],E[2],E[3]],4,E[4],false)};
+        const qkey=q=>q?(q.q||(q.pairs?q.pairs.map(p=>p[0]).join('|'):'')):'';
+        // the four completion badges
+        function badgeData(){
+            const st=S.st||{},nD=GN.length+GSK.length;
+            const seenD=GN.filter(k=>S.seen[k]).length+GSK.filter(k=>S.seen['s:'+k]).length;
+            const all=new Set();(S.decks||[]).forEach(d=>(d.qs||[]).forEach(q=>{const k=qkey(q);if(k)all.add(k)}));
+            const solved=[...all].filter(k=>st.sol&&st.sol[k]).length;
+            return [
+                {id:'dall',pal:['#c5ffd6','#22c765','#0a5a2c'],name:'Collector',glyph:'skull',desc:`Find every way to die. All ${GN.length} deaths and ${GSK.length} secret deaths in the Death Gallery.`,cur:seenD,tot:nD,done:seenD>=nD,unit:'deaths found'},
+                {id:'pall',pal:['#d8e0ff','#5470ff','#1a2a9a'],name:'Scholar',glyph:'rune',desc:'Answer every puzzle in every deck correctly at least once.',cur:solved,tot:all.size,done:all.size>0&&solved>=all.size,unit:'puzzles solved'},
+                {id:'drun',pal:['#f6d2ff','#b25cf2','#511a8a'],name:'Doomed',glyph:'bones',desc:`Die every possible way in one single run: all ${nD} deaths.`,cur:Math.min(st.bdk||0,nD),tot:nD,done:!!st.adr,unit:'different deaths in your best run'},
+                {id:'nd',pal:['#c3fff2','#35cdbd','#0d5f66'],name:'Untouchable',glyph:'shield',desc:'Finish a run without dying even once.',cur:st.nd?1:0,tot:1,done:!!st.nd,unit:'deathless run'},
+                {id:'sp',pal:['#f3ffb0','#a6e22e','#456a0a'],name:'Blitz',glyph:'clock',desc:'Finish a run at 12 seconds per puzzle or faster.',done:!!st.sp,pct:st.bsp?Math.round(Math.min(1,12/st.bsp)*100):0,txt:st.bsp?'Best pace: '+st.bsp.toFixed(1)+' s per puzzle (goal: 12 s)':'Finish a run to set your pace'},
+                {id:'bs',pal:['#ffe0b0','#ff7a1a','#7a2a00'],name:'Inferno',glyph:'flame',desc:'Solve 10 puzzles in a row without dying, in one run.',cur:Math.min(st.bs||0,10),tot:10,done:(st.bs||0)>=10,unit:'in a row (your best)'},
+                {id:'pm',pal:['#d6f6ff','#38c8ff','#0b4f8a'],name:'Flawless',glyph:'eye',desc:'Finish a run without a single wrong answer.',cur:st.pm?1:0,tot:1,done:!!st.pm,unit:'perfect run'},
+                {id:'ng',pal:['#f0b183','#b2692f','#5a2f13'],name:'Relentless',glyph:'sword',desc:'Die 10 or more times in a run, and still win it.',cur:Math.min(st.bng||0,10),tot:10,done:!!st.ng,unit:'deaths in your best win'},
+                {id:'two',pal:['#f5f5f5','#8a8fa0','#15151c'],name:'Duality',glyph:'duality',desc:'Earn both endings: the good one and the bad one.',cur:(S.badges.good?1:0)+(S.badges.bad?1:0),tot:2,done:!!(S.badges.good&&S.badges.bad),unit:'endings earned'},
+                {id:'prun',pal:['#fff2a8','#f2b52b','#8a5800'],name:'Conqueror',glyph:'bolt',desc:'Clear every puzzle of your deck in one single run.',cur:Math.min(st.bp||0,st.tot||st.bp||0),tot:st.tot||0,done:!!st.fr,unit:'puzzles in your best run'}
+            ];
+        }
+        function renderBadges(){
+            const el=$('#badges');if(!el)return;const B=S.badges||{};
+            const ends=['good','bad'].map(k=>{const E=ENDPAL[k],n=B[k]||0,hint=k=='good'?'You freed the Princess and she kissed you.':'You took the crown, and you killed the Princess.';
+                if(!n)return `<div class="text-left p-4 rounded-xl border border-zinc-800 bg-zinc-950 flex gap-4 items-center opacity-80"><div class="shrink-0 w-24">${emblem(['','',''],4,E[4],true)}</div><div class="min-w-0"><div class="title-font font-bold text-zinc-500 text-sm">Hidden ending</div><div class="text-xs text-zinc-600 mt-0.5">Finish the boss trial to find out what the choice offers.</div></div></div>`;
+                return `<div class="text-left p-4 rounded-xl border-2 bg-zinc-950 flex gap-4 items-center" style="border-color:${E[2]}99;box-shadow:0 0 20px ${E[2]}40,inset 0 0 26px ${E[2]}14"><div class="shrink-0 w-24">${endEmblem(k)}</div><div class="min-w-0"><div class="title-font font-black text-sm" style="color:${E[1]}">${E[0]}${n>1?' <span class="text-xs opacity-80">×'+n+'</span>':''}</div><div class="text-xs text-zinc-300 mt-0.5">${hint}</div><div class="title-font font-bold text-xs mt-1" style="color:${E[2]}">Ending badge</div></div></div>`});
+            const T0=TIERS[9],comp=badgeData().map(b=>{const T=[null].concat(b.pal||[T0[1],T0[2],T0[3]]);const pct=b.done?100:b.pct!=null?b.pct:b.tot?Math.round(b.cur/b.tot*100):0;
+                if(b.done)return `<div class="text-left p-4 rounded-xl border-2 bg-zinc-950 flex gap-4 items-center" style="border-color:${T[2]}99;box-shadow:0 0 20px ${T[2]}40,inset 0 0 26px ${T[2]}14"><div class="shrink-0 w-24">${emblem([T[1],T[2],T[3]],4,b.glyph,false)}</div><div class="min-w-0 flex-1"><div class="title-font font-black text-sm" style="color:${T[1]}">${b.name}</div><div class="text-xs text-zinc-300 mt-0.5">${b.desc}</div><div class="title-font font-bold text-xs mt-1" style="color:${T[2]}">Complete</div></div></div>`;
+                return `<div class="text-left p-4 rounded-xl border border-zinc-800 bg-zinc-950 flex gap-4 items-center opacity-90"><div class="shrink-0 w-24">${emblem(['','',''],4,b.glyph,true)}</div><div class="min-w-0 flex-1"><div class="title-font font-bold text-zinc-400 text-sm">${b.name}</div><div class="text-xs text-zinc-500 mt-0.5">${b.desc}</div><div class="text-xs text-zinc-400 mt-1.5">${b.txt||(b.cur+(b.tot?' / '+b.tot:'')+' '+b.unit)}</div><div class="h-1.5 rounded bg-zinc-800 mt-1 overflow-hidden"><div class="h-full rounded" style="width:${Math.max(pct?3:0,pct)}%;background:linear-gradient(90deg,${T[3]},${T[2]})"></div></div></div></div>`});
+            const got=['good','bad'].filter(k=>B[k]).length+badgeData().filter(b=>b.done).length,c=$('#achcount');if(c)c.textContent=got+' / '+(2+badgeData().length)+' unlocked';
+            el.innerHTML=ends.concat(comp).join('');
+        }
+        // 'p' = a puzzle was cleared, 'd' = a death of kind x happened (x = gallery key), 'f' = the run was finished. Gallery replays never count.
+        function trackStat(k,x){
+            if(typeof G==='undefined'||!G||G.gal)return;const st=S.st;if(!st.sol)st.sol={};
+            const before=badgeData().map(b=>b.done);
+            if(k=='p'){const r=G.rooms[G.i],key=qkey(r&&r.q);if(key)st.sol[key]=1;G.str=(G.str||0)+1;st.bs=Math.max(st.bs||0,G.str);G.pz=(G.pz||0)+1;st.tot=G.rooms.length;st.bp=Math.max(st.bp||0,G.pz)}
+            else if(k=='d'){G.str=0;(G.dset||(G.dset=new Set())).add(x);st.bdk=Math.max(st.bdk||0,G.dset.size);if(G.dset.size>=GN.length+GSK.length)st.adr=1}
+            else if(k=='f'){st.bp=Math.max(st.bp||0,G.pz||0);st.fr=1;
+                const secs=(performance.now()-G.t0)/1e3,pace=secs/Math.max(1,G.rooms.length);
+                if(G.deaths==0)st.nd=1;if(G.tries>0&&G.right>=G.tries)st.pm=1;
+                st.bsp=st.bsp?Math.min(st.bsp,pace):pace;if(pace<=12)st.sp=1;
+                st.bng=Math.max(st.bng||0,G.deaths);if(G.deaths>=10)st.ng=1}
+            badgeData().forEach((b,i)=>{if(b.done&&!before[i]){toast('🏅 Badge unlocked: '+b.name+'!');(G.newB||(G.newB=[])).push(b.name)}});
+            save();
+        }
         function hub(){
+            renderBadges();
             $('#gold').textContent='🪙 '+S.gold;
             {const nb=$('#newrun');if(nb)nb.style.display=(()=>{try{return SAVED||(G&&!G.gal)}catch(e){return 0}})()?'':'none'}   // a run is in progress (or parked): offer a fresh one
             {const pb=$('#play');if(pb){const sp=pb.querySelectorAll('span');if(sp.length>1)sp[1].textContent=(()=>{try{return SAVED&&SAVED.G}catch(e){return 0}})()?'Resume your run':'Descend into Sufference'}}
@@ -1342,96 +1437,166 @@ sync();
 
         // ================= Question loader: answers you wrote are used as-is, the AI only fills in what is missing =================
         const nzTxt = s => String(s == null ? '' : s).toLowerCase().replace(/^\s*[a-d][\.\)]\s+/, '').replace(/[^a-z0-9]+/g, ' ').trim();
-        const optStyle = l => /^[-*•]?\s*[a-d][\.\)]\s*\S/i.test(l) ? 'L' : /^[-*•]?\s*[1-4][\.\)]\s*\S/.test(l) ? 'D' : /^[-•]\s+\S/.test(l) ? 'B' : null;
-        const isAnsLine = l => /^(?:answer|ans|correct(?:\s+answer)?)\s*[:\-=]/i.test(l);
-        const MARK = /\s*(\*|✓|✔|\(correct\)|\[x\])\s*$/i;
 
-        // split a paste into questions: by blank lines AND by structure, so a paste with no blank lines can never merge questions
-        function splitBlocks(n) {
-            const blocks = [];
-            n.split(/\n\s*\n/).forEach(raw => {
-                let cur = [], style = null, done = false, lastNum = 0;
-                raw.split('\n').map(l => l.trim()).filter(Boolean).forEach(l => {
-                    let st = optStyle(l); const an = isAnsLine(l);
-                    if (st === 'D') { const num = +(l.match(/[1-4]/) || [0])[0]; if (!cur.length || num !== lastNum + 1) st = null; else lastNum = num; }
-                    if (cur.length && style && !an && st !== style) { blocks.push(cur); cur = []; style = null; done = false; lastNum = 0; }
-                    else if (cur.length && done && !an) { blocks.push(cur); cur = []; style = null; done = false; lastNum = 0; }
-                    if (!style && st && cur.length) style = st;
-                    if (an) done = true;
-                    cur.push(l);
-                });
-                if (cur.length) blocks.push(cur);
-            });
-            return blocks;
-        }
-        // -> items: {q:{...}} (answer known) or {pending:{t,q,o}} (needs the AI) ; never guesses
-        function parseQuestionsOld(n) {
-            const items = [];
-            splitBlocks(n).forEach(lines => {
-                const qText = lines[0].replace(/^\d+[\.\)]\s*/, '').trim();
-                const options = []; let mk = -1, ans = null;
-                for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i];
-                    const am = line.match(/^(?:answer|ans|correct(?:\s+answer)?)\s*[:\-=]\s*(.+)$/i);
-                    if (am) { ans = am[1].trim(); continue; }
-                    const om = line.match(/^[-*•]?\s*([a-d1-4])[\.\)]\s*(.*)/i);
-                    let txt = null;
-                    if (om) txt = om[2]; else if (/^[-•]\s+/.test(line)) txt = line.replace(/^[-•]\s+/, '');
-                    if (txt !== null) { if (MARK.test(txt)) { mk = options.length; txt = txt.replace(MARK, ''); } options.push(txt.trim()); }
+        // ---- Parser v2: handles "(Answer)" / ✓ / * / **bold** markers, "Answer: B" lines, end-of-paste answer keys, many label & numbering styles ----
+        let QP_SPREAD = { v: false };
+        const QP = (() => {
+            const DASH = '\\-\\u2013\\u2014';
+            const MARKW = '(?:correct(?:\\s+(?:answer|option|choice))?|right(?:\\s+answer)?|answer|ans|key|solution)';
+            // trailing marker(s) on an option: (Answer) [correct] <-- answer, ← correct, - correct, ✓ ✔ ✅ ☑ [x] (x) *
+            const TRAIL = new RegExp('\\s*(?:[\\(\\[\\{]\\s*(?:' + MARKW + '|x|\\u2713|\\u2714)\\s*[\\)\\]\\}]|(?:<?[-=]{1,3}>|\\u2190|\\u21D0|=>|<-+)\\s*' + MARKW + '?|[' + DASH + ']\\s*' + MARKW + '|\\u2705|\\u2714\\uFE0F?|\\u2713|\\u2611\\uFE0F?|\\*+)\\s*[.!]?\\s*$', 'i');
+            const LEAD = new RegExp('^(?:[\\(\\[]\\s*' + MARKW + '\\s*[\\)\\]]|\\u2705|\\u2714\\uFE0F?|\\u2713|\\u2611\\uFE0F?|\\[x\\]|\\[\\u2713\\])\\s*', 'i');
+            const ANSL = new RegExp('^[\\u2705\\u2714\\u2713\\s]*(?:[-\\u2022]\\s+)?[*_]*\\s*(?:the\\s+)?' + MARKW + '[*_]*(?:\\s*[:=' + DASH + ']+\\s*|\\s+is\\s*[:=]?\\s*)[*_]*\\s*(.+?)[*_]*\\s*$', 'i');
+            const LBL = /^[\s]*(?:[-•*]\s+)?[*_]*\s*[\(\[]?([A-Ha-h]|[1-8])[\)\]\.:]\s*[*_]*\s+|^[\s]*(?:[-•*]\s+)?[*_]*\s*[\(\[]?([A-Ha-h]|[1-8])[\)\]\.:][*_]*(?=\S)/;
+            const LBLD = /^[\s]*(?:[-•*]\s+)?[*_]*\s*([A-Ha-h])\s+[\u2013\u2014-]\s+/;
+            const BUL = /^\s*[-•]\s+(?=\S)|^\s*\*\s+(?=\S)/;
+            const QPFX = /^\s*(?:#+\s*)?[*_]*\s*(?:(?:question|ques|q)\.?\s*#?\s*(\d+)|#\s*(\d+)|(\d+))\s*[\.\):\-\u2013\u2014]\s*[*_]*\s*/i;
+            const QPFX2 = /^\s*(?:#+\s*)?[*_]*\s*(?:question|ques|q)\s*[:.]\s*[*_]*\s*/i;
+            const clean = s => String(s).replace(/[\u200b\u200c\u200d\ufeff]/g, '').replace(/\u00a0/g, ' ').replace(/\t/g, ' ');
+            const strip = s => s.replace(/(\*\*|__)/g, '').trim();
+            const letterIdx = c => /\d/.test(c) ? parseInt(c) - 1 : c.toLowerCase().charCodeAt(0) - 97;
+
+            // split "A) x  B) y  C) z" on one line (also | or ; separated) into separate lines; a leading question stays its own line
+            function expandInline(l) {
+                const re = /(^|[\s|;])[\(\[]?([A-Ha-h])[\)\]\.:]\s+(?=\S)/g; const hits = []; let m;
+                while ((m = re.exec(l))) hits.push({ i: m.index + m[1].length, c: m[2].toLowerCase(), end: re.lastIndex });
+                let seq = []; let want = 'a';
+                for (const h of hits) { if (h.c === want) { seq.push(h); want = String.fromCharCode(want.charCodeAt(0) + 1); } }
+                if (seq.length < 2 || seq[0].c !== 'a') return [l];
+                const out = []; const pre = l.slice(0, seq[0].i).trim();
+                if (pre) out.push(pre);
+                seq.forEach((h, k) => out.push(l.slice(h.i, k + 1 < seq.length ? seq[k + 1].i : l.length).replace(/\s*[|;]\s*$/, '').trim()));
+                return out;
+            }
+            // is this line an option? returns {idx?, text, correct} or null
+            function asOption(line, cur, blankBefore) {
+                let l = line.trim(), correct = false;
+                const ld = l.match(/^[\s\-•*]*(\u2705|\u2714\uFE0F?|\u2713|\u2611\uFE0F?|\[x\]|\[\u2713\])\s*/i);
+                if (ld && /\S/.test(l.slice(ld[0].length))) { correct = true; l = l.slice(ld[0].length); }
+                let label = null, body = null, m;
+                if ((m = l.match(LBL))) { label = m[1] || m[2]; body = l.slice(m[0].length); }
+                else if ((m = l.match(LBLD))) { label = m[1]; body = l.slice(m[0].length); }
+                if (label !== null) {
+                    const isNum = /\d/.test(label), n = letterIdx(label), q = cur.q || '';
+                    if (!cur.q) return null;
+                    if (n !== cur.opts.length) return null;                              // labels must run A,B,C.. / 1,2,3.. in order
+                    if (isNum && (/\?\s*$/.test(body.trim()) || (blankBefore && !QP_SPREAD.v && cur.opts.length >= 2))) return null;   // "2. Next question?" is a new question
+                    if (!isNum && cur.opts.length === 0 && n !== 0) return null;
+                } else if (BUL.test(l) && cur.q) { body = l.replace(BUL, ''); }
+                else return null;
+                if (!body.trim()) return null;
+                // bold over the option text = marker ("**B) text**", "B) **text**"); bold over the label only is not
+                if (/(\*\*|__)/.test(body)) correct = true;
+                body = body.replace(/(\*\*|__)/g, '');
+                let g = 0;
+                if (LEAD.test(body)) { correct = true; body = body.replace(LEAD, ''); }
+                while (g++ < 4 && TRAIL.test(body) && body.replace(TRAIL, '').trim()) {
+                    if (/^\s*\*+\s*$/.test(body.match(TRAIL)[0]) && /^\*[^*]+\*$/.test(body.trim())) { body = body.trim().slice(1, -1); break; }   // *italic* is not a marker
+                    body = body.replace(TRAIL, ''); correct = true;
                 }
-                if (options.length >= 2) {
-                    let a = mk;
-                    if (a < 0 && ans !== null) {
-                        const L = ans.match(/^([a-d1-4])[\.\)]?$/i);
-                        if (L) { const c = L[1].toLowerCase(); a = /\d/.test(c) ? parseInt(c) - 1 : c.charCodeAt(0) - 97; }
-                        else a = options.findIndex(o => nzTxt(o) === nzTxt(ans));
+                body = body.trim();
+                if (!body) return null;
+                return { text: body, correct };
+            }
+            function resolveAns(txt, opts) {
+                let t = strip(String(txt)).replace(/[.!]+$/, '').trim(); if (!t) return -2;
+                if (/^[\(\[]?[a-h1-8][\)\]]?$/i.test(t) && opts.length >= 2) { const k = letterIdx(t.replace(/[\(\)\[\]]/g, '')); return k >= 0 && k < opts.length ? k : -2; }
+                const ex = opts.findIndex(o => nzTxt(o) === nzTxt(t));
+                if (ex >= 0) return ex;
+                const m = t.match(/^[\(\[]?([A-Ha-h]|[1-8])(?:[\)\]\.:]\s*|\s+[-\u2013\u2014:]\s*|\s+)(.+)$/);
+                if (m) { const k = opts.findIndex(o => nzTxt(o) === nzTxt(m[2])); if (k >= 0) return k; const l = letterIdx(m[1]); if (l >= 0 && l < opts.length && /^[\(\[]?[A-Ha-h1-8][\)\]\.:]/.test(t)) return l; }
+                const m2 = t.match(/^[\(\[]?([A-Ha-h])[\)\]\.:]?\s*(?:[-\u2013\u2014:,]|because|since)\s/i);       // "B - because ..."
+                if (m2) { const l = letterIdx(m2[1]); if (l >= 0 && l < opts.length) return l; }
+                const k2 = opts.findIndex(o => nzTxt(o) && nzTxt(t).startsWith(nzTxt(o)) && nzTxt(o).length >= 3);   // "Kyoka Suigetsu - his sword"
+                return k2 >= 0 ? k2 : -2;
+            }
+            const tfVal = s => { const t = strip(String(s)).replace(/[.!]+$/, '').trim().toLowerCase(); return /^(true|t|yes|correct)$/.test(t) ? true : /^(false|f|no|incorrect|wrong)$/.test(t) ? false : null; };
+
+            // answer key at the end of the paste: "Answer Key" + "1. B" lines, or bare "1.B 2.A 3.D" lines
+            function pullKey(lines) {
+                const KL = /^(?:q(?:uestion)?\.?\s*)?(\d{1,3})\s*[\.\)\-\u2013\u2014:=]?\s*[\(\[]?([a-hA-H])[\)\]]?\.?$/i;
+                const KM = /^(?:\s*(?:q\s*)?\d{1,3}\s*[\.\)\-\u2013\u2014:=]?\s*[\(\[]?[a-hA-H][\)\]]?\s*[.,;]?)+$/i;
+                const HD = /^[*_#\s]*(?:answer\s*key|answers?|key|solutions?)\s*[:\-]?\s*[*_]*$/i;
+                let hi = -1; for (let i = lines.length - 1; i >= 0; i--) if (HD.test(lines[i])) { hi = i; break; }
+                const map = new Map();
+                const put = (n, a) => { if (!map.has(+n)) map.set(+n, a); };
+                if (hi >= 0 && hi >= lines.length * 0.3) {
+                    for (let i = hi + 1; i < lines.length; i++) {
+                        const l = strip(lines[i]); let m;
+                        if (KM.test(l)) { const re = /(\d{1,3})\s*[\.\)\-\u2013\u2014:=]?\s*[\(\[]?([a-hA-H])[\)\]]?/g; let x; while ((x = re.exec(l))) put(x[1], x[2]); }
+                        else if ((m = l.match(/^(?:q(?:uestion)?\.?\s*)?(\d{1,3})\s*[\.\)\-\u2013\u2014:=]\s*(.+)$/i))) put(m[1], m[2]);
                     }
-                    if (a >= 0 && a < options.length) items.push({ q: { t: 'mc', q: qText, o: options, a } });
-                    else items.push({ pending: { t: 'mc', q: qText, o: options } });
-                } else if (lines.length === 1 || options.length === 0) {
-                    if (ans !== null && /^(true|false|t|f)$/i.test(ans)) items.push({ q: { t: 'tf', q: qText, o: ['True', 'False'], a: /^t/i.test(ans) } });
-                    else if (qText.length > 3) items.push({ pending: { t: 'tf', q: qText, o: ['True', 'False'] } });
+                    return { map, lines: lines.slice(0, hi) };
                 }
-            });
-            return items;
-        }
+                let j = lines.length; const tmp = [];
+                while (j > 0) { const l = strip(lines[j - 1]); if (KL.test(l) || KM.test(l)) { tmp.push(l); j--; } else break; }
+                if (tmp.length >= 2 || (tmp.length === 1 && KM.test(tmp[0]) && /\d.*\d/.test(tmp[0]))) {
+                    tmp.forEach(l => { const re = /(\d{1,3})\s*[\.\)\-\u2013\u2014:=]?\s*[\(\[]?([a-hA-H])[\)\]]?/g; let x; while ((x = re.exec(l))) put(x[1], x[2]); });
+                    return { map, lines: lines.slice(0, j) };
+                }
+                return { map, lines };
+            }
 
-        // pastes where every line is separated by a blank line, with "Question 1" headers, "Section 2" banners and
-        // answers like "Answer: B) Zangetsu" / "Answer: 2) Zangetsu": every "Answer:" line closes one question
-        function parseByAnswers(n) {
-            const lines = n.split('\n').map(l => l.trim()).filter(Boolean);
-            const junk = l => /^(?:question|q)\s*\d+\s*[:.)\-]?\s*$/i.test(l)
-                || (l.length < 50 && !/\?\s*$/.test(l) && (/\b(?:section|part|round|level|chapter)\s*\d+/i.test(l) || /^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(l)));
-            const items = []; let cur = [];
-            lines.forEach(l => {
-                if (isAnsLine(l)) {
-                    const it = buildAnsItem(cur, l); if (it) items.push(it); cur = [];
-                } else if (!junk(l)) cur.push(l);
-            });
-            return items;
-        }
-        function buildAnsItem(cur, ansLine) {
-            if (cur.length < 3) return null;
-            const qText = cur[0].replace(/^(?:question\s*)?\d+\s*[\.\):]\s*/i, '').trim();
-            const opts = cur.slice(1).map(l => l.replace(/^[-*•]?\s*[a-d1-4][\.\)]\s+/i, '').replace(MARK, '').trim());
-            const ansText = ansLine.replace(/^(?:answer|ans|correct(?:\s+answer)?)\s*[:\-=]\s*/i, '').trim();
-            let a = -1;
-            const lm = ansText.match(/^([a-d1-4])(?:[\.\)]\s*(.*))?$/i);        // "B", "B) Zangetsu", "2) Zangetsu"
-            if (lm) {
-                const rest = (lm[2] || '').trim();
-                if (rest) a = opts.findIndex(o => nzTxt(o) === nzTxt(rest));    // the written text wins if it matches an option
-                if (a < 0) { const c = lm[1].toLowerCase(); a = /\d/.test(c) ? parseInt(c) - 1 : c.charCodeAt(0) - 97; }
-            } else a = opts.findIndex(o => nzTxt(o) === nzTxt(ansText));
-            const o4 = opts.slice(0, 4);
-            if (a >= 0 && a < o4.length) return { q: { t: 'mc', q: qText, o: o4, a } };
-            return { pending: { t: 'mc', q: qText, o: o4 } };
-        }
-        function parseQuestions(n) {
-            const items = parseQuestionsOld(n);
-            const ansCount = (n.match(/^\s*(?:answer|ans|correct(?:\s+answer)?)\s*[:\-=]/gim) || []).length;
-            if (ansCount >= 2) { const alt = parseByAnswers(n); const good = x => x.filter(i => i.q).length; if (good(alt) > good(items)) return alt; }
-            return items;
-        }
+            function parse(text) {
+                let raw = clean(text).replace(/\r/g, '').split('\n');
+                const L = [];            // {t, blank}
+                let blank = false;
+                raw.forEach(r => { const t = r.trim(); if (!t) { blank = true; return; } if (/^[-=_*~#]{3,}$/.test(t)) { blank = true; return; } expandInline(t).forEach((x, i) => { L.push({ t: x, blank: i === 0 ? blank : false }); blank = false; }); });
+                QP_SPREAD.v = L.length > 3 && L.filter(x => x.blank).length / L.length > 0.8;   // a blank line between EVERY line says nothing about where questions start
+                const kk = pullKey(L.map(x => x.t)); const key = kk.map; L.length = kk.lines.length;
+                const items = []; let cur = null, ord = 0;
+                const fresh = () => ({ q: null, num: null, opts: [], marks: [], ans: null, tf: null });
+                const done = () => {
+                    const c = cur; cur = null; if (!c || !c.q) return;
+                    const qt = c.q.trim();
+                    if (c.opts.length >= 2) {
+                        ord++;
+                        let a = -1, bad = false; const mk = c.marks.map((m, i) => m ? i : -1).filter(i => i >= 0);
+                        let an = c.ans !== null ? resolveAns(c.ans, c.opts) : -1;
+                        if (an === -1 && c.ans === null) { const kv = key.get(c.num != null ? c.num : ord); if (kv !== undefined) an = resolveAns(kv, c.opts); }
+                        if (mk.length > 1) bad = true;
+                        else if (mk.length === 1) { a = mk[0]; if (an >= 0 && an !== a) bad = true; }
+                        else if (an >= 0) a = an;
+                        let o = c.opts.slice();
+                        if (bad || a < 0) { items.push({ pending: { t: 'mc', q: qt, o: o.slice(0, 4) } }); return; }
+                        if (o.length > 4 && a >= 4) { [o[3], o[a]] = [o[a], o[3]]; a = 3; }
+                        items.push({ q: { t: 'mc', q: qt, o: o.slice(0, 4), a } });
+                    } else if (c.opts.length === 0) {
+                        let tq = qt, tv = c.ans !== null ? tfVal(c.ans) : null;
+                        const tm = tq.match(/\s*[\(\[]\s*(true|false|t|f)\s*[\)\]]\s*[.!]?\s*$/i);
+                        if (tm) { tv = tfVal(tm[1]); tq = tq.replace(tm[0], '').trim(); }
+                        const hasTf = /^(?:true\s*(?:or|\/)\s*false|t\s*\/\s*f)\s*[:\-.]?\s*/i;
+                        const wasTf = hasTf.test(tq); tq = tq.replace(hasTf, '').trim();
+                        if (tv === null) { const kv = key.get(c.num != null ? c.num : ord + 1); if (kv !== undefined) tv = tfVal(kv); }
+                        if (tq.length <= 3) return;
+                        if (tv !== null) { ord++; items.push({ q: { t: 'tf', q: tq, o: ['True', 'False'], a: tv } }); }
+                        else items.push({ pending: { t: 'tf', q: tq, o: ['True', 'False'] }, loose: !wasTf });
+                    }
+                };
+                L.forEach(({ t, blank }) => {
+                    let line = t.replace(/^#+\s+/, '');
+                    // junk: "Question 3" alone, section banners, short emoji banners
+                    const bare = strip(line);
+                    if (/^(?:question|ques|q)\s*#?\s*\d+\s*[:.)\-]?\s*$/i.test(bare)) { done(); cur = fresh(); cur.num = +(bare.match(/\d+/)[0]); cur.hdr = true; return; }
+                    if (bare.length < 50 && !/\?\s*$/.test(bare) && !(cur && cur.q && asOption(line, cur, blank)) && (/\b(?:section|part|round|level|chapter)\s*\d+/i.test(bare) || (/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(bare) && !ANSL.test(bare) && !/^[\u2705\u2714\u2713\u2611]/.test(bare)))) { done(); return; }
+                    const am = ANSL.exec(bare);
+                    if (am && cur && cur.q) { cur.ans = cur.ans === null ? am[1] : cur.ans; return; }
+                    if (cur && cur.q) { const o = asOption(line, cur, blank); if (o) { if (cur.ans !== null) { done(); cur = null; } else { cur.opts.push(o.text); cur.marks.push(o.correct); return; } } }
+                    // a question line
+                    const pm = line.match(QPFX); let num = null, qtxt = line;
+                    if (pm) { num = +(pm[1] || pm[2] || pm[3]); qtxt = line.slice(pm[0].length); } else if (QPFX2.test(line)) qtxt = line.replace(QPFX2, '');
+                    qtxt = strip(qtxt);
+                    if (cur && cur.q && cur.opts.length === 0 && cur.ans === null && !pm && !blank) { cur.q += ' ' + qtxt; return; }      // multi-line question
+                    if (cur && cur.hdr && !cur.q) { cur.q = qtxt; if (num != null) cur.num = num; return; }
+                    done(); cur = fresh(); cur.q = qtxt; cur.num = num;
+                });
+                done();
+                const hasMc = items.some(i => i.q ? i.q.t === 'mc' : i.pending.t === 'mc');
+                return items.filter(i => !(hasMc && i.pending && i.pending.t === 'tf' && i.loose)).map(i => { delete i.loose; return i; });
+            }
+            return { parse, nzTxt };
+        })();
+        function parseQuestions(n) { return QP.parse(n); }
 
         // ---- Gemini (same setup as before). Used ONLY for questions that have no answer written, and every answer is asked twice
         const GEM_KEY = "";
@@ -2113,7 +2278,7 @@ sync();
             return a}
         function breakBar(b){
             const cr=b.k=='crate';
-            G.xg+=b.gold;G.fl.push({x:b.x,y:b.y-40,t:0,txt:'+'+b.gold+' gold'});
+            G.xg+=b.gold+petGold();G.fl.push({x:b.x,y:b.y-40,t:0,txt:'+'+b.gold+' gold'});
             if(b.gem){G.xg+=15;G.fl.push({x:b.x,y:b.y-58,t:0,txt:'💎 +15'})}
             for(let i=0;i<(cr?7:5);i++)G.deb.push({x:b.x+(Math.random()-.5)*50,y:b.y+(Math.random()-.5)*14,a:Math.random()*3});
             for(let i=0;i<Math.min(cr?14:10,b.gold+2);i++)G.cn.push({x:b.x,y:b.y-20,vx:(Math.random()-.5)*220,vy:-120-Math.random()*200,l:.9})}
@@ -2170,14 +2335,14 @@ sync();
         function mkChests(){
             if(G.rooms[G.i].boss)return[];
             const slots=G.wide?sh(gapXs()):sh([180,350,520]),n=Math.min(slots.length,1+Math.floor(Math.random()*2)),a=[];
-            for(let i=0;i<n;i++){const r=Math.random();a.push({x:slots[i],y:WB+9,st:0,kind:r<.6?'gold':'mimic',g:10+Math.floor(Math.random()*21)})}
+            for(let i=0;i<n;i++){const r=Math.random();a.push({x:slots[i],y:WB+9,st:0,kind:r<.6?'gold':'mimic',g:2*(10+Math.floor(Math.random()*21))})}   // chest gold doubled: 20-60
             return a}
         function openChest(tc){
             let b=tc||null,bd=95;
             if(!b)(G.chs||[]).forEach(c=>{if(c.st||c.gone)return;const d=Math.hypot(c.x-G.hx,c.y-G.hy);if(d<bd){bd=d;b=c}});
             if(!b||b.st||b.gone)return;SND.sfx('chest');
             b.st=1;b.t0=performance.now();
-            if(b.kind=='gold'){G.xg+=b.g;G.fl.push({x:b.x,y:b.y-50,t:0,txt:'+'+b.g+' gold'});
+            if(b.kind=='gold'){G.xg+=b.g+petGold();G.fl.push({x:b.x,y:b.y-50,t:0,txt:'+'+b.g+' gold'});
                 for(let i=0;i<Math.min(12,b.g);i++)G.cn.push({x:b.x,y:b.y-30,vx:(Math.random()-.5)*240,vy:-140-Math.random()*200,l:.9});return}
             b.gone=1;
             die(null,16);G.ch=b
@@ -2254,7 +2419,7 @@ sync();
         function srSnd(type,blx,x,v,c){let w=0;if(type=='boulder'&&blx!=null)w=Math.max(0,Math.max(.06,(blx-x)/Math.max(150,v||200))-.17);SND.dead(0,'s:'+type,0,w);
             if(type=='axe'&&c&&c.ph&&c.sp){const ts=[];c.ph.forEach((ph,i)=>{const sp=c.sp[i],wv=c.t*sp+ph;let tt=(Math.ceil(wv/Math.PI)*Math.PI-wv)/sp;if(tt<.05)tt+=Math.PI/sp;for(;tt<8;tt+=Math.PI/sp)ts.push(tt)});SND.axeSwings(ts)}}   // each axe passes the bottom of its swing (blade red, scraping the floor) every half period
         function srHurt(c,type){type=SDN[type]?type:'spike';srSnd(type,c.hit?c.hit.x:null,G.hx,c.hit?c.hit.v:200,c);c.dead={type,t:0,x:(type=='spike'&&c.spx!=null)?c.spx:G.hx,spx:type=='spike'?c.spx:null,y:G.hy,f:G.face,sp:[0,1,2].map(()=>Math.random()*23|0),click:false,bi:type=='boulder'&&c.hit?c.hit.i:null,blx:type=='boulder'&&c.hit?c.hit.x:null,bly:type=='boulder'&&c.hit?c.hit.ly:null,bv:type=='boulder'&&c.hit?c.hit.v:200};if(type=='ice'&&c.sx){let bp=null,bd=1e9;c.sx.forEach(p=>{const d=Math.hypot(p[0]-G.hx,p[1]-G.hy);if(d<bd){bd=d;bp=p}});if(bp){c.dead.x=bp[0];c.dead.y=bp[1]}}   // he lands ON the nearest spike cluster that was already there
-            G.sdt=type;G.deaths++;$('#dc').textContent='Deaths: '+G.deaths;G.state='secretDie';G.moving=0;c.vx=0;c.vy=0;if(!G.gal)unlock('s:'+type,1)}
+            G.deaths++;$('#dc').textContent='Deaths: '+G.deaths;G.state='secretDie';G.moving=0;c.vx=0;c.vy=0;if(!G.gal){unlock('s:'+type,1);trackStat('d','s:'+type)}}
         addEventListener('mousedown',()=>{if(G&&G.state=='secretDie'&&!G.paused&&G.sc&&G.sc.dead)G.sc.dead.click=true});
         function srDeathDraw(c,now){
             const D=c.dead,t=D.t,x=D.x,fy=D.y+15,F=D.f,type=D.type,bx=x-57*F;
@@ -2325,7 +2490,7 @@ sync();
                 if(t>.9&&u<1)for(let j=0;j<14;j++){const pp=(now/450+j/14)%1;O('rgba(170,225,255,'+(.8*(1-ue))+')',bcx+(gx-bcx)*pp+Math.sin(pp*9+j)*10,bcy+(bellyY-bcy)*pp,2.5)}
                 // the soul: a glowing little knight dragged up into the ghost's belly, where it stays trapped
                 if(t>=.9&&sprites.idle.loaded){const sx=bcx+(gx-bcx)*ue,sy=bcy+(bellyY-bcy)*ue,sc=1-.58*ue,trap=u>=1;
-                    ctx.save();ctx.globalAlpha=.9;ctx.filter='brightness(1.9) saturate(.25) hue-rotate(150deg) drop-shadow(0 0 7px #9fd8ff)';
+                    ctx.save();ctx.globalAlpha=.9;ctx.filter='brightness(1.9) saturate(.25) hue-rotate(150deg)';
                     ctx.translate(sx+(trap?Math.sin(now/40)*2.5:0),sy);ctx.rotate(trap?Math.sin(now/110)*.12:0);ctx.scale(F*sc,sc);
                     ctx.drawImage(sprites.idle.img,(Math.floor(now/100)%10)*120,0,120,80,-132,-121,264,176);ctx.restore()}
                 // the ghost, drawn see-through over the soul
@@ -2418,7 +2583,7 @@ sync();
         function srAxe(c,x,ph,now,show,spd){
             // long chain mounted high on the wall: the blade now sweeps the WHOLE depth of the corridor
             const Y0=150,LN=250,w=c.t*(spd||1.9)+ph,a=Math.sin(w)*.55,sn=Math.sin(a),cs=Math.cos(a),ex=x+sn*LN,ey=Y0+cs*LN,dir=Math.cos(w)>=0?1:-1,
-                low=Math.abs(a)<.3;   // the bottom of the swing: the blade scrapes the floor, so crawling under it does NOT save you
+                low=Math.abs(a)<.23;   // the bottom of the swing: the blade scrapes the floor, so crawling under it does NOT save you
             if(show){
                 ctx.strokeStyle='#4b4b5a';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x,Y0);ctx.lineTo(ex,ey);ctx.stroke();
                 ctx.strokeStyle='#6f6f82';ctx.lineWidth=2;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(x,Y0);ctx.lineTo(ex,ey);ctx.stroke();ctx.setLineDash([]);
@@ -2434,9 +2599,9 @@ sync();
                     for(let j=0;j<5;j++)R('#ffd08a',ex+dir*(18+j*9),ey+28+((now/18+j*11)%12),2,2)}}
             if(c.duck&&!low)return false;   // crawling only ducks the HIGH part of the swing
             // deadly part = the lower chain plus the head (a swept line, not a single point), so there is no safe strip along the top or bottom edge
-            const px=G.hx,py=G.hy-(c.duck?8:22),ax=x+sn*LN*.35,ay=Y0+cs*LN*.35,bx=ex+dir*22,by=ey,vx=bx-ax,vy=by-ay;
+            const px=G.hx,py=G.hy-(c.duck?8:22),ax=x+sn*LN*.45,ay=Y0+cs*LN*.45,bx=ex+dir*22,by=ey,vx=bx-ax,vy=by-ay;
             let tt=((px-ax)*vx+(py-ay)*vy)/(vx*vx+vy*vy);tt=Math.max(0,Math.min(1,tt));
-            return Math.hypot(ax+vx*tt-px,ay+vy*tt-py)<26}
+            return Math.hypot(ax+vx*tt-px,ay+vy*tt-py)<21}
         const SRX=[[230,300],[320,390],[410,305],[500,390],[590,310],[670,385]],SRL=[295,350,400],SRSP=[190,235,165];
         const SIM_COL=['#ef4444','#22c55e','#3b82f6'],SIM_RGB=['239,68,68','34,197,94','59,130,246'],SIM_X=[200,350,500],SPK2=[210,330,450,570];
         const SRPL3=[[210,385],[345,295],[480,385]],SRT=[200,420,640];
@@ -2464,7 +2629,7 @@ sync();
          draw(c,now){SRL.forEach((ly,i)=>{if(c.dead&&G.state=='secretDie'&&c.dead.type=='boulder'&&c.dead.bi===i)return;const x=this.bx(c,i);ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(x,ly+24,26,7,0,0,7);ctx.fill();
                 const g=ctx.createRadialGradient(x-8,ly-10,4,x,ly,28);g.addColorStop(0,'#9a9486');g.addColorStop(1,'#4a463e');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,ly,26,0,7);ctx.fill();
                 ctx.strokeStyle='#2d2a25';ctx.lineWidth=3;ctx.beginPath();const a=x/16;ctx.moveTo(x+Math.cos(a)*6,ly+Math.sin(a)*6);ctx.lineTo(x+Math.cos(a)*22,ly+Math.sin(a)*22);ctx.moveTo(x-Math.cos(a+1)*6,ly-Math.sin(a+1)*6);ctx.lineTo(x-Math.cos(a+1)*20,ly-Math.sin(a+1)*20);ctx.stroke()})}},
-        {name:'Axe Gauntlet',axes:true,hint:'Dodge the axes! Hold SHIFT or C to crawl under high swings.',pal:'stone',init(c){c.ph=[0,1,2,3].map(()=>Math.random()*6.283);c.sp=[0,1,2,3].map(()=>1.6+Math.random()*.9)},
+        {name:'Axe Gauntlet',axes:true,hint:'Dodge the axes! Hold SHIFT or C to crawl under high swings.',pal:'stone',init(c){c.ph=[0,1,2,3].map(()=>Math.random()*6.283);c.sp=[0,1,2,3].map(()=>1.25+Math.random()*.6)},
          upd(c){return[230,380,530,670].map((x,i)=>srAxe(c,x,c.ph[i],0,false,c.sp[i])).some(Boolean)?'axe':false},
          draw(c,now){[230,380,530,670].forEach((x,i)=>srAxe(c,x,c.ph[i],now,true,c.sp[i]))}},
         {name:'Simon Torches',hint:'Watch the torches flash, then step on the matching coloured plates in the SAME order. A wrong plate wakes the Chaos Melody, one terrible note that tears you apart, then the sequence replays.',pal:'moss',
@@ -2557,7 +2722,7 @@ sync();
                 if(c.gate){if(c.gate.open)c.gate.o=Math.min(1,c.gate.o+dt*1.6);if(c.gate.o<.85)G.hx=Math.min(G.hx,c.gate.x-26)}
                 c.hurt-=dt;
                 const bad=d.upd(c,dt);if(bad&&c.hurt<=0)srHurt(c,typeof bad=='string'?bad:'spike');
-                if(G.state=='secret'&&G.hx>=715){c.gold=35+Math.floor(Math.random()*26);G.xg+=c.gold;G.state='secretOut';c.out=0;G.moving=0;
+                if(G.state=='secret'&&G.hx>=715){c.gold=90+Math.floor(Math.random()*61);G.xg+=c.gold;G.state='secretOut';c.out=0;G.moving=0;   // puzzle-room reward: 90-150 (was 35-60)
                     for(let i=0;i<30;i++)G.cn.push({x:745,y:320,vx:(Math.random()-.5)*300,vy:-Math.random()*320,l:1.3})}
             }else if(G.state=='secretDie'){const D=c.dead;D.t+=dt;G.moving=0;if(c.def.tick)c.def.tick(c,dt);if(G.gal&&D.click&&D.t>.6){galExit();return}if(D.click&&D.t>.6){c.bl.push({x:D.x,y:D.y+12,sd:Math.random()*100});c.rem.push({x:D.x,y:D.y+14,f:D.f,kind:({spike:'impale',axe:'chop',boulder:'smear',lava:'lavacrust',ghost:'soul',fire:'scorch',dart:'darts',gas:'toxic',ice:'iceimpale',fall:'rubble'})[D.type]||'rubble',nohusk:1,sd:Math.random()*100});G.state='secret';G.hx=70;G.hy=320;c.hurt=.8;c.vx=0;c.vy=0;c.dead=null;if(c.def.reset)c.def.reset(c)}}else{c.out+=dt;if(c.out>1.8){G.state='play';$('#q').textContent=G.qtxt;G.hx=G.sec.x;G.hy=186;G.face=1}}}
         function drawSecret(now){
@@ -2602,7 +2767,7 @@ sync();
 const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the boss, left / right
         const STONE_X=310,BONUS_GOLD=35,BONUS_N=5;
         // win-scene timeline (seconds)
-        const WT={door0:2.8,doorD:1.6,walk0:3.4,walkD:2.4,show:4.4,run0:6.0,runD:1.1,kiss:7.3,skip:9.5,end:15};
+        const WT={door0:2.8,doorD:1.6,walk0:3.4,walkD:2.4,show:4.4,run0:6.0,runD:1.1,kiss:7.3,skip:12,end:20},BAD_END=18.5,BT={dis:11.4,orb:12.8};
         const KT={x:385,y:214};     // where the knight stands inside the open gate
         const PD={x:432,y:199};     // where the princess waits deeper inside
         // ---- the Demon Lord's own voice ----
@@ -2658,6 +2823,26 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             $('#bc').style.display='none';mkQ();
             bossSay(rnd(m=='weak'?WEAK_INTRO:BONUS_INTRO),2.6);
         }
+
+        // ---------- THE FINAL CHOICE: free her (good ending) or take his power (bad ending) ----------
+        function endChoice(){
+            G.state='endchoice';G.tg=[];G.sel=null;G.dr=null;G.moving=0;G.sw=0;
+            $('#q').textContent='The Demon Lord kneels. His crown of power crackles, and the gate to the princess waits behind him...';
+            bossSay('Finish it... or TAKE it. The crown chooses its next master. Hahaha...',4);
+            const el=$('#bc');el.style.display='flex';
+            el.innerHTML=`<div class="w-[72%] max-w-xl space-y-1.5 md:space-y-3">
+                <div class="title-font text-yellow-300 text-[11px] md:text-xl font-black tracking-wider drop-shadow-[0_0_8px_rgba(255,200,60,.6)]">👑 THE DEMON LORD HAS FALLEN</div>
+                <p class="text-zinc-300 text-[9px] md:text-sm italic leading-snug">"Free the princess... or claim my power for yourself."</p>
+                <button id="ec1" class="block w-full text-left bg-zinc-950/90 hover:bg-pink-950/80 border border-pink-700/70 hover:border-pink-400 rounded-lg px-2 py-1.5 md:px-4 md:py-3 transition">
+                    <div class="title-font font-bold text-pink-300 text-[10px] md:text-base">💖 1. Free the Princess</div>
+                    <div class="text-[9px] md:text-xs text-zinc-400">Open the gate and go to her.</div></button>
+                <button id="ec2" class="block w-full text-left bg-zinc-950/90 hover:bg-red-950/80 border border-red-800/70 hover:border-red-400 rounded-lg px-2 py-1.5 md:px-4 md:py-3 transition">
+                    <div class="title-font font-bold text-red-300 text-[10px] md:text-base">🩸 2. Take His Power</div>
+                    <div class="text-[9px] md:text-xs text-zinc-400">Seize the crown. See what it makes of you.</div></button>
+                <p class="text-[8px] md:text-[11px] text-zinc-500">Press 1 or 2, or click.</p></div>`;
+            $('#ec1').onclick=()=>pickEnding('good');$('#ec2').onclick=()=>pickEnding('bad');
+        }
+        function pickEnding(k){if(!G||G.state!='endchoice')return;$('#bc').style.display='none';G.end=k;winStart()}
 
         function mkRoom(){
             const r=G.rooms[G.i];SND.fast(r.boss);
@@ -2734,11 +2919,18 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             let i;do{i=Math.random()*SKILLS.length|0}while(i===G.lsk&&SKILLS.length>1);G.lsk=i;
             G.sk={t:0,k:SKILLS[i],tx,ty};SND.skill(SKILLS[i].ty,i,1/KSLOW,G.rooms[G.i].boss);   // adv() puts the fight into slow-motion right after this, so stretch the sound to matchG.face=tx>=G.hx?1:-1;
         }
+        // mounted sword art: the mount rears up and lunges with its own strike while the knight swings
+        function rideSkill(x,ks,p,F,pet){const im=sprites.attack,f=Math.min(3,Math.floor(Math.min(1,p*1.15)*4)),lp=Math.sin(Math.PI*Math.min(1,Math.max(0,(p-.2)/.55))),u=p>.3&&p<.75?(p-.3)/.45:null;
+            const kd=A=>{if(im.loaded){ctx.save();ctx.translate(A[4],A[5]);ctx.scale(F,1);ctx.drawImage(im.img,f*120,0,120,80,-(120*ks)/2,-(80*ks)+15,120*ks,80*ks);ctx.restore()}};
+            MKN=kd;try{const A=[im,120,80,4,x,G.hy,F,ks],ex={lg:lp,u};if(pet=='horse')horseRide(null,A,ex);else mountRide(null,A,pet,ex)}finally{MKN=null}}
         // the knight himself: wind-up, dash forward with afterimages, strike, glide back
         function skKnight(kx,ks){
             const sk=G.sk,p=Math.min(1,sk.t/1.0),F=G.face,im=sprites.attack;
             const off=q=>{q=Math.max(0,q);if(q<.2)return -10*F*(q/.2);if(q<.4)return F*(-10+80*ezs((q-.2)/.2));if(q<.7)return 70*F;return 70*F*(1-ezs(Math.min(1,(q-.7)/.25)))};
-            const draw=(o,al)=>{ctx.save();ctx.globalAlpha*=al;ctx.translate(kx+o,G.hy);ctx.scale(F,1);
+            const pet=shopS().eq.pet,ride=!G.gal&&(pet=='horse'||MOUNT[pet]);
+            const draw=(o,al)=>{ctx.save();ctx.globalAlpha*=al;
+                if(ride){rideSkill(kx+o,ks,p,F,pet);ctx.restore();return}   // mounted: the knight and his mount dash and strike together
+                ctx.translate(kx+o,G.hy);ctx.scale(F,1);
                 if(im.loaded){const f=Math.min(3,Math.floor(Math.min(1,p*1.15)*4));ctx.drawImage(im.img,f*120,0,120,80,-(120*ks)/2,-(80*ks)+15,120*ks,80*ks)}
                 else{R('#7d8590',-10,-35,20,26)}ctx.restore()};
             if(p>.2&&p<.8)for(let g=3;g>=1;g--)draw(off(p-g*.05),.28/g);   // afterimages
@@ -2791,6 +2983,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         }
 
         function adv(){
+            trackStat('p');
             const n=performance.now(),ok=G.tg.find(t=>t.ok),r=G.rooms[G.i];
             if(r.boss){
                 // right answer: the stone shatters, the Demon Lord flinches, next question (or he falls)
@@ -2855,11 +3048,13 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             const fresh=P.filter(x=>x!==M.ll);
             return fresh.length?rnd(fresh):null}
         function die(t,fk,dname){
-            const r=G.rooms[G.i];
+            const r=G.rooms[G.i],_st0=G.state;
             if(fk==null&&!r.boss&&r.q)G.mq.set(r.q,(G.mq.get(r.q)||0)+1);   // remember what is hurting you
             G.deaths++;
             G.state='dying';
-            G.kt=t||null;G.hv=null;G.zv=null;G.ba=null;G.dn=dname||null;G.ch=null;G.dk=fk!=null?fk:GAL_DK!=null?GAL_DK:(()=>{const q=Math.random()*29|0;return q==28?29:q==27?28:q==26?27:q==25?26:q==24?25:q==23?24:q==16?17:q==17?18:q==18?19:q==19?20:q==20?21:q==21?22:q==22?23:q})();if(G.dk==2&&!G.kt&&!r.boss)G.dk=Math.random()<.5?0:1;G.dt=0;G.dx=r.boss?Math.min(G.hx,700):Math.min(G.hx,290);if(fk!=null)G.dx=Math.min(G.hx,470);if(G.dk==17||G.dk==24||G.dk==25||G.dk==26)G.dx=r.boss?400:257;   // the horde needs room on BOTH sides of him
+            G.kt=t||null;G.hv=null;G.zv=null;G.ba=null;G.dn=dname||null;G.ch=null;G.dk=fk!=null?fk:GAL_DK!=null?GAL_DK:(()=>{const q=Math.random()*29|0;return q==28?29:q==27?28:q==26?27:q==25?26:q==24?25:q==23?24:q==16?17:q==17?18:q==18?19:q==19?20:q==20?21:q==21?22:q==22?23:q})();if(G.dk==2&&!G.kt&&!r.boss)G.dk=Math.random()<.5?0:1;
+            // ARMOUR RESIST: the equipped armour has a % chance to survive the kinds of death it is built for (wrong-answer deaths only)
+            if(fk==null&&_st0=='play'&&!G.gal&&GAL_DK==null&&typeof armorResist=='function'){const am=armorResist(G.dk);if(am){G.state=_st0;G.deaths--;if(!r.boss&&r.q)G.mq.set(r.q,Math.max(0,(G.mq.get(r.q)||1)-1));G.dk=null;G.kt=null;toast(am);G.sel=null;if(t&&t.k!='m'&&t.k!='d')G.tg=G.tg.filter(o=>o!=t);if(typeof shopBar=='function')shopBar();return}}G.dt=0;G.dx=r.boss?Math.min(G.hx,700):Math.min(G.hx,290);if(fk!=null)G.dx=Math.min(G.hx,470);if(G.dk==17||G.dk==24||G.dk==25||G.dk==26)G.dx=r.boss?400:257;   // the horde needs room on BOTH sides of him
                 {const sp=openSpot(r,G.dx);G.dx=sp.x;G.dy=sp.y}G.ew=G.kt?Math.max(.4,(G.kt.x-(G.dx+55))/260):1;G.sk=Math.random()*4|0;G.ss=Math.random()*100;G.sp=[0,0,0].map(()=>Math.random()*23|0);
             const DP=DT[G.dk]||TAUNTS;G.sel=null;G.tt=r.boss?(Math.random()<.7?rnd(DP):rnd(bossTaunts(r))):rnd(DP);
             G.lt=(fk!=null&&!r.boss&&G.tg&&G.tg.length)?rnd(G.tg):null;   // died to a chest: one of the demons laughs
@@ -2875,7 +3070,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(!r.boss&&G.tg){const tp=sh(DP.filter(x=>x!==G.tt));G.tg.forEach((t,i)=>t.tt=(t===(G.kt||G.lt))?G.tt:tp[i%tp.length])}
             G.rep=(G.rec||[]).slice();G.mvrep=null;   // keep his last moves for the slow-motion replay
             deathSnd();   // each death plays its own matching sound
-            if(!G.gal)unlock(String(G.dk));   // Death Gallery
+            if(!G.gal){unlock(String(G.dk));trackStat('d',String(G.dk))}   // Death Gallery
             $('#dc').textContent='Deaths: '+G.deaths;
             $('#respawn-hint').style.display='block';
         }
@@ -2905,6 +3100,40 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         $('#rp').addEventListener('mousedown',e=>e.stopPropagation());
         $('#pz').addEventListener('click',e=>{e.stopPropagation();togglePause()});
         $('#pz').addEventListener('mousedown',e=>e.stopPropagation());
+        // ---------- SKIP BUTTON (cutscenes) ----------
+        // Skips whichever cutscene is on screen: the ending (win) scene, the kill replay, the death slow-motion replay, a death scene, or a secret-room death.
+        function skipCutscene(){
+            if(!G)return;
+            if(G.kr){G.kr=null;return}
+            if(G.state=='win'){if(!G.ended)endRun();return}
+            if(G.state=='clear'){   // walking through the door: finish the transition right now (same step the timer does at its end)
+                G.sk=null;G.ka=1;
+                if(G.last){winStart();return}
+                G.i++;G.i>=G.rooms.length?winStart():mkRoom();return;
+            }
+            if(G.state=='bclear'){G.sk=null;G.ct=Math.max(G.ct,2);return}   // boss-question flash: jump to the end of it, the normal timer moves on
+            if(G.state=='dying'){
+                if(G.mvrep){G.mvrep=null;return}
+                if(G.paused)togglePause();
+                triggerRespawn();return;
+            }
+            if(G.state=='secretDie'&&G.sc&&G.sc.dead){
+                if(G.paused)togglePause();
+                G.sc.dead.t=Math.max(G.sc.dead.t,.7);G.sc.dead.click=true;
+            }
+        }
+        function skipVisible(){
+            if(!G)return false;
+            if(G.kr)return true;
+            if(G.gal)return false;
+            if(G.state=='win')return !G.ended;
+            if(G.state=='clear'||G.state=='bclear')return true;
+            return G.state=='dying'||G.state=='secretDie';
+        }
+        $('#skipbtn').addEventListener('click',e=>{e.stopPropagation();skipCutscene()});
+        $('#skipbtn').addEventListener('mousedown',e=>e.stopPropagation());
+        setInterval(()=>{const b=$('#skipbtn');if(!b)return;const v=skipVisible()?'':'none';if(b.style.display!==v)b.style.display=v},80);
+        addEventListener('keydown',e=>{if(e.code=='Escape'&&skipVisible()){e.preventDefault();skipCutscene()}});
         function triggerRespawn() {
             if(!G || G.state!='dying') return;
             if(G.gal){galExit();return}
@@ -2935,6 +3164,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(!G)return;
             if(G.kr&&(e.code=='Escape'||e.code=='Space'||e.code=='Enter'||e.code=='KeyJ')){G.kr=null;return}
             if(G.state=='choose'){if(e.code=='Digit1'||e.code=='Numpad1')pickTrial('weak');if(e.code=='Digit2'||e.code=='Numpad2')pickTrial('bonus');return}
+            if(G.state=='endchoice'){if(e.code=='Digit1'||e.code=='Numpad1')pickEnding('good');if(e.code=='Digit2'||e.code=='Numpad2')pickEnding('bad');return}
             if((G.state=='dying'||G.state=='secretDie')&&e.code=='KeyP'){togglePause();return}
             if((G.state=='clear'||G.state=='bclear')&&e.code=='KeyR'){killReplay();return}
             if((G.state=='dying'||G.state=='secretDie')&&e.code=='KeyR'){replayDeath();return}
@@ -2948,7 +3178,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         });
         addEventListener('keyup',e=>keys[e.code]=0);
         
-        addEventListener('mousedown',e=>{if(G&&G.state=='dying'&&!G.paused&&e.target!==cv&&!(e.target.closest&&e.target.closest('#pz,#rp,#galink'))){if(G.mvrep)G.mvrep=null;else triggerRespawn()}});
+        addEventListener('mousedown',e=>{if(G&&G.state=='dying'&&!G.paused&&e.target!==cv&&!(e.target.closest&&e.target.closest('#pz,#rp,#galink,#skipbtn'))){if(G.mvrep)G.mvrep=null;else triggerRespawn()}});
         cv.addEventListener('mousedown',e => {
             if(G&&G.kr){G.kr=null;return}
             if(G && G.state=='dying') { if(G.mvrep){G.mvrep=null;return}if(!G.paused)triggerRespawn(); return; }
@@ -3023,31 +3253,41 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(s=='resp'&&(G.rt+=dt)>.6)G.state='play';
             if(s=='bclear'){
                 G.ct+=dt*KSLOW;const r=G.rooms[G.i],lastQ=r.qi>=r.qs.length-1;
-                if(G.ct>(lastQ?1.0:1.5)){r.qi++;if(r.qi>=r.qs.length)winStart();else{r.q=r.qs[r.qi];mkQ()}}
+                if(G.ct>(lastQ?1.0:1.5)){r.qi++;if(r.qi>=r.qs.length)endChoice();else{r.q=r.qs[r.qi];mkQ()}}
             }
             if(s=='win'){
-                G.wt+=dt;const w=G.wt;
+                G.wt+=dt*(G.end=='bad'?.6:1);const w=G.wt;
                 G.face=1;G.moving=0;
                 if(w>=WT.walk0){ // the knight walks into the open gate
                     if(!G.w0)G.w0=[G.hx,G.hy];
                     const p=Math.min(1,(w-WT.walk0)/WT.walkD),e=p*p*(3-2*p);
                     G.hx=G.w0[0]+(KT.x-G.w0[0])*e;G.hy=G.w0[1]+(KT.y-G.w0[1])*e;G.moving=p<1?1:0;
                 }
-                if(w>=WT.kiss&&!G.kiss){G.kiss=1;$('#q').textContent=G.pr.n+': "'+G.pr.say+'"'}
+                if(G.end!='bad'&&w>=WT.kiss&&!G.kiss)G.kiss=1;
+                while(G.tl&&G.ti<G.tl.length&&w>=G.tl[G.ti][0]){$('#q').textContent=G.tl[G.ti][1];G.ti++}
                 if(G.kiss&&Math.random()<dt*8)G.hearts.push({x:G.hx+Math.random()*34-17,y:G.hy+15-KH-8,vx:(Math.random()-.5)*34,vy:-(40+Math.random()*45),s:2+Math.random()*3,l:0});
                 G.hearts.forEach(h=>{h.x+=h.vx*dt;h.y+=h.vy*dt;h.l+=dt});G.hearts=G.hearts.filter(h=>h.l<2.2);
-                if(w>WT.end)endRun();
+                if(w>(G.end=='bad'?BAD_END:WT.end))endRun();
             }
         }
 
         function winStart(){
-            SND.sfx('win');G.state='win';G.wt=0;G.tg=[];G.dr=null;G.w0=null;G.hearts=[];G.kiss=0;G.moving=0;G.sw=.35;G.ka=1;G.face=1;
-            $('#q').textContent='The Demon Lord has fallen! The great gate creaks open...';
-            bossSay('NOOOO! My gate... my princess... ARGH!!',2.4);
+            if(!G.end)G.end='good';
+            cv.style.transform='';SND.sfx('win');G.state='win';G.wt=0;G.tg=[];G.dr=null;G.w0=null;G.hearts=[];G.kiss=0;G.moving=0;G.sw=.35;G.ka=1;G.face=1;G.ti=0;
+            const pn=G.pr.n,dn=G.deaths;
+            if(G.end=='bad'){
+                $('#q').textContent='You seize the crown. Its power pours into you, and you do not let go...';
+                bossSay('Yes... TAKE it. You were always one of us...',2.6);
+                G.tl=[[.9,'The old Demon Lord screams as his body breaks apart... and flows into you.'],[2.4,'You ABSORB him. His power, his horns, his crown, all of it is yours.'],[3.4,'Horns tear through your helmet. You are the Demon Lord now.'],[4.6,'The old Demon Lord is gone. Only you remain.'],[6.3,pn+' runs toward you... and stops.'],[8.0,'You: "Come here, '+pn+'. Nobody will ever hurt you again. Nobody will ever take you from me."'],[10.0,pn+': "...I would follow you anywhere. Even like this."'],[11.2,'You raise a claw... and strike her down.'],[12.8,'Her light flickers... and goes out.'],[13.6,'HA HA HA HA HA!! Your laughter shakes the whole dungeon.'],[15.0,'👑 The dungeon has a new Demon Lord... and the one who loved him is gone, by his own hand.']];
+            }else{
+                $('#q').textContent='The Demon Lord has fallen! The great gate creaks open...';
+                bossSay('NOOOO! My gate... my princess... ARGH!!',2.4);
+                G.tl=[[5.2,pn+': "Well, well... look who finally showed up. I was starting to think you got lost."'],[6.5,pn+': "'+(dn==0?'You never died once? Show-off. ...A very handsome show-off.':'You died '+dn+' time'+(dn>1?'s':'')+' getting here, and you still look this pleased with yourself. Adorable."')+'"'],[7.3,pn+': "Come here, my hero. I\'ve waited long enough."'],[10.0,pn+': "I watched every single one of your deaths. I kept counting... and I kept hoping you\'d come back."'],[12.4,pn+': "I love you. There. I said it. ...Don\'t you dare make it weird."'],[14.6,'You: "I\'d die a hundred more times for you."'],[16.2,pn+': "Please don\'t. ...But I love that you would."'],[17.8,'💖 They lived happily ever after... and she still teases him every single day.']];
+            }
         }
 
         function endRun(){
-            G.ended=1;   // this run is over: Descend / Descend Again must start a fresh one (and re-roll the rooms)
+            G.ended=1;trackStat('f');   // this run is over: Descend / Descend Again must start a fresh one (and re-roll the rooms)
             const secs=(performance.now()-G.t0)/1e3,acc=G.right/Math.max(1,G.tries),sc=acc*100-Math.max(0,secs-G.rooms.length*25)/4;
             const g=sc>=90?'S':sc>=75?'A':sc>=55?'B':'C';
             let gold=Math.round(20+{S:150,A:100,B:60,C:30}[g]+acc*80+Math.max(0,G.rooms.length*30-secs)/3);
@@ -3055,6 +3295,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             // bonus trial pays extra: 35 gold per bonus question cleared
             const bossBonus=(G.rooms[G.rooms.length-1].mode=='bonus')?BONUS_GOLD*G.rooms[G.rooms.length-1].qs.length:0;
             gold+=bossBonus+(G.xg||0);
+            gold=Math.max(80,Math.round(gold*1.6));   // GOLD BOOST: every finished run pays 1.6x and never less than 80
             const currentDeck = S.decks[S.deck];
             let bonusAwarded = 0;
             if (currentDeck && currentDeck.bonusReward && !S.completedBonus.includes(currentDeck.id)) {
@@ -3067,7 +3308,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             S.gold+=gold;if('CBAS'.indexOf(g)>'CBAS'.indexOf(S.best[n]||'-'))S.best[n]=g;save();
             const bossRoom=G.rooms[G.rooms.length-1],trialMode=bossRoom.mode;
             const rvl=G.rvo.slice();
-            const pn=G.pr.n,dd=G.deaths;S.mem.runs++;S.mem.ld=dd;save();G.state='done';G=null;
+            const newB=(G.newB||[]).slice(),pn=G.pr.n,dd=G.deaths,ending=G.end||'good';if(!S.badges)S.badges={good:0,bad:0};const firstBadge=!S.badges[ending],wasBoth=S.badges.good&&S.badges.bad;S.badges[ending]=(S.badges[ending]||0)+1;if(!wasBoth&&S.badges.good&&S.badges.bad){newB.push('Duality');toast('🏅 Badge unlocked: Duality!')}S.mem.runs++;S.mem.ld=dd;save();G.state='done';G=null;
             const missed=rvl.filter(e=>e.wrong>0).sort((a,b)=>b.wrong-a.wrong),clean=rvl.filter(e=>!e.wrong);
             const cnt=a=>{const m=new Map();a.forEach(x=>m.set(x,(m.get(x)||0)+1));return[...m].map(([k,v])=>esc(k)+(v>1?' <span class="text-red-400">×'+v+'</span>':'')).join(', ')};
             const review=`<div class="bg-zinc-950 p-4 rounded border border-emerald-950 text-left text-sm">
@@ -3085,8 +3326,14 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             $('#run').classList.remove('on');$('#score').classList.add('on');
             $('#score').innerHTML=`
                 <div class="bg-zinc-900 border border-emerald-900/50 p-8 rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.2)] text-center space-y-6">
-                    <div class="text-5xl">👑</div>
-                    <h2 class="title-font text-2xl font-extrabold text-emerald-400">${pn} Rescued</h2>
+                    <div class="text-5xl">${ending=='bad'?'😈':'👑'}</div>
+                    <h2 class="title-font text-2xl font-extrabold ${ending=='bad'?'text-red-400':'text-emerald-400'}">${ending=='bad'?'The New Demon Lord':pn+' Rescued'}</h2>
+                    <div class="mx-auto max-w-sm border-2 ${ending=='bad'?'border-red-500/70 bg-red-950/40':'border-pink-400/70 bg-pink-950/30'} rounded-xl p-3 shadow-[0_0_18px_rgba(250,204,21,.25)]">
+                        <div class="mx-auto w-28">${endEmblem(ending)}</div>
+                        <div class="title-font font-black text-yellow-300 text-sm">🏅 Badge ${firstBadge?'Unlocked':'Earned Again'}: ${ending=='bad'?'Overlord':'Savior'}</div>
+                        <div class="text-xs text-zinc-300 mt-1">${ending=='bad'?'You took the crown, and you killed '+esc(pn)+'.':'You freed '+esc(pn)+' and she kissed you.'}</div>
+                    </div>
+                    ${newB.length?`<div class="mx-auto max-w-sm border border-yellow-500/60 bg-yellow-500/10 rounded-xl p-3 text-xs"><div class="title-font font-black text-yellow-300 text-sm">🏅 New badge${newB.length>1?'s':''} unlocked</div><div class="text-zinc-200 mt-1">${newB.map(esc).join(' · ')}</div></div>`:''}
                     <div class="title-font text-6xl font-black text-emerald-500">${g}</div>
                     ${bonusAwarded > 0 ? `<div class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 p-2.5 rounded-lg text-xs font-bold animate-bounce">🎉 Starter Quest Complete! +200 Bonus Gold Awarded!</div>` : ''}
                     <div class="grid grid-cols-2 gap-4 bg-zinc-950 p-4 rounded border border-emerald-950 text-left text-sm">
@@ -3167,7 +3414,9 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             for(let j=0;j<3;j++){ctx.beginPath();ctx.ellipse((rr(90+j)-.5)*rx*1.6,(rr(95+j)-.5)*ry*1.4,1.5*s,1*s,0,0,7);ctx.fill()}
             ctx.restore()}
         // what is left of a trapped chest / mimic after it killed you (stays in the room, like the stain)
-        function remDraw(o){const x=o.x,b=o.y,now=performance.now(),rr=k=>{const v=Math.sin(o.sd*999+k*127.1)*43758.5453;return v-Math.floor(v)};
+        function remDraw(o){const sk=(o.kind=='armor'||o.kind=='helmet')&&o.sk&&typeof SKINS!='undefined'&&SKINS[o.sk];   // armour left behind = the armour he was wearing
+            if(sk&&sk.f)ctx.filter=sk.f;try{remDraw0(o)}finally{if(sk&&sk.f)ctx.filter='none'}}
+        function remDraw0(o){const x=o.x,b=o.y,now=performance.now(),rr=k=>{const v=Math.sin(o.sd*999+k*127.1)*43758.5453;return v-Math.floor(v)};
             if(o.kind=='arrow'){ // the arrow that killed him, lying where he fell
                 const F=o.f||1;ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(x+F*18,b+3,30,4,0,0,7);ctx.fill();
                 ctx.save();ctx.translate(x-F*4,b-3);ctx.scale(F,1);ctx.rotate(-.1+(rr(1)-.5)*.2);
@@ -3175,7 +3424,9 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             else if(o.kind=='sword'){ // the sword he fell on
                 const F=o.f||1;ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(x+F*8,b+4,28,4,0,0,7);ctx.fill();
                 ctx.save();ctx.translate(x-F*14,b-3);ctx.scale(F,1);ctx.rotate(.06+(rr(2)-.5)*.2);
-                R('#c9d1d9',0,-2,24,4);R('#8a929a',0,0,24,1);R('#8a141c',2,-2,12,4);R('#ffd84a',24,-7,4,14);R('#6b4f2a',28,-2,10,4);O('#ffd84a',39,0,3);ctx.restore()}
+                const W_=(o.wp&&typeof WPNS!='undefined'&&WPNS[o.wp])||null;   // the blade he carried: its colour and glow
+                if(W_){ctx.shadowColor=W_.c;ctx.shadowBlur=10}
+                R(W_?W_.c:'#c9d1d9',0,-2,24,4);if(W_)R('rgba(255,255,255,.55)',0,-1,24,1.2);R(W_?'rgba(0,0,0,.35)':'#8a929a',0,0,24,1);ctx.shadowBlur=0;R('#8a141c',2,-2,12,4);R('#ffd84a',24,-7,4,14);R('#6b4f2a',28,-2,10,4);O('#ffd84a',39,0,3);ctx.restore()}
             else if(o.kind=='armor'){ // the demon spat out a chewed, dented piece of his armour
                 const F=o.f||1;ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(x,b+3,24,5,0,0,7);ctx.fill();
                 ctx.save();ctx.translate(x,b-4);ctx.scale(F,1);ctx.rotate(.18+(rr(3)-.5)*.3);
@@ -3432,7 +3683,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             ctx.fillStyle='#0d0d10';ctx.fillRect(hx-5*m,hy-1.5*m,10*m,2*m);ctx.fillRect(hx-.7*m,hy-1.5*m,1.4*m,8*m);   // visor slit and nose guard
             ctx.fillStyle='#b8860b';ctx.fillRect(hx-.8*m,hy-9*m,1.6*m,4*m);ctx.restore()}
         function stainAdd(){if(G.ch&&G.ch.kind=='mimic'){G.rem.push({x:G.ch.x,y:G.ch.y,kind:G.ch.kind,room:G.i,sd:Math.random()*100});G.ch=null}
-            {const RK={6:'arrow',14:'sword',10:'tracks',2:'armor',7:'scorch',8:'icicles',12:'bones',5:'boulder',1:'helmet',9:'strike',13:'hole',4:'soul',15:'puddle',17:'summon',18:'maiden',19:'roachrem',20:'anvil',21:'cauldron',22:'blackhole',23:'voodoo',24:'grave',25:'paste',26:'lifetree',27:'nuke',28:'clock',29:'virus'}[G.dk];if(RK){G.rem.push({x:(RK=='blackhole'||RK=='voodoo')?bhPos().x:(RK=='hole'||RK=='maiden')?G.dx:(RK=='anvil'||RK=='cauldron'||RK=='grave'||RK=='nuke'||RK=='boulder')?G.dx-13*G.face:RK=='paste'?G.dx-13*G.face+72*(G.bs?1.25:1):RK=='lifetree'?G.dx-13*G.face+80*(G.bs?1.25:1):G.dx-57*G.face,y:G.dy+14,f:G.face,hs:RK=='voodoo'?bhPos().s:1,kind:RK,m:G.bs?1.7:1,room:G.i,sd:Math.random()*100})}}
+            {const RK={6:'arrow',14:'sword',10:'tracks',2:'armor',7:'scorch',8:'icicles',12:'bones',5:'boulder',1:'helmet',9:'strike',13:'hole',4:'soul',15:'puddle',17:'summon',18:'maiden',19:'roachrem',20:'anvil',21:'cauldron',22:'blackhole',23:'voodoo',24:'grave',25:'paste',26:'lifetree',27:'nuke',28:'clock',29:'virus'}[G.dk];if(RK){G.rem.push({x:(RK=='blackhole'||RK=='voodoo')?bhPos().x:(RK=='hole'||RK=='maiden')?G.dx:(RK=='anvil'||RK=='cauldron'||RK=='grave'||RK=='nuke'||RK=='boulder')?G.dx-13*G.face:RK=='paste'?G.dx-13*G.face+72*(G.bs?1.25:1):RK=='lifetree'?G.dx-13*G.face+80*(G.bs?1.25:1):G.dx-57*G.face,y:G.dy+14,f:G.face,hs:RK=='voodoo'?bhPos().s:1,kind:RK,m:G.bs?1.7:1,room:G.i,sd:Math.random()*100,sk:(typeof shopS=='function'?shopS().eq.skin:null)||null,wp:(typeof shopS=='function'?shopS().eq.wpn:null)||null})}}
             if(G.rem.length>40)G.rem.shift();
             if(G.dk!=13&&G.dk!=22&&G.dk!=27){G.bl.push({x:G.dx-57*G.face,y:G.dy+14,room:G.i,sd:G.ss||Math.random()*100,k:G.dk});if(G.bl.length>80)G.bl.shift()}}
 
@@ -4616,7 +4867,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             ctx.fillStyle='#050308';archPath(cx,GATE.w,top,by);ctx.fill();
             {ctx.save();archPath(cx,GATE.w,top,by);ctx.clip();let gr=ctx.createLinearGradient(cx-R,0,cx-R+30,0);gr.addColorStop(0,'rgba(0,0,0,.8)');gr.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=gr;ctx.fillRect(cx-R,top,30,by-top);
              gr=ctx.createLinearGradient(0,top,0,top+50);gr.addColorStop(0,'rgba(0,0,0,.8)');gr.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=gr;ctx.fillRect(cx-R,top,GATE.w,50);ctx.restore()}
-            if(e>0){const g=ctx.createRadialGradient(cx,by-120,10,cx,by-120,300);g.addColorStop(0,'rgba(255,245,200,'+e+')');g.addColorStop(.5,'rgba(255,170,220,'+.7*e+')');g.addColorStop(1,'rgba(120,40,120,'+.6*e+')');ctx.fillStyle=g;archPath(cx,GATE.w,top,by);ctx.fill()}
+            if(e>0){const g=ctx.createRadialGradient(cx,by-120,10,cx,by-120,300);{const BD=G.end=='bad';g.addColorStop(0,BD?'rgba(255,130,90,'+e+')':'rgba(255,245,200,'+e+')');g.addColorStop(.5,BD?'rgba(220,40,70,'+.7*e+')':'rgba(255,170,220,'+.7*e+')');g.addColorStop(1,BD?'rgba(60,0,30,'+.7*e+')':'rgba(120,40,120,'+.6*e+')')}ctx.fillStyle=g;archPath(cx,GATE.w,top,by);ctx.fill()}
             // two heavy door leaves that swing apart
             ctx.save();archPath(cx,GATE.w,top,by);ctx.clip();
             const lw=R*(1-.93*e);
@@ -4634,7 +4885,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(sa>0){ctx.save();ctx.globalAlpha=sa;ctx.fillStyle='rgba(255,50,70,'+.35*pu+')';ctx.beginPath();ctx.arc(cx,top+34,34,0,7);ctx.fill();
                 ctx.strokeStyle='rgba(255,90,100,'+pu+')';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,top+34,22,0,7);ctx.stroke();ctx.beginPath();ctx.moveTo(cx-22,top+34);ctx.lineTo(cx+22,top+34);ctx.moveTo(cx,top+12);ctx.lineTo(cx,top+56);ctx.stroke();ctx.restore()}
             // light pooling on the floor in front of the open gate
-            if(e>0){ctx.fillStyle='rgba(255,225,160,'+.2*e+')';ctx.beginPath();ctx.ellipse(cx-40,by+14,(R+160)*e,30,0,0,7);ctx.fill()}
+            if(e>0){ctx.fillStyle=(G.end=='bad'?'rgba(255,70,70,':'rgba(255,225,160,')+.2*e+')';ctx.beginPath();ctx.ellipse(cx-40,by+14,(R+160)*e,30,0,0,7);ctx.fill()}
         }
 
         function embers(now){
@@ -4646,7 +4897,8 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(!BOSS.ok)return;
             const sc=BZ.sc,FW=BZ.FW,FH=BZ.FH;let f=Math.floor(now/170)%6,a=1,ox=0,oy=Math.sin(now/420)*3,cx=BZ.cx,base=BZ.base,flip=0,rot=0,lunge=0,dd=-1;
             const dying=G.state=='dying',K=dying&&G.bk,D=dying?G.dt:0;
-            if(G.state=='win'){const u=G.wt-.3;f=u<0?0:11+Math.min(21,Math.floor(u*10));oy=0;if(G.wt>3.2)a=Math.max(0,1-(G.wt-3.2)/.8)}
+            if(G.state=='win'){const u=G.wt-.3;f=u<0?0:11+Math.min(21,Math.floor(u*10));oy=0;if(G.wt>3.2)a=Math.max(0,1-(G.wt-3.2)/.8);if(G.end=='bad')a=G.wt>DIS1+.2?0:1}
+            else if(G.state=='endchoice'){f=10;ox=Math.sin(now/55)*1.5;oy=2}
             else if(G.state=='bclear'){if(G.ct>=.45&&G.ct<1.15)f=6+Math.min(4,Math.floor((G.ct-.45)*9));ox=(G.ct>=.45&&G.ct<.95)?Math.sin(now/30)*4:0}   // flinches when the sword art lands
             else if(K){   // the Demon Lord walks up to you and does it HIMSELF
                 const w=Math.min(1,D/G.ew),e=w*w*(3-2*w);dd=K.flip?1:-1;flip=K.flip;cx=BZ.cx+(K.x1-BZ.cx)*e;base=BZ.base+(K.y1-BZ.base)*e;
@@ -4664,6 +4916,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             const gl=ctx.createRadialGradient(cx,200,30,cx,200,280);gl.addColorStop(0,'rgba(150,10,40,.28)');gl.addColorStop(1,'rgba(150,10,40,0)');ctx.fillStyle=gl;ctx.fillRect(cx-340,0,680,H);
             ctx.fillStyle='rgba(0,0,0,.55)';ctx.beginPath();ctx.ellipse(cx,base-4,92,13,0,0,7);ctx.fill();
             ctx.imageSmoothingEnabled=false;
+            if(G.state=='win'&&G.end=='bad'){ctx.beginPath();for(let i=0;i<14;i++){const y0=bossCut(i,G.wt);ctx.rect(cx-100+i*(200/14),y0,200/14+1,Math.max(0,H-y0))}ctx.clip()}   // his body crumbles away from the top down as you absorb him
             ctx.translate(cx+ox+(dd<0||dd>0?dd*lunge:0),base);if(rot)ctx.rotate(rot*(dd||1));ctx.scale(flip?-1:1,1);
             ctx.drawImage(BOSS.img,f*FW,0,FW,FH,-50*sc,-FH*sc+oy,FW*sc,FH*sc);ctx.restore();
         }
@@ -4694,7 +4947,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(w<WT.run0)return{m:1,x:PD.x,y:PD.y};
             const p=Math.min(1,(w-WT.run0)/WT.runD);
             if(p<1){const e=p*.8+(p*p*(3-2*p))*.2;return{m:2,x:PD.x+(x1-PD.x)*e,y:PD.y+(y1-PD.y)*e}}
-            return{m:4,x:x1,y:y1};
+            return{m:G.end=='bad'?3:4,x:x1,y:y1};   // same run and same side-facing pose as the good ending
         }
         function princessDraw(now){
             if(G.state!='win'||!PRS.ok)return;
@@ -4703,10 +4956,71 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             let row=2,col=0,rot=0,hop=0,al=1;
             if(P.m==1){col=Math.floor(now/450)%2;al=Math.min(1,(G.wt-WT.show)/.4)}
             else if(P.m==2){row=0;col=[0,1,0,3][Math.floor(now/110)%4];hop=-Math.abs(Math.sin(now/95))*7}   // side view faces left = toward the knight
+            else if(P.m==3){row=0;col=0;const f=Math.max(0,Math.min(1,(G.wt-BT.dis)/1.1));rot=f>0?-.08-f*f*1.4:-.08-Math.sin(now/200)*.012;if(!f)P.x+=Math.sin(now/45)*.8}
             else{row=0;col=0;rot=-.08-Math.sin(now/200)*.012}
+            if(al<=0)return;
             ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(P.x,P.y+1,32,7,0,0,7);ctx.fill();
             ctx.save();ctx.globalAlpha=al;ctx.imageSmoothingEnabled=false;ctx.translate(P.x,P.y+hop);if(rot)ctx.rotate(rot);
             ctx.drawImage(PRS.img,col*cw,row*ch,cw,ch,-cw*k/2,-ft*k,cw*k,ch*k);ctx.restore();
+        }
+                // bad ending: lightning from the crown, red aura, horns, embers, and the princess reborn as a crimson light at your side
+        const DIS0=1.0,DIS1=3.6;   // the old Demon Lord is taken apart between these two moments
+        const bossVis=w=>1-Math.max(0,Math.min(1,(w-DIS0)/(DIS1-DIS0)));
+        function bossCut(i,w){const top=BZ.base-BZ.FH*BZ.sc,h=BZ.FH*BZ.sc,v=bossVis(w),nz=Math.sin(i*7.3+1.7)*.16;return top+h*Math.max(0,Math.min(1,(1-v)*1.25+nz*Math.min(1,(1-v)*4)))}
+        function demonLaugh(){try{if(SND.cfg.on&&SND.cfg.laugh!='off')SND.laughNow(1,.02)}catch(e){}}
+        function badFx(now){
+            const w=G.wt,k=Math.max(0,Math.min(1,(w-1)/2.2)),hx=G.hx,cy=G.hy-KH*.45;
+            if(w<3.8){ctx.save();ctx.strokeStyle='rgba(255,70,90,'+(.85*Math.min(1,w*2)*(1-Math.max(0,(w-3.1)/.7)))+')';ctx.lineWidth=2;ctx.shadowColor='#ff2040';ctx.shadowBlur=8;
+                for(let j=0;j<3;j++){ctx.beginPath();let x=BZ.cx,y=BZ.hy;ctx.moveTo(x,y);for(let n=1;n<=7;n++){const t=n/7;x=BZ.cx+(hx-BZ.cx)*t+(Math.random()-.5)*30*(1-t*.3);y=BZ.hy+(cy-BZ.hy)*t+(Math.random()-.5)*24;ctx.lineTo(x,y)}ctx.stroke()}ctx.restore()}
+            if(k>0){ctx.save();ctx.globalCompositeOperation='lighter';const r=72+10*Math.sin(now/120),g=ctx.createRadialGradient(hx,cy,6,hx,cy,r);g.addColorStop(0,'rgba(255,40,70,'+.55*k+')');g.addColorStop(1,'rgba(120,0,40,0)');ctx.fillStyle=g;ctx.fillRect(hx-r,cy-r,r*2,r*2);ctx.restore()}
+            {   // you BECOME the Demon Lord: his body fades in over the knight's, growing as the power settles
+                const m=Math.max(0,Math.min(1,(w-1.4)/1.8));
+                if(m>0&&BOSS.ok){
+                    const f=Math.floor(now/170)%6,sc=.7+.3*m,by=G.hy+15,sh=Math.sin(now/45)*(1-m)*3;
+                    ctx.save();ctx.fillStyle='rgba(0,0,0,.4)';ctx.beginPath();ctx.ellipse(hx,by+1,38*sc,8,0,0,7);ctx.fill();
+                    const lg=Math.max(0,1-Math.abs(w-(BT.dis+.05))/.35);ctx.globalAlpha=m;ctx.translate(hx+sh+lg*42,by+Math.sin(now/420)*2);ctx.scale(-1,1);   // the sprite faces left, you face the gate and the princess on the right
+                    ctx.drawImage(BOSS.img,f*BZ.FW,0,BZ.FW,BZ.FH,-50*sc,-BZ.FH*sc,BZ.FW*sc,BZ.FH*sc);ctx.restore();}
+                princessDraw(now);
+                const fl=Math.max(0,1-Math.abs(w-2.4)/.4);   // blinding flash at the moment of the change
+                if(fl>0){ctx.fillStyle='rgba(255,210,210,'+.75*fl+')';ctx.fillRect(0,0,W,H)}
+            }
+            // ===== YOU ABSORB THE OLD DEMON LORD: his body breaks into soul-fire that spirals into you, a vortex closes around you, then the power erupts =====
+            {if(w>.8&&w<4.6){
+                const ab=Math.min(1,(w-.8)/.9)*Math.min(1,(4.4-w)/.9);
+                if(ab>0){ctx.save();ctx.globalCompositeOperation='lighter';
+                    for(let j=0;j<84;j++){
+                        const col=j%14,sx=BZ.cx-100+col*(200/14)+7,sy=bossCut(col,w)+4,ph=(now/1150+j*.6180339)%1,sg=j%2?1:-1,dx=hx-sx,dy=cy-sy,ln=Math.hypot(dx,dy)||1,nx=-dy/ln,ny=dx/ln,amp=(46+(j%5)*16)*sg;
+                        const pos=u=>{const e=u*u*(3-2*u),sw=Math.sin(u*Math.PI)*amp*(1-u*.5),sp=u>.72?(u-.72)/.28:0;return[sx+dx*e+nx*sw+Math.cos(now/90+j)*sp*14,sy+dy*e+ny*sw+Math.sin(now/90+j)*sp*14]};
+                        const vio=j%3==0;
+                        for(let q=0;q<4;q++){const u=ph-q*.022;if(u<0)continue;const P=pos(u),al=Math.sin(u*Math.PI)*ab*(1-q*.24);
+                            ctx.fillStyle=(vio?'rgba(190,100,255,':'rgba(255,60,90,')+al.toFixed(3)+')';const z=(j%7==0?4.5:3)-q*.5;ctx.fillRect(P[0]-z/2,P[1]-z/2,z,z)}
+                    }
+                    const vr=Math.min(1,(w-.8)/1.4);   // the vortex tightens around you as the power is taken in
+                    for(let r=0;r<4;r++){const ph=(now/760+r/4)%1,R=(1-ph)*100*vr+10;ctx.strokeStyle='rgba('+(r%2?'200,110,255':'255,70,110')+','+(ab*(1-ph)*.9).toFixed(3)+')';ctx.lineWidth=2.5;ctx.beginPath();ctx.ellipse(hx,cy+ (ph-.5)*30,R,R*.32,now/500*(r%2?1:-1)*.4,0,7);ctx.stroke()}
+                    const pl=ctx.createLinearGradient(0,cy-210,0,cy+70);pl.addColorStop(0,'rgba(255,40,80,0)');pl.addColorStop(.6,'rgba(255,60,100,'+(.35*ab).toFixed(3)+')');pl.addColorStop(1,'rgba(140,40,220,'+(.45*ab).toFixed(3)+')');
+                    ctx.fillStyle=pl;ctx.fillRect(hx-18-6*Math.sin(now/80),cy-210,36+12*Math.sin(now/80),280);   // pillar of dark energy
+                    const co=ctx.createRadialGradient(hx,cy,2,hx,cy,44*ab+6);co.addColorStop(0,'rgba(255,255,255,'+(.8*ab).toFixed(3)+')');co.addColorStop(.4,'rgba(255,90,130,'+(.6*ab).toFixed(3)+')');co.addColorStop(1,'rgba(140,0,60,0)');ctx.fillStyle=co;ctx.beginPath();ctx.arc(hx,cy,44*ab+6,0,7);ctx.fill();
+                    ctx.restore()}}
+                if(w>2.4&&w<3.5){   // the eruption: two shockwave rings
+                    const u=(w-2.4)/1.1;ctx.save();ctx.globalCompositeOperation='lighter';
+                    [[0,6,'255,110,130'],[.12,3,'190,110,255']].forEach(([dl,lw,c])=>{const uu=u-dl;if(uu>0&&uu<1){ctx.strokeStyle='rgba('+c+','+(1-uu).toFixed(3)+')';ctx.lineWidth=lw*(1-uu)+1;ctx.beginPath();ctx.ellipse(hx,cy,uu*420,uu*200,0,0,7);ctx.stroke()}});ctx.restore()}
+                if(w>2.35&&w<3.3){const sh=(1-(w-2.35)/.95)*7;cv.style.transform='translate('+((Math.random()-.5)*sh).toFixed(1)+'px,'+((Math.random()-.5)*sh).toFixed(1)+'px)'}else if(cv.style.transform)cv.style.transform=''}
+            if(k>0){ctx.save();for(let j=0;j<28;j++){const ph=((now/1500)+j*.137)%1;ctx.fillStyle='rgba(255,'+(50+j*3)+',70,'+(1-ph)*k*.8+')';ctx.fillRect(hx+Math.sin(j*12.9)*42,G.hy-ph*150,2,2)}ctx.restore()}
+            if(w>BT.dis-.4){   // after the strike her light flickers... and goes out
+                const P=pPos(),lx=P.x,ly=P.y-34-Math.max(0,w-BT.dis)*9;
+                {const sl=Math.max(0,1-Math.abs(w-(BT.dis+.12))/.3);   // the claw strike: a bright red slash across her
+                 if(sl>0){ctx.save();ctx.strokeStyle='rgba(255,60,80,'+sl+')';ctx.lineWidth=4;ctx.shadowColor='#ff2040';ctx.shadowBlur=12;[-10,0,10].forEach(o=>{ctx.beginPath();ctx.moveTo(P.x-26+o,P.y-70);ctx.lineTo(P.x+26+o,P.y-8);ctx.stroke()});ctx.restore()}}
+                let oa=Math.min(1,(w-BT.dis+.4)/.6)*Math.max(0,1-(w-BT.dis)/2.6);if(w>BT.dis+1.2)oa*=.55+.45*Math.sin(now/55);
+                if(oa>0){ctx.save();ctx.globalAlpha=oa;const g=ctx.createRadialGradient(lx,ly,1,lx,ly,24);g.addColorStop(0,'rgba(255,230,240,1)');g.addColorStop(.4,'rgba(255,120,170,.9)');g.addColorStop(1,'rgba(160,20,80,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(lx,ly,24,0,7);ctx.fill();ctx.restore()}}
+            if(w>BT.dis+.7){   // you kill her... and LAUGH: the red HA HA HA pours out of the new Demon Lord
+                if(!G.bl1){G.bl1=1;demonLaugh()}
+                if(w>BT.dis+3.4&&!G.bl2){G.bl2=1;demonLaugh()}
+                const f2=Math.min(1,(w-BT.dis-.7)/.7),hy0=G.hy+15-112;ctx.save();ctx.globalAlpha=f2;
+                haha(hx,hy0,now,8,74,22,1);haha(hx+6,hy0,now+330,8,74,22,1);
+                if(Math.floor(now/90)%2){ctx.save();ctx.translate(hx,hy0-30);ctx.rotate(Math.sin(now/45)*.04);ctx.textAlign='center';ctx.font='900 22px sans-serif';ctx.lineWidth=4;ctx.strokeStyle='rgba(40,0,0,.9)';ctx.strokeText('HA HA HA HA!',0,0);ctx.fillStyle='#ff3b3b';ctx.fillText('HA HA HA HA!',0,0);ctx.restore()}
+                ctx.restore()}
+            // the whole screen drifts into red
+            ctx.fillStyle='rgba(90,0,20,'+(.22*k+.05*Math.sin(now/250)*k)+')';ctx.fillRect(0,0,W,H);
         }
         function speech(x,y,txt){
             ctx.save();ctx.font='bold 12px sans-serif';const ls=wrap(txt,190);
@@ -4737,8 +5051,8 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
 
         function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
         // red HA HA HA pouring out of a laughing demon's mouth
-        function haha(x,y,now,n=6,rise=64,side=8){
-            SND.laughSync();   // the laugh sounds exactly when the red HA HA starts pouring out
+        function haha(x,y,now,n=6,rise=64,side=8,quiet=0){
+            if(!quiet)SND.laughSync();   // the laugh sounds exactly when the red HA HA starts pouring out
             ctx.save();ctx.textAlign='center';ctx.lineJoin='round';
             for(let j=0;j<n;j++){const ph=(now/700+j/6)%1,sd=j%2?1:-1,sz=13+ph*9;
                 ctx.globalAlpha=Math.min(1,(1-ph)*1.6);ctx.font='900 '+sz.toFixed(0)+'px sans-serif';
@@ -4875,7 +5189,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             G.rem.filter(o=>o.room===G.i).sort((a,b)=>a.y-b.y).forEach(remDraw);   // leftovers from every death stay in the room; drawn back-to-front (by floor y) so a tall one like the iron maiden hides whatever lies behind it instead of an older/newer item being pasted over its head
             if(!isB)propsDraw(now,false);
             const ts=G.tg.slice().sort((a,b)=>a.y-b.y);
-            if(isB){gateDraw(now);bossDraw(now);embers(now);princessDraw(now);ts.forEach(t=>stone(t,now));
+            if(isB){gateDraw(now);bossDraw(now);embers(now);if(!(G.state=='win'&&G.end=='bad'))princessDraw(now);ts.forEach(t=>stone(t,now));
                 // glowing marker on the stone your sword will strike (same pick as atk())
                 if(G.state=='play'){let b=null,bd=180;G.tg.forEach(t=>{const d=Math.hypot(t.x-G.hx,t.y-G.hy);if(d<bd){bd=d;b=t}});
                     if(b){const pu=.6+.4*Math.sin(now/130),x=(b.px??b.x)-85-5,y=b.y-25-5;ctx.save();ctx.strokeStyle='rgba(255,255,255,'+pu+')';ctx.lineWidth=3;ctx.shadowColor='#22e6ff';ctx.shadowBlur=18;ctx.strokeRect(x,y,180,60);ctx.restore()}}}
@@ -4912,7 +5226,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 drawSprite(sprites.idle, 120, 80, 10, G.hx, G.hy, G.face);
             }else{
                 const lean=G.kiss?5*Math.abs(Math.sin((G.wt-WT.kiss)*2.5)):0;
-                ctx.save();ctx.globalAlpha=G.ka;
+                ctx.save();ctx.globalAlpha=G.ka*((G.state=='win'&&G.end=='bad')?1-Math.max(0,Math.min(1,(G.wt-1.4)/1.8)):1);
                 const ks=2.2*(.6+.4*G.ka),kx=G.hx+lean;
                 if(G.sk&&(G.state=='clear'||G.state=='bclear')) {
                     skKnight(kx,ks);
@@ -4925,6 +5239,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 }
                 ctx.restore();
             }
+            if(G.state=='win'&&G.end=='bad')badFx(now);
             if(!isB){propsDraw(now,true);bitsDraw(now);hoverDraw()}
             if(G.sk&&(G.state=='clear'||G.state=='bclear'))skDraw(now);   // the sword art
             if(late)late();   // speech bubbles always sit above barrels, crates and bones
@@ -5004,126 +5319,427 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         (function(){
             const run=$('#run'),wrap=$('#c').parentElement,orb=document.createElement('div');orb.id='orb';wrap.appendChild(orb);
             const pp=$('#pp'),pt=$('#pptxt'),po=$('#pporb');
+            const FRL=['This is the first room. I\'ll be right here with you. ...Not that I\'m worried.','Here we go. Take your time, read it carefully. I believe in you.','Okay. Deep breath. You\'ve got this. I\'m watching, and I\'m rooting for you.'];
+            const grt=()=>(G&&G.i==0)?pick(FRL):pick(GREET[tier()]);
             const GREET=[['Another room. Try not to die in this one.','...It\'s not like I\'m watching you.','Don\'t get your hopes up. Mine aren\'t.','Hm. This one looks boring.'],
                 ['The safer side is... never mind. Just look carefully. Not that I care.','You\'re doing fine. Don\'t let it go to your head.','Careful. Just... careful.','I\'m only floating here. It\'s a coincidence.'],
                 ['...Be careful. Please.','Stay close to me.','I\'m right here.','...Just come back out of this one, okay.']];
             const GATE='Wait. This is where they keep me. If you go in there and lose, I... Forget it. Just don\'t die.';
-            // {n}=total deaths so far, {r}=deaths in THIS room (ordinal), {o}=times she's seen this exact death (ordinal)
-            const FIRST=["I'm right here, watching through the orb. Whatever the demons say, I'm with you.","Don't panic. I'm not panicking. ...I'll be watching every step. You can do this."];
-            const RM=['You\'ve fallen in this very room before. Look at the floor, not at me. ...Please.','This room has already taken you once. I remember. I remember everything about you.'];
-            const RR=['This room again. That\'s the {r} time it\'s taken you. I\'m so sorry. I\'m not helping, am I.','The {r} time in this room. It\'s not you, it\'s this place. Please don\'t let it break you.','Here again, the {r} time. Slow down. Breathe. I\'ll be right here.'];
-            const GEN=[['Idiot. ...Are you hurt? Don\'t answer that. Just get up.','Don\'t look at me like that. I\'m not upset. I just hate watching you fall.','I was watching the whole time. I couldn\'t look away. That\'s not weird. Don\'t say it\'s weird.','That\'s {n} now. I\'m not counting. ...Please be careful.','Don\'t die for me. I never asked you to. ...But no one has ever tried this hard for me before.'],
-                ['That\'s {n} times I\'ve watched you fall. I flinch every time. Please get up.','Stop... no. Don\'t stop. Ugh, I don\'t know what I want. I just want you to be okay.','You idiot. You wonderful, stupid... forget it. Just come back to me.','{n}. I keep the number so I\'ll never forget what you\'re doing for me. ...Please stop hurting yourself.','You\'re the only one who came. Do you know what that means to me? ...Don\'t answer. Just live.'],
-                ['{n}. {n} times. And I\'ve loved every second you came back. I\'m sorry, that came out wrong. ...No it didn\'t.','Please... please come back. I\'m not worth this. But I need you to come back.','Every time you fall, I fall with you. {n} times now. Stay with me. Please.','I never look away from the orb. Not once. I love you, you idiot. Now get up.','You idiot. My idiot. ...Forget I said that. Don\'t forget it.']];
-            const MILE={5:'Five. I\'m not keeping track. It\'s just... a lot. Please be careful. I mean it.',10:'Ten. Most of them gave up by now. You haven\'t. ...Don\'t. I mean, don\'t give up.',15:'Fifteen... You could\'ve left. Why didn\'t you? ...Don\'t answer. I\'m afraid of the answer.',20:'Twenty. I remember every one of them. Every single one. I\'m so scared for you.'};
-            const TY={chest:[['It\'s a CHEST, you idiot! ...Are you okay? Get up.','A chest? You... idiot. Please be okay.'],['The chest again. I should have screamed. I\'m going to find a way to break it, I swear.'],['That\'s the {o} time it\'s done this. I count everything now. ...Please stop opening it for me.']],
+            const RM=['This is where it happened. Careful. ...Please.','This room again. You died here before, you know. I remember everything about you.'];
+            const GEN=[['Idiot. ...Are you hurt? Don\'t answer that. Just get up.','Don\'t look at me like that. I\'m not upset. I just hate watching you fall.','I was watching the whole time. I couldn\'t look away. That\'s not weird. Don\'t say it\'s weird.','Don\'t die for me. I never asked you to. ...But no one has ever tried this hard for me before.','Pathetic. ...Th-that\'s not what I meant. Please get up.'],
+                ['Stop... no. Don\'t stop. Ugh, I don\'t know what I want. I just want you to be okay.','You idiot. You wonderful, stupid... forget it. Just come back to me.','I keep telling you to leave, and you keep not leaving. And every time I\'m so glad. I shouldn\'t be glad.','You\'re the only one who came. Do you know what that means to me? ...Don\'t answer. Just live.'],
+                ['Please... please come back. I\'m not worth this. But I need you to come back.','I said leave, but I never meant it. Not once.','Every time you fall, I fall with you. Stay with me. Please.','You idiot. My idiot. ...Forget I said that.']];
+            const MILE={5:'Five. I\'m not keeping track. It\'s just... a lot. Please be careful. I mean it.',10:'Ten. Most of them gave up by now. You haven\'t. ...Don\'t. I mean, don\'t give up.',15:'Fifteen... You could\'ve left. Why didn\'t you? ...Don\'t answer. I\'m afraid of the answer.',20:'Twenty. I remember every one of them. Every single one.'};
+            const TY={chest:[['It\'s a CHEST, you idiot! ...Are you okay? Get up.','A chest? You... idiot. Please be okay.'],['The chest again. I should have screamed. I\'m going to find a way to break it, I swear.'],['That\'s the {o} time. I count everything now. ...Please stop opening it for me.']],
                 boss:[['Not here. Please. Not in front of him. Get up.'],['You came back to this door again. You know what\'s behind it, and you still came. Why?'],['I can\'t lose you where he can hear. Get up. Get up, my hero.']],
-                trap:[['I didn\'t see that one. I\'m sorry. I should have warned you.'],['Another trap, the {o} time. I\'ll watch the floor for you. ...I mean, I\'ll try.'],['Please stop walking into things for me. {o} times. My heart can\'t take it.']],
-                weird:[['That... what was that?! Are you okay? Please get up.'],['Again, something ridiculous. Don\'t let them get to you. ...Don\'t let them take you.'],['Don\'t listen to them. You matter to me. {o} times and I still think you\'re incredible.']]};
-            // ONE reaction per death type, 3 tiers (1st time / 2nd time / 3rd+ time that run). She watches through the orb while the demons taunt, so she encourages.
-            const DL={
-                0:["Poison! Are you okay?! I saw all of it through the orb. Don't mind their laughing, you can do this. Get up.","Poison again. Ignore the cackling and think it through. I believe in you. Get up.","{o} times poisoned and you're still here. The demons can laugh, I know what you're made of. Get up, idiot."],
-                1:["Your head... I couldn't look. I looked anyway. Ignore them laughing, you're not done. Get up. Please.","The blade again. Watch them, not their mouths. You can beat this. Get up.","{o} times they've swung at you and {o} times you've stood back up. That's the strongest thing I've ever seen. Get up."],
-                2:["They ate you?! Don't you dare stay down. They're just big mouths with big egos. Get up, I'm right here.","Devoured again. Let them laugh, they'll choke on you eventually. Get up.","{o} times they've swallowed you, and you keep coming back. Tell those demons they can't keep you. Get up."],
-                3:["Acid! Are you okay?! They think they're so clever. Don't listen. Get up, I'm not looking away.","Acid again. Slow down, think before you choose. I'm right here with you.","{o} times they've melted you and I still believe in you more than anything. Get up, idiot."],
-                4:["They took your soul?! Take it back! I'd... I'd be lonely without it. Get up, don't let them keep it.","They grabbed your soul again. Don't give it to them, it's the best thing in this whole dungeon. Get up.","{o} times they've ripped it out and it keeps finding its way back. Even your soul refuses to leave me. Get up."],
-                5:["A mountain?! Are you okay under there? Ignore their jokes, you're tougher than rock. Get up, I'm here.","The mountain again. Dig out, shake it off. They can't hold you down. Get up, hero.","{o} mountains and you keep crawling out. They can laugh all they want. You're unbreakable. Get up."],
-                6:["An arrow! Are you hurt? Don't answer. Don't listen to them. You'll dodge the next one, I know it. Get up.","Another arrow. Please be careful, I'm so worried. Eyes up next time, okay? Get up.","{o} arrows and you're still the bravest idiot I know. Get up and show them."],
-                7:["You were on fire! It's over, you're okay. Don't listen to them laughing. You burn brighter than their flames. Get up.","Burned again. Stay calm, you know this. I'll be your cool head. Get up.","{o} times burned to cinders and you rise from the ashes every time. Don't give them the satisfaction. Get up."],
-                8:["You froze solid! No, don't shatter... you're okay. Don't listen to them. I'm right here. ...I wish I could warm you up. Get up!","Frozen again. Breathe, warm up. I believe in you. Get up.","{o} times they've frozen you and you're still warm to me. D-don't read into that. Get up, idiot."],
-                9:["Lightning! Say something! Don't listen to them, they just got lucky. Get up, you can do this.","The lightning again. They can't catch you twice if you're ready. Think. Get up.","{o} times they've zapped you. Shockproof, that's what you are. Get up."],
-                10:["A TRUCK?! Isekai-ing you without asking?! Are you okay?! Don't listen to them. You're not going anywhere. Get back here. Get up.","The truck again. I'm so worried it'll take you away from me. You're staying with me. Get up.","{o} trucks and I still won't let you go anywhere else. Get up, you're staying right here."],
-                11:["The swamp pulled you under! Are you okay? Don't listen to their laughing. Climb out, you can do it. I'm here.","Swamp again. Watch your step. Don't let it keep you. Get up.","{o} times it dragged you down and you keep climbing out. I'm so proud. ...Don't tell anyone I said that. Get up."],
-                12:["You blew up! Are you in one piece?! Don't answer, just get up. Don't let them laugh at you. You've got this.","Another explosion. Keep your head together. I believe in you. Get up.","{o} times blown apart and you always put yourself back together. Get up, idiot. Show them."],
-                13:["The floor gave out! Are you okay?! They cheated, don't listen to them. Get up, I'm right here.","The floor again. I'll watch your step with you. Get up.","{o} times they've pulled the floor away and every time my heart drops with you. Please be careful. Get up."],
-                14:["You hurt yourself?! It's okay. They made you do that, don't listen to them. You're doing fine. Get up.","Don't hurt yourself because of them. You're better than that. Please. Get up.","{o} times, and don't you dare blame yourself. I never will. Get up."],
-                15:["You were drowning! It's okay, it's over. Don't listen to them. Breathe. I'm here. Get up.","Water again. Take your time with the question. I'm here. Get up.","{o} times they've drowned you. I'd be your air if I could. ...Get up, idiot."],
-                16:["It's a CHEST, you idiot! ...Are you okay? Don't listen to them laughing, it could've fooled anyone. Get up.","The chest again. I should have screamed. Next time I will, I promise. Get up.","That's the {o} time it's done this. I won't let it fool you again. Get up and show it who's boss."],
-                17:["They all jumped you! That's not fair! They needed a whole crowd to beat you. You're stronger than all of them. Get up.","The horde again. They need dozens of friends, you only need yourself. Get up.","{o} times they've swarmed you. They're scared of you, that's why there are so many. Get up, my hero."],
-                18:["An iron maiden?! Can you hear me? Don't listen to them. Get up. I'm so worried.","Iron maiden again. They're trying to scare you. It's not working on me. Get up.","{o} times they've locked you in there and you keep walking out. Show them what you're made of. Get up."],
-                19:["Cockroaches?! Ugh, get them off! Are you okay? Don't listen to them, they're the ones who brought bugs. Get up, I'm right here.","Bugs again. Ew. I'm still watching. I'm very brave. Get up.","{o} times swarmed by bugs. I can't squish them, but I can cheer. You've got this. Get up!"],
-                20:["An anvil?! Are you okay? Don't listen to them. Your head's harder than iron. Get up.","Anvil again. Look up! ...Too late. Get up, I believe in you.","{o} anvils and your head's still on. Get up, idiot. You're tougher than all of them."],
-                21:["Hot oil?! Are you okay?! Don't listen to them, they're cowards. Get up.","Oil again. Stay cool, think it through. Get up, I'm here.","{o} times boiled and you still don't crack. Get up."],
-                22:["It swallowed you whole! Come back. Don't let it keep you. You can do this. Get up.","The black hole again... I'm so scared it's going to keep you. Please come back. Please get up.","{o} times it's taken you and {o} times you've crawled out. Don't stop. Get up."],
-                23:["They used a doll on you! Don't listen to them. Get up. I mean it.","That doll again. It's just a toy, and you're the one who matters. Get up.","I'd burn that doll myself if I could. Get up, my hero."],
-                24:["They dug up your whole family just to mock you! Don't listen to them. ...You're not a disappointment to me. You're the only one who came.","Your family again. They don't know you. I do. ...If you save me, I'll be your family. Please get up.","Let them talk. I'd pick you over every ancestor in that crowd. Please, please get up. I'm so worried."],
-                25:["They ground you into... Oh no. Oh no, no, no. Are you okay?! Say something, idiot! It's not like I was scared. ...I was so scared. Please get up.","They did it to you again. I-I'm not crying, don't say I'm crying. You're not a patty, you're the person I care about most. ...Forget I said that. Get up.","I'd give anything to stop this from happening to you. You're worth so much more than they say. D-don't get a big head, but I love you, you idiot. Come back to me."],
-                26:["You... you turned into a fruit. D-don't look at me, I can't even think straight. ...Are you hurt? Say something, you idiot. Please get up, I'm so worried about you.","The tree again. It's not like I'm shaking or anything. ...I'm shaking. I should have warned you. Please be okay and get up.","I hate that tree. I hate that it keeps taking you from me. D-don't read into that! ...Read into it. Come back, please. You're everything to me."],
-                27:["The whole screen went white. I couldn't see you. ...Please tell me you're okay. Don't let them win. Get up.","The nuke again. I felt that one. Come back, you can do this.","Every time it goes off I'm afraid there'll be nothing left of you. And every time you come back. Keep coming back. Get up."],
-                28:["You were stuck in time while that blade crawled toward you for a hundred years?! I felt every second of it. Don't let them make you feel small. Get up. Please.","Stuck in time again, with that blade creeping closer and closer. I'm so worried, I can't stop shaking. You're stronger than this. Get up.","A hundred years, {o} times. Every time that blade comes for you I'm so scared I can hardly stand it. You're the toughest idiot I know. Get up."],
-                29:["You looked so sick. Please tell me you're okay. Don't listen to them. Get up.","That virus again... I'm so sorry I couldn't help you. You can beat this. Get up.","{o} times they've made you sick. I'm so worried about you every time. Please get up."]
+                trap:[['I didn\'t see that one. I\'m sorry. I should have warned you.'],['Another trap. I\'ll watch the floor for you. ...I mean, I\'ll try.'],['Please stop walking into things for me.']],
+                weird:[['A... that?! Don\'t you dare laugh, they\'re laughing enough. ...Please be okay.','That wasn\'t even a real way to die. Get up. Please.'],['Again, something ridiculous. Don\'t let them get to you. ...Don\'t let them take you.'],['Don\'t listen to them. You matter to me.']]};
+            // ---- lines that match HOW you died (dk = death type). Used often, but the general lines above still mix in ----
+            const BYDK={
+                14:['Did you just... hurt yourself?! Idiot. Don\'t you dare do that to yourself, not even in here. ...Please.','That wasn\'t them. That was you. ...Why? Whatever it is, you\'re not allowed to be that hard on yourself. Not while I\'m watching.','Stop hitting yourself. I mean it. ...You\'re the one thing in this place I can\'t stand to see hurt.'],
+                0:['Poison. Slow, and you still tried to walk it off. ...Idiot. Get up.','You looked so pale. Drink something, do anything. Just come back to me.'],
+                1:['That was... too close to your neck. I looked away. I did not look away. ...Get up.','Please keep your head. I like it where it is. ...On you. With the cute hair.'],
+                2:['It ate you. It actually ate you. ...Spit him out, you brute! Get up, I\'m not done with you.'],
+                7:['You\'re burnt to a crisp. Stay away from fire, you reckless... Come here. I\'ll glow softly at you. It\'s not the same.'],
+                8:['You froze. Your face was so cold. ...I wish I could warm you up. I\'m an orb. I\'m practically a candle. Get up.'],
+                9:['Zapped. Your hair is standing up. ...It\'s a little cute. Don\'t tell anyone I said that.'],
+                12:['Boom. Everything went white and I thought... Get up. Show me you\'re in one piece.'],
+                15:['You were drowning and I couldn\'t even reach you. ...Breathe. Come back. Please.'],
+                17:['There were so many of them. Of course there were. ...I hate it. I hate that I can only watch.'],
+                24:['I\'m sorry. That one wasn\'t fair. Those weren\'t really them. ...I\'m here. Look at me. I\'m real.','That was cruel. I know it\'s a trick. ...But I\'m still here with you. Get up when you\'re ready.'],
+                25:['That one was just gross. Close your eyes next time. ...Mine are closed. Mostly.'],
+                27:['They actually dropped a nuke on you. ...Of course you walked right under it. Idiot. My idiot.'],
+                28:['A hundred years?! You must have been so tired. ...Sleep a little, then get back up. I\'ll watch over you.'],
+                29:['A fever on top of everything... Rest. Okay, not too long. I get lonely fast.']
             };
-            // secret trap rooms (no demons here, just you and the trap and her)
-            const SL={
-                spike:["Spikes! Are you okay?! I didn't see them until it was too late. I'm sorry. Get up, you can do this.","Spikes again. I'll watch the floor with you. Go slowly. I believe in you.","{o} times on the spikes and you still try again. I'm so proud of you. ...Get up."],
-                axe:["The axes! Are you... you're in pieces! Get up, you idiot! Time the swings, you can do this.","The axes again. Count the swings. I'm counting with you. Get up.","{o} times those axes got you. Don't let them win. Get up, my hero."],
-                boulder:["A boulder! Are you okay under there?! Run next time, I'll shout if I see it. Get up.","The boulder again. Don't stop running. I believe in you. Get up.","{o} boulders and you keep getting back up. Get up, you stubborn idiot."],
-                lava:["Lava! Are you okay?! It's not fair, it looked solid. Stay away from the edge next time. Get up.","Lava again. Watch your step, I'll watch it with you. Get up.","{o} times in the lava. I'm so scared every time you go near it. Please be careful. Get up."],
-                ghost:["A ghost! It's draining you, no! Get up! Don't let it keep you, I'm right here.","The ghost again. Keep moving, don't let it catch you. You've got this. Get up.","{o} times it's drained you. It can't take what I'm holding on to. Get up."],
-                fire:["The melody... it tore you apart! Don't let it in your head. Get up, I'm right here.","That music again. Don't listen to it, listen to me. Get up.","{o} times it's torn you apart. It's just noise to me. Get up, you've got this."],
-                dart:["Darts! Are you hurt?! There were so many... I should have warned you. Get up.","Darts again. Keep your eyes sharp. I'm watching them with you. Get up.","{o} times riddled with darts. And you still don't quit. Get up, idiot."],
-                gas:["Gas! Don't breathe, don't... oh no. Are you okay? I'm here. Get up.","Gas again. Hold your breath, go fast. I believe in you. Get up.","{o} times gassed. I'm so worried every time. Hold your breath, go fast. Get up."],
-                ice:["Ice spikes! Are you okay?! I should have seen them. Get up, I'm here, I'm not going anywhere.","Ice again. Slow down on the slide. I'll watch with you. Get up.","{o} times on the ice spikes. I'm so scared each time. Get up. Please be careful."],
-                fall:["The pit! You fell! Are you okay?! Get up, I'm right here. You can try again.","The pit again. Look before you leap. I'll look with you. Get up.","{o} times in the pit. You always climb back out. Get up, my hero."]
-            };
-            const RE=['The same death again, the {o} time. ...I\'m not blaming you. I\'m blaming me. I should have said something.','Again that way. {o} times now. Don\'t listen to them. I\'m not counting. I\'m counting.'];
+            const RE=['The same way, the {o} time. ...I\'m not blaming you. I\'m blaming me. I should have said something.','The same death again. Don\'t listen to the demon. I\'m not counting. I\'m counting.'];
             const RESP=[['Took you long enough. ...I wasn\'t counting the seconds. Okay, I was.','You\'re back. Good. Don\'t look so relieved, you\'re the one who died.'],['...You\'re okay. I mean, obviously. It\'s not like I was worried.','Welcome back. Don\'t make it a habit. ...Please make it a habit.'],['You\'re back. You\'re back. Okay. I\'m fine. Just go.','You came back. You always come back. ...I\'m so glad it\'s you.']];
+            const STK={3:['Three in a row. Mmm... do that again. The answers, I mean. ...You\'re impressive when you focus.','Three right. You\'re kind of getting my attention, you know. Don\'t stop now.','Three in a row? Show-off. ...You\'re cute when you show off for me.'],
+                5:['Five in a row. You\'re making my heart race, you menace. Keep going. I want to see how far you\'ll go for me.','Five. I\'m not blushing, it\'s just warm in here. ...Okay, I\'m blushing. Happy?','Five right? Are you trying to impress me, cutie? ...It\'s working. Do it again.'],
+                7:['Seven. Seven! Come closer. ...No, stay there. No, come closer. Ugh, you\'re ruining me. Keep going.','Seven in a row. Keep this up and I might owe you something special. ...Don\'t let it show on your face. Get the next one.','Seven. You\'re so reckless with my heart, my love. ...Wait, I didn\'t say that. Do it again.'],
+                10:['Ten in a row. ...If I weren\'t a floating orb, I\'d kiss you right now. Don\'t look at me!','Ten. You\'re unfair. You\'re clever AND handsome AND adorable. I think I\'m in love with watching you. ...Forget I said that.','Ten! Fine. You\'re amazing, and kind of my favorite. I said it. Now come back to me with the next one, darling.']};
+            const streakLine=n=>STK[n]?pick(STK[n]):(n>10&&n%5==0?n+' in a row. I\'ve stopped pretending I\'m not watching you. ...Keep going. I love watching you win, my hero.':null);
+            // ---- more princess lines (no demon talk, so they are safe during puzzles) ----
+            GREET[0].push('Oh. A new room. Try not to look so confident. ...It suits you, though. Too well.','Don\'t touch anything weird. I like your hands where they are. ...Safe. I meant safe.','I\'ll just float here beside you. Quietly. Closely. Not that I\'m counting how close.');
+            GREET[1].push('You\'re getting good at this. ...Fine, you\'re better than good. Don\'t let it go to your head, handsome.','Take your time. I\'m trapped, but with you here I don\'t mind waiting. ...Forget that.','Read it twice. I love watching you think. ...I mean, I\'m watching the question.');
+            GREET[2].push('We\'re so close. When this is over, I... never mind. Just keep going.','You\'ve come further than anyone. My heart races every time you step forward. ...It\'s the orb. Orbs race.','I believe in you. I think I believed in you from the very first room. Don\'t make me say it twice.');
+            GEN[0].push('Get up. You\'re too cute to be on the floor. ...I mean it kindly. Mostly.','Okay, that one hurt to watch. Come here. ...Figuratively. Get up.');
+            GEN[1].push('I\'m not mad. I just can\'t breathe every time you fall. ...Is that weird? Don\'t answer.','You keep getting back up. I don\'t understand it, and I\'m falling for it more every time.');
+            GEN[2].push('Again? Of course again. That\'s the man I... that\'s who you are.','I stopped counting. I lied. I count every one, because every one is you choosing me.');
+            RESP[0].push('Back already? Good. I missed... the quiet. The quiet you fill.','Oh, you\'re alive. I was only mildly concerned. ...Okay, I was terrified.');
+            RESP[1].push('There you are. I always know where you are. ...Don\'t read into that.','Welcome back. Breathe. Look at me. Okay, now go.');
+            RESP[2].push('You\'re here. That\'s all I needed. Now go, and come back to me again.','Every time you come back, hoping gets a little easier. You\'re my favorite reason to.');
+            const BOSSIN=['This is the last door. ...Whatever you pick, my heart is with you.','It all comes down to this. Come back to me, my knight. I\'ll be right here.','Take a breath. Look at me. You\'ve already won me over. Now finish it.'];
+            const WIN2='...You came all the way. For me. I love you. ...Y-you heard nothing. Nothing at all.';
             const WIN=['...You actually did it? Y-you idiot. Took you long enough.','...Thank you.','D-don\'t make it weird.'];
-            let g=null,st='',ld=0,dmg=0,ox=150,oy=250,rd={},used=new Set(),T=[],lastRoom=-1,gate=0,won=0,pend=null,shown=0,dp={x:150,y:320},sayT=0,oi=-1,rk={},wasDead=false,snap=0,pop=-9,rel=-9,dt0=0;
+            let g=null,st='',ld=0,dmg=0,ox=150,oy=250,rd={},used=new Set(),T=[],lastRoom=-1,gate=0,won=0,pend=null,shown=0,dp={x:150,y:320},sayT=0,fi=1,phx=0,phy=0,pt0=performance.now(),str=0,skipG=0;
             const pick=a=>{let f=a.filter(x=>!used.has(x));if(!f.length){a.forEach(x=>used.delete(x));f=a}const v=rnd(f);used.add(v);return v};
-            const say=(t,ms)=>{clearTimeout(sayT);pt.style.opacity=0;setTimeout(()=>{pt.textContent=t;pt.style.opacity=1},180);sayT=setTimeout(()=>{pt.style.opacity=.55},(ms||9000))};
+            const DEM=/demon|let them|listen to them|laughing enough|in front of him|he can hear/i;let pz=0;   // pz: a puzzle (question) is on screen, so the princess never talks about the demons
+            const say=(t,ms)=>{if(pz&&DEM.test(t))t=grt();clearTimeout(sayT);pt.style.opacity=0;setTimeout(()=>{pt.textContent=t;pt.style.opacity=1},180);sayT=setTimeout(()=>{pt.style.opacity=.55},(ms||9000))};
             const tier=()=>{const n=g.rooms.length||1,p=g.i/n;return p<.34?0:p<.67?1:2};
             const dtier=n=>n<5?0:n<10?1:2;
             const later=(f,ms)=>T.push(setTimeout(f,ms));
             function react(sn){
-                if(g!==G||!G)return;shown=1;const mk=sn.mk||1,fill=t=>t.replace(/\{o\}/g,ORD(mk)).replace(/\{n\}/g,sn.ds);
-                const rr=sn.secret?0:(rd[sn.room]||0),tr=Math.min(mk-1,2);sn.rr=rr;
-                const src=(sn.secret&&SL[sn.sdt])?SL[sn.sdt]:DL[sn.dk];
-                const L=src?[src[tr]]:GEN[dtier(sn.ds)];
-                say(fill(pick(L)).replace('{r}',ORD(rr||1)),12000);
-                // a second thought a few seconds later: milestone, repeat-room, boss, or the first-death reassurance
-                let f=null;
-                if(MILE[sn.ds])f=MILE[sn.ds];
-                else if(sn.ds>20&&sn.ds%5==0)f=sn.ds+'. I stopped pretending a long time ago. I\'m yours, you idiot. Get up.';
-                else if(rr>=3&&Math.random()<.7)f=fill(pick(RR)).replace('{r}',ORD(rr));
-                else if(rr==2&&Math.random()<.6)f=pick(RM);
-                else if(sn.boss&&Math.random()<.7)f=fill(pick(TY.boss[Math.min(mk-1,2)]));
-                else if(sn.ds==1)f=pick(FIRST);
-                if(f)later(()=>{if(g===G&&(G.state=='dying'||G.state=='secretDie'))say(f,9000)},6500)}
+                if(g!==G||!G)return;shown=1;const mk=(S.mem.k[sn.dk]||1),fill=t=>t.replace('{o}',ORD(mk)).replace('{n}',mk);
+                let L;const fam=sn.boss?'boss':sn.secret?'trap':sn.dk==16?'chest':(sn.dk==10||sn.dk>=22)?'weird':null;
+                if(MILE[sn.ds])L=[MILE[sn.ds]];
+                else if(sn.brk&&Math.random()<.7)L=[sn.brk+' in a row, and then... Don\'t look at me like that. I\'m not disappointed. ...Get up and make me proud again.',sn.brk+' right answers. That was incredible. You fell, my cute little hero, and I still love you. ...The streak! I meant I love the streak. Mostly.']
+                else if(sn.ds>20&&sn.ds%5==0)L=[sn.ds+'. I stopped pretending a long time ago.'];
+                else if(BYDK[sn.dk]&&(sn.dk==14||Math.random()<.65))L=BYDK[sn.dk];
+                else if(fam&&Math.random()<.75)L=TY[fam][Math.min(mk-1,TY[fam].length-1)];
+                else if(mk>=2&&Math.random()<.6)L=RE;
+                else if(rd[sn.room]>=2&&Math.random()<.5)L=RM;
+                else L=GEN[dtier(sn.ds)];
+                say(fill(pick(L)),12000)}
             function tick(){
                 requestAnimationFrame(tick);
                 const on=run.classList.contains('on')&&typeof G!=='undefined'&&G&&!G.gal;
                 if(!on){orb.style.display='none';pp.style.display='none';if(g){g=null;T.forEach(clearTimeout);T=[]}return}
-                if(G!==g){g=G;st='';ld=0;oi=-1;rk={};wasDead=false;dmg=0;rd={};lastRoom=-1;gate=0;won=0;pend=null;shown=0;T.forEach(clearTimeout);T=[];ox=G.hx;oy=G.hy-60;pt.textContent=''}
-                orb.style.display='block';pp.style.display='flex';
+                if(G!==g){g=G;st='';ld=0;dmg=0;rd={};lastRoom=-1;gate=0;won=0;pend=null;shown=0;T.forEach(clearTimeout);T=[];ox=G.hx;oy=G.hy-60;fi=1;phx=G.hx;phy=G.hy;str=0;skipG=0;pt.textContent=''}
                 const s=G.state,dead=s=='dying'||s=='secretDie',r=G.rooms[G.i]||{};
-                if(dead&&G.deaths>ld){ld=G.deaths;dmg=Math.min(8,dmg+1);if(s!='secretDie')rd[G.i]=(rd[G.i]||0)+1;dp={x:G.hx,y:G.hy};
-                    const rkk=s=='secretDie'?'s:'+G.sdt:G.dk;rk[rkk]=(rk[rkk]||0)+1;pend={dk:G.dk,sdt:G.sdt,mk:rk[rkk],ds:G.deaths,room:G.i,boss:!!r.boss,secret:s=='secretDie'};const sn=pend;T.forEach(clearTimeout);T=[];later(()=>{if(pend===sn){pend=null;react(sn)}},2300);pt.style.opacity=.2}
-                if(dead&&!wasDead){dt0=performance.now()/1000}
-                wasDead=dead;
-                if(st&&(st=='dying'||st=='secretDie')&&!dead){const sn=pend;rel=performance.now()/1000;if(sn){pend=null;react(sn)}later(()=>{if(g===G&&G.state!='dying'&&G.state!='secretDie'&&shown)say(pick(RESP[dtier(G.deaths)]),7000)},1400)}
-                if(s=='play'&&G.i!==lastRoom&&!pend){const prev=lastRoom;lastRoom=G.i;if(prev>=0&&G.i>prev)dmg=Math.max(0,dmg-.6);
-                    if(!r.boss&&G.i>=0)later(()=>{if(g===G&&!pend)say(rd[G.i]>0?RM[0]:pick(GREET[G.deaths>0?dtier(G.deaths):tier()]),8000)},700)}
+                const cut=(s=='win');orb.style.display=cut?'none':'block';pp.style.display=cut?'none':'flex';   // the princess cutscene is the focus: no orb, no orb talking
+                pz=(s=='play'||s=='choose')?1:0;if(pz&&DEM.test(pt.textContent||'')){clearTimeout(sayT);pt.textContent=grt();pt.style.opacity=1}   // entering a puzzle wipes any leftover demon line
+                if(dead&&G.deaths>ld){ld=G.deaths;const bk=str>=5?str:0;str=0;dmg=Math.min(8,dmg+1);rd[G.i]=(rd[G.i]||0)+1;dp={x:G.hx,y:G.hy};
+                    pend={brk:bk,dk:G.dk,ds:G.deaths,room:G.i,boss:!!r.boss,secret:s=='secretDie'};const sn=pend;T.forEach(clearTimeout);T=[];later(()=>{if(pend===sn){pend=null;react(sn)}},2300);pt.style.opacity=.2}
+                if(st&&(st=='dying'||st=='secretDie')&&!dead){const sn=pend;if(sn){pend=null;react(sn)}later(()=>{if(g===G&&G.state!='dying'&&G.state!='secretDie'&&shown)say(pick(RESP[dtier(G.deaths)]),7000)},1400)}
+                if(s=='play'&&G.i!==lastRoom&&!pend){const prev=lastRoom,sg=skipG;skipG=0;lastRoom=G.i;if(prev>=0&&G.i>prev)dmg=Math.max(0,dmg-.6);
+                    if(!r.boss&&G.i>=0)later(()=>{if(g===G&&!pend&&!sg)say(rd[G.i]>0?RM[0]:grt(),8000)},700)
+                    else if(r.boss)later(()=>{if(g===G&&!pend&&!sg)say(pick(BOSSIN),8000)},900)}
                 if(s=='choose'&&!gate){gate=1;say(GATE,12000)}
-                if(s=='win'&&!won){won=1;T.forEach(clearTimeout);T=[];later(()=>say(WIN[0],6000),4600);later(()=>say(WIN[1],6000),7500);later(()=>say(WIN[2],8000),10200)}
+                if((s=='clear'||s=='bclear')&&st!=s){str++;const sl=streakLine(str);if(sl){skipG=1;say(sl,7000)}}
+                if(s=='win'&&!won){won=1;T.forEach(clearTimeout);T=[];
+                    const L=G.end=='bad'?[[4600,'You beat him?! ...You really beat him! But... why are you wearing his crown?'],[7000,'Your horns, your eyes... Please tell me that\'s just the light. ...It doesn\'t matter. I love you anyway.'],[9400,'I would follow you anywhere. ...Even like this.'],[10700,'You\'re raising your claw... ...It\'s okay. I\'m not afraid of you. I love you.'],[12800,'You... killed me. ...And I still love you. I can\'t stop. I don\'t know how.'],[15000,'...I love you, my hero. ...Even now. Even like this.']]
+                        :[[4600,'...You actually did it? Y-you idiot. Took you long enough. I-I wasn\'t worried. ...I was SO worried.'],[7600,'Don\'t just stand there grinning. ...Okay, grin. You earned it. Now come here.'],[10600,'You\'re warm. ...I mean, that\'s a normal thing to notice. Don\'t make it weird.'],[13200,'...You came all the way. For me. I love you. ...Y-you heard that. I know you heard that.'],[16000,'Stay with me forever, okay? ...That wasn\'t a question, hero.']];
+                    }
                 st=s;
-                if(oi!==G.i){oi=G.i;snap=1}   // new room (walked through a door): she appears next to the knight instead of trailing behind
-                const t=performance.now()/1000,da=dead?t-dt0:0,fc=G.face||1;
-                let tx=(dead?dp.x:G.hx)-fc*(tier()==2?22:36),ty=(dead?dp.y:G.hy)-62,sx=0;
-                if(dead){const sk=Math.min(1,da/1.2);ty=dp.y-62+sk*36;tx=dp.x-fc*(36-sk*30);if(da<.5)sx=Math.sin(da*70)*5*(1-da/.5)}   // death: she shudders, then sinks down and hovers over the body
-                if(snap){ox=tx;oy=ty;snap=0;pop=t}
-                else if(!dead&&Math.hypot(tx-ox,ty-oy)>160){ox+=(tx-ox)*.3;oy+=(ty-oy)*.3}   // knight respawned / teleported far away: she hurries after him
-                else{const k=dead?.12:.08;ox+=(tx-ox)*k;oy+=(ty-oy)*k}
-                const ps=t-pop<.45?1-Math.pow(1-(t-pop)/.45,3):1,rs=1+Math.max(0,1-(t-rel)/.7)*.45,ds=dead?1-.35*Math.min(1,da/1.2):1;
-                const sc=1-dmg*.05,fl=dead?(da<.15?1:.3+Math.random()*.35):(tier()==2?.8+Math.random()*.2:1);
-                const bob=Math.sin(t*(dead?5:tier()?3:1.6))*(dead?2:4);
-                orb.style.left=((ox+sx)/800*100)+'%';orb.style.top=((oy+bob)/450*100)+'%';
-                orb.style.transform='scale('+(sc*ps*rs*ds)+')';orb.style.opacity=dead?fl:fl*(tier()==0?.85:1);orb.style.setProperty('--cr',dead?Math.min(.9,.3+da*.4):Math.min(.9,dmg*.12));
-                orb.style.boxShadow=dead?(da<.25?'0 0 30px 14px rgba(255,255,255,.95),0 0 60px 24px rgba(255,0,60,.8)':'0 0 8px 3px rgba(120,10,50,.8),0 0 0 2px rgba(255,255,255,.2)'):'';
-                orb.style.filter=dead?'saturate(.4) brightness(.8)':'none';po.style.transform='scale('+(.8+.2*sc)+')';po.style.opacity=fl}
+                const nw=performance.now(),dtt=Math.min(.1,(nw-pt0)/1000);pt0=nw;
+                if(Math.hypot(G.hx-phx,G.hy-phy)>110){ox=G.hx-(G.face||1)*36;oy=G.hy-62;fi=0}   // knight teleported (new room, secret door, respawn): orb appears beside him instead of flying across
+                phx=G.hx;phy=G.hy;fi=Math.min(1,fi+dtt/.6);
+                const thru=(s=='clear'&&!G.last&&G.ka!=null)?Math.max(0,Math.min(1,G.ka)):1;   // goes through the door with him and fades with him
+                const tx=(dead?dp.x:G.hx)-(G.face||1)*(tier()==2?22:36),ty=(dead?dp.y:G.hy)-62,t=performance.now()/1000;
+                ox+=(tx-ox)*.14;oy+=(ty-oy)*.14;
+                const sc=1-dmg*.05,fl=dead?(.35+Math.random()*.4):(tier()==2?.8+Math.random()*.2:1);
+                orb.style.left=(ox/800*100)+'%';orb.style.top=((oy+Math.sin(t*(tier()?3:1.6))*4)/450*100)+'%';
+                orb.style.transform='scale('+sc+')';orb.style.opacity=fl*(tier()==0?.85:1)*fi*thru;orb.style.setProperty('--cr',Math.min(.9,dmg*.12));
+                orb.style.filter='none';po.style.transform='scale('+(.8+.2*sc)+')';po.style.opacity=fl}
             tick()})();
 
         hub();galRender();
     </script>
+
+<script>
+/* ===== SHOP: run items, skins, blade auras, pets (gold = the normal S.gold) ===== */
+const SHOP_ITEMS={orb:{n:'🔮 Princess Orb',p:60,d:'She whispers a hint: crosses out 1 wrong answer.'},fav:{n:'😈 Demon\'s Favour',p:100,d:'The Demon Lord crosses out 2 wrong answers, then insults you.'},shield:{n:'🛡️ Iron Shield',p:100,d:'Blocks your next death (wrong answer or trap).'},phx:{n:'🪶 Phoenix Feather',p:160,d:'Wrong answer? You rise and retry, no death.'},key:{n:'🗝️ Forbidden Answer Key',p:260,d:'Auto-solves the question (1 per run, not for matching).'}};
+const SKINS={gold:{n:'Golden Knight',p:500,d:'Gleaming gold plate with a halo glow and drifting sparkles.',f:'sepia(1) saturate(3.2) hue-rotate(-12deg) brightness(1.25)'},shadow:{n:'Shadow Knight',p:600,d:'Black armor wreathed in smoke, with a violet glow.',f:'brightness(.32) contrast(1.5)'},frost:{n:'Frost Knight',p:500,d:'Icy armor that sheds snowflakes as you move.',f:'hue-rotate(165deg) saturate(1.8) brightness(1.2)'},crimson:{n:'Crimson Knight',p:450,d:'Blood-red armor with rising embers.',f:'hue-rotate(-50deg) saturate(2.8) brightness(.95)'},royal:{n:'Royal Guard',p:550,d:'Bright tidal-blue armor with a gold-and-crimson plume on the helmet.',f:'sepia(1) hue-rotate(188deg) saturate(3.4) brightness(.98) contrast(1.1)'},
+ emerald:{n:'Emerald Knight',p:500,d:'Vivid green armor, like moss on ancient stone.',f:'sepia(1) hue-rotate(95deg) saturate(3) brightness(1.0)'},
+ amethyst:{n:'Amethyst Knight',p:550,d:'Glittering purple armor forged from cursed crystal.',f:'sepia(1) hue-rotate(235deg) saturate(3) brightness(1.0)'},
+ rose:{n:'Rose Knight',p:500,d:'Bright pink armor. Terrifying, somehow.',f:'sepia(1) hue-rotate(-62deg) saturate(3) brightness(1.2)'},
+ sunfire:{n:'Sunfire Knight',p:550,d:'Blazing orange armor lit by the setting sun.',f:'sepia(1) hue-rotate(-30deg) saturate(7) brightness(1.1)'},
+ ivory:{n:'Ivory Paladin',p:600,d:'Pure white armor, spotless and holy.',f:'grayscale(1) brightness(1.7) contrast(.9)'}};
+/* ARMOUR RESIST: each armour has a chance to survive the deaths it is themed for */
+const ARMOR_CHANCE=.2,ARMOR_RES={
+ gold:{d:[5,9,20],m:'✨ Golden armor held firm!'},shadow:{d:[4,22,23],m:'🌑 Shadow armor swallowed the curse!'},
+ frost:{d:[8,15],m:'❄️ Frost armor shrugged it off!'},crimson:{d:[1,18,25],m:'🩸 Crimson armor turned the blade!'},
+ royal:{d:[6,14,17],m:'🛡️ The Royal Guard stood its ground!'},emerald:{d:[0,3,11,19,26,29],m:'🌿 Emerald armor resisted the toxin!'},
+ amethyst:{d:[14,24,28],m:'🔮 Amethyst armor warded it off!'},rose:{d:[10,13,19],m:'🌸 Rose armor... somehow survived that!'},
+ sunfire:{d:[7,12,21,27],m:'🔥 Sunfire armor shrugged off the flames!'},ivory:{d:[4,17,24],m:'🕊️ Holy ivory armor protected you!'}};
+function armorResist(dk){const k=shopS().eq.skin,a=ARMOR_RES[k];if(!a||!a.d.includes(dk))return null;return Math.random()<ARMOR_CHANCE?a.m+' (you survived)':null}
+for(const k in ARMOR_RES)if(SKINS[k]&&typeof KN!='undefined')SKINS[k].d+=' '+Math.round(ARMOR_CHANCE*100)+'% chance to survive: '+ARMOR_RES[k].d.map(i=>KN[i]).join(', ')+'.';
+const WPNS={flame:{n:'Flame Blade',p:350,d:'A roaring fire aura with embers streaming off the blade.',c:'#ff6a1a',rgb:'255,106,26'},ice:{n:'Frost Edge',p:350,d:'Frozen glow and drifting ice shards.',c:'#6fd8ff',rgb:'111,216,255'},bolt:{n:'Lightning Rapier',p:400,d:'Crackling electric aura with flickering sparks.',c:'#ffe94a',rgb:'255,233,74'},void:{n:'Void Reaper',p:450,d:'A dark violet aura with orbiting void orbs.',c:'#a24dff',rgb:'162,77,255'},slay:{n:'Demon Slayer',p:500,d:'A blood-red aura that drips dark sparks.',c:'#d0102e',rgb:'235,30,50'},
+ venom:{n:'Venom Fang',p:400,d:'A toxic green blade that drips glowing poison.',c:'#3ddc84',rgb:'61,220,132'},
+ sakura:{n:'Sakura Blade',p:400,d:'A pink katana trailing drifting petals.',c:'#ff8fc2',rgb:'255,143,194'},
+ tidal:{n:'Tidal Edge',p:450,d:'A deep-blue wavy blade with rolling water arcs.',c:'#4a7bff',rgb:'74,123,255'},
+ holy:{n:'Holy Lightbringer',p:550,d:'A white-gold blade crowned with a pulsing halo.',c:'#fff6d0',rgb:'255,246,208'},
+ obsidian:{n:'Obsidian Fang',p:500,d:'A jagged black blade wreathed in grey mist.',c:'#8b8b9e',rgb:'139,139,158'}};
+const PETS={crow:{n:'🐦‍⬛ Crow',p:500,e:'🐦‍⬛',d:'+1 gold from every chest, barrel and crate.'},cat:{n:'🐈‍⬛ Cat',p:500,e:'🐈‍⬛',d:'+3 gold every room you clear.'},dragon:{n:'🐉 Azure Dragon (Mount)',p:700,e:'🐉',d:'Ride a long, serpentine azure dragon through the dungeon! +5 gold every room you clear.'},
+ cerb:{n:'🐕 Cerberus (Mount)',p:1000,e:'🐕',d:'Ride a giant three-headed hellhound! +6 gold every room you clear.'},
+ fox:{n:'🦊 Nine-Tailed Fox (Mount)',p:800,e:'🦊',d:'Ride a menacing nine-tailed spirit fox wreathed in fire! +5 gold every room you clear.'},
+ turtle:{n:'🐢 Treasure Turtle (Mount)',p:600,e:'🐢',d:'Ride a giant treasure-shell turtle! +2 gold from every chest, barrel and crate.'},
+ horse:{n:'🐴 Black Horse (Mount)',p:900,e:'🐴',d:'Ride a black warhorse into battle! +4 gold every room you clear.'},
+ phoenix:{n:'🔥 Phoenix (Mount)',p:800,e:'🔥',d:'Soar on a blazing phoenix! +4 gold every room you clear.'}};
+function petGold(){const p=shopS().eq.pet;return p=='crow'?1:p=='turtle'?2:0}
+function shopS(){if(!S.shop)S.shop={};const h=S.shop;h.inv=h.inv||{};h.own=h.own||{};h.eq=h.eq||{};return h}
+let shopTab='items',shopPaused=0;
+function shopGold(){const g=document.querySelector('#gold');if(g)g.textContent='🪙 '+S.gold}
+function shopHTML(){const h=shopS(),row=(n,d,r)=>`<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid #3a3a2a;border-radius:6px;margin:6px 0"><div><b>${n}</b><div style="font-size:11px;color:#a1a1aa">${d||''}</div></div>${r}</div>`,btn=(a,t,ok)=>`<button data-a="${a}" style="padding:4px 10px;border-radius:5px;background:${ok?'#14532d':'#27272a'};color:${ok?'#bbf7d0':'#71717a'};white-space:nowrap">${t}</button>`;let o='';
+if(shopTab=='items')for(const k of Object.keys(SHOP_ITEMS).sort((a,b)=>SHOP_ITEMS[a].p-SHOP_ITEMS[b].p)){const i=SHOP_ITEMS[k];o+=row(i.n+' <span style="color:#facc15">x'+(h.inv[k]||0)+'</span>',i.d,btn('i:'+k,'Buy 🪙'+i.p,S.gold>=i.p))}
+else{const secs=shopTab=='armory'?[['⚔️ Armor Skins',SKINS,'skin'],['🗡️ Blades',WPNS,'wpn']]:[['🐾 Pets',PETS,'pet']];for(const [ti,L,sl] of secs){o+=`<div style="margin-top:10px;color:#facc15;font-weight:bold">${ti}</div>`;o+=row({skin:'🛡️ Default Armor',wpn:'⚔️ Default Weapon',pet:'🚫 No Pet'}[sl],'Your original look. Always yours, free.',!h.eq[sl]?btn('e:'+sl+':none','Equipped ✓',0):btn('e:'+sl+':none','Equip',1));for(const k of Object.keys(L).sort((a,b)=>L[a].p-L[b].p)){const i=L[k],own=h.own[sl+k],eq=h.eq[sl]==k;o+=row(i.n,i.d||'',own?btn('e:'+sl+':'+k,eq?'Equipped ✓ (unequip)':'Equip',1):btn('b:'+sl+':'+k,'Buy 🪙'+i.p,S.gold>=i.p))}}}
+return `<div style="background:#14110c;border:1px solid #a16207;border-radius:10px;text-align:left;padding:14px;color:#e4e4e7;font-family:monospace"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px;color:#facc15">🛒 Dungeon Shop</b><span>🪙 ${S.gold}</span></div><div style="display:flex;gap:6px;margin:10px 0">${['items','armory','pets'].map(t=>`<button data-a="t:${t}" style="padding:4px 10px;border-radius:5px;background:${t==shopTab?'#a16207':'#27272a'}">${t}</button>`).join('')}</div>${o}</div>`}
+function shopRender(){const m=document.querySelector('#armory-shop');if(m)m.innerHTML=shopHTML()}
+(function(){const m=document.querySelector('#armory-shop');if(!m)return;m.addEventListener('click',e=>{const a=e.target.dataset&&e.target.dataset.a;if(!a)return;const p=a.split(':'),h=shopS();
+ if(p[0]=='t')shopTab=p[1];
+ else if(p[0]=='i'){const i=SHOP_ITEMS[p[1]];if(S.gold>=i.p){S.gold-=i.p;h.inv[p[1]]=(h.inv[p[1]]||0)+1}}
+ else if(p[0]=='b'){const i=(p[1]=='skin'?SKINS:p[1]=='wpn'?WPNS:PETS)[p[2]];if(S.gold>=i.p){S.gold-=i.p;h.own[p[1]+p[2]]=1;h.eq[p[1]]=p[2]}}
+ else if(p[0]=='e'){h.eq[p[1]]=(h.eq[p[1]]==p[2]||p[2]=='none')?null:p[2]}
+ save();shopGold();shopRender()});
+ const tb=document.querySelector('.tab-btn[data-t="s"]');if(tb)tb.addEventListener('click',shopRender);shopRender()})();
+/* in-run item bar */
+function shopBar(){let b=document.querySelector('#shopbar');if(!b){b=document.createElement('div');b.id='shopbar';b.style.cssText='position:fixed;left:8px;bottom:8px;z-index:40;display:none;gap:6px';document.body.appendChild(b);b.addEventListener('click',e=>{const k=e.target.dataset&&e.target.dataset.k;if(k)useItem(k)})}
+ const h=shopS(),on=G&&!G.gal&&G.state=='play'&&document.querySelector('#run')&&document.querySelector('#run').classList.contains('on');
+ b.style.display=on?'flex':'none';if(on)b.innerHTML=['orb','fav','key'].filter(k=>h.inv[k]>0).map(k=>`<button data-k="${k}" style="padding:4px 9px;border-radius:6px;background:#000b;border:1px solid #a16207;color:#fde68a;font:12px monospace">${SHOP_ITEMS[k].n.split(' ')[0]} x${h.inv[k]}</button>`).join('')}
+setInterval(shopBar,300);
+function useItem(k){if(!G||G.state!='play'||G.gal)return;const h=shopS(),tg=G.tg||[],plain=tg.length&&tg.every(t=>t.k!='m'&&t.k!='d'&&t.ok!==undefined);
+ if(!plain){toast('Can\'t use that on this kind of question.');return}
+ if(k=='key'){if(G.keyUsed){toast('Only one Answer Key per run.');return}const t=tg.find(o=>o.ok);if(!t)return;G.keyUsed=1;h.inv.key--;save();toast('🗝️ The forbidden key opens the way!');hit(t);return}
+ const n=k=='orb'?1:2,wr=tg.filter(t=>!t.ok);if(wr.length<2){toast('Nothing left to cross out.');return}
+ const rm=wr.sort(()=>Math.random()-.5).slice(0,Math.min(n,wr.length-1));G.tg=tg.filter(t=>!rm.includes(t));h.inv[k]--;save();
+ toast(k=='orb'?'🔮 The princess whispers: "not that one..."':'😈 "Fine, I\'ll help. Pathetic, knight."');shopBar()}
+/* shield / phoenix / dragon absorb a death */
+const _die=die;die=function(t,fk,dn){if(G&&!G.gal&&G.state=='play'){const h=shopS();let m=null;
+ if(fk==null&&h.inv.phx>0){h.inv.phx--;m='🪶 Phoenix Feather: you rise and try again!'}
+ else if(h.inv.shield>0){h.inv.shield--;m='🛡️ Iron Shield absorbed it!'}
+ if(m){save();toast(m);G.sel=null;if(fk==null&&t&&t.k!='m'&&t.k!='d')G.tg=G.tg.filter(o=>o!=t);shopBar();return}}
+ return _die.apply(this,arguments)};
+const _adv=adv;adv=function(){if(G&&!G.gal){const p=shopS().eq.pet;G.xg=(G.xg||0)+(p=='cat'?3:p=='fox'?5:p=='horse'?4:p=='cerb'?6:p=='dragon'?5:p=='phoenix'?4:0)}return _adv.apply(this,arguments)};
+/* cosmetics: skin = colour filter on the knight, weapon = blade aura, pet = follows you */
+const _ds=drawSprite;drawSprite=function(){const h=shopS(),sk=SKINS[h.eq.skin],w=WPNS[h.eq.wpn];if(!sk&&!w)return _ds.apply(this,arguments);const A=arguments;if(A[0]===sprites.attack){const sh=wSheet();if(sh){const o=A[0].img;A[0].img=sh;try{return _ds.apply(this,A)}finally{A[0].img=o}}}_ds.apply(this,A);
+ if(w&&(A[0]===sprites.idle||A[0]===sprites.run)&&G.state!='dying'){const sc=A[7]||2.2,dir=A[6]||1,t=performance.now()/1000;ctx.save();ctx.translate(A[4]+dir*5,A[5]-26+(A[0]===sprites.run?Math.sin(t*14)*2:0));ctx.scale(dir,1);ctx.rotate(.55+Math.sin(t*2)*.03);weaponDraw(h.eq.wpn,t);ctx.restore()}
+ if(h.eq.skin=='royal'&&(A[0]===sprites.idle||A[0]===sprites.run)&&G.state!='dying'){const sc=A[7]||2.2,dir=A[6]||1,t=performance.now()/1000;ctx.save();ctx.translate(A[4]-dir*10*sc/2.2,A[5]-(66*sc/2.2)+(A[0]===sprites.run?Math.sin(t*14)*1.5:0));ctx.scale(dir*sc/2.2,sc/2.2);
+  ctx.fillStyle='#d4a017';ctx.fillRect(-6,2,12,3);ctx.fillRect(-1.5,-3,3,6);
+  const w=Math.sin(t*3)*2;ctx.fillStyle='#b91c1c';ctx.beginPath();ctx.moveTo(-2,-2);ctx.quadraticCurveTo(-6+w,-16,-16+w*2,-14);ctx.quadraticCurveTo(-8,-10,-1,-1);ctx.fill();
+  ctx.fillStyle='#ef4444';ctx.beginPath();ctx.moveTo(-1,-2);ctx.quadraticCurveTo(-3+w,-12,-10+w*2,-11);ctx.quadraticCurveTo(-4,-7,0,-1);ctx.fill();
+  ctx.fillStyle='#fde68a';ctx.fillRect(-1,-4,2,2);ctx.restore()}};
+/* BLACK HORSE: you ride it. It is drawn under the knight and the knight is lifted onto the saddle */
+function horseDraw(t,mv,over,part){part=part||'bh';const PB=part.indexOf('b')>=0,PH=part.indexOf('h')>=0;const el=(x,y,rx,ry,c,r)=>{ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,y,rx,ry,r||0,0,6.3);ctx.fill()},tri=(a,b,c2,d,e,f,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c2,d);ctx.lineTo(e,f);ctx.fill()};
+ const g=14,ph=mv?t*13:0;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+ if(!over&&PB){ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(0,g+1,34,5,0,0,6.3);ctx.fill()}
+ ctx.translate(0,mv?Math.abs(Math.sin(ph))*-1.5:0);
+ if(PB){ctx.strokeStyle='#0b0b10';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-24,-8);ctx.quadraticCurveTo(-36,-4+Math.sin(t*4)*3,-38+Math.sin(t*5)*3,8);ctx.stroke();
+ const leg=(x,p,c)=>{const sw=mv?Math.sin(ph+p)*9:0,lift=mv?Math.max(0,Math.cos(ph+p))*-5:0;ctx.strokeStyle=c;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+sw*.5,7+lift);ctx.lineTo(x+sw,g-3+lift*.5);ctx.stroke();ctx.fillStyle='#050508';ctx.fillRect(x+sw-3,g-3+lift*.5,6,3)};
+ leg(-17,3.1,'#07070b');leg(16,0,'#07070b');leg(-20,0,'#0b0b10');leg(19,3.1,'#0b0b10');
+ el(0,-6,26,10,'#0b0b10');el(0,-10,20,3.5,'#1c1c2a');ctx.fillStyle='#7f1d1d';ctx.fillRect(-8,-18,16,7);ctx.fillStyle='#d4a017';ctx.fillRect(-8,-18,16,1.5);ctx.fillRect(-8,-12.5,16,1)}
+ if(PH){
+ ctx.strokeStyle='#0b0b10';ctx.lineWidth=11;ctx.beginPath();ctx.moveTo(17,-10);ctx.lineTo(28,-28);ctx.stroke();
+ for(let i=0;i<5;i++){const x=15+i*3.2,y=-14-i*4.6;tri(x-3,y-1,x-8+Math.sin(t*6+i)*2,y+5,x,y+3,'#262638')}
+ el(33,-32,9.9,5.9,'#2e2e44',.5);el(40,-28,6.4,4.7,'#2e2e44',.5);   // lighter rim so the face reads against the dark coat
+ el(33,-32,9,5,'#0b0b10',.5);el(40,-28,5.5,4,'#14141c',.5);tri(28,-37,29,-44,32,-37,'#0b0b10');tri(32,-38,34,-44,36,-37,'#0b0b10');
+ ctx.shadowColor='#ff2020';ctx.shadowBlur=7;el(35,-33.5,2.1,1.7,'#ff3b3b',.2);ctx.shadowBlur=0;el(35.6,-33.9,.8,.7,'#ffd8d8');   // glowing red eye
+ el(43,-28.8,1,.8,'#000');ctx.strokeStyle='#2e2e44';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(38,-25.5);ctx.lineTo(44,-26.3);ctx.stroke();
+ ctx.strokeStyle='#c2a05a';ctx.lineWidth=1.6;ctx.beginPath();ctx.ellipse(40,-28,4.2,3.2,.5,0,6.3);ctx.stroke();ctx.beginPath();ctx.moveTo(31,-38);ctx.lineTo(37,-30);ctx.moveTo(34,-36);ctx.lineTo(41,-30.5);ctx.stroke();   // rope halter: noseband + cheek straps
+ ctx.fillStyle='#d9b96a';ctx.fillRect(38.5,-31.5,2.5,2.5)}   // halter knot
+ ctx.restore()}
+const HORSE_K=1.6,HORSE_SIT=-12,HAND_X=6,HAND_Y=-31;
+/* every pet except the cat and the crow is a mount. K = size, top = height of the back, rx/ry = rope anchor on the neck, sh = half body width, fly = hover height */
+const MOUNT={cerb:{K:1.3,top:-40,rx:35,ry:-38,sh:28},fox:{K:2,top:-27,rx:14,ry:-23,sh:14},turtle:{K:2.4,sit:29,top:-18,rx:16,ry:-8,sh:17},phoenix:{K:3.2,sit:33,top:-7,rx:11,ry:-2,sh:12,fly:42},dragon:{K:2,sit:22,top:-11,rx:31,ry:-8,sh:44,fly:48}};
+let MKN=null;   // when set, draws the knight instead of the normal sprite (used by the sword-art dash)
+function mountFx(k,x,y,F,sc,u){const a=Math.sin(Math.PI*u),z=sc*(k=='dragon'?1.4:1.1),col={horse:'255,60,60',cerb:'255,70,40',fox:'255,150,40',turtle:'110,255,170',phoenix:'255,190,60',dragon:'255,140,40'}[k]||'255,255,255';
+ ctx.save();ctx.globalCompositeOperation='lighter';ctx.lineCap='round';
+ if(k=='turtle'){ctx.strokeStyle='rgba('+col+','+.8*a+')';ctx.lineWidth=5*z;ctx.beginPath();ctx.ellipse(x-F*6*z,y+16*z,(14+u*44)*z,(5+u*11)*z,0,0,6.3);ctx.stroke();ctx.strokeStyle='rgba(255,255,255,'+.7*a+')';ctx.lineWidth=1.8*z;ctx.stroke()}
+ else if(k=='dragon'||k=='phoenix'){for(let i=0;i<10;i++){const q=(i/10+u*.6)%1,d=(8+q*62)*z,yy=y+Math.sin(i*2.1+u*9)*(2+q*7)*z;ctx.fillStyle='rgba('+(i%2?'255,214,120':col)+','+(.8*(1-q)*a+.08)+')';ctx.beginPath();ctx.arc(x+F*d,yy,(3+q*9)*z,0,6.3);ctx.fill()}}
+ else{for(let i=0;i<3;i++){const x1=x+F*(6+i*7)*z,y1=y-20*z+i*1.5*z,x2=x+F*(30+i*7)*z,y2=y+14*z+i*1.5*z;ctx.strokeStyle='rgba('+col+','+.85*a+')';ctx.lineWidth=5*z;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1+(x2-x1)*Math.min(1,u*2.4),y1+(y2-y1)*Math.min(1,u*2.4));ctx.stroke();ctx.strokeStyle='rgba(255,255,255,'+a+')';ctx.lineWidth=1.8*z;ctx.stroke()}}
+ ctx.restore()}
+function mountRide(self,A,pet,ex){const m=MOUNT[pet],K=m.K,sc=(A[7]||2.2)/2.2,F=A[6]||1,lg=ex?ex.lg:0,hx0=A[4]+F*lg*16*sc,hy0=A[5],t0=performance.now()/1000,mvg=A[0]===sprites.run||!!G.moving,atk=A[0]===sprites.attack,fly=(m.fly||0)*sc,gy=hy0+14*sc,
+  bob=fly?Math.sin(t0*5)*3*sc:(mvg?Math.abs(Math.sin(t0*13))*-1.5*sc:0),oy=gy-fly+bob-lg*3*sc;
+ ctx.save();ctx.fillStyle=fly?'rgba(0,0,0,.22)':'rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(hx0,gy+1,m.sh*K*sc*1.05,5*sc,0,0,6.3);ctx.fill();ctx.restore();
+ const cr=(clip,dt)=>{ctx.save();ctx.translate(hx0,oy);ctx.rotate(-.13*F*lg);ctx.scale(F*sc*K,sc*K);if(clip){ctx.beginPath();ctx.rect(-300,m.top+3,600,400);ctx.rect(16/K,-600,600,600);ctx.clip()}petCreature(pet,t0,dt,mvg);ctx.restore()};
+ cr(0,1/60);A[4]=hx0;A[5]=oy+m.top*K*sc+(m.sit||22)*sc;const rr=MKN?MKN(A):_ds2.apply(self,A);cr(1,0);   // body under the knight, then body + HEAD over him so the face is never hidden
+ ctx.save();ctx.lineCap='round';const e=[hx0+F*sc*K*m.rx,oy+sc*K*m.ry],h=[hx0+F*sc*HAND_X,A[5]+sc*HAND_Y],sag=(atk?10:7)*sc+Math.sin(t0*2.2)*1.2*sc,mid=[(e[0]+h[0])/2,Math.max(e[1],h[1])+sag];
+ ctx.strokeStyle='#d4a017';ctx.lineWidth=2*sc;ctx.beginPath();ctx.arc(e[0],e[1],3.2*sc,0,6.3);ctx.stroke();   // golden collar ring
+ ctx.strokeStyle='#a98547';ctx.lineWidth=2.4*sc;ctx.beginPath();ctx.moveTo(e[0],e[1]);ctx.quadraticCurveTo(mid[0],mid[1],h[0],h[1]);ctx.stroke();
+ ctx.strokeStyle='#e0c27a';ctx.lineWidth=1*sc;ctx.setLineDash([2*sc,2.2*sc]);ctx.beginPath();ctx.moveTo(e[0],e[1]);ctx.quadraticCurveTo(mid[0],mid[1],h[0],h[1]);ctx.stroke();ctx.setLineDash([]);
+ ctx.fillStyle='#6b7380';ctx.beginPath();ctx.ellipse(h[0],h[1],3.6*sc,3.2*sc,0,0,6.3);ctx.fill();ctx.fillStyle='#8a929a';ctx.beginPath();ctx.ellipse(h[0]-.4*sc*F,h[1]-.6*sc,2.7*sc,2.3*sc,0,0,6.3);ctx.fill();
+ ctx.strokeStyle='#a98547';ctx.lineWidth=1.6*sc;ctx.beginPath();ctx.moveTo(h[0]-2.6*sc,h[1]+1*sc);ctx.lineTo(h[0]+2.6*sc,h[1]+1*sc);ctx.stroke();ctx.restore();
+ if(ex&&ex.u!=null)mountFx(pet,e[0]+F*8*K*sc,e[1]-4*sc,F,sc,ex.u);   // the mount strikes too
+ return rr}
+function horseRide(self,A,ex){
+  const sc=(A[7]||2.2)/2.2,F=A[6]||1,lg=ex?ex.lg:0,hx0=A[4]+F*lg*16*sc,hy0=A[5],K=HORSE_K,oy=14*sc*(1-K)-lg*3*sc,t0=performance.now()/1000,mvg=A[0]===sprites.run||!!G.moving,atk=A[0]===sprites.attack;
+  const hd=(over,part)=>{ctx.save();ctx.translate(hx0,hy0+oy);ctx.rotate(-.13*F*lg);ctx.scale(F*sc*K,sc*K);if(over){ctx.beginPath();ctx.rect(-70,-13,130,70);ctx.clip()}horseDraw(t0,mvg,over,part);ctx.restore()};
+  const bob=mvg?Math.abs(Math.sin(t0*13))*-1.5*sc*K:0;
+  hd(0,'b');A[4]=hx0;A[5]=hy0-lg*3*sc+HORSE_SIT*sc+bob;const rr=MKN?MKN(A):_ds2.apply(self,A);hd(1,'b');hd(0,'h');   // body under the knight, body over his legs, then the HEAD on top so the face and eye are never hidden
+  {ctx.save();ctx.lineCap='round';
+   const hp=(x,y)=>[hx0+F*sc*K*x,hy0+oy+bob+sc*K*y],kp=(x,y)=>[hx0+F*sc*x,A[5]+sc*y];
+   const e=hp(37.5,-30),h=kp(HAND_X,HAND_Y),sag=(atk?10:7)*sc+Math.sin(t0*2.2)*1.2*sc,m=[(e[0]+h[0])/2,Math.max(e[1],h[1])+sag];
+   ctx.strokeStyle='#a98547';ctx.lineWidth=2.4*sc;ctx.beginPath();ctx.moveTo(e[0],e[1]);ctx.quadraticCurveTo(m[0],m[1],h[0],h[1]);ctx.stroke();
+   ctx.strokeStyle='#e0c27a';ctx.lineWidth=1*sc;ctx.setLineDash([2*sc,2.2*sc]);ctx.beginPath();ctx.moveTo(e[0],e[1]);ctx.quadraticCurveTo(m[0],m[1],h[0],h[1]);ctx.stroke();ctx.setLineDash([]);   // twisted rope
+   ctx.fillStyle='#6b7380';ctx.beginPath();ctx.ellipse(h[0],h[1],3.6*sc,3.2*sc,0,0,6.3);ctx.fill();ctx.fillStyle='#8a929a';ctx.beginPath();ctx.ellipse(h[0]-.4*sc*F,h[1]-.6*sc,2.7*sc,2.3*sc,0,0,6.3);ctx.fill();   // gauntleted fist gripping the rope
+   ctx.strokeStyle='#a98547';ctx.lineWidth=1.6*sc;ctx.beginPath();ctx.moveTo(h[0]-2.6*sc,h[1]+1*sc);ctx.lineTo(h[0]+2.6*sc,h[1]+1*sc);ctx.stroke();
+   ctx.restore()}
+  if(ex&&ex.u!=null){const q=[hx0+F*sc*K*46,hy0+oy+bob+sc*K*-28];mountFx('horse',q[0],q[1],F,sc,ex.u)}
+  return rr}   // the knight SITS: lowered into the saddle, then the horse's body is drawn over his legs
+const _ds2=drawSprite;drawSprite=function(){const A=Array.prototype.slice.call(arguments);
+ if(G&&!G.gal&&(shopS().eq.pet=='horse'||MOUNT[shopS().eq.pet])&&A[8]!==true&&G.state!='dying'&&(A[0]===sprites.idle||A[0]===sprites.run||A[0]===sprites.attack)&&!(A[4]===0&&A[5]===-15)){
+  const ex=A[0]===sprites.attack&&G.sw>0?(()=>{const u=Math.max(0,Math.min(1,1-G.sw/.3));return {lg:Math.sin(Math.PI*u)*.7,u:u>.3&&u<.9?(u-.3)/.6:null}})():null;
+  return shopS().eq.pet=='horse'?horseRide(this,A,ex):mountRide(this,A,shopS().eq.pet,ex)}
+ return _ds2.apply(this,A)};
+
+function weaponDraw(k,t){const P=(c,pts)=>{ctx.fillStyle=c;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill()};ctx.lineJoin='round';
+ ctx.fillStyle='#3b2a1a';ctx.fillRect(-1.5,-2,3,10);   // grip
+ if(k=='flame'){P('#7a1a0a',[[-8,-2],[8,-2],[8,-5],[-8,-5]]);ctx.shadowColor='#ff6a1a';ctx.shadowBlur=10;const w=Math.sin(t*9)*1.5;P('#ff5a14',[[-4,-5],[-3+w,-18],[-5,-26+w],[0,-40],[5,-26-w],[3-w,-18],[4,-5]]);P('#ffb02e',[[-2,-5],[-1,-17],[0,-33],[1,-17],[2,-5]]);P('#fff3b0',[[-.8,-6],[0,-22],[.8,-6]])}
+ else if(k=='ice'){P('#9fb8c8',[[-7,-2],[7,-2],[6,-5],[-6,-5]]);ctx.shadowColor='#6fd8ff';ctx.shadowBlur=10;P('#8fdcff',[[-4,-5],[-5,-22],[0,-42],[5,-22],[4,-5]]);P('#d8f6ff',[[-1,-5],[-2,-22],[0,-38],[2,-22],[1,-5]]);P('#4cb8f0',[[2,-8],[4,-22],[2,-30]])}
+ else if(k=='bolt'){P('#b8860b',[[-9,-1],[9,-1],[7,-6],[-7,-6]]);ctx.strokeStyle='#ffd84a';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,-3,7,3.3,6.1);ctx.stroke();ctx.shadowColor='#ffe94a';ctx.shadowBlur=10;P('#fff7a0',[[-2,-6],[1,-14],[-2,-20],[1,-28],[-1,-36],[0,-46],[2,-36],[0,-28],[3,-20],[0,-14],[2,-6]])}
+ else if(k=='void'){ctx.shadowColor='#a24dff';ctx.shadowBlur=12;P('#2a1245',[[-3,-5],[-6,-22],[0,-42],[10,-30],[3,-24],[3,-5]]);P('#a24dff',[[-1,-6],[-3,-22],[0,-38],[6,-30],[1,-23],[1,-6]]);ctx.fillStyle='#c084fc';ctx.beginPath();ctx.arc(0,8,3.2,0,6.3);ctx.fill();P('#16082a',[[-8,-1],[8,-1],[5,-5],[-5,-5]])}
+ else if(k=='venom'){P('#14301c',[[-8,-1],[8,-1],[6,-5],[-6,-5]]);ctx.shadowColor='#3ddc84';ctx.shadowBlur=10;P('#1f7a45',[[-4,-5],[-6,-18],[-2,-30],[6,-42],[5,-28],[4,-5]]);P('#3ddc84',[[-2,-6],[-3,-18],[0,-28],[4,-38],[3,-26],[2,-6]]);P('#d7ffe4',[[0,-8],[0,-24],[2,-34],[1,-22]]);ctx.fillStyle='#7dffa8';ctx.beginPath();ctx.arc(-5,-18+(t*30)%12,1.6,0,6.3);ctx.fill();ctx.beginPath();ctx.arc(4,-12+(t*22)%14,1.3,0,6.3);ctx.fill()}
+ else if(k=='sakura'){P('#7a2a4a',[[-7,-2],[7,-2],[5,-5],[-5,-5]]);ctx.shadowColor='#ff5fa2';ctx.shadowBlur=10;P('#ff8fc2',[[-3,-5],[-3,-30],[0,-44],[3,-30],[3,-5]]);P('#ffd1e6',[[-1,-6],[-1,-30],[0,-40],[1,-30],[1,-6]]);ctx.fillStyle='#ffb3d6';for(let i=0;i<4;i++){const u=(t*.7+i/4)%1;ctx.globalAlpha=1-u;ctx.beginPath();ctx.ellipse(Math.sin(t*3+i*2)*9,-6-u*34,2.4,1.5,t*4+i,0,6.3);ctx.fill()}ctx.globalAlpha=1}
+ else if(k=='tidal'){P('#12306e',[[-8,-1],[8,-1],[6,-5],[-6,-5]]);ctx.shadowColor='#3b6bff';ctx.shadowBlur=12;P('#2a52d8',[[-4,-5],[-5,-18],[-2,-28],[-5,-38],[0,-46],[5,-36],[2,-26],[5,-16],[4,-5]]);P('#6f98ff',[[-1,-6],[-2,-18],[1,-28],[-1,-38],[0,-42],[2,-30],[0,-18],[1,-6]]);ctx.strokeStyle='#bcd2ff';ctx.lineWidth=1.3;ctx.beginPath();for(let i=0;i<3;i++){const y=-10-i*10;ctx.moveTo(-7,y);ctx.quadraticCurveTo(-3,y-4+Math.sin(t*5+i)*2,0,y);ctx.quadraticCurveTo(3,y+4,7,y)}ctx.stroke()}
+ else if(k=='holy'){P('#b8860b',[[-10,-1],[10,-1],[10,-5],[-10,-5]]);ctx.shadowColor='#fff6d0';ctx.shadowBlur=16;P('#f4f4ff',[[-5,-5],[-5,-30],[0,-46],[5,-30],[5,-5]]);P('#ffffff',[[-2,-6],[-2,-30],[0,-42],[2,-30],[2,-6]]);ctx.fillStyle='#ffd84a';ctx.fillRect(-1,-30,2,8);ctx.fillRect(-4,-27,8,2);ctx.globalAlpha=.5+Math.sin(t*4)*.3;ctx.strokeStyle='#fff6d0';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,-24,10+Math.sin(t*4)*1.5,0,6.3);ctx.stroke();ctx.globalAlpha=1}
+ else if(k=='obsidian'){P('#0a0a10',[[-9,-1],[9,-1],[7,-6],[-7,-6]]);ctx.shadowColor='#8b8b9e';ctx.shadowBlur=10;P('#17171f',[[-5,-5],[-8,-14],[-5,-20],[-7,-28],[-2,-34],[0,-46],[4,-34],[7,-28],[5,-20],[7,-14],[5,-5]]);P('#3a3a48',[[-1,-6],[-2,-20],[0,-40],[2,-20],[1,-6]]);P('#9a9aae',[[0,-8],[-.8,-22],[0,-38],[.8,-22]])}
+ else{P('#2a0a0a',[[-9,-2],[9,-2],[11,-6],[0,-4],[-11,-6]]);ctx.shadowColor='#d0102e';ctx.shadowBlur=10;P('#3a3a44',[[-5,-5],[-6,-20],[-4,-26],[-6,-32],[0,-44],[6,-32],[4,-26],[6,-20],[5,-5]]);P('#d0102e',[[0,-6],[-2,-22],[0,-40],[2,-22]]);P('#7a0a1c',[[-5,-12],[-9,-14],[-5,-17]])}}
+const FXP=[];let fxT=0;
+function fxSpawn(f,x,y){FXP.push({x:x+(Math.random()-.5)*34,y:y-Math.random()*70,vx:(Math.random()-.5)*20,vy:f.vy*(.6+Math.random()*.8),l:0,m:.7+Math.random()*.7,c:f.c,t:f.t,s:2+Math.random()*3,a:Math.random()*6.28})}
+const _draw=draw;draw=function(now){_draw(now);if(!G||G.gal||G.hx==null)return;const h=shopS(),sk=SKINS[h.eq.skin],w=WPNS[h.eq.wpn],p=PETS[h.eq.pet],dt=Math.min(.05,(now-fxT)/1e3||.016);fxT=now;const live=G.state!='dying';
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);
+ for(let i=FXP.length-1;i>=0;i--){const q=FXP[i];q.l+=dt;if(q.l>q.m){FXP.splice(i,1);continue}q.x+=q.vx*dt;q.y+=q.vy*dt;const k=1-q.l/q.m;ctx.globalAlpha=k;ctx.fillStyle=q.c;ctx.strokeStyle=q.c;
+  if(q.t=='star'){ctx.fillRect(q.x-q.s/2,q.y-1,q.s,2);ctx.fillRect(q.x-1,q.y-q.s/2,2,q.s)}
+  else if(q.t=='smoke'){ctx.beginPath();ctx.arc(q.x,q.y,q.s*2*(2-k),0,6.3);ctx.fill()}
+  else if(q.t=='flake'){ctx.fillRect(q.x-q.s/2,q.y-q.s/2,q.s,q.s)}
+  else if(q.t=='bolt'){ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(q.x+8*Math.cos(q.a),q.y+6);ctx.lineTo(q.x-4,q.y+12);ctx.stroke()}
+  else if(q.t=='orb'){q.a+=dt*6;ctx.beginPath();ctx.arc(q.x+Math.cos(q.a)*8,q.y+Math.sin(q.a)*8,q.s*1.1,0,6.3);ctx.fill()}
+  else{ctx.beginPath();ctx.arc(q.x,q.y,q.s*.7,0,6.3);ctx.fill()}}
+ ctx.globalAlpha=1;if(p&&live&&h.eq.pet!='horse'&&!MOUNT[h.eq.pet]){petDraw(h.eq.pet,now,dt);petHitFx(dt)}ctx.restore()};
+
+/* ===== animated pets: they follow the knight, walk/fly, flap, wag and blink ===== */
+const PT={x:0,y:0,d:1,mv:0,fire:0,ok:0};
+/* pets attack the demons: when the knight swings at a demon (or fires a named move) the pet lunges at it and lands a hit */
+function petAtkStart(k){const sw=G.sw>0,was=PT.psw>0;PT.psw=G.sw;if(k=='horse'||PT.atk)return;let tg=null;const sk=(G.sk&&typeof G.sk=='object'&&isFinite(G.sk.tx)&&isFinite(G.sk.ty))?G.sk:null;   // die() reuses G.sk as a plain number: only a real skill object may send the pet
+ if(sk&&PT.lsk!==sk){PT.lsk=sk;tg={x:sk.tx,y:sk.ty,dur:.7}}
+ else if(sw&&!was){let b=null,bd=230;(G.tg||[]).forEach(o=>{const d=Math.hypot(o.x-G.hx,o.y-G.hy);if(d<bd){bd=d;b=o}});if(b)tg={x:b.x,y:b.y-16,dur:.55}}
+ if(tg)PT.atk={x:tg.x,y:tg.y,t:0,dur:tg.dur,s:tg.x>=PT.x?1:-1,hit:0}}
+function petHitFx(dt){const f=PT.fx;if(!f)return;f.t+=dt;const u=f.t/.38;if(u>=1){PT.fx=null;return}
+ const k=f.k,x=f.x,y=f.y,col={cat:'#e8e8ff',fox:'#fb923c',cerb:'#ff3a1a',turtle:'#6ee7a0',crow:'#e5e5ee',phoenix:'#ff9a1f',dragon:'#3ab8ff'}[k]||'#fff',z=k=='cerb'?1.5:1;
+ ctx.save();ctx.globalAlpha=Math.max(0,1-u);ctx.strokeStyle=col;ctx.lineCap='round';
+ if(k=='turtle'){ctx.lineWidth=5*(1-u)+1;ctx.beginPath();ctx.arc(x,y,8+u*38,0,6.3);ctx.stroke()}
+ else if(k=='phoenix'||k=='dragon'){for(let i=0;i<9;i++){const a=i*.7+u*2,r=u*36;ctx.fillStyle=i%2?'#ffd84a':col;ctx.beginPath();ctx.arc(x+Math.cos(a)*r,y+Math.sin(a)*r*.8,9*(1-u)+2,0,6.3);ctx.fill()}}
+ else if(k=='crow'){ctx.lineWidth=2;for(let i=0;i<6;i++){const a=i*1.05,r1=6+u*8,r2=14+u*16;ctx.beginPath();ctx.moveTo(x+Math.cos(a)*r1,y+Math.sin(a)*r1);ctx.lineTo(x+Math.cos(a)*r2,y+Math.sin(a)*r2);ctx.stroke()}}
+ else{const n=k=='cerb'?3:4,g=Math.min(1,u*3.5);ctx.lineWidth=(4-u*3)*z;for(let i=0;i<n;i++){const ox=(i-(n-1)/2)*10*z;ctx.beginPath();ctx.moveTo(x+ox-14*z,y-24*z);ctx.lineTo(x+ox-14*z+26*z*g,y-24*z+48*z*g);ctx.stroke()}}
+ ctx.restore()}
+
+function petDraw(k,now,dt){const t=now/1000,fly=!(k=='cat'||k=='cerb'||k=='fox'||k=='turtle'),d0=G.face>0||G.face==null?1:-1,tx=G.hx-d0*58,ty=G.hy+(fly?-34:12);
+ const jmp=PT.lx!=null&&Math.hypot(G.hx-PT.lx,G.hy-PT.ly)>140,gap=PT.ln!=null&&now-PT.ln>300;   // door / new room / pause: no delay, the pet is simply there
+ if(!PT.ok||jmp||gap||PT.ri!==G.i||!isFinite(PT.x+PT.y)||Math.hypot(tx-PT.x,ty-PT.y)>450){PT.x=tx;PT.y=ty;PT.ok=1;PT.atk=null}
+ PT.lx=G.hx;PT.ly=G.hy;PT.ln=now;PT.ri=G.i;
+ petAtkStart(k);
+ let vx=(tx-PT.x)*Math.min(1,dt*9);const A=PT.atk;
+ if(A){A.t+=dt;const u=A.t/A.dur;
+  if(u>=1)PT.atk=null;
+  else{const bl=Math.sin(Math.PI*u),ax=A.x-A.s*(fly?34:40),ay=A.y+(fly?-14:16),nx=tx+(ax-tx)*bl,ny=ty+(ay-ty)*bl;vx=nx-PT.x;PT.x=nx;PT.y=ny;
+   if(u>=.45&&!A.hit){A.hit=1;PT.fx={x:A.x,y:A.y,t:0,k}}}}
+ if(!PT.atk){PT.x+=vx;PT.y+=(ty-PT.y)*Math.min(1,dt*10)}const sp=Math.abs(vx)/Math.max(dt,.001);PT.mv=sp>14;
+ if(Math.abs(vx)>.25)PT.d=vx>0?1:-1;else PT.d=d0;if(PT.atk)PT.d=PT.atk.s;
+ const bob=fly?Math.sin(t*5)*3:0;
+ // keep clear of the Princess orb: if the pet would overlap its glow, it is drawn nudged away from it
+ let ax=0,ay=0;const ob=document.getElementById('orb');
+ if(ob&&ob.style.display!='none'&&ob.style.left){const ox=parseFloat(ob.style.left)/100*800,oy=parseFloat(ob.style.top)/100*450;
+  if(isFinite(ox)&&isFinite(oy)){let vx2=PT.x-ox,vy2=PT.y+bob-oy;const L=Math.hypot(vx2,vy2),R=70;
+   if(L<R){if(L<1){vx2=-d0;vy2=1}const l2=Math.max(1,Math.hypot(vx2,vy2));ax=vx2/l2*(R-L);ay=vy2/l2*(R-L)}}}
+ ctx.save();ctx.translate(PT.x+ax,PT.y+bob+ay);ctx.scale(PT.d,1);ctx.lineCap='round';
+ petCreature(k,t,dt,PT.mv);ctx.restore()}
+function petCreature(k,t,dt,mvq){ctx.lineCap='round';
+ const el=(x,y,rx,ry,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,6.3);ctx.fill()},
+  tri=(a,b,c2,d,e,f,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c2,d);ctx.lineTo(e,f);ctx.fill()},
+  wing=(c,len,wd)=>{ctx.save();ctx.translate(-2,-5);ctx.rotate(-.5+Math.sin(t*(mvq?16:11))*.9);ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(-len*.6,0,len,wd,0,0,6.3);ctx.fill();ctx.restore()};
+ if(k=='cat'){const cy=mvq?t*11:0,leg=(x,ph)=>{ctx.fillStyle='#15151e';ctx.fillRect(x,-8+(mvq?Math.max(0,Math.sin(cy+ph))*-3:0),4,8+(mvq?Math.sin(cy+ph)*1.5:0))};
+  ctx.strokeStyle='#1d1d29';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-12,-13);ctx.quadraticCurveTo(-26,-18+Math.sin(t*3)*7,-22+Math.sin(t*3)*3,-32+Math.sin(t*3.4)*3);ctx.stroke();
+  leg(-11,0);leg(-5,3.1);leg(5,3.1);leg(10,0);
+  el(1,-14,14,7,'#262633');el(3,-11,9,3.5,'#33334a');el(16,-18,7.5,7,'#262633');
+  tri(10,-22,13,-31,17,-23,'#262633');tri(16,-23,20,-31,23,-21,'#262633');tri(12,-24,13.5,-28,15.5,-24,'#7a3b5a');
+  if(Math.sin(t*.9)<.96){el(14,-19,2,2.4,'#ffd84a');el(20,-19,2,2.4,'#ffd84a');ctx.fillStyle='#000';ctx.fillRect(14,-20,1.2,3.4);ctx.fillRect(20,-20,1.2,3.4)}else{ctx.fillStyle='#ffd84a';ctx.fillRect(12,-19,4,1);ctx.fillRect(18,-19,4,1)}
+  }
+ else if(k=='crow'){tri(-8,-2,-24,1+Math.sin(t*5)*2,-9,4,'#0d0d14');wing('#1a1a26',14,4.5);el(0,0,11,7,'#15151f');el(1,-2,7,3,'#232336');
+  el(10,-6,5.2,5,'#15151f');tri(14,-8,23,-5,14,-3,'#f59e0b');el(11.5,-7.5,1.6,1.6,'#fff');ctx.fillStyle='#000';ctx.fillRect(12,-8,1,1.6);
+  if(!mvq){ctx.strokeStyle='#f59e0b';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(-1,6);ctx.lineTo(-2,11);ctx.moveTo(3,6);ctx.lineTo(4,11);ctx.stroke()}wing('#0d0d14',13,4)}
+ else if(k=='cerb'){ctx.scale(1.55,1.55);const cy=mvq?t*11:0,lg=(x,ph)=>{ctx.fillStyle='#1a0c10';ctx.fillRect(x,-9+(mvq?Math.max(0,Math.sin(cy+ph))*-3:0),4.5,9)};
+  ctx.strokeStyle='#2b1215';ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(-14,-18);ctx.quadraticCurveTo(-24,-22,-24+Math.sin(t*6)*2,-30);ctx.stroke();
+  lg(-13,0);lg(-7,3.1);lg(6,3.1);lg(12,0);
+  el(0,-17,17,9,'#2b1215');el(2,-14,11,4,'#3a1a1e');
+  for(let i=0;i<4;i++){const fx=-8+i*6,fl=Math.sin(t*9+i*1.7)*2;tri(fx-3,-24,fx+fl,-33-(i%2)*3,fx+3,-24,i%2?'#ff9a1f':'#ff4d1a')}
+  const head=(x,y,ph,sz)=>{const b=Math.sin(t*3+ph)*1.6;ctx.strokeStyle='#2b1215';ctx.lineWidth=6*sz;ctx.beginPath();ctx.moveTo(11,-18);ctx.lineTo(x,y+b);ctx.stroke();
+   ctx.save();ctx.translate(x,y+b);ctx.scale(sz,sz);el(0,0,6.5,5,'#3a1a1e');el(7,2,5,3.3,'#4a2328');tri(-3,-3,-5,-10,1,-4,'#1a0c10');tri(1,-4,4,-10,5,-3,'#1a0c10');
+   el(12,1.5,1.4,1,'#000');el(2,-1.5,1.7,1.7,'#ff2a2a');ctx.fillStyle='#fff';ctx.fillRect(8,4.5,1.4,2.2);ctx.fillRect(11,4.5,1.4,2.2);ctx.restore()};
+  head(16,-38,0,.85);head(26,-28,2.1,1);head(27,-17,4.2,.85)}
+ else if(k=='fox'){const cy=mvq?t*11:0;   // menacing nine-tailed fox: long clawed legs, fiery tails, slit glowing eyes, fangs
+  for(let i=0;i<9;i++){const a=3.3+i*.21+Math.sin(t*2.4+i*.8)*.07,L=30+(i%2)*5,bx=-10,by=-21,ex=bx+Math.cos(a)*L,ey=by+Math.sin(a)*L,mx=bx+Math.cos(a-.35)*L*.55,my=by+Math.sin(a-.35)*L*.55;
+   ctx.strokeStyle=i%2?'#ea580c':'#c2410c';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(bx,by);ctx.quadraticCurveTo(mx,my,ex,ey);ctx.stroke();
+   const fh=8+Math.sin(t*9+i*1.3)*2.2;tri(ex-3.4,ey+1.5,ex+Math.cos(a)*2,ey-fh,ex+3.4,ey+1.5,'#ff5a14');tri(ex-2.2,ey+1.5,ex+Math.cos(a),ey-fh*.62,ex+2.2,ey+1.5,'#ffd24a')}
+  const lg=(x,ph,c,th)=>{const sw=mvq?Math.sin(cy+ph)*3.2:0,lf=mvq?Math.max(0,Math.sin(cy+ph))*-3.5:0,px=x+sw,py=-1+lf;
+   ctx.strokeStyle=c;ctx.lineWidth=4.4;ctx.beginPath();ctx.moveTo(x,-17);ctx.lineTo(x+1.5+sw*.5,-9+lf*.5);ctx.lineTo(px,py-1);ctx.stroke();
+   if(th)el(x,-17,4.2,4.6,'#c2410c');
+   el(px+1.2,py,3.6,1.9,'#0d0605');for(let q=0;q<3;q++)tri(px+1+q*2,py-.6,px+2.2+q*2,py+2.6,px+3+q*2,py-.6,'#f3ead2')};
+  lg(-8,0,'#2a120a');lg(9,3.1,'#2a120a');
+  el(0,-21,14,6.8,'#d9480f');el(2,-18,9.5,3.1,'#7c2d12');
+  lg(-13,3.1,'#120907',1);lg(13,0,'#120907',1);
+  ctx.strokeStyle='#d9480f';ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(10,-22);ctx.lineTo(17,-29);ctx.stroke();
+  tri(11.5,-27,7,-23,15,-23.5,'#fb923c');tri(14,-25,10.5,-20.5,18,-23.5,'#fb923c');   // ruff
+  tri(12.5,-32,12,-46,19,-33.5,'#ea580c');tri(18.5,-33.5,24.5,-46,25.5,-32.5,'#ea580c');tri(13.5,-34,13.3,-43,17.6,-34.5,'#120907');tri(19.8,-34.5,23.4,-43,24,-33.7,'#120907');
+  el(18,-29,7.6,5.7,'#ea580c');tri(21,-33,34.5,-27.5,21,-24.3,'#ea580c');tri(22,-32.6,34,-28,23.5,-29,'#c2410c');
+  tri(21,-25.2,32.5,-25.8,20,-21.3,'#7c2d12');ctx.strokeStyle='#120907';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(22,-26.2);ctx.lineTo(33.5,-27);ctx.stroke();
+  tri(25,-26,26.1,-22,27.4,-26.2,'#fff');tri(29.6,-26.6,30.5,-23.4,31.7,-26.8,'#fff');tri(26.4,-24.6,27.2,-27.6,28.2,-24.8,'#fff');
+  el(34,-27.9,1.8,1.4,'#000');tri(19.3,-34,21,-39,22.7,-34,'#ff3b00');
+  ctx.shadowColor='#ff3b00';ctx.shadowBlur=9;ctx.fillStyle='#ffd000';ctx.beginPath();ctx.moveTo(18.8,-30.4);ctx.lineTo(26,-32.6);ctx.lineTo(23.8,-29.2);ctx.lineTo(19.6,-29.2);ctx.closePath();ctx.fill();ctx.shadowBlur=0;
+  ctx.fillStyle='#000';ctx.fillRect(22.6,-32.2,1,2.8);tri(17.6,-32.2,27.8,-34.6,25.6,-31.2,'#120907')}   // angry brow
+  else if(k=='turtle'){const w=mvq?Math.sin(t*8)*2:Math.sin(t*2)*.5,hb=mvq?0:Math.sin(t*1.3)*1.2;
+  tri(-14,-6,-22,-3,-14,-2,'#7cb36a');
+  ctx.fillStyle='#7cb36a';ctx.fillRect(-12+w,-5,5,5);ctx.fillRect(-5-w,-5,5,5);ctx.fillRect(5+w,-5,5,5);ctx.fillRect(11-w,-5,5,5);
+  ctx.fillStyle='#8fc27a';ctx.fillRect(12,-10,8+hb,4.5);el(21+hb,-9,5,4.2,'#8fc27a');el(22.5+hb,-10.5,1.2,1.2,'#111');ctx.fillStyle='#4d7a3f';ctx.fillRect(24+hb,-7,3,1);
+  el(0,-5,16,3.2,'#d9c27a');
+  ctx.fillStyle='#2f7d4f';ctx.beginPath();ctx.ellipse(0,-6,15,12,0,Math.PI,0);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#1b4d32';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(-5,-16);ctx.lineTo(5,-16);ctx.lineTo(9,-10);ctx.lineTo(5,-6);ctx.lineTo(-5,-6);ctx.lineTo(-9,-10);ctx.closePath();ctx.moveTo(-5,-16);ctx.lineTo(-8,-17);ctx.moveTo(5,-16);ctx.lineTo(8,-17);ctx.moveTo(9,-10);ctx.lineTo(14,-9);ctx.moveTo(-9,-10);ctx.lineTo(-14,-9);ctx.stroke();
+  el(-4,-14,4,1.8,'#4aa36c');el(0,-11,2,2,'#fbbf24')}
+ else if(k=='phoenix'){ctx.shadowColor='#ff7a1a';ctx.shadowBlur=10;
+  for(let i=0;i<3;i++){const u=Math.sin(t*7+i*2)*2;tri(-8,-1+i*2,-26+u,-8+i*5,-9,4+i*1.5,['#ff3d00','#ff7a1a','#ffd84a'][i])}
+  wing('#ff9a1f',14,4.5);el(0,0,11,7,'#ff7a1a');el(1,-2,7,3,'#ffd84a');
+  el(10,-6,5.2,5,'#ff8c1a');tri(8,-10,7,-17+Math.sin(t*9)*1.5,12,-11,'#ffd84a');tri(11,-11,13,-18+Math.sin(t*9+1)*1.5,15,-10,'#ff4d00');
+  tri(14,-8,22,-5,14,-3,'#fde047');el(11.5,-7.5,1.6,1.6,'#fff');ctx.fillStyle='#000';ctx.fillRect(12,-8,1,1.6);wing('#ffb02e',13,4);ctx.shadowBlur=0}
+ else if(k=='dragon'){   // long azure serpent dragon (eastern style): flat back for the rider, S-curving tail, raised neck, antlers and whiskers
+  const N=46,sp=[],fl=Math.sin(t*3.2);
+  for(let i=0;i<=N;i++){const x=-86+i/N*120;let y;if(x<0){const env=Math.min(1,-x/34);y=Math.sin(x*.085-t*3.2)*9*env*env}else y=-Math.pow(x/34,1.8)*15;
+   const r=x<-60?2+(x+86)/26*3.4:x<-10?5.4+(x+60)/50*5.6:x<14?11:11-(x-14)/20*3;sp.push([x,y,r])}
+  const at=x=>{let b=sp[0];for(const q of sp)if(Math.abs(q[0]-x)<Math.abs(b[0]-x))b=q;return b};
+  const cloud=(cx,cy,z,c1,c2)=>{ctx.fillStyle=c2;for(const [dx,dy,r] of [[0,3,1],[-.95,3.4,.72],[.95,3.2,.78],[-.45,.9,.7],[.5,1,.66]]){ctx.beginPath();ctx.arc(cx+dx*z,cy+dy*z*.55,r*z,0,6.3);ctx.fill()}
+   ctx.fillStyle=c1;for(const [dx,dy,r] of [[0,0,1],[-.95,.6,.7],[.95,.5,.74],[-.45,-1.2,.66],[.5,-1.1,.62]]){ctx.beginPath();ctx.arc(cx+dx*z,cy+dy*z*.55,r*z,0,6.3);ctx.fill()}
+   ctx.fillStyle='rgba(255,226,170,.75)';ctx.beginPath();ctx.arc(cx-.35*z,cy-1.5*z*.55,.4*z,0,6.3);ctx.fill()};
+  for(let i=0;i<9;i++){const cx=-76+i*13+Math.sin(t*.8+i*1.7)*3,cy=16+Math.sin(t*1.3+i)*2+(i%2)*3;cloud(cx,cy,5.5+(i%3)*1.4,i%2?'#ff9a3c':'#ffb25e','#e8590c')}   // orange cloud bank under the dragon
+  // tail fin
+  {const q=sp[0],w=Math.sin(t*5)*3;tri(q[0]+2,q[1],q[0]-16,q[1]-9+w,q[0]-9,q[1]+1,'#22b8ff');tri(q[0]+2,q[1],q[0]-18,q[1]+8+w,q[0]-8,q[1]-1,'#38c8ff');tri(q[0]+4,q[1]-1,q[0]-8,q[1]-4,q[0]-6,q[1]+3,'#bfefff')}
+  // body: dark scales, pale belly, rim light on the back
+  for(const q of sp){el(q[0],q[1],q[2],q[2],'#0d2c4d')}
+  for(const q of sp){el(q[0],q[1]+q[2]*.42,q[2]*.78,q[2]*.5,'#2a7fbf')}
+  for(const q of sp){el(q[0],q[1]-q[2]*.45,q[2]*.55,q[2]*.35,'#164c80')}
+  ctx.strokeStyle='#14507f';ctx.lineWidth=.9;for(let i=3;i<N;i+=2){const q=sp[i];ctx.beginPath();ctx.moveTo(q[0],q[1]+q[2]*.1);ctx.lineTo(q[0]+.5,q[1]+q[2]*.85);ctx.stroke()}
+  // dorsal ridge
+  for(let i=1;i<N-3;i+=2){const q=sp[i];tri(q[0]-2.2,q[1]-q[2]+1,q[0]+.8,q[1]-q[2]-4.5-(i%4==1?2.5:0),q[0]+2.6,q[1]-q[2]+1,'#38c8ff')}
+  // four short clawed legs
+  for(const lx of [-22,-12,12,20]){const q=at(lx),by=q[1]+q[2]*.7,sw=Math.sin(t*(mvq?9:3)+lx)*2.5;
+   ctx.strokeStyle='#123a63';ctx.lineWidth=3.2;ctx.beginPath();ctx.moveTo(lx,by);ctx.quadraticCurveTo(lx+3,by+7,lx-3+sw,by+14);ctx.stroke();
+   for(let c=0;c<3;c++)tri(lx-5+sw+c*2.4,by+12.5,lx-3.6+sw+c*2.4,by+17.5,lx-2.4+sw+c*2.4,by+12.5,'#dff4ff')}
+  for(let i=0;i<4;i++){const cx=-52+i*30+Math.sin(t*.9+i*2)*3,cy=20+Math.sin(t*1.1+i*1.3)*1.8;cloud(cx,cy,4.6+(i%2)*1.4,i%2?'#ffb25e':'#ff9a3c','#e8590c')}
+  // mane along the neck
+  for(let i=Math.floor(N*.7);i<=N;i++){const q=sp[i],h=7+Math.sin(t*5+i)*1.6;tri(q[0]+3,q[1]-q[2]+1,q[0]-6,q[1]-q[2]-h,q[0]-1,q[1]-q[2]+2,i%2?'#6fdcff':'#38c8ff')}
+  // head
+  ctx.save();ctx.translate(37,-17.5);ctx.rotate(-.1+Math.sin(t*2)*.04);
+  ctx.strokeStyle='#dff4ff';ctx.lineCap='round';ctx.lineWidth=2.3;ctx.beginPath();ctx.moveTo(-4,-4);ctx.quadraticCurveTo(-12,-13,-22,-9+fl);ctx.stroke();
+  ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(-11,-9);ctx.lineTo(-13,-16);ctx.moveTo(-16,-10.5);ctx.lineTo(-19,-16+fl);ctx.stroke();
+  ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-3,-2);ctx.quadraticCurveTo(-10,-5,-18,0+fl);ctx.stroke();
+  ctx.strokeStyle='#6fdcff';ctx.lineWidth=1.3;for(let w=0;w<2;w++){ctx.beginPath();ctx.moveTo(13,2+w*1.6);ctx.bezierCurveTo(21,9+w*6+Math.sin(t*3+w)*3,27,2+w*7+Math.sin(t*3+1+w)*4,38,7+w*9+Math.sin(t*3+2+w)*5);ctx.stroke()}   // whiskers
+  el(0,0,9,6.5,'#123a63');el(9,2,7.5,4.2,'#17487a');el(15,.6,3,2.5,'#1c5a94');el(8,5.6,7.4,2.4,'#0d2c4d');
+  ctx.strokeStyle='#051524';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(4,4.6);ctx.lineTo(15,3.8);ctx.stroke();
+  tri(9.5,4,10.6,8.4,11.8,4,'#f6f0de');tri(13.5,3.8,14.4,7.2,15.4,3.8,'#f6f0de');
+  tri(-3,-5.2,6.5,-9.5,6.5,-3.8,'#051524');
+  ctx.shadowColor='#ff8a1a';ctx.shadowBlur=9;el(3.6,-2.2,2.3,1.8,'#ffc15a');ctx.shadowBlur=0;ctx.fillStyle='#000';ctx.fillRect(3.2,-3.8,1.1,3.3);
+  el(15.6,-.6,.9,.7,'#051524');
+  for(let i=0;i<2;i++){const u=(t*.9+i/2)%1;ctx.globalAlpha=.5*(1-u);ctx.fillStyle='#ff9a3c';ctx.beginPath();ctx.arc(18+u*7,-1-u*8,1.2+u*2.6,0,6.3);ctx.fill()}ctx.globalAlpha=1;
+  ctx.restore();
+  // drifting blue sparks
+  for(let i=0;i<6;i++){const u=(t*.7+i*.19)%1;ctx.globalAlpha=.9*(1-u);ctx.fillStyle=i%2?'#ffd08a':'#ff7a1a';ctx.fillRect(-60+i*17+Math.sin(t*3+i)*3,-8-u*26,1.6,1.6)}ctx.globalAlpha=1}
+}
+/* sword-art swings take the colour of the equipped blade, and the knight keeps his armour colour mid-swing */
+/* named moves (sword arts) keep their own colours; only the normal swing follows the equipped weapon */
+
+/* the knight's attack sheet: the pale blade + slash arc are re-textured with the equipped sword's colours (armour colour baked in) */
+const WPAL={flame:[[200,50,10],[255,106,26],[255,224,120]],ice:[[60,160,230],[111,216,255],[225,248,255]],bolt:[[220,180,20],[255,233,74],[255,252,205]],void:[[80,30,150],[150,70,235],[215,170,255]],slay:[[120,8,24],[208,16,46],[255,120,130]],venom:[[20,110,60],[61,220,132],[215,255,228]],sakura:[[190,60,120],[255,143,194],[255,225,240]],tidal:[[25,60,170],[70,120,255],[200,220,255]],holy:[[200,170,70],[244,244,255],[255,255,255]],obsidian:[[70,70,92],[120,120,146],[205,205,226]]},WSH={};
+function wSheet(){SKOFF=1;try{return wSheet0()}finally{SKOFF=0}}
+function wSheet0(){const h=shopS(),w=WPNS[h.eq.wpn],im=sprites.attack,hasW=!!(w&&WPAL[h.eq.wpn]);if(!im.loaded||(!hasW&&!SKINS[h.eq.skin]))return null;const key=(h.eq.skin||'')+'|'+(hasW?h.eq.wpn:'');   // no blade equipped but armour tinted: the blade + swing arc must NOT take the armour colour
+if(WSH[key])return WSH[key];
+ const W=im.img.width,H=im.img.height,mk=()=>{const c=document.createElement('canvas');c.width=W;c.height=H;return c},o=mk(),oc=o.getContext('2d');oc.drawImage(im.img,0,0);const src=oc.getImageData(0,0,W,H).data;
+ const c=mk(),g=c.getContext('2d'),sk=SKINS[h.eq.skin];if(sk)g.filter=sk.f;g.drawImage(im.img,0,0);g.filter='none';const out=g.getImageData(0,0,W,H),d=out.data;
+ const kind=i=>{if(src[i+3]<200)return 0;const r=src[i],gg=src[i+1],b=src[i+2];return r==199&&gg==199&&b==176?1:r==230&&gg==230&&b==212?2:0},seen=new Uint8Array(W*H),P=hasW?WPAL[h.eq.wpn]:null;
+ for(let p0=0;p0<W*H;p0++){if(seen[p0]||!kind(p0*4))continue;const q=[p0],cp=[];seen[p0]=1;while(q.length){const p=q.pop();cp.push(p);const x=p%W,y=(p/W)|0;for(const n of [x>0?p-1:-1,x<W-1?p+1:-1,y>0?p-W:-1,y<H-1?p+W:-1])if(n>=0&&!seen[n]&&kind(n*4)){seen[n]=1;q.push(n)}}
+  if(cp.length<30)continue;for(const p of cp){if(!P){d[p*4]=src[p*4];d[p*4+1]=src[p*4+1];d[p*4+2]=src[p*4+2];continue}   // plain blade: keep the original cream colours
+   const x=p%W,y=(p/W)|0,k=kind(p*4),col=k==2?P[2]:(((x*3+y*5+((x>>2)*7))%7)<2?P[0]:P[1]);d[p*4]=col[0];d[p*4+1]=col[1];d[p*4+2]=col[2]}}
+ g.putImageData(out,0,0);c.__baked=1;return WSH[key]=c}
+
+/* ARMOUR COLOUR EVERYWHERE: any time the knight's sprite sheets are drawn (walk, swing, every death scene, gallery) the equipped skin's colour is applied */
+let SKOFF=0;
+(function(){const P=CanvasRenderingContext2D.prototype,_di=P.drawImage;P.drawImage=function(im){if(!SKOFF&&im&&!im.__baked&&(im===sprites.idle.img||im===sprites.death.img||im===sprites.attack.img||im===sprites.run.img)){const sk=SKINS[shopS().eq.skin];if(sk){const cur=this.filter;this.filter=(cur&&cur!='none'?cur+' ':'')+sk.f;try{return _di.apply(this,arguments)}finally{this.filter=cur||'none'}}}return _di.apply(this,arguments)}})();
+</script>
 </body>
 </html>
