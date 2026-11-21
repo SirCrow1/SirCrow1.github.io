@@ -73,6 +73,7 @@ function buildUI(){
           <button id="adm-pets" class="acct-b" style="background:#be185d;margin:0 6px 6px 0">Max pet bonds</button>
           <button id="adm-spam" class="acct-b" style="background:#4338ca;margin:0 6px 6px 0">Unlimited abilities: OFF</button>
           <button id="adm-reset" class="acct-b" style="background:#450a0a;margin:0 6px 6px 0">Reset my save</button>
+          <button id="adm-tele" class="acct-b" style="background:#0f766e;display:block;margin:0 0 6px 0">🌀 Teleport to puzzle rooms (test them)</button>
           <button id="adm-panel" class="acct-b" style="background:#ca8a04;display:block;margin:0 0 6px 0">👥 Open admin panel (players, codes)</button>
           <div style="margin-top:6px;font-size:12px;color:#fcd34d">Give gold (leave the name blank to give it to yourself)</div>
           <div style="display:flex;gap:6px;margin-top:4px">
@@ -783,10 +784,62 @@ async function pfSelect(name){
 }
 window.profileTabOpen=profileTabOpen;
 
+// ---------- admin: teleport to any puzzle room (secret trick rooms, boss room, normal rooms) ----------
+function teleOpen(){
+  if(!isAdmin)return;
+  const m=$('#tele-modal');
+  let h='<div style="font-size:12px;color:#fcd34d;margin-bottom:8px">Pick a room and you are sent there instantly. If no run is going, one is started for you. Use it as often as you like.</div>';
+  h+='<div style="font-weight:bold;color:#34d399;margin:6px 0 4px">🗝️ Secret puzzle rooms</div><div>';
+  try{SRM.forEach((d,i)=>{h+=`<button class="acct-b" data-tk="s" data-ti="${i}" style="background:#4338ca;margin:0 5px 5px 0">${esc(d.name)}</button>`})}catch(e){h+='<span style="color:#f87171">Secret rooms not loaded yet.</span>'}
+  h+='</div><div style="font-weight:bold;color:#34d399;margin:8px 0 4px">👹 Boss room</div><button class="acct-b" data-tk="b" style="background:#991b1b;margin:0 5px 5px 0">Boss room</button>';
+  let n=0;try{if(G&&!G.gal)n=G.rooms.length-1}catch(e){}
+  h+='<div style="font-weight:bold;color:#34d399;margin:8px 0 4px">🚪 Normal rooms'+(n?'':' <span style="color:#a1a1aa;font-weight:normal">(start a run to see them all)</span>')+'</div>';
+  for(let i=0;i<n;i++)h+=`<button class="acct-b" data-tk="r" data-ti="${i}" style="background:#3f3f46;margin:0 4px 4px 0;min-width:38px">${i+1}</button>`;
+  $('#tele-body').innerHTML=h;
+  m.style.display='flex';
+}
+function teleGo(kind,idx){
+  if(!isAdmin)return;
+  try{
+    if(typeof SAVED!=='undefined'&&SAVED){say('Close the Death Gallery / scorecard first');return}
+    if(!G||G.gal||G.ended){G=null;keys={};startRun();if(!G){say('Pick a deck with questions first');return}}
+    const ok=['play','secret','secretOut','secretDie'];
+    if(!ok.includes(G.state)){say('Wait until you are standing in a room, then try again');return}
+    if(G.paused)G.paused=0;
+    const inSec=G.state!=='play';
+    if(kind==='s'){
+      const d=SRM[idx];if(!d)return;
+      if(!inSec)G.qtxt=$('#q').textContent;
+      G.sec={x:(G.sec&&G.sec.x)||300,used:1};
+      $('#q').textContent='🗝️ '+d.name+'! '+d.hint+(d.axes?' Red blade = low sweep, don\'t crawl.':' Traps only knock you back.');
+      G.state='secret';G.sc={t:0,hurt:0,out:0,bl:[],rem:[],gold:0,k:idx,def:d,vx:0,vy:0,sup:-1};d.init(G.sc);G.hx=70;G.hy=320;G.moving=0;
+      say('🌀 '+d.name);
+    }else{
+      const last=G.rooms.length-1,i=kind==='b'?last:Math.max(0,Math.min(last-1,idx));
+      G.sc=null;G.state='play';G.i=i;mkRoom();
+      say('🌀 '+(kind==='b'?'Boss room':'Room '+(i+1)));
+    }
+    $('#tele-modal').style.display='none';$('#acct-modal').style.display='none';
+  }catch(e){console.error(e);say('Teleport failed')}
+}
+function buildTele(){
+  document.body.insertAdjacentHTML('beforeend',`
+  <div id="tele-modal" style="display:none;position:fixed;inset:0;z-index:95;align-items:center;justify-content:center;background:rgba(0,0,0,.65)"><div style="background:#14101c;border:2px solid #0f766e;border-radius:10px;padding:16px 18px;width:min(560px,94vw);max-height:86vh;overflow:auto;color:#e6dcc0">
+    <div style="font:900 20px Cinzel,serif;color:#5eead4;margin-bottom:8px">🌀 Teleport</div>
+    <div id="tele-body"></div>
+    <div style="margin-top:10px;text-align:right"><button id="tele-close" style="color:#a1a1aa;font-size:12px">Close</button></div>
+  </div></div>`);
+  const m=$('#tele-modal');
+  m.addEventListener('keydown',e=>e.stopPropagation());m.addEventListener('keyup',e=>e.stopPropagation());
+  $('#tele-close').onclick=()=>m.style.display='none';
+  $('#tele-body').addEventListener('click',e=>{const b=e.target.closest('button[data-tk]');if(b)teleGo(b.dataset.tk,+b.dataset.ti)});
+  $('#adm-tele').onclick=teleOpen;
+}
+
 // ---------- start ----------
 function start(){
   sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-  buildUI();buildExtra();
+  buildUI();buildExtra();buildTele();
   setInterval(()=>{if(roleName!=='unknown'||profile.code)syncStats()},90000);
   setInterval(()=>cloudSave(true),60000);
   sb.auth.onAuthStateChange((ev,session)=>{
