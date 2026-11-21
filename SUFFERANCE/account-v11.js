@@ -196,7 +196,7 @@ async function render(){
   $('#acct-nameprompt').textContent=needName?'Welcome! Pick your player name (3-16 letters, numbers or _)':'New name (3-16 letters, numbers or _)';
   $('#acct-rename').style.display=(needName||editing)?'none':'inline-block';
   $('#acct-admin').style.display=isAdmin?'block':'none';
-  $('#acct-diag').textContent='build v10 · role: '+roleName+' · save: '+String((S&&S.owner)||'none').slice(0,6)+' · acct: '+String(myId||'none').slice(0,6)+(diag?' · '+diag:'');
+  $('#acct-diag').textContent='build v11 · role: '+roleName+' · save: '+String((S&&S.owner)||'none').slice(0,6)+' · acct: '+String(myId||'none').slice(0,6)+(diag?' · '+diag:'');
   $('#acct-stats').innerHTML=statsHTML();
   const ranks=Object.entries(S.best||{}).slice(0,6).map(([k,v])=>k+': '+v).join(' · ');
   $('#acct-ranks').textContent=ranks?'🏆 Best ranks: '+ranks:'';
@@ -220,23 +220,15 @@ async function loadProfile(){
   }catch(e){diag='load failed: '+e.message}
 }
 function adminUnlock(){
-  if(!isAdmin)return;
-  if(S.adminSeed)return;   // already seeded once for this save: never overwrite gold again
-  if(localStorage.suff_skip_unlock){delete localStorage.suff_skip_unlock;S.adminSeed=1;save();return}   // right after 'Reset my save'
-  try{
-    const h=shopS();for(const k in SKINS)h.own['skin'+k]=1;for(const k in WPNS)h.own['wpn'+k]=1;for(const k in PETS)h.own['pet'+k]=1;
-    for(const k in SHOP_ITEMS)if((h.inv[k]||0)<99)h.inv[k]=99;
-    S.adminSeed=1;save();
-    const g=$('#gold');if(g)g.textContent='\u{1FA99} '+S.gold;try{shopGold()}catch(e){}try{shopRender()}catch(e){}
-  }catch(e){console.error(e);diag+=' unlock: '+e.message}
+  // intentionally empty: nothing is given automatically any more. Use the admin buttons.
 }
 
 // ---------- one save per account (the game keeps its save in the browser) ----------
 const MAIN='sufference_save_v14';
-function stashAndClear(){   // on logout: park this account's save under its own key, leave a clean slate
+function stashAndClear(){   // on logout: keep a copy of this account's save (the save itself stays in place)
   try{
     const o=(S&&S.owner)||localStorage.suff_owner;
-    if(o){localStorage['suff_save_'+o]=localStorage[MAIN]||JSON.stringify(S);localStorage.removeItem(MAIN);localStorage.removeItem('suff_owner')}
+    if(o)localStorage['suff_save_'+o]=localStorage[MAIN]||JSON.stringify(S);
   }catch(e){}
 }
 function switchOwner(uid){  // returns true if it swapped saves and is reloading the page
@@ -244,6 +236,12 @@ function switchOwner(uid){  // returns true if it swapped saves and is reloading
     // the owner is written INSIDE the save itself (S.owner), so any copy of a save knows whose it is
     const owner=(S&&S.owner)||localStorage.suff_owner||null;
     if(!owner||owner===uid){
+      const stash=localStorage['suff_save_'+uid];
+      const blank=!S.owner&&!S.shop&&!(S.mem&&S.mem.runs)&&!Object.keys(S.seen||{}).length&&!(S.st&&S.st.tot);
+      if(blank&&stash&&stash.length>20){   // earlier versions cleared the save on logout: bring this account's progress back
+        localStorage[MAIN]=stash;localStorage.removeItem('suff_save_'+uid);localStorage.suff_owner=uid;
+        location.reload();return true;
+      }
       if(S.owner!==uid){S.owner=uid;save()}
       localStorage.suff_owner=uid;
       return false;     // first account on this browser adopts the existing save
@@ -534,6 +532,7 @@ function syncSpam(){   // 'unlimited abilities' is stored in the save, so it can
   const b=$('#adm-spam');if(b)b.textContent='Unlimited abilities: '+(S.unlimAb?'ON':'OFF');
 }
 function doReset(){
+  try{const o=(S&&S.owner)||localStorage.suff_owner;if(o)localStorage.removeItem('suff_save_'+o)}catch(e){}
   try{localStorage.sufference_backup=localStorage.sufference_save_v14||'';localStorage.removeItem('sufference_save_v14');localStorage.suff_skip_unlock='1'}catch(e){}
   location.reload();
 }

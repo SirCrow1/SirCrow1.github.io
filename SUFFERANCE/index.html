@@ -5580,13 +5580,13 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
 
 <script>
 /* ===== SHOP: run items, skins, blade auras, pets (gold = the normal S.gold) ===== */
-const SHOP_ITEMS={orb:{n:'🔮 Princess Orb',p:60,d:'She whispers a hint: crosses out 1 wrong answer.'},fav:{n:'😈 Demon\'s Favour',p:100,d:'The Demon Lord crosses out 2 wrong answers, then insults you.'},shield:{n:'🛡️ Iron Shield',p:100,d:'Blocks your next death (wrong answer or trap).'},phx:{n:'🪽 Phoenix Wing',p:160,d:'Wrong answer? A flaming wing shields you. You never die.'},key:{n:'🗝️ Forbidden Answer Key',p:260,d:'Auto-solves the question (1 per run, not for matching).'}};
-const SKINS={gold:{n:'✨ Golden Knight',p:500,d:'Gleaming gold plate with a halo glow and drifting sparkles.',f:'sepia(1) saturate(3.2) hue-rotate(-12deg) brightness(1.25)'},shadow:{n:'🌑 Shadow Knight',p:600,d:'Jet-black armor with small red accents on the gauntlets, shoulder and legs.',pal:1,f:'none'},frost:{n:'❄️ Frost Knight',p:500,d:'Icy armor that sheds snowflakes as you move.',f:'hue-rotate(165deg) saturate(1.8) brightness(1.2)'},crimson:{n:'🩸 Crimson Knight',p:450,d:'Blood-red armor with rising embers.',f:'sepia(1) brightness(.5) hue-rotate(-48deg) saturate(12) contrast(1.1)'},royal:{n:'🛡️ Royal Guard',p:550,d:'Bright tidal-blue armor with a gold-and-crimson plume on the helmet.',f:'sepia(1) hue-rotate(188deg) saturate(3.4) brightness(.98) contrast(1.1)'},
- emerald:{n:'🌿 Emerald Knight',p:500,d:'Vivid green armor, like moss on ancient stone.',f:'sepia(1) hue-rotate(95deg) saturate(3) brightness(1.0)'},
- amethyst:{n:'🔮 Amethyst Knight',p:550,d:'Glittering purple armor forged from cursed crystal.',f:'sepia(1) hue-rotate(235deg) saturate(3) brightness(1.0)'},
- rose:{n:'🌸 Rose Knight',p:500,d:'Bright pink armor. Terrifying, somehow.',f:'sepia(1) hue-rotate(-62deg) saturate(3) brightness(1.2)'},
- sunfire:{n:'🔥 Sunfire Knight',p:550,d:'Blazing orange armor lit by the setting sun.',f:'sepia(1) hue-rotate(-30deg) saturate(7) brightness(1.1)'},
- ivory:{n:'🕊️ Ivory Paladin',p:600,d:'Pure white armor, spotless and holy.',f:'grayscale(1) brightness(1.7) contrast(.9)'}};
+const SHOP_ITEMS={orb:{n:'🔮 Princess Orb',p:50,d:'She whispers a hint: crosses out 1 wrong answer.'},fav:{n:'😈 Demon\'s Favour',p:90,d:'The Demon Lord crosses out 2 wrong answers, then insults you.'},shield:{n:'🛡️ Iron Shield',p:90,d:'Blocks your next death (wrong answer or trap).'},phx:{n:'🪽 Phoenix Wing',p:150,d:'Wrong answer? A flaming wing shields you. You never die.'},key:{n:'🗝️ Forbidden Answer Key',p:200,d:'Auto-solves the question (1 per run, not for matching).'}};
+const SKINS={gold:{n:'✨ Golden Knight',p:450,d:'Gleaming gold plate with a halo glow and drifting sparkles.',f:'sepia(1) saturate(3.2) hue-rotate(-12deg) brightness(1.25)'},shadow:{n:'🌑 Shadow Knight',p:550,d:'Jet-black armor with small red accents on the gauntlets, shoulder and legs.',pal:1,f:'none'},frost:{n:'❄️ Frost Knight',p:450,d:'Icy armor that sheds snowflakes as you move.',f:'hue-rotate(165deg) saturate(1.8) brightness(1.2)'},crimson:{n:'🩸 Crimson Knight',p:400,d:'Blood-red armor with rising embers.',f:'sepia(1) brightness(.5) hue-rotate(-48deg) saturate(12) contrast(1.1)'},royal:{n:'🛡️ Royal Guard',p:500,d:'Bright tidal-blue armor with a gold-and-crimson plume on the helmet.',f:'sepia(1) hue-rotate(188deg) saturate(3.4) brightness(.98) contrast(1.1)'},
+ emerald:{n:'🌿 Emerald Knight',p:450,d:'Vivid green armor, like moss on ancient stone.',f:'sepia(1) hue-rotate(95deg) saturate(3) brightness(1.0)'},
+ amethyst:{n:'🔮 Amethyst Knight',p:500,d:'Glittering purple armor forged from cursed crystal.',f:'sepia(1) hue-rotate(235deg) saturate(3) brightness(1.0)'},
+ rose:{n:'🌸 Rose Knight',p:450,d:'Bright pink armor. Terrifying, somehow.',f:'sepia(1) hue-rotate(-62deg) saturate(3) brightness(1.2)'},
+ sunfire:{n:'🔥 Sunfire Knight',p:500,d:'Blazing orange armor lit by the setting sun.',f:'sepia(1) hue-rotate(-30deg) saturate(7) brightness(1.1)'},
+ ivory:{n:'🕊️ Ivory Paladin',p:550,d:'Pure white armor, spotless and holy.',f:'grayscale(1) brightness(1.7) contrast(.9)'}};
 /* ARMOUR RESIST: each armour has a chance to survive the deaths it is themed for */
 const ARMOR_CHANCE=.2,ARMOR_RES={
  gold:{d:[5,9,20],m:'✨ Golden armor held firm!'},shadow:{d:[4,22,23],m:'🌑 Shadow armor swallowed the curse!'},
@@ -5596,24 +5596,24 @@ const ARMOR_CHANCE=.2,ARMOR_RES={
  sunfire:{d:[7,12,21,27],m:'🔥 Sunfire armor shrugged off the flames!'},ivory:{d:[4,17,24],m:'🕊️ Holy ivory armor protected you!'}};
 function armorResist(dk){const k=shopS().eq.skin,a=ARMOR_RES[k];if(!a||!a.d.includes(dk))return null;return Math.random()<ARMOR_CHANCE?a.m+' (you survived)':null}
 for(const k in ARMOR_RES)if(SKINS[k]&&typeof KN!='undefined')SKINS[k].d+=' '+Math.round(ARMOR_CHANCE*100)+'% chance to survive: '+ARMOR_RES[k].d.map(i=>KN[i]).join(', ')+'.';
-const WPNS={flame:{n:'🔥 Flame Blade',p:350,d:'A roaring fire aura with embers streaming off the blade.',c:'#ff6a1a',rgb:'255,106,26'},ice:{n:'🧊 Frost Edge',p:350,d:'Frozen glow and drifting ice shards.',c:'#6fd8ff',rgb:'111,216,255'},bolt:{n:'⚡ Lightning Rapier',p:400,d:'Crackling electric aura with flickering sparks.',c:'#ffe94a',rgb:'255,233,74'},void:{n:'🌀 Void Reaper',p:450,d:'A dark violet aura with orbiting void orbs.',c:'#a24dff',rgb:'162,77,255'},slay:{n:'👹 Demon Slayer',p:500,d:'A blood-red aura that drips dark sparks.',c:'#d0102e',rgb:'235,30,50'},
- venom:{n:'🐍 Venom Fang',p:400,d:'A toxic green blade that drips glowing poison.',c:'#3ddc84',rgb:'61,220,132'},
- sakura:{n:'🌸 Sakura Blade',p:400,d:'A pink katana trailing drifting petals.',c:'#ff8fc2',rgb:'255,143,194'},
- tidal:{n:'🌊 Tidal Edge',p:450,d:'A deep-blue wavy blade with rolling water arcs.',c:'#4a7bff',rgb:'74,123,255'},
- holy:{n:'✨ Holy Lightbringer',p:550,d:'A white-gold blade crowned with a pulsing halo.',c:'#fff6d0',rgb:'255,246,208'},
- obsidian:{n:'🖤 Obsidian Fang',p:500,d:'A jagged black blade wreathed in grey mist.',c:'#8b8b9e',rgb:'139,139,158'}};
-const PETS={crow:{n:'🐦‍⬛ Crow',p:0,e:'🐦‍⬛',d:'A black crow. +1 gold from every chest, barrel and crate.'},cat:{n:'🐈‍⬛ Cat',p:500,e:'🐈‍⬛',d:'A fluffy tabby cat. +3 gold every room you clear.'},dragon:{n:'🐉 Azure Dragon (Mount)',p:1200,e:'🐉',d:'A big blue dragon you can ride. +5 gold every room you clear.'},
- cerb:{n:'🐕 Cerberus (Mount)',p:1000,e:'🐕',d:'A three-headed fire dog you can ride. +6 gold every room you clear.'},
- fox:{n:'🦊 Nine-Tailed Fox (Mount)',p:800,e:'🦊',d:'A golden nine-tailed fox you can ride. +5 gold every room you clear.'},
- tiger:{n:'🐅 White Tiger (Mount)',p:900,e:'🐅',d:'A white tiger you can ride. +5 gold every room you clear.'},
- turtle:{n:'🐢 Treasure Turtle (Mount)',p:600,e:'🐢',d:'A treasure turtle you can ride. +2 gold from every chest, barrel and crate.'},
- horse:{n:'🐴 Flaming Black Horse (Mount)',p:900,e:'🐴',d:'A flaming black horse you can ride. +4 gold every room you clear.'},
- phoenix:{n:'🔥 Phoenix (Mount)',p:1100,e:'🔥',d:'A fire bird you can ride. +4 gold every room you clear.'},
- frog:{n:'🐸 Ninja Frog (Mount)',p:700,e:'🐸',d:'A ninja frog you can ride. +3 gold every room you clear.'},
- raccoon:{n:'🦝 Sand Raccoon (Mount)',p:850,e:'🦝',d:'A sand raccoon you can ride. +4 gold every room you clear.'},
- dodo:{n:'🦤 Giant Dodo (Mount)',p:650,e:'🦤',d:'A big golden dodo you can ride. +3 gold every room you clear.'},
- trex:{n:'🦖 T-Rex (Mount)',p:1300,e:'🦖',d:'A T-Rex you can ride. +6 gold every room you clear.'},
- bison:{n:'🦬 Sky Bison (Mount)',p:1400,e:'🦬',d:'A flying white bison you can ride. +5 gold every room you clear.'}};
+const WPNS={flame:{n:'🔥 Flame Blade',p:300,d:'A roaring fire aura with embers streaming off the blade.',c:'#ff6a1a',rgb:'255,106,26'},ice:{n:'🧊 Frost Edge',p:300,d:'Frozen glow and drifting ice shards.',c:'#6fd8ff',rgb:'111,216,255'},bolt:{n:'⚡ Lightning Rapier',p:350,d:'Crackling electric aura with flickering sparks.',c:'#ffe94a',rgb:'255,233,74'},void:{n:'🌀 Void Reaper',p:400,d:'A dark violet aura with orbiting void orbs.',c:'#a24dff',rgb:'162,77,255'},slay:{n:'👹 Demon Slayer',p:450,d:'A blood-red aura that drips dark sparks.',c:'#d0102e',rgb:'235,30,50'},
+ venom:{n:'🐍 Venom Fang',p:350,d:'A toxic green blade that drips glowing poison.',c:'#3ddc84',rgb:'61,220,132'},
+ sakura:{n:'🌸 Sakura Blade',p:350,d:'A pink katana trailing drifting petals.',c:'#ff8fc2',rgb:'255,143,194'},
+ tidal:{n:'🌊 Tidal Edge',p:400,d:'A deep-blue wavy blade with rolling water arcs.',c:'#4a7bff',rgb:'74,123,255'},
+ holy:{n:'✨ Holy Lightbringer',p:500,d:'A white-gold blade crowned with a pulsing halo.',c:'#fff6d0',rgb:'255,246,208'},
+ obsidian:{n:'🖤 Obsidian Fang',p:450,d:'A jagged black blade wreathed in grey mist.',c:'#8b8b9e',rgb:'139,139,158'}};
+const PETS={crow:{n:'🐦‍⬛ Crow',p:0,e:'🐦‍⬛',d:'A black crow. +1 gold from every chest, barrel and crate.'},cat:{n:'🐈‍⬛ Cat',p:400,e:'🐈‍⬛',d:'A fluffy tabby cat. +3 gold every room you clear.'},dragon:{n:'🐉 Azure Dragon (Mount)',p:1000,e:'🐉',d:'A big blue dragon you can ride. +5 gold every room you clear.'},
+ cerb:{n:'🐕 Cerberus (Mount)',p:900,e:'🐕',d:'A three-headed fire dog you can ride. +6 gold every room you clear.'},
+ fox:{n:'🦊 Nine-Tailed Fox (Mount)',p:700,e:'🦊',d:'A golden nine-tailed fox you can ride. +5 gold every room you clear.'},
+ tiger:{n:'🐅 White Tiger (Mount)',p:800,e:'🐅',d:'A white tiger you can ride. +5 gold every room you clear.'},
+ turtle:{n:'🐢 Treasure Turtle (Mount)',p:500,e:'🐢',d:'A treasure turtle you can ride. +2 gold from every chest, barrel and crate.'},
+ horse:{n:'🐴 Flaming Black Horse (Mount)',p:800,e:'🐴',d:'A flaming black horse you can ride. +4 gold every room you clear.'},
+ phoenix:{n:'🔥 Phoenix (Mount)',p:950,e:'🔥',d:'A fire bird you can ride. +4 gold every room you clear.'},
+ frog:{n:'🐸 Ninja Frog (Mount)',p:600,e:'🐸',d:'A ninja frog you can ride. +3 gold every room you clear.'},
+ raccoon:{n:'🦝 Sand Raccoon (Mount)',p:750,e:'🦝',d:'A sand raccoon you can ride. +4 gold every room you clear.'},
+ dodo:{n:'🦤 Giant Dodo (Mount)',p:550,e:'🦤',d:'A big golden dodo you can ride. +3 gold every room you clear.'},
+ trex:{n:'🦖 T-Rex (Mount)',p:1100,e:'🦖',d:'A T-Rex you can ride. +6 gold every room you clear.'},
+ bison:{n:'🦬 Sky Bison (Mount)',p:1200,e:'🦬',d:'A flying white bison you can ride. +5 gold every room you clear.'}};
 function petGold(){const p=shopS().eq.pet;return p=='crow'?1:p=='turtle'?2:0}
 function shopS(){if(!S.shop)S.shop={};const h=S.shop;h.inv=h.inv||{};h.own=h.own||{};h.eq=h.eq||{};if(h.own.petrfrog){delete h.own.petrfrog;h.own.petraccoon=1}if(h.eq.pet=='rfrog')h.eq.pet='raccoon';return h}
 let shopTab='items',shopPaused=0;
@@ -7006,6 +7006,6 @@ setTimeout(()=>{try{if(!dstate().claimed)toast('🎁 Your daily streak reward is
 try{shopRender()}catch(e){}
 })();
 </script>
-<script src="account-v10.js"></script>
+<script src="account-v11.js"></script>
 </body>
 </html>
