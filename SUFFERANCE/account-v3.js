@@ -8,7 +8,7 @@ try{const r=new URLSearchParams(location.search).get('ref');if(r)localStorage.su
 
 const $=s=>document.querySelector(s);
 const say=m=>{try{toast(m)}catch(e){alert(m)}};
-let sb=null,busy=false,profile={username:null,code:''},editing=false,isAdmin=false;
+let sb=null,busy=false,profile={username:null,code:''},editing=false,isAdmin=false,roleName='unknown',diag='';
 
 const GLOGO='<svg width="18" height="18" viewBox="0 0 48 48" style="flex:none"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>';
 
@@ -73,13 +73,14 @@ function buildUI(){
         <button id="acct-logout" class="acct-b" style="background:#7f1d1d">Log out</button>
       </div>
 
-      <div style="margin-top:12px;text-align:right"><button id="acct-close" style="color:#a1a1aa;font-size:12px">Close</button></div>
+      <div id="acct-diag" style="margin-top:10px;font-size:10px;color:#52525b"></div>
+      <div style="margin-top:6px;text-align:right"><button id="acct-close" style="color:#a1a1aa;font-size:12px">Close</button></div>
     </div>
   </div>`);
   b.onclick=openModal;
   $('#acct-close').onclick=()=>$('#acct-modal').style.display='none';
   $('#acct-google').onclick=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});
-  $('#acct-logout').onclick=async()=>{await sb.auth.signOut();profile={username:null,code:''};editing=false;isAdmin=false;render();say('Logged out')};
+  $('#acct-logout').onclick=async()=>{await sb.auth.signOut();profile={username:null,code:''};editing=false;isAdmin=false;roleName='unknown';render();say('Logged out')};
   $('#acct-copy').onclick=()=>{const i=$('#acct-link');i.select();try{navigator.clipboard.writeText(i.value)}catch(e){document.execCommand('copy')}say('Invite link copied!')};
   $('#acct-rename').onclick=()=>{editing=true;render();$('#acct-nameinput').value=profile.username||'';$('#acct-nameinput').focus()};
   $('#adm-gold').onclick=()=>admin(()=>{S.gold+=100000},'+100,000 gold');
@@ -98,7 +99,12 @@ function admin(fn,msg){
     say('🛠️ '+msg);render();
   }catch(e){console.error(e);say('Admin action failed')}
 }
-function openModal(){render();$('#acct-modal').style.display='flex'}
+function openModal(){
+  render();$('#acct-modal').style.display='flex';
+  if(sb)sb.auth.getSession().then(({data:{session}})=>{
+    if(session&&(!profile.code||roleName==='unknown'))loadProfile().then(()=>{adminUnlock();render()});
+  });
+}
 
 async function saveName(){
   const n=$('#acct-nameinput').value.trim();
@@ -141,10 +147,31 @@ async function render(){
   $('#acct-nameprompt').textContent=needName?'Welcome! Pick your player name (3-16 letters, numbers or _)':'New name (3-16 letters, numbers or _)';
   $('#acct-rename').style.display=(needName||editing)?'none':'inline-block';
   $('#acct-admin').style.display=isAdmin?'block':'none';
+  $('#acct-diag').textContent='build v3 · role: '+roleName+(diag?' · '+diag:'');
   $('#acct-stats').innerHTML=statsHTML();
   const ranks=Object.entries(S.best||{}).slice(0,6).map(([k,v])=>k+': '+v).join(' · ');
   $('#acct-ranks').textContent=ranks?'🏆 Best ranks: '+ranks:'';
   $('#acct-link').value=profile.code?location.origin+location.pathname+'?ref='+profile.code:'Loading…';
+}
+
+async function loadProfile(){
+  try{
+    let {data:p,error:pe}=await sb.from('profiles').select('referral_code,username').maybeSingle();
+    diag='';
+    if(pe){diag='profile: '+pe.message;const r2=await sb.from('profiles').select('referral_code').maybeSingle();p=r2.data}
+    if(p){profile.code=p.referral_code;profile.username=p.username||null}
+    const {data:r,error:re}=await sb.from('user_roles').select('role').maybeSingle();
+    if(re)diag+=' role: '+re.message;
+    roleName=r?r.role:'unknown';
+    isAdmin=roleName==='admin';
+  }catch(e){diag='load failed: '+e.message}
+}
+function adminUnlock(){
+  if(!isAdmin)return;   // admins always have every shop item owned and at least 100,000 gold
+  try{const h=shopS();for(const k in SKINS)h.own['skin'+k]=1;for(const k in WPNS)h.own['wpn'+k]=1;for(const k in PETS)h.own['pet'+k]=1;
+    for(const k in SHOP_ITEMS)if((h.inv[k]||0)<99)h.inv[k]=99;
+    if(S.gold<100000)S.gold=100000;save();
+    const g=$('#gold');if(g)g.textContent='\u{1FA99} '+S.gold;try{shopGold()}catch(e){}try{shopRender()}catch(e){}}catch(e){console.error(e);diag+=' unlock: '+e.message}
 }
 
 // ---------- after login: redeem referral, collect gold, load profile ----------
@@ -166,17 +193,8 @@ async function afterLogin(){
       try{shopGold()}catch(e){}
       say('🪙 +'+amt+' referral gold collected!');
     }
-    let {data:p,error:pe}=await sb.from('profiles').select('referral_code,username').maybeSingle();
-    if(pe){const r2=await sb.from('profiles').select('referral_code').maybeSingle();p=r2.data}
-    if(p){profile.code=p.referral_code;profile.username=p.username||null}
-    const {data:r}=await sb.from('user_roles').select('role').maybeSingle();
-    isAdmin=!!(r&&r.role==='admin');
-    if(isAdmin){   // admins always start with every shop item owned and at least 100,000 gold
-      try{const h=shopS();for(const k in SKINS)h.own['skin'+k]=1;for(const k in WPNS)h.own['wpn'+k]=1;for(const k in PETS)h.own['pet'+k]=1;
-        for(const k in SHOP_ITEMS)if((h.inv[k]||0)<99)h.inv[k]=99;
-        if(S.gold<100000)S.gold=100000;save();
-        const g=$('#gold');if(g)g.textContent='🪙 '+S.gold;try{shopGold()}catch(e){}try{shopRender()}catch(e){}}catch(e){console.error(e)}
-    }
+    await loadProfile();
+    adminUnlock();
   }catch(e){console.error(e)}
   busy=false;
   await render();
