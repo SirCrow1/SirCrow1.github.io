@@ -2845,6 +2845,105 @@ ${G}
             R('rgba(255,255,255,.65)',0,232,W,6);R('rgba(255,255,255,.5)',0,H-8,W,8);c.bl.forEach(b=>bloodStain(b.x,b.y,b.sd||0,1));c.rem.forEach(remDraw);   // (the floor covers what was drawn before, so stains and remains go on top of it)
             c.sx.forEach(p=>iceSpikeDraw(p[0],p[1],now,c.rem.some(o=>o.kind=='iceimpale'&&Math.abs(o.x-p[0])<2&&Math.abs(o.y-14-p[1])<2)?1:0))}}
         ];
+        // ================= 10 CLASSIC-GAME PUZZLE ROOMS (same format as Math Plates: puzzle on the wall, step on the answer plate, wrong plate = poison darts) =================
+        (function(){
+            const pp=n=>n==3?[[170,385],[340,300],[510,385]]:[[120,385],[270,300],[420,385],[570,300]];
+            const txt=(s,x,y,sz,col,al)=>{ctx.fillStyle=col||'#e6dcc0';ctx.font='bold '+sz+'px sans-serif';ctx.textAlign=al||'center';ctx.fillText(s,x,y)};
+            const pick4=(good,bad)=>{const o=sh([good,...sh(bad).slice(0,3)]);return{o,a:o.indexOf(good)}};
+            const wrap=(s,n)=>{const L=[];let l='';s.split(' ').forEach(w=>{if((l+' '+w).length>n){L.push(l);l=w}else l=l?l+' '+w:w});if(l)L.push(l);return L};
+            function room(name,hint,gen){
+                const rs=c=>{c.rs=gen();c.ri=0;c.last=-1;c.flash=0;c.good=0;c.tm=0};
+                return{name,hint,pal:'stone',noTorch:true,
+                init(c){rs(c);c.gate={x:690,open:false,o:0}},
+                reset(c){rs(c)},
+                upd(c,dt){c.flash-=dt;c.good-=dt;c.tm+=dt;if(c.gate.open)return false;
+                    const r=c.rs[c.ri],P=pp(r.o.length);let on=-1;P.forEach((p,i)=>{if(Math.hypot(G.hx-p[0],G.hy-p[1])<38)on=i});
+                    if(on>=0&&on!=c.last){c.last=on;if(on==r.a){c.ri++;c.good=.9;c.tm=0;if(c.ri>=c.rs.length)c.gate.open=true;return false}c.flash=.9;return 'dart'}
+                    c.last=on;return false},
+                draw(c,now){
+                    for(let i=0;i<5;i++){R('#07050a',0,250+i*36,12,6);R('#07050a',W-12,250+i*36,12,6)}
+                    const r=c.rs[Math.min(c.ri,c.rs.length-1)];
+                    R('#07050a',118,58,564,166);R('#17121f',122,60,556,160);
+                    txt(c.gate.open?'SOLVED! THE GATE OPENS':r.t+'  ('+Math.min(c.ri+1,c.rs.length)+'/'+c.rs.length+')',400,74,12,c.flash>0?'#ef4444':c.good>0?'#6ee7a0':'#e6dcc0');
+                    r.art(c,400,80);
+                    const P=pp(r.o.length);
+                    r.o.forEach((o,i)=>{const x=P[i][0],y=P[i][1];R('#17121f',x-46,y-14,92,30);R(c.flash>0&&i==c.last?'#b91c1c':'#3a3347',x-44,y-16,88,26);
+                        let fs=14;ctx.font='bold 14px sans-serif';while(ctx.measureText(o).width>82&&fs>8){fs--;ctx.font='bold '+fs+'px sans-serif'}txt(o,x,y+3,fs,'#fff')});
+                    srGateDraw(c.gate)}}}
+            const GLY={k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
+            // ---- 1. CHESS: mate in one ----
+            const CHS=[
+             {b:["......k.",".....ppp","........","........","........","........",".....PPP","R.....K."],g:'Ra8#',x:['Rd1','Kf1','h3']},
+             {b:["r.bqkb.r","pppp.ppp","..n..n..","....p..Q","..B.P...","........","PPPP.PPP","RNB.K.NR"],g:'Qxf7#',x:['Qxh7','Bxf7+','Qg4']},
+             {b:[".......k","R.......","........","........","........","........","........",".R....K."],g:'Rb8#',x:['Ra8+','Rb7','Kg2']},
+             {b:["......rk","......pp","........","....N...","........","........","........","..K....."],g:'Nf7#',x:['Nd7','Ng4','Nc6']}];
+            const chess=room('Chess Mate','White to move. Step on the plate with the move that is CHECKMATE. A wrong plate fires the poison darts!',()=>sh(CHS).slice(0,2).map(p=>({t:'White to move: find the checkmate',...pick4(p.g,p.x),art(c,cx,y0){
+                for(let y=0;y<8;y++)for(let x=0;x<8;x++){R((x+y)%2?'#7a5a3a':'#d8c49a',cx-64+x*16,y0+y*16,16,16);const q=p.b[y][x];
+                    if(q!='.'){ctx.font='14px sans-serif';ctx.textAlign='center';ctx.lineWidth=2;ctx.strokeStyle=q>='a'?'#fff':'#000';ctx.strokeText(GLY[q.toLowerCase()],cx-56+x*16,y0+13+y*16);ctx.fillStyle=q>='a'?'#000':'#fff';ctx.fillText(GLY[q.toLowerCase()],cx-56+x*16,y0+13+y*16)}}}})));
+            // ---- 2. CONNECT 4: winning column ----
+            const w4=(b,c)=>{for(let r=0;r<6;r++)for(let k=0;k<7;k++)for(const[dr,dk]of[[0,1],[1,0],[1,1],[1,-1]]){let n=0;for(let s=0;s<4;s++){const y=r+dr*s,x=k+dk*s;if(y<0||y>5||x<0||x>6||b[y][x]!=c)break;n++}if(n==4)return 1}return 0};
+            const dp=(b,x,c)=>{for(let y=5;y>=0;y--)if(!b[y][x]){b[y][x]=c;return y}return -1};
+            function c4gen(){let b,wins,loses;
+                for(let t=0;t<400;t++){b=[...Array(6)].map(()=>Array(7).fill(0));const c=Math.floor(Math.random()*4);for(let i=0;i<3;i++)b[5][c+i]='R';
+                    for(let i=0;i<7;i++){const x=Math.floor(Math.random()*7);if(b[5][x]==0&&(x==c-1||x==c+3))continue;dp(b,x,i%2?'R':'Y')}
+                    wins=[];loses=[];for(let x=0;x<7;x++){const t2=b.map(r=>r.slice());if(dp(t2,x,'R')>=0){if(w4(t2,'R'))wins.push(x);else loses.push(x)}}
+                    if(wins.length==1&&loses.length>=3&&!w4(b,'R')&&!w4(b,'Y'))break}
+                return{t:'You are RED: drop ONE disc to win now',...pick4('Column '+(wins[0]+1),loses.map(x=>'Column '+(x+1))),art(c,cx,y0){R('#1b3a8a',cx-72,y0-2,144,126);
+                    for(let y=0;y<6;y++)for(let x=0;x<7;x++){const v=b[y][x];ctx.fillStyle=v=='R'?'#e63946':v=='Y'?'#ffd60a':'#0b1a4a';ctx.beginPath();ctx.arc(cx-60+x*20,y0+9+y*20,8,0,7);ctx.fill()}
+                    for(let x=0;x<7;x++)txt(x+1,cx-60+x*20,y0+138,10,'#9ca3af')}}}
+            const conn=room('Connect 4','You are RED. Step on the plate of the column that WINS the game right now. A wrong plate fires the poison darts!',()=>[c4gen(),c4gen()]);
+            // ---- 3. TIC-TAC-TOE: winning square ----
+            const L3=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]],w3=(b,m)=>L3.some(l=>l.every(i=>b[i]==m));
+            function tgen(){let b,wins,rest;
+                for(let t=0;t<500;t++){b=Array(9).fill(0);const l=rnd(L3),e=Math.floor(Math.random()*3);l.forEach((i,k)=>{if(k!=e)b[i]='X'});
+                    const em=()=>b.map((v,i)=>v?-1:i).filter(i=>i>=0);for(let k=0;k<2;k++)b[rnd(em())]='O';if(Math.random()<.5)b[rnd(em())]='X';
+                    if(w3(b,'X')||w3(b,'O'))continue;wins=[];rest=[];em().forEach(i=>{b[i]='X';(w3(b,'X')?wins:rest).push(i);b[i]=0});
+                    if(wins.length==1&&rest.length>=3)break}
+                return{t:'You are X: pick the square that WINS now',...pick4('Square '+(wins[0]+1),rest.map(i=>'Square '+(i+1))),art(c,cx,y0){
+                    for(let i=0;i<9;i++){const x=cx-60+(i%3)*40,y=y0+2+Math.floor(i/3)*40;R('#2a2236',x+1,y+1,38,38);txt(b[i]||i+1,x+20,y+27,b[i]?24:11,b[i]=='X'?'#ff6b6b':b[i]=='O'?'#9fd8ff':'#6b6580')}}}}
+            const ttt=room('Tic-Tac-Toe','You are X. Step on the plate of the square that WINS the game now. A wrong plate fires the poison darts!',()=>[tgen(),tgen()]);
+            // ---- 4. HANGMAN: fill the missing letter ----
+            const HW=['dungeon','skeleton','dragon','princess','crossbow','treasure','potion','wizard','goblin','castle','shield','knight','cursed','phantom'];
+            const hang=room('Hangman','A letter is missing from the word. Step on the plate with the RIGHT letter, or the noose (darts) gets you!',()=>sh(HW).slice(0,3).map(w=>{const k=1+Math.floor(Math.random()*(w.length-2)),L=w[k].toUpperCase(),bad='AEIOURSTLNDCMPBGHW'.split('').filter(l=>l!=L&&!HW.some(h=>{const z=h.toUpperCase();return z.length==w.length&&z.split('').every((q,i)=>q==(i==k?l:w[i].toUpperCase()))}));
+                return{t:'Fill in the missing letter',...pick4(L,bad),art(c,cx,y0){txt(w.split('').map((ch,i)=>i==k?'_':ch.toUpperCase()).join(' '),cx,y0+70,34,'#ffd84a');txt('Which letter finishes the word?',cx,y0+120,13)}}}));
+            // ---- 5. MEMORY: where was the symbol? ----
+            const SY=['♠','♥','♦','♣','★','☾'];
+            const mem=room('Memory Cards','Memorize the 4 cards before they flip! Then step on the plate where the named symbol was. A wrong plate fires the darts!',()=>[0,1,2].map(()=>{const cs=sh(SY).slice(0,4),a=Math.floor(Math.random()*4);
+                return{t:'Memorize the cards',o:['Card 1','Card 2','Card 3','Card 4'],a,art(c,cx,y0){const up=c.tm<3;
+                    for(let i=0;i<4;i++){const x=cx-149+i*84;R('#c9a227',x-2,y0+8,68,74);R(up?'#e6dcc0':'#3b2f5c',x,y0+10,64,70);txt(up?cs[i]:'?',x+32,y0+57,38,up?(cs[i]=='♥'||cs[i]=='♦'?'#c0182b':'#111'):'#c9a227')}
+                    txt(up?'Memorize... '+Math.ceil(3-c.tm):'Where was  '+cs[a]+'  ?',cx,y0+118,18,up?'#ffd84a':'#6ee7a0')}}}));
+            // ---- 6. SLIDING TILES: 2 moves from solved ----
+            const nbs=i=>{const r=[],x=i%3,y=Math.floor(i/3);if(x>0)r.push(i-1);if(x<2)r.push(i+1);if(y>0)r.push(i-3);if(y<2)r.push(i+3);return r};
+            function sgen(){const b=[1,2,3,4,5,6,7,8,0],A=rnd([5,7]),a=b[A];b[8]=a;b[A]=0;const B=rnd(nbs(A).filter(i=>i!=8)),bb=b[B];b[A]=bb;b[B]=0;
+                const board=b.slice();const mk=(bd,tile,z)=>{const adj=nbs(z).map(i=>bd[i]).filter(v=>v!=tile);const oth=[1,2,3,4,5,6,7,8].filter(v=>v!=tile&&!adj.includes(v));return{t:'Slide the right tile (solve it in 2 moves)',...pick4('Tile '+tile,[...adj,...sh(oth)].map(v=>'Tile '+v)),bd,art(c,cx,y0){for(let i=0;i<9;i++){const x=cx-60+(i%3)*40,y=y0+2+Math.floor(i/3)*40;if(bd[i]){R('#3b2f5c',x+1,y+1,38,38);txt(bd[i],x+20,y+27,22,'#ffd84a')}}}}};
+                const r1=mk(board,bb,B),after=board.slice();after[B]=bb;after[A]=0;const r2=mk(after,a,A);return[r1,r2]}
+            const slide=room('Sliding Tiles','The tiles must end up 1-8 in order with the blank last. Step on the plate of the tile that slides into the blank. A wrong plate fires the darts!',sgen);
+            // ---- 7. MAZE: walk the path ----
+            const DV={Up:[0,-1],Down:[0,1],Left:[-1,0],Right:[1,0]},DK={Up:'n',Down:'s',Left:'w',Right:'e'};
+            function mgen(){for(;;){const N=3,w=[...Array(N)].map(()=>[...Array(N)].map(()=>({n:1,e:1,s:1,w:1}))),seen=new Set(['0,0']),st=[[0,0]],O={n:[0,-1,'s'],s:[0,1,'n'],e:[1,0,'w'],w:[-1,0,'e']};
+                while(st.length){const[x,y]=st[st.length-1],o=Object.keys(O).filter(d=>{const nx=x+O[d][0],ny=y+O[d][1];return nx>=0&&ny>=0&&nx<N&&ny<N&&!seen.has(nx+','+ny)});if(!o.length){st.pop();continue}const d=rnd(o),nx=x+O[d][0],ny=y+O[d][1];w[y][x][d]=0;w[ny][nx][O[d][2]]=0;seen.add(nx+','+ny);st.push([nx,ny])}
+                const prev={'0,0':null},q=[[0,0]];while(q.length){const[x,y]=q.shift();for(const d of['Up','Down','Left','Right']){if(w[y][x][DK[d]])continue;const nx=x+DV[d][0],ny=y+DV[d][1],k=nx+','+ny;if(!(k in prev)){prev[k]=[x,y,d];q.push([nx,ny])}}}
+                const path=[];let cx=2,cy=2;while(prev[cx+','+cy]){const[px,py,d]=prev[cx+','+cy];path.unshift({x:px,y:py,d});cx=px;cy=py}
+                if(path.length<4||path.length>5)continue;
+                return path.map(s=>({t:'Find the way out: which way next?',...pick4(s.d,['Up','Down','Left','Right'].filter(d=>d!=s.d)),art(c,cx2,y0){const X0=cx2-63;
+                    for(let y=0;y<N;y++)for(let x=0;x<N;x++){R('#2a2236',X0+x*42+1,y0+4+y*42+1,40,40);ctx.fillStyle='#c9a227';const m=w[y][x],bx=X0+x*42,by=y0+4+y*42;if(m.n)ctx.fillRect(bx,by,42,3);if(m.s)ctx.fillRect(bx,by+39,42,3);if(m.w)ctx.fillRect(bx,by,3,42);if(m.e)ctx.fillRect(bx+39,by,3,42)}
+                    txt('EXIT',X0+2*42+21,y0+4+2*42+26,11,'#6ee7a0');ctx.fillStyle='#38bdf8';ctx.beginPath();ctx.arc(X0+s.x*42+21,y0+4+s.y*42+21,10,0,7);ctx.fill()}}))}}
+            const maze=room('Maze Map','The blue dot must reach EXIT. At each step, step on the plate of the way to go. A wrong plate fires the darts!',mgen);
+            // ---- 8. ROCK PAPER SCISSORS: beat the demon's throw ----
+            const BEAT={Rock:'Paper',Paper:'Scissors',Scissors:'Rock'};
+            const rps=room('Rock Paper Scissors','The demon shows his throw. Step on the plate that BEATS it. A wrong plate fires the poison darts!',()=>[0,1,2].map(()=>{const d=rnd(['Rock','Paper','Scissors']);return{t:'Beat the demon',o:['Rock','Paper','Scissors'],a:['Rock','Paper','Scissors'].indexOf(BEAT[d]),art(c,cx,y0){txt('THE DEMON THROWS',cx,y0+40,16);txt(d.toUpperCase(),cx,y0+105,44,'#ff6b6b')}}}));
+            // ---- 9. RIDDLES ----
+            const RD=[["I speak without a mouth and hear without ears. What am I?","An echo",["A shadow","The wind","A ghost"]],["The more you take, the more you leave behind. What am I?","Footsteps",["Time","Gold","Memory"]],["What has keys but cannot open locks?","A piano",["A map","A prison","A clock"]],["What gets wetter the more it dries?","A towel",["A sponge","The rain","A sword"]],["I have cities but no houses, mountains but no trees, and water but no fish.","A map",["A dream","A painting","An island"]],["What has a heart that does not beat?","An artichoke",["A statue","A clock","A stone"]],["What can you catch but never throw?","A cold",["A ball","A fish","A shadow"]],["I am tall when I am young and short when I am old.","A candle",["A tree","A wizard","A tower"]],["What has hands but cannot clap?","A clock",["A ghost","A statue","A skeleton"]],["What goes up but never comes down?","Your age",["Smoke","An arrow","A balloon"]]];
+            const rid=room('Riddle Sphinx','The Sphinx asks riddles. Step on the plate with the right answer. A wrong plate fires the poison darts!',()=>sh(RD).slice(0,2).map(q=>({t:'Answer the Sphinx',...pick4(q[1],q[2]),art(c,cx,y0){wrap(q[0],44).forEach((l,i)=>txt(l,cx,y0+50+i*24,17,'#ffd84a'));0}})));
+            // ---- 10. WORDLE: which word fits the clues? ----
+            const WW=['sword','flame','ghost','crown','bones','torch','curse','witch','blade','armor','magic','skull','tower','spell','gloom','dread','abyss','relic','rogue','grave','ember','fiend','vault','haunt','demon','chain','dirge','altar','knave','siege'];
+            const fb=(g,w)=>{const r=Array(5).fill('x'),u=w.split('');for(let i=0;i<5;i++)if(g[i]==w[i]){r[i]='g';u[i]=null}for(let i=0;i<5;i++)if(r[i]!='g'){const k=u.indexOf(g[i]);if(k>=0){r[i]='y';u[k]=null}}return r.join('')};
+            function wgen(){for(;;){const w=rnd(WW),gs=sh(WW.filter(x=>x!=w)).slice(0,2),bad=WW.filter(x=>x!=w&&gs.some(g=>fb(g,x)!=fb(g,w)));if(bad.length<20)continue;
+                return{t:'Which word is the secret answer?',...pick4(w.toUpperCase(),bad.map(x=>x.toUpperCase())),art(c,cx,y0){gs.forEach((g,r)=>{const f=fb(g,w);for(let i=0;i<5;i++){const x=cx-93+i*38,y=y0+6+r*40;R(f[i]=='g'?'#2f9e44':f[i]=='y'?'#d9a60a':'#3a3a44',x,y,34,34);txt(g[i].toUpperCase(),x+17,y+24,20,'#fff')}});
+                    txt('green = right spot, yellow = wrong spot, grey = not in word',cx,y0+104,11,'#9ca3af');txt('The answer must fit BOTH clues above',cx,y0+126,13)}}}}
+            const wordle=room('Wordle Wall','The two guesses on the wall have colour clues. Step on the plate with the ONLY word that fits them. A wrong plate fires the darts!',()=>[wgen(),wgen()]);
+            SRM.push(chess,conn,ttt,hang,mem,slide,maze,rps,rid,wordle);
+        })();
         function enterSecret(){
             let k;do{k=Math.random()*SRM.length|0}while(k==lastSR&&SRM.length>1);lastSR=k;const d=SRM[k];
             G.sec.used=1;G.qtxt=$('#q').textContent;$('#q').textContent='🗝️ '+d.name+'! '+d.hint+(d.axes?' Red blade = low sweep, don\'t crawl.':' Traps only knock you back.');
