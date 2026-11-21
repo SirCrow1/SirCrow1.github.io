@@ -1089,13 +1089,17 @@ sync();
                 <p class="text-zinc-400 text-sm mb-6 text-center">📖 Study, perish repeatedly in green soul-fire, conquer the dungeon boss, and rescue your royalty.</p>
 
                 <!-- Navigation Tabs -->
-                <nav class="flex flex-wrap justify-center gap-3 mb-6">
-                    <button data-t="d" class="tab-btn on bg-emerald-600 hover:bg-emerald-500 text-zinc-950 font-bold px-4 py-2 rounded transition title-font text-sm shadow-[0_0_10px_rgba(16,185,129,0.4)]">🏰 Dungeon</button>
-                    <button data-t="s" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-4 py-2 rounded transition title-font text-sm">🛡️ Armory</button>
-                    <button data-t="g" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-4 py-2 rounded transition title-font text-sm">📚 Question Pool</button>
-                    <button data-t="h" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-4 py-2 rounded transition title-font text-sm">💀 Death Gallery</button>
-                    <button data-t="a" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-4 py-2 rounded transition title-font text-sm">🏅 Achievements</button>
+                <nav class="grid grid-cols-3 gap-3 mb-6">
+                    <button data-t="p" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-2 py-2 rounded transition title-font text-xs sm:text-sm w-full text-center">👤 Profile</button>
+                    <button data-t="d" class="tab-btn on bg-emerald-600 hover:bg-emerald-500 text-zinc-950 shadow-[0_0_10px_rgba(16,185,129,0.4)] font-bold px-2 py-2 rounded transition title-font text-xs sm:text-sm w-full text-center">🏰 Dungeon</button>
+                    <button data-t="g" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-2 py-2 rounded transition title-font text-xs sm:text-sm w-full text-center">📚 Question Pool</button>
+                    <button data-t="s" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-2 py-2 rounded transition title-font text-xs sm:text-sm w-full text-center">🛡️ Armory</button>
+                    <button data-t="h" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-2 py-2 rounded transition title-font text-xs sm:text-sm w-full text-center">💀 Death Gallery</button>
+                    <button data-t="a" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-2 py-2 rounded transition title-font text-xs sm:text-sm w-full text-center">🏅 Achievements</button>
                 </nav>
+
+                <!-- Tab: Profile (filled by account-v13.js) -->
+                <section id="t-p" hidden class="space-y-4"></section>
 
                 <!-- Tab: Dungeon -->
                 <section id="t-d" class="space-y-4">
@@ -1338,12 +1342,13 @@ sync();
                 const t = btn.dataset.t;
                 btn.classList.add('on', 'bg-emerald-600', 'text-zinc-950', 'shadow-[0_0_10px_rgba(16,185,129,0.4)]');
                 btn.classList.remove('bg-zinc-800', 'text-zinc-200');
-                ['d','s','g','h','a'].forEach(id => {
+                ['d','s','g','h','a','p'].forEach(id => {
                     const sec = $('#t-' + id);
                     if (sec) sec.hidden = (id !== t);
                 });
                 if (t === 'h' && window.galRender) galRender();
                 if (t === 'a') renderBadges();
+                if (t === 'p' && window.profileTabOpen) window.profileTabOpen();
             };
         });
 
@@ -7006,5 +7011,6 @@ setTimeout(()=>{try{if(!dstate().claimed)toast('🎁 Your daily streak reward is
 try{shopRender()}catch(e){}
 })();
 </script>
+<script src="account-v13.js?v=13"></script>
 </body>
 </html>

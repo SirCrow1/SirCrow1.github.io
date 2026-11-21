@@ -280,6 +280,7 @@ async function afterLogin(){
   }catch(e){console.error(e)}
   busy=false;
   await render();
+  if(pfTabOn())profileTabOpen();
   if(localStorage.suff_notice){say(localStorage.suff_notice);delete localStorage.suff_notice}
   if(!profile.username)openModal();   // first login: ask for a name
 }
@@ -708,6 +709,78 @@ async function cloudSave(quiet,force){
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')cloudSave(true)});
 window.addEventListener('pagehide',()=>cloudSave(true));
 
+// ================= v13: Profile tab (pick a player, see their gold, runs, pet, weapon and armor) =================
+let pfPlayers=[],pfSel=null,pfFilter='';
+const pfBox=(l,v)=>`<div class="acct-stat">${l}<b>${esc(v==null||v===''?'—':v)}</b></div>`;
+function pfTabOn(){const t=$('#t-p');return !!t&&!t.hidden}
+function pfItem(label,table,key,owned){
+  const it=key&&table&&table[key];
+  return `<div style="background:#0b0912;border:1px solid #27272a;border-radius:8px;padding:8px;text-align:left">
+    <div style="font-size:11px;color:#a1a1aa">${label}</div>
+    <div style="color:#fff;font-weight:bold;font-size:14px;margin-top:2px">${it?esc(it.n):'<span style="color:#71717a">None equipped</span>'}</div>
+    ${it&&it.d?`<div style="font-size:11px;color:#a1a1aa;margin-top:2px">${esc(it.d)}</div>`:''}
+    ${owned!=null?`<div style="font-size:11px;color:#71717a;margin-top:4px">Owns ${esc(owned)}</div>`:''}</div>`;
+}
+async function profileTabOpen(){
+  const el=$('#t-p');if(!el)return;
+  if(!sb||!myId){
+    el.innerHTML=`<h3 class="title-font text-lg font-bold text-emerald-400 border-b border-emerald-950 pb-2 text-left">👤 Player Profiles</h3>
+      <div style="color:#a1a1aa;font-size:14px;text-align:center;padding:16px 0">Sign in with Google to see other players' profiles.</div>
+      <button id="pf-signin" type="button" class="w-full bg-emerald-600 hover:bg-emerald-500 text-zinc-950 font-bold py-3 rounded-lg title-font">👤 Sign in</button>`;
+    const b=$('#pf-signin');if(b)b.onclick=()=>{const a=$('#acctbtn');if(a)a.click()};
+    return;
+  }
+  el.innerHTML=`<h3 class="title-font text-lg font-bold text-emerald-400 border-b border-emerald-950 pb-2 text-left">👤 Player Profiles</h3>
+    <input id="pf-search" type="text" placeholder="Search players…" autocomplete="off" style="width:100%;background:#0b0912;border:1px solid #27272a;border-radius:6px;padding:8px;color:#fff;font-size:14px">
+    <div id="pf-list" style="max-height:170px;overflow-y:auto;border:1px solid #27272a;border-radius:8px;background:#0b0912">Loading…</div>
+    <div id="pf-card"></div>`;
+  $('#pf-search').oninput=e=>{pfFilter=e.target.value.trim().toLowerCase();pfRenderList()};
+  $('#pf-list').onclick=e=>{const r=e.target.closest('[data-pf]');if(r)pfSelect(r.dataset.pf)};
+  await syncStats();   // so your own numbers are current
+  const {data,error}=await sb.rpc('get_players');
+  if(error){$('#pf-list').textContent='Could not load: '+error.message;return}
+  pfPlayers=data||[];
+  if(!pfSel||!pfPlayers.some(r=>r.uname===pfSel))pfSel=profile.username&&pfPlayers.some(r=>r.uname===profile.username)?profile.username:(pfPlayers[0]&&pfPlayers[0].uname)||null;
+  pfRenderList();
+  if(pfSel)pfSelect(pfSel);else $('#pf-card').innerHTML='<div style="color:#a1a1aa;text-align:center">No players yet.</div>';
+}
+function pfRenderList(){
+  const box=$('#pf-list');if(!box)return;
+  const rows=pfPlayers.filter(r=>!pfFilter||String(r.uname).toLowerCase().includes(pfFilter));
+  box.innerHTML=rows.length?rows.map(r=>`<div data-pf="${esc(r.uname)}" style="cursor:pointer;display:flex;justify-content:space-between;gap:8px;padding:6px 8px;border-bottom:1px solid #27272a;${r.featured?'background:#2a1f05;':''}${r.uname===pfSel?'outline:1px solid #34d399;outline-offset:-1px;':''}">
+      <span style="text-align:left">${r.featured?'⭐ ':''}<b style="color:${r.featured?'#facc15':'#fff'}">${esc(r.uname)}</b>${r.uname===profile.username?' <span style="color:#34d399;font-size:11px">(you)</span>':''}</span>
+      <span style="color:#a1a1aa;font-size:12px;white-space:nowrap">${r.solved} puzzles</span></div>`).join(''):'<div style="color:#a1a1aa;padding:8px">No match.</div>';
+}
+async function pfSelect(name){
+  pfSel=name;pfRenderList();
+  const card=$('#pf-card');if(!card)return;
+  card.textContent='Loading…';
+  const {data,error}=await sb.rpc(isAdmin?'admin_get_player':'get_player',{p_name:name});
+  if(pfSel!==name)return;   // another player was picked meanwhile
+  if(error){card.textContent='Could not load: '+error.message;return}
+  if(!data){card.textContent='Player not found';return}
+  const st=data.stats||{},eq=st.eq||{},has=v=>v!==undefined&&v!==null;
+  const d=v=>v?new Date(v).toLocaleDateString():'—';
+  const num=v=>has(v)?Number(v).toLocaleString():null;
+  const PT_=typeof PETS!=='undefined'?PETS:null,WP_=typeof WPNS!=='undefined'?WPNS:null,SK_=typeof SKINS!=='undefined'?SKINS:null;
+  card.innerHTML=`<div style="border:1px solid #27272a;border-radius:10px;padding:12px;background:#0f0c18;text-align:left">
+    <div style="font:bold 20px sans-serif;color:#fff">${data.featured?'⭐ ':''}${esc(data.name)}</div>
+    <div style="font-size:12px;color:#a1a1aa;margin:2px 0 10px">Joined ${d(data.joined)} · Last seen ${d(data.last_seen)}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      ${pfBox('🪙 Gold',num(st.gold))}${pfBox('⚔️ Runs',num(data.runs))}
+      ${pfBox('🧩 Puzzles solved',num(data.solved))}${pfBox('🔥 Best streak',num(data.streak))}
+      ${pfBox('🏅 Achievements',has(st.badges)?st.badges+' / '+(st.badgesMax||12):null)}${pfBox('💀 Deaths seen',has(st.deaths)?st.deaths+' / '+(st.deathsMax||40):null)}
+    </div>
+    <div style="color:#facc15;font-weight:bold;margin:12px 0 6px;font-size:13px">Loadout</div>
+    <div style="display:grid;grid-template-columns:1fr;gap:6px">
+      ${pfItem('🐾 Favourite pet',PT_,eq.pet,has(st.pets)?st.pets+' pets':null)}
+      ${pfItem('🗡️ Favourite weapon',WP_,eq.blade,has(st.blades)?st.blades+' blades':null)}
+      ${pfItem('🛡️ Armor',SK_,eq.skin,has(st.skins)?st.skins+' skins':null)}
+    </div>
+    <div style="font-size:11px;color:#71717a;margin-top:8px">Numbers are reported by the player's browser and update when they open the game.</div></div>`;
+}
+window.profileTabOpen=profileTabOpen;
+
 // ---------- start ----------
 function start(){
   sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
@@ -716,7 +789,7 @@ function start(){
   setInterval(()=>cloudSave(true),60000);
   sb.auth.onAuthStateChange((ev,session)=>{
     if(session&&(ev==='SIGNED_IN'||ev==='INITIAL_SESSION'))setTimeout(afterLogin,0);
-    else render();
+    else{render();if(pfTabOn())profileTabOpen()}
   });
 }
 const s=document.createElement('script');
