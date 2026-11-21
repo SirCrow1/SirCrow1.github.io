@@ -198,7 +198,7 @@ async function render(){
   $('#acct-nameprompt').textContent=needName?'Welcome! Pick your player name (3-16 letters, numbers or _)':'New name (3-16 letters, numbers or _)';
   $('#acct-rename').style.display=(needName||editing)?'none':'inline-block';
   $('#acct-admin').style.display=isAdmin?'block':'none';
-  $('#acct-diag').textContent='build v7 · role: '+roleName+(diag?' · '+diag:'');
+  $('#acct-diag').textContent='build v8 · role: '+roleName+' · save: '+String((S&&S.owner)||'none').slice(0,6)+' · acct: '+String(myId||'none').slice(0,6)+(diag?' · '+diag:'');
   $('#acct-stats').innerHTML=statsHTML();
   const ranks=Object.entries(S.best||{}).slice(0,6).map(([k,v])=>k+': '+v).join(' · ');
   $('#acct-ranks').textContent=ranks?'🏆 Best ranks: '+ranks:'';
@@ -238,18 +238,22 @@ function adminUnlock(){
 const MAIN='sufference_save_v14';
 function stashAndClear(){   // on logout: park this account's save under its own key, leave a clean slate
   try{
-    const o=localStorage.suff_owner;
-    if(o){localStorage['suff_save_'+o]=localStorage[MAIN]||'';localStorage.removeItem(MAIN);localStorage.removeItem('suff_owner')}
+    const o=(S&&S.owner)||localStorage.suff_owner;
+    if(o){localStorage['suff_save_'+o]=localStorage[MAIN]||JSON.stringify(S);localStorage.removeItem(MAIN);localStorage.removeItem('suff_owner')}
   }catch(e){}
 }
 function switchOwner(uid){  // returns true if it swapped saves and is reloading the page
   try{
-    const o=localStorage.suff_owner;
-    if(o===uid)return false;
-    if(!o){localStorage.suff_owner=uid;return false}   // first account on this browser adopts the existing save
-    localStorage['suff_save_'+o]=localStorage[MAIN]||'';   // park the previous account's save
+    // the owner is written INSIDE the save itself (S.owner), so any copy of a save knows whose it is
+    const owner=(S&&S.owner)||localStorage.suff_owner||null;
+    if(!owner||owner===uid){
+      if(S.owner!==uid){S.owner=uid;save()}
+      localStorage.suff_owner=uid;
+      return false;     // first account on this browser adopts the existing save
+    }
+    localStorage['suff_save_'+owner]=localStorage[MAIN]||JSON.stringify(S);   // park the other account's save
     const mine=localStorage['suff_save_'+uid];
-    if(mine)localStorage[MAIN]=mine;else localStorage.removeItem(MAIN);   // this account's own save, or a fresh start
+    if(mine)localStorage[MAIN]=mine;else localStorage.removeItem(MAIN);       // this account's own save, or a fresh start
     localStorage.suff_owner=uid;
     location.reload();
     return true;
