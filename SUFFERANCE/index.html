@@ -796,6 +796,8 @@ Object.assign(BA,{0:3.2,1:1.6,2:3.2,3:4.0,7:.5,11:2.6,13:3.4,14:3.4,16:4.4,18:2.
 delete VO[14];delete VO[18];delete VO[27];   // these are now timed in absolute animation time
 Object.assign(BA,{'s:spike':1.2,'s:axe':1.6,'s:boulder':1.5,'s:lava':2.8,'s:ghost':2.8,'s:fire':2.9,'s:dart':1.6,'s:gas':1.7,'s:ice':1.2,'s:fall':1.8});Object.assign(LD,{'s:spike':1.4,'s:axe':1.6,'s:boulder':1.5,'s:lava':3.0,'s:ghost':3.0,'s:fire':1.6,'s:dart':1.6,'s:gas':1.8,'s:ice':1.4,'s:fall':1.8});
 KN[30]='Lava Bath';ONES[30]=ONES['s:lava'];BEDS[30]=BEDS['s:lava'];BA[30]=2.8;LD[30]=3.4;
+// puzzle-room deaths: each gets its own entry and reuses the sound of a death that fits it
+[['crush',20,'Disc Crush',1.5],['xslash','s:axe','Giant X',1.6],['hang','s:gas','Hanged',1.8],['card','s:ghost','Card Trap',2.0],['squash',5,'Wall Squash',1.5],['starve','s:fall','Starved',2.8],['punch','s:boulder','Fist',1.4],['stone',4,'Stone Curse',2.4],['letters','s:boulder','Letter Pile',2.0],['mine',12,'Landmine',1.8]].forEach(([n,s,nm,d])=>{const k='s:'+n;ONES[k]=t=>ONES[s](t);BEDS[k]=()=>{BEDS[s]&&BEDS[s]()};BA[k]=d;LD[k]=d+.2;KN[k]=nm});
 const KO=Object.keys(ONES).map(k=>/^\d+$/.test(k)?+k:k);let tc=0,lastFit='';
 function newSession(){const P={};P.d=ac.createGain();P.d.gain.value=DG;P.d.connect(B.s.d);const cv=ac.createConvolver();cv.buffer=rvb;const rgn=ac.createGain();rgn.gain.value=.45;cv.connect(rgn);rgn.connect(P.d);P.r=cv;P.srcs=[];P.em=[];P.tm=0;P.t0=0;return P}
 function runSession(S){S.nt=S.t0;S.tm=setInterval(safe(()=>{const now=ac.currentTime;if(S.nt<now-.05)S.nt=now;
@@ -2227,9 +2229,9 @@ ${G}
         let SAVED=null;   // whatever screen you were on (a live run, or the scorecard) while the Death Gallery page is open
         const GN=[...Array(30).keys()].map(String);   // 30 main deaths: #30 'Lava Bath' was removed, so badges can still be completed
         const GNI=['☠️','🪓','🦷','🧪','👻','⛰️','🏹','🔥','❄️','⚡','🚚','🐊','💥','🕳️','⚔️','🌊','📦','👹','⚙️','🪳','🔨','🍲','🌀','🪆','🪦','🥩','🌳','☢️','⏳','🦠','🌋'];
-        const GSK=['spike','axe','boulder','lava','ghost','fire','dart','gas','ice','fall'];
-        const GSI={spike:'🗡️',axe:'🪓',boulder:'🪨',lava:'🌋',ghost:'👻',fire:'🔔',dart:'🎯',gas:'☁️',ice:'🧊',fall:'🕳️'};
-        const SRIDX={spike:0,boulder:1,axe:2,fire:3,dart:4,gas:5,fall:6,lava:7,ghost:8,ice:9};
+        const GSK=['spike','axe','boulder','lava','ghost','fire','dart','gas','ice','fall','crush','xslash','hang','card','squash','starve','punch','stone','letters','mine'];
+        const GSI={spike:'🗡️',axe:'🪓',boulder:'🪨',lava:'🌋',ghost:'👻',fire:'🔔',dart:'🎯',gas:'☁️',ice:'🧊',fall:'🕳️',crush:'🟣',xslash:'❌',hang:'🪢',card:'🃏',squash:'🧱',starve:'💀',punch:'🥊',stone:'🗿',letters:'🔤',mine:'💣'};
+        const SRIDX={spike:0,boulder:1,axe:2,fire:3,dart:4,gas:5,fall:6,lava:7,ghost:8,ice:9,crush:10,xslash:11,hang:12,card:13,squash:14,starve:15,punch:16,stone:17,letters:18,mine:19};
         const galNName=k=>k=='24'?'Family Reunion':k=='25'?'Meat Grinder':k=='26'?'The Life Tree':k=='27'?'Nuclear Strike':k=='28'?'The Hundred-Year Second':k=='29'?'Patient Zero':k=='30'?'Lava Bath':DN[+k];
         const galTitle=t=>t.toLowerCase().replace(/(^|\s)\S/g,m=>m.toUpperCase());
         let toastT=0;
@@ -2270,7 +2272,7 @@ ${G}
                 const type=id,d2=SRM[SRIDX[type]];label=galTitle(SDN[type][0]);
                 G.sec={x:300,used:1};G.qtxt=$('#q').textContent;G.state='secret';
                 const c=G.sc={t:0,hurt:0,out:0,bl:[],rem:[],gold:0,k:SRIDX[type],def:d2,vx:0,vy:0,sup:-1};d2.init(c);G.moving=0;
-                const P={spike:[330,330],boulder:[300,SRL[1]+8],axe:[380,335],fire:[SIM_X[1],385],dart:[SRPL3[1][0],SRPL3[1][1]],gas:[SRT[1],300],fall:[300,330],lava:[400,337],ghost:[400,337],ice:[400,340]}[type];
+                const P={spike:[330,330],boulder:[300,SRL[1]+8],axe:[380,335],fire:[SIM_X[1],385],dart:[SRPL3[1][0],SRPL3[1][1]],gas:[SRT[1],300],fall:[300,330],lava:[400,337],ghost:[400,337],ice:[400,340]}[type]||[300,335];
                 G.hx=P[0];G.hy=P[1];
                 if(type=='spike')c.spx=SPK2[1];
                 if(type=='boulder')c.hit={i:1,x:300,ly:SRL[1],v:c.sp[1]};
@@ -2509,7 +2511,7 @@ ${G}
         const SRP={stone:{a:'#231c2e',b:'#2a2236',f:'#1d1627',g:'#241c30'},moss:{a:'#1b2a24',b:'#223329',f:'#142019',g:'#1a2b22'},lava:{a:'#2e1c1c',b:'#3a2222',f:'#241313',g:'#301919'},ice:{a:'#1d2a3a',b:'#243649',f:'#16212f',g:'#1c2b3d'}};
         let lastSR=-1;
         const srNear=(ax,ay,r)=>Math.hypot(G.hx-ax,(G.hy-8)-ay)<r;
-        const SDN={spike:['IMPALED ON SPIKES','#ff4a4a'],axe:['CHOPPED IN HALF','#ff8c1a'],boulder:['SQUISHED BY A BOULDER','#d2b48c'],lava:['SWALLOWED BY LAVA','#ff6a1a'],ghost:['LIFE DRAINED BY A GHOST','#9fd8ff'],fire:['TORN APART BY THE CHAOS MELODY','#ff7bd5'],dart:['RIDDLED WITH DARTS','#ffb347'],gas:['GASSED','#a8ff3c'],ice:['PIERCED BY ICE SPIKES','#8fe8ff'],fall:['FELL INTO THE PIT','#c9b8ff']};
+        const SDN={spike:['IMPALED ON SPIKES','#ff4a4a'],axe:['CHOPPED IN HALF','#ff8c1a'],boulder:['SQUISHED BY A BOULDER','#d2b48c'],lava:['SWALLOWED BY LAVA','#ff6a1a'],ghost:['LIFE DRAINED BY A GHOST','#9fd8ff'],fire:['TORN APART BY THE CHAOS MELODY','#ff7bd5'],dart:['RIDDLED WITH DARTS','#ffb347'],gas:['GASSED','#a8ff3c'],ice:['PIERCED BY ICE SPIKES','#8fe8ff'],fall:['FELL INTO THE PIT','#c9b8ff'],crush:['CRUSHED BY A GIANT DISC','#c084fc'],xslash:['CARVED UP BY THE GIANT X','#ff6b6b'],hang:['HANGED','#d2b48c'],card:['TRAPPED IN A PLAYING CARD','#ffd84a'],squash:['SQUASHED BETWEEN THE WALLS','#9ca3af'],starve:['STARVED IN THE MAZE','#e6dcc0'],punch:['PUNCHED INTO THE WALL','#ff7a3a'],stone:['TURNED TO STONE','#b6bcc8'],letters:['BURIED UNDER LETTERS','#6ee7a0'],mine:['BLOWN TO PIECES','#ffb020']};
         const SRC={stone:'#ffd84a',moss:'#86efac',lava:'#ff8c1a',ice:'#8fe8ff'};
         // ICE SLIDE layout: 7 spike clusters spread over the WHOLE floor. A layout is only used if (1) no straight lane gets through (so walking straight always kills you)
         // and (2) a weaving path still exists (checked with a flood-fill, keeping a safety margin), so it is hard but never impossible.
@@ -2563,12 +2565,13 @@ ${G}
         function srDeathDraw(c,now){
             const D=c.dead,t=D.t,x=D.x,fy=D.y+15,F=D.f,type=D.type,bx=x-57*F;
             const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+            const dot=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill()},txt=(s,x,y,sz,col)=>{ctx.fillStyle=col;ctx.font='bold '+sz+'px sans-serif';ctx.textAlign='center';ctx.fillText(s,x,y)};   // helpers for the puzzle-room deaths
             // knight sprite: idle frame or death-sheet frame. pv = pivot height (so airborne spins turn around his middle, not his feet)
             const sp=o=>{const im=o.idle?sprites.idle:sprites.death;if(!im.loaded)return;const n=o.idle?(o.n??Math.floor(now/100)%10):Math.min(9,Math.floor(Math.max(0,t-(o.t0||0))*9));
                 ctx.save();ctx.globalAlpha=o.a??1;if(o.f)ctx.filter=o.f;if(o.clip){ctx.beginPath();ctx.rect(o.clip[0],o.clip[1],o.clip[2],o.clip[3]);ctx.clip()}
                 const pv=o.pv||0;ctx.translate(x+(o.dx||0),fy+(o.dy||0)-pv);ctx.rotate(o.rot||0);ctx.scale(F*(o.mx||1),o.my??1);if(o.lc){ctx.beginPath();o.lc.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.clip()}ctx.drawImage(im.img,n*120,0,120,80,-132,-176+pv,264,176);ctx.restore()};
             const spray=(t0)=>{if(t<t0)return;const u=Math.min(1,(t-t0)/.7),old=G.sp;G.sp=D.sp;for(let j=0;j<3;j++)sprayAt(j,x+(j-1)*18,fy-50-j*6,.7+u*.8,1-u*.9,j==1?-1:1);G.sp=old};
-            const PT={spike:[0,32],axe:[.2,46],dart:[.9,34],gas:[1.4,30],ice:[.35,38]};   // blood pool: [starts at, size]
+            const PT={spike:[0,32],axe:[.2,46],dart:[.9,34],gas:[1.4,30],ice:[.35,38],crush:[.5,50],squash:[.8,42],xslash:[.7,46]};   // blood pool: [starts at, size]
             if(PT[type]){const pt=PT[type],pu=cl((t-pt[0])/.9,0,1),pcx=type=='fire'?bx:x;if(pu>0){ctx.fillStyle='rgba(110,15,23,.9)';ctx.beginPath();ctx.ellipse(pcx,fy-2,pu*pt[1],pu*pt[1]*.28,0,0,7);ctx.fill()}}
 
             if(type=='spike'){ // impaled on the pit's own spikes (they stay raised, the pit is drawn by the room)
@@ -2698,6 +2701,70 @@ ${G}
                 iceSpikeDraw(x,fy-15,now,cl((t-.12)/.3,0,1));   // the same spikes, drawn in front of his body so he is skewered on them
                 if(t>.3)for(let j=0;j<5;j++)R('#7a121b',x-16+j*8,fy-100+((now/14+j*23)%100),2,5);
                 for(let j=0;j<10;j++){const ph=(now/1600+j*.1)%1;R('rgba(220,245,255,'+(.6*(1-ph))+')',x-70+j*15+Math.sin(now/500+j)*6,fy-ph*70,3,3)}}
+
+            else if(type=='crush'){ // CONNECT 4: a giant demon disc drops from the ceiling, flattens him, then rolls away
+                const u=cl(t/.45,0,1),k=cl((t-.45)/.15,0,1),dcy=fy-62-(1-u*u)*420,rl=t>1.3?(t-1.3)*120+(t-1.3)*(t-1.3)*260:0;
+                if(t<.45)sp({idle:1});else sp({idle:1,n:0,my:1-.88*k,mx:1+.6*k});
+                if(t>.5)for(let j=0;j<8;j++)R('#7a121b',x-40+j*11,fy-4,6,3);
+                const dx=x+rl;dot(dx,dcy,62,'#6d28d9');dot(dx,dcy,50,'#a855f7');dot(dx,dcy,34,'#6d28d9');ctx.font='46px sans-serif';ctx.textAlign='center';ctx.fillText('😈',dx,dcy+16)}
+
+            else if(type=='xslash'){ // TIC-TAC-TOE: two giant blade strokes carve a red X through him and the four pieces fall apart
+                const a=cl((t-.15)/.2,0,1),b=cl((t-.35)/.2,0,1),cy=fy-45,g=cl((t-.55)/.9,0,1);
+                if(t<.55)sp({idle:1,dx:t>.15?Math.sin(now/25)*2:0});
+                else[[[-140,-150],[140,-150],[0,-45],0,g*g*58,.1],[[-140,10],[140,10],[0,-45],0,0,0],[[-140,-150],[0,-45],[-140,10],-1,g*g*34,-.2],[[140,-150],[0,-45],[140,10],1,g*g*34,.2]].forEach(p=>sp({idle:1,n:0,lc:[p[0],p[1],p[2]],dx:p[3]*g*34,dy:p[4],rot:p[5]*g}));
+                ctx.save();ctx.lineCap='round';ctx.globalAlpha=t<1.6?1:.35;[[a,-1],[b,1]].forEach(([p,s])=>{if(p<=0)return;const x0=x+s*65,y0=cy-65,x1=x-s*65,y1=cy+65;[['#ff2d2d',9],['#fff',3]].forEach(([c,w])=>{ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x0+(x1-x0)*p,y0+(y1-y0)*p);ctx.stroke()})});ctx.restore();
+                if(t>.55)spray(.6)}
+
+            else if(type=='hang'){ // HANGMAN: the noose snaps tight and hoists him off the floor, kicking, until he swings still
+                const u=cl(t/.5,0,1),lift=u*60,sw=Math.sin(now/300)*.07*(t<1.5?1:Math.max(0,1-(t-1.5)/1.2)),hy=fy-lift-88;
+                R('#3b2a18',x+46,22,10,fy-16);R('#3b2a18',x-30,22,86,10);R('#2a1d10',x-30,32,86,3);
+                ctx.strokeStyle='#c8a96a';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,32);ctx.lineTo(x,hy+2);ctx.stroke();
+                sp({idle:1,n:0,f:'saturate(.7)',pv:88,dy:-lift,rot:sw,dx:t<1.5?Math.sin(now/45)*2:0});
+                ctx.beginPath();ctx.ellipse(x,hy+8,12,6,0,0,7);ctx.stroke();
+                if(t<1.4){ctx.save();ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.fillStyle='#e6dcc0';ctx.fillText('*gk*',x+30,hy+30-((now/20)%20));ctx.restore()}}
+
+            else if(type=='card'){ // MEMORY: he is folded into a playing card, which flips face down and is dealt away
+                const s=cl((t-.3)/.8,0,1),fl=cl((t-1.2)/.5,0,1),sl=t>1.8?(t-1.8)*(t-1.8)*240:0;
+                if(s<1)sp({idle:1,n:0,f:'saturate(1.6) hue-rotate(250deg)',pv:60,mx:1-.6*s,my:1-.5*s,dy:-s*26,a:1-s*.5});
+                if(s>.15){const q=Math.min(1,s*1.4),cw=62*q,ch=88*q,sx=Math.max(.03,Math.abs(Math.cos(fl*Math.PI)));ctx.save();ctx.translate(x+sl,fy-52);ctx.rotate(sl*.008);ctx.scale(sx,1);
+                    R('#c9a227',-cw/2-3,-ch/2-3,cw+6,ch+6);R(fl<.5?'#e6dcc0':'#3b2f5c',-cw/2,-ch/2,cw,ch);ctx.fillStyle=fl<.5?'#111':'#c9a227';ctx.font='bold '+Math.round(32*q)+'px sans-serif';ctx.textAlign='center';ctx.fillText(fl<.5?'K♠':'?',0,11*q);ctx.restore()}}
+
+            else if(type=='squash'){ // SLIDING TILES: two spiked walls slide shut on him from both sides
+                const u=cl((t-.1)/.7,0,1),d=300-u*283,k=d<60?cl((60-d)/43,0,1):0;
+                if(t<.1)sp({idle:1});else sp({idle:1,n:0,mx:1-.8*k});
+                if(k>.8)for(let j=0;j<6;j++)R('#7a121b',x-26+j*10,fy-8-((now/18+j*13)%46),3,6);
+                [-1,1].forEach(s=>{const wx=x+s*d;R('#4b4358',s<0?wx-90:wx,fy-170,90,190);R('#2a2236',s<0?wx-90:wx,fy-170,90,6);ctx.fillStyle='#c9d1dd';
+                    for(let y=fy-164;y<fy+10;y+=24){ctx.beginPath();ctx.moveTo(wx,y);ctx.lineTo(wx-s*18,y+11);ctx.lineTo(wx,y+22);ctx.fill()}})}
+
+            else if(type=='starve'){ // MAZE: lost and hungry, he withers, collapses and ends as a pile of bones
+                const g=cl(t/1.6,0,1),p=cl((t-1.6)/.5,0,1),bn=cl((t-2.2)/.8,0,1);
+                if(t<1.6)sp({idle:1,f:'grayscale('+g+') brightness('+(1-.25*g)+')',dx:Math.sin(now/200)*2*g,my:1-.07*g});
+                else if(bn<1)sp({idle:1,n:0,f:'grayscale(1) brightness(.7)',rot:F*p*1.55,a:1-bn});
+                if(bn>0){ctx.save();ctx.globalAlpha=bn;ctx.strokeStyle='#e6dcc0';ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x-36,fy-6);ctx.lineTo(x+30,fy-12);ctx.moveTo(x-30,fy-14);ctx.lineTo(x+36,fy-4);ctx.moveTo(x-14,fy-20);ctx.lineTo(x+14,fy-22);
+                    for(let j=0;j<4;j++){ctx.moveTo(x-12+j*8,fy-8);ctx.arc(x-12+j*8,fy-8,7,3.4,6.0)}ctx.stroke();dot(x+46,fy-14,13,'#e6dcc0');R('#17121f',x+40,fy-18,4,6);R('#17121f',x+48,fy-18,4,6);ctx.restore()}}
+
+            else if(type=='punch'){ // ROCK PAPER SCISSORS: a giant demon fist knocks him clean across the room into the wall
+                const hit=.3,v=Math.max(0,t-hit),p=cl(v/.35,0,1),tx=70-x,fx=x+34+Math.max(0,t-.45)*1400+(1-cl(t/hit,0,1))*420;
+                if(t<hit)sp({idle:1});else sp({idle:1,n:0,pv:55,dx:tx*p,dy:-Math.sin(p*Math.PI)*70,rot:p<1?-F*p*6.3:-F*1.55,f:p>=1?'brightness(.8)':''});
+                ctx.fillStyle='#8b1a1a';ctx.fillRect(fx,fy-92,420,44);dot(fx,fy-70,38,'#a31f1f');for(let j=0;j<4;j++)dot(fx-30,fy-90+j*18,9,'#c42b2b');
+                if(t>hit&&t<hit+.3){txt('WHAM!',x-20,fy-130,44,'#ffd84a');ctx.save();ctx.globalAlpha=1-(t-hit)/.3;dot(x,fy-70,60,'#fff');ctx.restore()}
+                if(p>=1){ctx.strokeStyle='#07050a';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(30,fy-100);ctx.lineTo(48,fy-70);ctx.lineTo(34,fy-40);ctx.moveTo(48,fy-70);ctx.lineTo(70,fy-82);ctx.stroke();for(let j=0;j<3;j++)txt('★',70+Math.cos(now/200+j*2.1)*26,fy-110+Math.sin(now/200+j*2.1)*6,16,'#ffd84a')}}
+
+            else if(type=='stone'){ // RIDDLE: the Sphinx's curse turns him to grey stone; he cracks and crumbles to rubble
+                const g=cl((t-.1)/1.2,0,1),cr=cl((t-1.6)/.5,0,1),cu=cl((t-2.1)/.6,0,1);
+                if(cu<1)sp({idle:1,n:0,f:'grayscale('+g+') contrast(1.15) brightness('+(1-.18*g)+')',dx:t<1.4?Math.sin(now/25)*(1-g)*3:0,clip:[x-150,fy-176+cu*176,300,176-cu*176+2]});
+                if(cr>0&&cu<1){ctx.strokeStyle='rgba(30,32,38,'+cr+')';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-8,fy-120);ctx.lineTo(x+4,fy-92);ctx.lineTo(x-8,fy-64);ctx.lineTo(x+6,fy-36);ctx.moveTo(x+4,fy-92);ctx.lineTo(x+22,fy-84);ctx.stroke()}
+                if(cu>0){ctx.globalAlpha=Math.min(1,cu*2);for(let j=0;j<16;j++)R(j%3?'#8a8f9a':'#6b7080',x-38+((j*37)%72),fy-8-(j%4)*6*cu,10+j%4*3,8+j%3*3);ctx.globalAlpha=1}}
+
+            else if(type=='letters'){ // WORDLE: a landslide of giant letter blocks buries him alive
+                sp({idle:1});const CL=['#2f9e44','#d9a60a','#3a3a44'],LT='LOSERBURIED?!WORDLEDEAD';
+                for(let j=0;j<22;j++){const col=j%5,row=Math.floor(j/5),t0=.1+j*.08;if(t<t0)continue;const ly=fy-24-row*22,q=cl((t-t0)/.35,0,1),y=-30+(ly+30)*q*q;R(CL[j%3],x-52+col*22,y,21,21);txt(LT[j],x-41+col*22,y+16,14,'#fff')}}
+
+            else if(type=='mine'){ // MINESWEEPER: a mine goes off under him: he is blasted skyward, charred, and drops back to the floor
+                const b=cl((t-.1)/.25,0,1),v=Math.max(0,t-.1),h=Math.max(0,v*620-720*v*v),sp2=cl(v/.86,0,1);
+                if(t<.1)sp({idle:1});else sp({idle:1,n:0,f:'brightness('+(1-.65*b)+') sepia(.4)',pv:50,dy:-h,rot:F*sp2*(2*Math.PI+1.55)});
+                if(t>.1&&t<1){ctx.save();ctx.globalCompositeOperation='lighter';glow(x,fy,60+b*120,'255,160,40',.8*(1-cl((t-.1)/.9,0,1)));ctx.restore();ctx.strokeStyle='rgba(255,190,80,'+(1-cl((t-.1)/.6,0,1))+')';ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(x,fy,20+v*260,6+v*40,0,0,7);ctx.stroke()}
+                if(t>.1){ctx.fillStyle='rgba(20,15,10,.55)';ctx.beginPath();ctx.ellipse(x,fy+2,34,8,0,0,7);ctx.fill();for(let j=0;j<6;j++){const ph=((t-.2)*.5+j*.17)%1;dot(x-30+j*12+Math.sin(now/300+j)*6,fy-20-ph*110,10+ph*16,'rgba(70,65,60,'+(.5*(1-ph))+')')}}}
         }
 
         // a portcullis hanging out of a stone housing that is built INTO the back wall, so it reads as a real gate that slides up into the wall
@@ -2845,108 +2912,175 @@ ${G}
             R('rgba(255,255,255,.65)',0,232,W,6);R('rgba(255,255,255,.5)',0,H-8,W,8);c.bl.forEach(b=>bloodStain(b.x,b.y,b.sd||0,1));c.rem.forEach(remDraw);   // (the floor covers what was drawn before, so stains and remains go on top of it)
             c.sx.forEach(p=>iceSpikeDraw(p[0],p[1],now,c.rem.some(o=>o.kind=='iceimpale'&&Math.abs(o.x-p[0])<2&&Math.abs(o.y-14-p[1])<2)?1:0))}}
         ];
-        // ================= 10 CLASSIC-GAME PUZZLE ROOMS (same format as Math Plates: puzzle on the wall, step on the answer plate, wrong plate = poison darts) =================
+        // ================= 10 PUZZLE ROOMS: each one is a FULL game you play with the mouse / keyboard. Win = the gate opens. Lose = its own unique death. =================
         (function(){
-            const pp=n=>n==3?[[170,385],[340,300],[510,385]]:[[120,385],[270,300],[420,385],[570,300]];
             const txt=(s,x,y,sz,col,al)=>{ctx.fillStyle=col||'#e6dcc0';ctx.font='bold '+sz+'px sans-serif';ctx.textAlign=al||'center';ctx.fillText(s,x,y)};
-            const pick4=(good,bad)=>{const o=sh([good,...sh(bad).slice(0,3)]);return{o,a:o.indexOf(good)}};
             const wrap=(s,n)=>{const L=[];let l='';s.split(' ').forEach(w=>{if((l+' '+w).length>n){L.push(l);l=w}else l=l?l+' '+w:w});if(l)L.push(l);return L};
-            function room(name,hint,gen){
-                const rs=c=>{c.rs=gen();c.ri=0;c.last=-1;c.flash=0;c.good=0;c.tm=0};
-                return{name,hint,pal:'stone',noTorch:true,
-                init(c){rs(c);c.gate={x:690,open:false,o:0}},
-                reset(c){rs(c)},
-                upd(c,dt){c.flash-=dt;c.good-=dt;c.tm+=dt;if(c.gate.open)return false;
-                    const r=c.rs[c.ri],P=pp(r.o.length);let on=-1;P.forEach((p,i)=>{if(Math.hypot(G.hx-p[0],G.hy-p[1])<38)on=i});
-                    if(on>=0&&on!=c.last){c.last=on;if(on==r.a){c.ri++;c.good=.9;c.tm=0;if(c.ri>=c.rs.length)c.gate.open=true;return false}c.flash=.9;return 'dart'}
-                    c.last=on;return false},
-                draw(c,now){
-                    for(let i=0;i<5;i++){R('#07050a',0,250+i*36,12,6);R('#07050a',W-12,250+i*36,12,6)}
-                    const r=c.rs[Math.min(c.ri,c.rs.length-1)];
-                    R('#07050a',118,58,564,166);R('#17121f',122,60,556,160);
-                    txt(c.gate.open?'SOLVED! THE GATE OPENS':r.t+'  ('+Math.min(c.ri+1,c.rs.length)+'/'+c.rs.length+')',400,74,12,c.flash>0?'#ef4444':c.good>0?'#6ee7a0':'#e6dcc0');
-                    r.art(c,400,80);
-                    const P=pp(r.o.length);
-                    r.o.forEach((o,i)=>{const x=P[i][0],y=P[i][1];R('#17121f',x-46,y-14,92,30);R(c.flash>0&&i==c.last?'#b91c1c':'#3a3347',x-44,y-16,88,26);
-                        let fs=14;ctx.font='bold 14px sans-serif';while(ctx.measureText(o).width>82&&fs>8){fs--;ctx.font='bold '+fs+'px sans-serif'}txt(o,x,y+3,fs,'#fff')});
+            const hov=(x,y,w,h)=>G.mx!=null&&G.mx>=x&&G.mx<=x+w&&G.my>=y&&G.my<=y+h,hit=(px,py,x,y,w,h)=>px>=x&&px<=x+w&&py>=y&&py<=y+h;
+            const btn=(x,y,w,h,s,sz,col)=>{R(hov(x,y,w,h)?'#5b4a86':col||'#2a2236',x,y,w,h);R('#0a0810',x,y+h-3,w,3);txt(s,x+w/2,y+h/2+sz*.35,sz,'#fff')};
+            const say=(s,col)=>txt(s,395,92,15,col||'#ffd84a');
+            const dot=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill()};
+            const grid=(i,x0,y0,cs,cols)=>[x0+(i%cols)*cs,y0+Math.floor(i/cols)*cs];
+            // the shared game shell: the board fills the wall, the knight waits at the left, a win opens the gate, a loss plays the room's own death and then a brand-new game starts
+            function game(name,hint,death,mk,o){
+                const fresh=c=>{c.g=mk();c.g.t=0;c.g.end=0;c.g.res=0};
+                const live=c=>!c.gate.open&&!c.g.res;
+                return{name,hint,game:1,pal:'stone',noTorch:true,
+                init(c){fresh(c);c.gate={x:690,open:false,o:0}},
+                reset(c){fresh(c)},
+                upd(c,dt){const g=c.g;if(c.gate.open)return false;G.hx=70;G.hy=320;g.t+=dt;
+                    if(g.res){g.end+=dt;if(g.end>1.4){if(g.res=='win')c.gate.open=true;else{G.hx=300;G.hy=335;return death}}return false}
+                    o.tick&&o.tick(g,dt);return false},
+                down(c,x,y,e){if(live(c)&&o.down)o.down(c.g,x,y,e)},move(c,x,y){if(live(c)&&o.move)o.move(c.g,x,y)},up(c,x,y){if(live(c)&&o.up)o.up(c.g,x,y)},
+                key:o.key&&((c,e)=>live(c)&&o.key(c.g,e)),
+                draw(c,now){const g=c.g;
+                    if(G.state=='secretDie'){srGateDraw(c.gate);return}
+                    if(c.gate.open){txt('VICTORY! The gate is open - run to the chest!',395,150,20,'#6ee7a0');srGateDraw(c.gate);return}
+                    R('#07050a',118,58,556,386);R('#17121f',122,62,548,378);
+                    o.draw(g,now);
+                    if(g.res){ctx.globalAlpha=.8;R('#000',122,62,548,378);ctx.globalAlpha=1;txt(g.res=='win'?'YOU WIN!':'YOU LOSE!',395,260,52,g.res=='win'?'#6ee7a0':'#ef4444')}
                     srGateDraw(c.gate)}}}
-            const GLY={k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
-            // ---- 1. CHESS: mate in one ----
-            const CHS=[
-             {b:["......k.",".....ppp","........","........","........","........",".....PPP","R.....K."],g:'Ra8#',x:['Rd1','Kf1','h3']},
-             {b:["r.bqkb.r","pppp.ppp","..n..n..","....p..Q","..B.P...","........","PPPP.PPP","RNB.K.NR"],g:'Qxf7#',x:['Qxh7','Bxf7+','Qg4']},
-             {b:[".......k","R.......","........","........","........","........","........",".R....K."],g:'Rb8#',x:['Ra8+','Rb7','Kg2']},
-             {b:["......rk","......pp","........","....N...","........","........","........","..K....."],g:'Nf7#',x:['Nd7','Ng4','Nc6']}];
-            const chess=room('Chess Mate','White to move. Step on the plate with the move that is CHECKMATE. A wrong plate fires the poison darts!',()=>sh(CHS).slice(0,2).map(p=>({t:'White to move: find the checkmate',...pick4(p.g,p.x),art(c,cx,y0){
-                for(let y=0;y<8;y++)for(let x=0;x<8;x++){R((x+y)%2?'#7a5a3a':'#d8c49a',cx-64+x*16,y0+y*16,16,16);const q=p.b[y][x];
-                    if(q!='.'){ctx.font='14px sans-serif';ctx.textAlign='center';ctx.lineWidth=2;ctx.strokeStyle=q>='a'?'#fff':'#000';ctx.strokeText(GLY[q.toLowerCase()],cx-56+x*16,y0+13+y*16);ctx.fillStyle=q>='a'?'#000':'#fff';ctx.fillText(GLY[q.toLowerCase()],cx-56+x*16,y0+13+y*16)}}}})));
-            // ---- 2. CONNECT 4: winning column ----
+            // ---------- 1. CONNECT 4 vs the demon (lose = crushed by a giant disc) ----------
             const w4=(b,c)=>{for(let r=0;r<6;r++)for(let k=0;k<7;k++)for(const[dr,dk]of[[0,1],[1,0],[1,1],[1,-1]]){let n=0;for(let s=0;s<4;s++){const y=r+dr*s,x=k+dk*s;if(y<0||y>5||x<0||x>6||b[y][x]!=c)break;n++}if(n==4)return 1}return 0};
             const dp=(b,x,c)=>{for(let y=5;y>=0;y--)if(!b[y][x]){b[y][x]=c;return y}return -1};
-            function c4gen(){let b,wins,loses;
-                for(let t=0;t<400;t++){b=[...Array(6)].map(()=>Array(7).fill(0));const c=Math.floor(Math.random()*4);for(let i=0;i<3;i++)b[5][c+i]='R';
-                    for(let i=0;i<7;i++){const x=Math.floor(Math.random()*7);if(b[5][x]==0&&(x==c-1||x==c+3))continue;dp(b,x,i%2?'R':'Y')}
-                    wins=[];loses=[];for(let x=0;x<7;x++){const t2=b.map(r=>r.slice());if(dp(t2,x,'R')>=0){if(w4(t2,'R'))wins.push(x);else loses.push(x)}}
-                    if(wins.length==1&&loses.length>=3&&!w4(b,'R')&&!w4(b,'Y'))break}
-                return{t:'You are RED: drop ONE disc to win now',...pick4('Column '+(wins[0]+1),loses.map(x=>'Column '+(x+1))),art(c,cx,y0){R('#1b3a8a',cx-72,y0-2,144,126);
-                    for(let y=0;y<6;y++)for(let x=0;x<7;x++){const v=b[y][x];ctx.fillStyle=v=='R'?'#e63946':v=='Y'?'#ffd60a':'#0b1a4a';ctx.beginPath();ctx.arc(cx-60+x*20,y0+9+y*20,8,0,7);ctx.fill()}
-                    for(let x=0;x<7;x++)txt(x+1,cx-60+x*20,y0+138,10,'#9ca3af')}}}
-            const conn=room('Connect 4','You are RED. Step on the plate of the column that WINS the game right now. A wrong plate fires the poison darts!',()=>[c4gen(),c4gen()]);
-            // ---- 3. TIC-TAC-TOE: winning square ----
-            const L3=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]],w3=(b,m)=>L3.some(l=>l.every(i=>b[i]==m));
-            function tgen(){let b,wins,rest;
-                for(let t=0;t<500;t++){b=Array(9).fill(0);const l=rnd(L3),e=Math.floor(Math.random()*3);l.forEach((i,k)=>{if(k!=e)b[i]='X'});
-                    const em=()=>b.map((v,i)=>v?-1:i).filter(i=>i>=0);for(let k=0;k<2;k++)b[rnd(em())]='O';if(Math.random()<.5)b[rnd(em())]='X';
-                    if(w3(b,'X')||w3(b,'O'))continue;wins=[];rest=[];em().forEach(i=>{b[i]='X';(w3(b,'X')?wins:rest).push(i);b[i]=0});
-                    if(wins.length==1&&rest.length>=3)break}
-                return{t:'You are X: pick the square that WINS now',...pick4('Square '+(wins[0]+1),rest.map(i=>'Square '+(i+1))),art(c,cx,y0){
-                    for(let i=0;i<9;i++){const x=cx-60+(i%3)*40,y=y0+2+Math.floor(i/3)*40;R('#2a2236',x+1,y+1,38,38);txt(b[i]||i+1,x+20,y+27,b[i]?24:11,b[i]=='X'?'#ff6b6b':b[i]=='O'?'#9fd8ff':'#6b6580')}}}}
-            const ttt=room('Tic-Tac-Toe','You are X. Step on the plate of the square that WINS the game now. A wrong plate fires the poison darts!',()=>[tgen(),tgen()]);
-            // ---- 4. HANGMAN: fill the missing letter ----
-            const HW=['dungeon','skeleton','dragon','princess','crossbow','treasure','potion','wizard','goblin','castle','shield','knight','cursed','phantom'];
-            const hang=room('Hangman','A letter is missing from the word. Step on the plate with the RIGHT letter, or the noose (darts) gets you!',()=>sh(HW).slice(0,3).map(w=>{const k=1+Math.floor(Math.random()*(w.length-2)),L=w[k].toUpperCase(),bad='AEIOURSTLNDCMPBGHW'.split('').filter(l=>l!=L&&!HW.some(h=>{const z=h.toUpperCase();return z.length==w.length&&z.split('').every((q,i)=>q==(i==k?l:w[i].toUpperCase()))}));
-                return{t:'Fill in the missing letter',...pick4(L,bad),art(c,cx,y0){txt(w.split('').map((ch,i)=>i==k?'_':ch.toUpperCase()).join(' '),cx,y0+70,34,'#ffd84a');txt('Which letter finishes the word?',cx,y0+120,13)}}}));
-            // ---- 5. MEMORY: where was the symbol? ----
-            const SY=['♠','♥','♦','♣','★','☾'];
-            const mem=room('Memory Cards','Memorize the 4 cards before they flip! Then step on the plate where the named symbol was. A wrong plate fires the darts!',()=>[0,1,2].map(()=>{const cs=sh(SY).slice(0,4),a=Math.floor(Math.random()*4);
-                return{t:'Memorize the cards',o:['Card 1','Card 2','Card 3','Card 4'],a,art(c,cx,y0){const up=c.tm<3;
-                    for(let i=0;i<4;i++){const x=cx-149+i*84;R('#c9a227',x-2,y0+8,68,74);R(up?'#e6dcc0':'#3b2f5c',x,y0+10,64,70);txt(up?cs[i]:'?',x+32,y0+57,38,up?(cs[i]=='♥'||cs[i]=='♦'?'#c0182b':'#111'):'#c9a227')}
-                    txt(up?'Memorize... '+Math.ceil(3-c.tm):'Where was  '+cs[a]+'  ?',cx,y0+118,18,up?'#ffd84a':'#6ee7a0')}}}));
-            // ---- 6. SLIDING TILES: 2 moves from solved ----
-            const nbs=i=>{const r=[],x=i%3,y=Math.floor(i/3);if(x>0)r.push(i-1);if(x<2)r.push(i+1);if(y>0)r.push(i-3);if(y<2)r.push(i+3);return r};
-            function sgen(){const b=[1,2,3,4,5,6,7,8,0],A=rnd([5,7]),a=b[A];b[8]=a;b[A]=0;const B=rnd(nbs(A).filter(i=>i!=8)),bb=b[B];b[A]=bb;b[B]=0;
-                const board=b.slice();const mk=(bd,tile,z)=>{const adj=nbs(z).map(i=>bd[i]).filter(v=>v!=tile);const oth=[1,2,3,4,5,6,7,8].filter(v=>v!=tile&&!adj.includes(v));return{t:'Slide the right tile (solve it in 2 moves)',...pick4('Tile '+tile,[...adj,...sh(oth)].map(v=>'Tile '+v)),bd,art(c,cx,y0){for(let i=0;i<9;i++){const x=cx-60+(i%3)*40,y=y0+2+Math.floor(i/3)*40;if(bd[i]){R('#3b2f5c',x+1,y+1,38,38);txt(bd[i],x+20,y+27,22,'#ffd84a')}}}}};
-                const r1=mk(board,bb,B),after=board.slice();after[B]=bb;after[A]=0;const r2=mk(after,a,A);return[r1,r2]}
-            const slide=room('Sliding Tiles','The tiles must end up 1-8 in order with the blank last. Step on the plate of the tile that slides into the blank. A wrong plate fires the darts!',sgen);
-            // ---- 7. MAZE: walk the path ----
-            const DV={Up:[0,-1],Down:[0,1],Left:[-1,0],Right:[1,0]},DK={Up:'n',Down:'s',Left:'w',Right:'e'};
-            function mgen(){for(;;){const N=3,w=[...Array(N)].map(()=>[...Array(N)].map(()=>({n:1,e:1,s:1,w:1}))),seen=new Set(['0,0']),st=[[0,0]],O={n:[0,-1,'s'],s:[0,1,'n'],e:[1,0,'w'],w:[-1,0,'e']};
-                while(st.length){const[x,y]=st[st.length-1],o=Object.keys(O).filter(d=>{const nx=x+O[d][0],ny=y+O[d][1];return nx>=0&&ny>=0&&nx<N&&ny<N&&!seen.has(nx+','+ny)});if(!o.length){st.pop();continue}const d=rnd(o),nx=x+O[d][0],ny=y+O[d][1];w[y][x][d]=0;w[ny][nx][O[d][2]]=0;seen.add(nx+','+ny);st.push([nx,ny])}
-                const prev={'0,0':null},q=[[0,0]];while(q.length){const[x,y]=q.shift();for(const d of['Up','Down','Left','Right']){if(w[y][x][DK[d]])continue;const nx=x+DV[d][0],ny=y+DV[d][1],k=nx+','+ny;if(!(k in prev)){prev[k]=[x,y,d];q.push([nx,ny])}}}
-                const path=[];let cx=2,cy=2;while(prev[cx+','+cy]){const[px,py,d]=prev[cx+','+cy];path.unshift({x:px,y:py,d});cx=px;cy=py}
-                if(path.length<4||path.length>5)continue;
-                return path.map(s=>({t:'Find the way out: which way next?',...pick4(s.d,['Up','Down','Left','Right'].filter(d=>d!=s.d)),art(c,cx2,y0){const X0=cx2-63;
-                    for(let y=0;y<N;y++)for(let x=0;x<N;x++){R('#2a2236',X0+x*42+1,y0+4+y*42+1,40,40);ctx.fillStyle='#c9a227';const m=w[y][x],bx=X0+x*42,by=y0+4+y*42;if(m.n)ctx.fillRect(bx,by,42,3);if(m.s)ctx.fillRect(bx,by+39,42,3);if(m.w)ctx.fillRect(bx,by,3,42);if(m.e)ctx.fillRect(bx+39,by,3,42)}
-                    txt('EXIT',X0+2*42+21,y0+4+2*42+26,11,'#6ee7a0');ctx.fillStyle='#38bdf8';ctx.beginPath();ctx.arc(X0+s.x*42+21,y0+4+s.y*42+21,10,0,7);ctx.fill()}}))}}
-            const maze=room('Maze Map','The blue dot must reach EXIT. At each step, step on the plate of the way to go. A wrong plate fires the darts!',mgen);
-            // ---- 8. ROCK PAPER SCISSORS: beat the demon's throw ----
-            const BEAT={Rock:'Paper',Paper:'Scissors',Scissors:'Rock'};
-            const rps=room('Rock Paper Scissors','The demon shows his throw. Step on the plate that BEATS it. A wrong plate fires the poison darts!',()=>[0,1,2].map(()=>{const d=rnd(['Rock','Paper','Scissors']);return{t:'Beat the demon',o:['Rock','Paper','Scissors'],a:['Rock','Paper','Scissors'].indexOf(BEAT[d]),art(c,cx,y0){txt('THE DEMON THROWS',cx,y0+40,16);txt(d.toUpperCase(),cx,y0+105,44,'#ff6b6b')}}}));
-            // ---- 9. RIDDLES ----
+            const c4b=()=>[...Array(6)].map(()=>Array(7).fill(0)),C4X=213,C4Y=116;
+            function c4ai(b){const o=[0,1,2,3,4,5,6].filter(x=>!b[0][x]),t=(x,c)=>{const q=b.map(r=>r.slice());dp(q,x,c);return q};
+                let m=o.find(x=>w4(t(x,'Y'),'Y'));if(m==null)m=o.find(x=>w4(t(x,'R'),'R'));if(m!=null)return m;
+                const ok=o.filter(x=>{const q=t(x,'Y');if(q[0][x])return true;dp(q,x,'R');return !w4(q,'R')});   // never hand the knight a winning spot
+                return(ok.length?ok:o).sort((a,b)=>Math.abs(a-3)-Math.abs(b-3)+Math.random()*1.4-.7)[0]}
+            function c4n(g,w){if(w4(g.b,w))g.res=w=='R'?'win':'lose';else if(g.b[0].every(v=>v))g.rs=1.4;else{g.turn=w=='R'?'Y':'R';g.dl=.6+Math.random()*.5}}
+            const conn=game('Connect 4','You are RED. Click a column to drop a disc. Get 4 in a row before the demon does - if he wins, you die!','crush',()=>({b:c4b(),turn:'R',dl:0,rs:0,lm:null}),{
+                down(g,x){if(g.turn!='R'||g.rs)return;const k=Math.floor((x-C4X)/52);if(k<0||k>6||g.b[0][k])return;g.lm=[dp(g.b,k,'R'),k];c4n(g,'R')},
+                tick(g,dt){if(g.rs){g.rs-=dt;if(g.rs<=0){g.b=c4b();g.turn='R';g.rs=0;g.lm=null}return}
+                    if(g.turn=='Y'&&(g.dl-=dt)<=0){const k=c4ai(g.b);g.lm=[dp(g.b,k,'Y'),k];c4n(g,'Y')}},
+                draw(g){say(g.res=='win'?'FOUR IN A ROW!':g.res?'The demon connected four!':g.rs?'A draw! Fresh board...':g.turn=='R'?'Your turn: click a column':'The demon is plotting...',g.res=='win'?'#6ee7a0':g.res?'#ef4444':'#ffd84a');
+                    R('#1b3a8a',C4X-6,C4Y-6,376,324);const hc=g.turn=='R'&&!g.res&&!g.rs&&G.mx!=null?Math.floor((G.mx-C4X)/52):-1;if(hc>=0&&hc<7)R('rgba(255,255,255,.14)',C4X+hc*52,C4Y,52,312);
+                    for(let y=0;y<6;y++)for(let x=0;x<7;x++){const v=g.b[y][x];dot(C4X+26+x*52,C4Y+26+y*52,21,v=='R'?'#e63946':v=='Y'?'#a855f7':'#0b1a4a');
+                        if(g.lm&&g.lm[0]==y&&g.lm[1]==x){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(C4X+26+x*52,C4Y+26+y*52,21,0,7);ctx.stroke()}}}});
+            // ---------- 2. TIC-TAC-TOE vs the demon (lose = carved up by a giant X) ----------
+            const L3=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]],w3=(b,m)=>L3.some(l=>l.every(i=>b[i]==m)),TX=245,TY=116;
+            function tai(b){const em=b.map((v,i)=>v?-1:i).filter(i=>i>=0),f=m=>em.find(i=>{b[i]=m;const r=w3(b,m);b[i]=0;return r});
+                if(Math.random()<.3)return rnd(em);   // the demon slips up now and then, so he can be beaten
+                let m=f('O');if(m==null)m=f('X');if(m!=null)return m;if(!b[4])return 4;const cs=[0,2,6,8].filter(i=>!b[i]);return cs.length?rnd(cs):rnd(em)}
+            function tn(g,w){const l=L3.find(l=>l.every(i=>g.b[i]==w));if(l){g.wl=l;g.res=w=='X'?'win':'lose'}else if(g.b.every(v=>v))g.rs=1.4;else{g.turn=w=='X'?'O':'X';g.dl=.6+Math.random()*.5}}
+            const ttt=game('Tic-Tac-Toe','You are X and you move first. Get three in a row before the demon does - if he wins, you die!','xslash',()=>({b:Array(9).fill(0),turn:'X',dl:0,rs:0}),{
+                down(g,x,y){if(g.turn!='X'||g.rs)return;const cx=Math.floor((x-TX)/100),cy=Math.floor((y-TY)/100);if(cx<0||cx>2||cy<0||cy>2||g.b[cy*3+cx])return;g.b[cy*3+cx]='X';tn(g,'X')},
+                tick(g,dt){if(g.rs){g.rs-=dt;if(g.rs<=0){g.b=Array(9).fill(0);g.turn='X';g.rs=0}return}
+                    if(g.turn=='O'&&(g.dl-=dt)<=0){g.b[tai(g.b)]='O';tn(g,'O')}},
+                draw(g){say(g.res=='win'?'THREE IN A ROW!':g.res?'The demon got three!':g.rs?'A draw! Fresh board...':g.turn=='X'?'Your turn: click a square':'The demon is plotting...',g.res=='win'?'#6ee7a0':g.res?'#ef4444':'#ffd84a');
+                    ctx.strokeStyle='#8b7bb5';ctx.lineWidth=5;ctx.beginPath();[1,2].forEach(k=>{ctx.moveTo(TX+k*100,TY+8);ctx.lineTo(TX+k*100,TY+292);ctx.moveTo(TX+8,TY+k*100);ctx.lineTo(TX+292,TY+k*100)});ctx.stroke();
+                    g.b.forEach((v,i)=>{const[x,y]=grid(i,TX,TY,100,3);if(!v&&g.turn=='X'&&!g.res&&!g.rs&&hov(x,y,100,100))R('rgba(255,255,255,.1)',x+4,y+4,92,92);
+                        ctx.lineWidth=9;ctx.lineCap='round';if(v=='X'){ctx.strokeStyle='#ff6b6b';ctx.beginPath();ctx.moveTo(x+25,y+25);ctx.lineTo(x+75,y+75);ctx.moveTo(x+75,y+25);ctx.lineTo(x+25,y+75);ctx.stroke()}
+                        if(v=='O'){ctx.strokeStyle='#c084fc';ctx.beginPath();ctx.arc(x+50,y+50,26,0,7);ctx.stroke()}});
+                    if(g.wl){const a=grid(g.wl[0],TX,TY,100,3),b=grid(g.wl[2],TX,TY,100,3);ctx.strokeStyle='#fff';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(a[0]+50,a[1]+50);ctx.lineTo(b[0]+50,b[1]+50);ctx.stroke()}}});
+            // ---------- 3. HANGMAN (word is hidden, long and rare, 6 wrong guesses. Each wrong guess removes a body part. lose = hanged) ----------
+            const HW=['necromancer','labyrinth','catacombs','sarcophagus','executioner','abomination','blacksmith','enchantress','juggernaut','apparition','battlement','drawbridge','mausoleum','alchemist','gargoyle','nightmare','werewolf','poltergeist','bloodthirsty','pestilence','blasphemy'];
+            const KR=['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'],kpos=(r,i)=>[475-KR[r].length*19+i*38,206+r*42];
+            function hg(g,L){if(g.u[L]||g.res)return;g.u[L]=1;if(!g.w.includes(L)){g.lv--;g.sk=.4}if([...g.w].every(ch=>g.u[ch]))g.res='win';else if(g.lv<=0)g.res='lose'}
+            const hang=game('Hangman','The word is hidden! Guess letters (click them or type). Every wrong guess rips off one of his body parts - lose them all and you hang!','hang',()=>({w:rnd(HW).toUpperCase(),u:{},lv:6,sk:0}),{
+                down(g,x,y){KR.forEach((row,r)=>[...row].forEach((L,i)=>{const[kx,ky]=kpos(r,i);if(hit(x,y,kx,ky,34,36))hg(g,L)}))},
+                key(g,e){if(e.ctrlKey||e.metaKey||e.altKey)return false;if(/^[a-z]$/i.test(e.key)){hg(g,e.key.toUpperCase());return true}return false},
+                tick(g,dt){g.sk=Math.max(0,g.sk-dt)},
+                draw(g,now){say(g.res=='win'?'You saved your neck!':g.res?'The word was '+g.w:'Wrong guesses left: '+g.lv+'   |   '+g.w.length+' letters',g.res=='win'?'#6ee7a0':g.res?'#ef4444':'#ffd84a');
+                    ctx.strokeStyle='#8b6a3a';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(140,300);ctx.lineTo(300,300);ctx.moveTo(165,300);ctx.lineTo(165,110);ctx.lineTo(245,110);ctx.moveTo(165,150);ctx.lineTo(205,110);ctx.stroke();ctx.lineWidth=2;ctx.strokeStyle='#c8a96a';ctx.beginPath();ctx.moveTo(245,110);ctx.lineTo(245,138);ctx.stroke();
+                    const ox=Math.sin(now/40)*g.sk*10,P=[[[245,185],[220,215]],[[245,185],[270,215]],[[245,225],[228,272]],[[245,225],[262,272]],[[245,170],[245,228]],null],gone=6-g.lv;   // removed in this order: left arm, right arm, left leg, right leg, torso, head
+                    ctx.lineCap='round';ctx.lineWidth=5;P.forEach((p,i)=>{const on=i>=gone;ctx.strokeStyle=on?'#e6dcc0':'#2a2236';if(p){ctx.beginPath();ctx.moveTo(p[0][0]+(on?ox:0),p[0][1]);ctx.lineTo(p[1][0]+(on?ox:0),p[1][1]);ctx.stroke()}else{ctx.beginPath();ctx.arc(245+(on?ox:0),155,15,0,7);ctx.stroke()}});
+                    const n=g.w.length,sw=Math.min(32,330/n);[...g.w].forEach((ch,i)=>{const x=475-n*sw/2+i*sw+sw/2,sh2=g.u[ch],lost=g.res=='lose';R(lost&&!sh2?'#ef4444':'#8b7bb5',x-sw/2+3,160,sw-6,3);if(sh2||lost)txt(ch,x,154,sw>28?26:20,sh2?'#ffd84a':'#ef4444')});
+                    KR.forEach((row,r)=>[...row].forEach((L,i)=>{const[kx,ky]=kpos(r,i),us=g.u[L];R(us?(g.w.includes(L)?'#1f5a34':'#5a1f24'):hov(kx,ky,34,36)?'#5b4a86':'#2a2236',kx,ky,34,36);txt(L,kx+17,ky+25,17,us?'#777':'#fff')}))}});
+            // ---------- 4. MEMORY CARDS: find all 6 pairs with at most 8 mistakes (lose = trapped in a playing card) ----------
+            const SY=['♠','♥','♦','♣','★','☾'],MX=210,MY=112;
+            const mem=game('Memory Cards','Flip two cards at a time and find all 6 matching pairs. You only get 8 mistakes - the 9th traps you inside a card!','card',()=>({c:sh([...SY,...SY]),up:Array(12).fill(0),dn:Array(12).fill(0),a:Array(12).fill(0),sel:[],lk:0,ms:0}),{
+                down(g,x,y){if(g.lk>0)return;for(let i=0;i<12;i++){const[cx,cy]=grid(i,MX,MY,96,4);if(hit(x,y,cx,cy,82,88)&&!g.up[i]&&!g.dn[i]&&g.sel.length<2){g.up[i]=1;g.sel.push(i);
+                    if(g.sel.length==2){const[p,q]=g.sel;if(g.c[p]==g.c[q]){g.dn[p]=g.dn[q]=1;g.sel=[];if(g.dn.every(v=>v))g.res='win'}else{g.ms++;g.lk=.9}}break}}},
+                tick(g,dt){g.a=g.a.map((a,i)=>a+Math.sign((g.up[i]?1:0)-a)*Math.min(Math.abs((g.up[i]?1:0)-a),dt*6));
+                    if(g.lk>0&&(g.lk-=dt)<=0){g.sel.forEach(i=>g.up[i]=0);g.sel=[];if(g.ms>8)g.res='lose'}},
+                draw(g){say('Pairs found: '+g.dn.filter(v=>v).length/2+'/6      Mistakes: '+g.ms+'/8',g.ms>=7?'#ef4444':'#ffd84a');
+                    for(let i=0;i<12;i++){const[cx,cy]=grid(i,MX,MY,96,4),a=g.a[i],sx=Math.max(.04,Math.abs(Math.cos(a*Math.PI))),face=a>.5,s=g.c[i];ctx.save();ctx.translate(cx+41,cy+44);ctx.scale(sx,1);
+                        R(g.dn[i]?'#2f9e44':'#c9a227',-43,-46,86,92);R(face?'#e6dcc0':hov(cx,cy,82,88)&&g.lk<=0?'#5b4a86':'#3b2f5c',-41,-44,82,88);txt(face?s:'?',0,face?16:14,face?46:40,face?(s=='♥'||s=='♦'?'#c0182b':'#111'):'#c9a227');ctx.restore()}}});
+            // ---------- 5. SLIDING TILES: easy scramble, click or DRAG a tile into the blank. Beat the closing walls (lose = squashed between them) ----------
+            const nbs=i=>{const r=[],x=i%3,y=Math.floor(i/3);if(x>0)r.push(i-1);if(x<2)r.push(i+1);if(y>0)r.push(i-3);if(y<2)r.push(i+3);return r},SX=245,SY0=116,SLT=180;
+            function sgen(){const b=[1,2,3,4,5,6,7,8,0];let z=8,pv=-1;for(let k=0;k<16;k++){const n=rnd(nbs(z).filter(i=>i!=pv));b[z]=b[n];b[n]=0;pv=z;z=n}return b.join()=='1,2,3,4,5,6,7,8,0'?sgen():b}
+            function smv(g,i){const z=g.b.indexOf(0);g.b[z]=g.b[i];g.b[i]=0;if(g.b.join()=='1,2,3,4,5,6,7,8,0')g.res='win'}
+            const slide=game('Sliding Tiles','Put the tiles in order 1-8 with the blank last. Click a tile next to the blank, or drag it into the gap. Beat the clock - the walls are closing!','squash',()=>({b:sgen(),dr:null}),{
+                down(g,x,y){const cx=Math.floor((x-SX)/100),cy=Math.floor((y-SY0)/100);if(cx<0||cx>2||cy<0||cy>2)return;const i=cy*3+cx,z=g.b.indexOf(0);if(g.b[i]&&nbs(z).includes(i))g.dr={i,vx:z%3-i%3,vy:Math.floor(z/3)-Math.floor(i/3),sx:x,sy:y,off:0,mv:0}},
+                move(g,x,y){const d=g.dr;if(!d)return;const o=(x-d.sx)*d.vx+(y-d.sy)*d.vy;d.off=Math.max(0,Math.min(100,o));if(o>6)d.mv=1},
+                up(g){const d=g.dr;g.dr=null;if(d&&(!d.mv||d.off>40))smv(g,d.i)},
+                tick(g){if(g.t>=SLT)g.res='lose'},
+                draw(g){const p=g.t/SLT,e=p<.85?122+123*(p/.85):245+150*((p-.85)/.15);say('Time left: '+Math.max(0,Math.ceil(SLT-g.t))+'s',p>.7?'#ef4444':'#ffd84a');
+                    for(let i=0;i<9;i++){const[x,y]=grid(i,SX,SY0,100,3),v=g.b[i],d=g.dr&&g.dr.i==i?g.dr:null;R('#0f0b16',x+2,y+2,96,96);if(v){const ox=d?d.vx*d.off:0,oy=d?d.vy*d.off:0;R(v==i+1?'#2f5a3c':'#3b2f5c',x+4+ox,y+4+oy,92,92);R('rgba(255,255,255,.12)',x+4+ox,y+4+oy,92,6);txt(v,x+50+ox,y+68+oy,46,'#ffd84a')}}
+                    ctx.fillStyle='#4b4358';ctx.fillRect(122,62,e-122,378);ctx.fillRect(668-(e-122),62,e-122,378);ctx.fillStyle='#c9d1dd';
+                    for(let y=70;y<432;y+=28){ctx.beginPath();ctx.moveTo(e,y);ctx.lineTo(e+16,y+11);ctx.lineTo(e,y+22);ctx.fill();ctx.beginPath();ctx.moveTo(668-(e-122),y);ctx.lineTo(668-(e-122)-16,y+11);ctx.lineTo(668-(e-122),y+22);ctx.fill()}}});
+            // ---------- 6. MAZE: a real maze. Walk out of it yourself with WASD / arrows before the torch dies (lose = starved in the maze) ----------
+            const MZC=15,MZR=9,MZS=34,MZX=145,MZY=114,MZT=100;
+            function mzgen(){const w=[...Array(MZR)].map(()=>[...Array(MZC)].map(()=>({n:1,e:1,s:1,w:1}))),seen=new Set(['0,0']),st=[[0,0]],O={n:[0,-1,'s'],s:[0,1,'n'],e:[1,0,'w'],w:[-1,0,'e']};
+                while(st.length){const[x,y]=st[st.length-1],o=Object.keys(O).filter(d=>{const nx=x+O[d][0],ny=y+O[d][1];return nx>=0&&ny>=0&&nx<MZC&&ny<MZR&&!seen.has(nx+','+ny)});if(!o.length){st.pop();continue}const d=rnd(o),nx=x+O[d][0],ny=y+O[d][1];w[y][x][d]=0;w[ny][nx][O[d][2]]=0;seen.add(nx+','+ny);st.push([nx,ny])}
+                for(let k=0;k<10;k++){const x=1+Math.floor(Math.random()*(MZC-2)),y=Math.floor(Math.random()*MZR);w[y][x].w=0;w[y][x-1].e=0}   // a few loops so there is more than one way
+                const rc=[];w.forEach((row,y)=>row.forEach((m,x)=>{const bx=MZX+x*MZS,by=MZY+y*MZS;if(m.n)rc.push([bx-2,by-2,MZS+4,4]);if(m.w)rc.push([bx-2,by-2,4,MZS+4]);if(y==MZR-1&&m.s)rc.push([bx-2,by+MZS-2,MZS+4,4]);if(x==MZC-1&&m.e)rc.push([bx+MZS-2,by-2,4,MZS+4])}));return{rc,px:MZX+MZS/2,py:MZY+MZS/2}}
+            const maze=game('Maze','A real maze! Walk (WASD / arrow keys) from the top-left corner to the glowing EXIT before your torch burns out - or you starve in here!','starve',mzgen,{
+                tick(g,dt){const dx=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0),dy=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0),m=dx&&dy?.707:1,bl=(x,y)=>g.rc.some(r=>x+7>r[0]&&x-7<r[0]+r[2]&&y+7>r[1]&&y-7<r[1]+r[3]);
+                    for(let s=0;s<4;s++){const nx=g.px+dx*m*150*dt/4,ny=g.py+dy*m*150*dt/4;if(!bl(nx,g.py))g.px=nx;if(!bl(g.px,ny))g.py=ny}
+                    if(Math.hypot(g.px-(MZX+(MZC-.5)*MZS),g.py-(MZY+(MZR-.5)*MZS))<14)g.res='win';else if(g.t>=MZT)g.res='lose'},
+                draw(g,now){const left=Math.max(0,MZT-g.t);say('Torch: '+Math.ceil(left)+'s    (WASD / arrow keys)',left<20?'#ef4444':'#ffd84a');R('#2a2236',MZX,104,MZC*MZS,5);R(left<20?'#ef4444':'#ff9a2a',MZX,104,MZC*MZS*left/MZT,5);
+                    R('#1d1627',MZX,MZY,MZC*MZS,MZR*MZS);const ex=MZX+(MZC-.5)*MZS,ey=MZY+(MZR-.5)*MZS;ctx.save();ctx.globalCompositeOperation='lighter';glow(ex,ey,40,'110,231,160',.5+.2*Math.sin(now/200));ctx.restore();txt('EXIT',ex,ey+4,10,'#6ee7a0');
+                    ctx.fillStyle='#d4b24c';g.rc.forEach(r=>ctx.fillRect(r[0],r[1],r[2],r[3]));
+                    dot(g.px,g.py+1,9,'rgba(0,0,0,.4)');dot(g.px,g.py,8,'#38bdf8');dot(g.px-2,g.py-2,3,'#e0f7ff')}});
+            // ---------- 7. ROCK PAPER SCISSORS: best of 5 against the demon, both hands revealed at the same instant (lose = punched into orbit) ----------
+            const RP=['✊','✋','✌️'],RN=['ROCK','PAPER','SCISSORS'];
+            const rps=game('Rock Paper Scissors','First to 3 round wins takes the match. Pick your throw - you and the demon reveal at the very same moment. If he wins, you get punched into orbit!','punch',()=>({sc:[0,0],ph:'pick',pl:0,de:0,rt:0,msg:''}),{
+                down(g,x,y){if(g.ph!='pick')return;for(let i=0;i<3;i++)if(hit(x,y,200+i*140,340,120,80)){g.pl=i;g.de=Math.floor(Math.random()*3);g.ph='count';g.rt=0}},
+                tick(g,dt){g.rt+=dt;if(g.ph=='count'&&g.rt>=1.9){const r=(g.pl-g.de+3)%3;if(r==1)g.sc[0]++;if(r==2)g.sc[1]++;g.rr=r;g.msg=r==1?'You win the round!':r==2?'The demon wins the round!':'Tie! Throw again';g.ph='show';g.rt=0;if(g.sc[0]>=3)g.res='win';else if(g.sc[1]>=3)g.res='lose'}
+                    else if(g.ph=='show'&&g.rt>1.4)g.ph='pick'},
+                draw(g,now){say('KNIGHT  '+g.sc[0]+'  -  '+g.sc[1]+'  DEMON      (first to 3)');const c=g.ph=='count',sh2=c?Math.sin(g.rt*14)*14:0;
+                    ctx.font='84px sans-serif';ctx.textAlign='center';ctx.fillText(c?'✊':RP[g.pl],290,230+sh2);ctx.save();ctx.translate(500,0);ctx.scale(-1,1);ctx.fillText(c?'✊':g.ph=='show'?RP[g.de]:'✊',0,230+sh2);ctx.restore();
+                    txt('YOU',290,262,15,'#9fd8ff');txt('DEMON',500,262,15,'#ff6b6b');
+                    txt(c?(['ROCK...','PAPER...','SCISSORS...','SHOOT!'][Math.min(3,Math.floor(g.rt/.45))]):g.ph=='show'?g.msg:'Choose your throw!',395,315,26,g.ph=='show'?(g.rr==1?'#6ee7a0':g.rr==0?'#ffd84a':'#ef4444'):'#e6dcc0');
+                    for(let i=0;i<3;i++){R(g.ph!='pick'&&g.pl==i?'#5b4a86':hov(200+i*140,340,120,80)&&g.ph=='pick'?'#5b4a86':'#2a2236',200+i*140,340,120,80);ctx.font='38px sans-serif';ctx.textAlign='center';ctx.fillText(RP[i],260+i*140,385);txt(RN[i],260+i*140,410,13,'#fff')}}});
+            // ---------- 8. RIDDLE SPHINX: 5 riddles, 2 lives (lose = turned to stone) ----------
             const RD=[["I speak without a mouth and hear without ears. What am I?","An echo",["A shadow","The wind","A ghost"]],["The more you take, the more you leave behind. What am I?","Footsteps",["Time","Gold","Memory"]],["What has keys but cannot open locks?","A piano",["A map","A prison","A clock"]],["What gets wetter the more it dries?","A towel",["A sponge","The rain","A sword"]],["I have cities but no houses, mountains but no trees, and water but no fish.","A map",["A dream","A painting","An island"]],["What has a heart that does not beat?","An artichoke",["A statue","A clock","A stone"]],["What can you catch but never throw?","A cold",["A ball","A fish","A shadow"]],["I am tall when I am young and short when I am old.","A candle",["A tree","A wizard","A tower"]],["What has hands but cannot clap?","A clock",["A ghost","A statue","A skeleton"]],["What goes up but never comes down?","Your age",["Smoke","An arrow","A balloon"]]];
-            const rid=room('Riddle Sphinx','The Sphinx asks riddles. Step on the plate with the right answer. A wrong plate fires the poison darts!',()=>sh(RD).slice(0,2).map(q=>({t:'Answer the Sphinx',...pick4(q[1],q[2]),art(c,cx,y0){wrap(q[0],44).forEach((l,i)=>txt(l,cx,y0+50+i*24,17,'#ffd84a'));0}})));
-            // ---- 10. WORDLE: which word fits the clues? ----
-            const WW=['sword','flame','ghost','crown','bones','torch','curse','witch','blade','armor','magic','skull','tower','spell','gloom','dread','abyss','relic','rogue','grave','ember','fiend','vault','haunt','demon','chain','dirge','altar','knave','siege'];
+            const rid=game('Riddle Sphinx','Answer all 5 riddles. You only have 2 lives - a second wrong answer and the Sphinx turns you to stone!','stone',()=>({q:sh(RD).slice(0,5).map(q=>{const o=sh([q[1],...q[2]]);return{t:q[0],o,a:o.indexOf(q[1]),x:[]}}),i:0,lv:2,fl:0}),{
+                down(g,x,y){const q=g.q[g.i];for(let k=0;k<4;k++)if(hit(x,y,137+(k%2)*271,290+Math.floor(k/2)*68,255,56)&&!q.x.includes(k)){if(k==q.a){if(++g.i>=5)g.res='win'}else{q.x.push(k);g.fl=.5;if(--g.lv<=0)g.res='lose'}}},
+                tick(g,dt){g.fl=Math.max(0,g.fl-dt)},
+                draw(g){const q=g.q[Math.min(g.i,4)];say('Riddle '+Math.min(g.i+1,5)+' of 5');txt('♥ '.repeat(g.lv).trim()||'',620,92,18,'#ef4444','right');
+                    wrap(q.t,34).forEach((l,i)=>txt(l,395,150+i*32,24,g.fl>0?'#ef4444':'#ffd84a'));
+                    for(let k=0;k<4;k++){const x=137+(k%2)*271,y=290+Math.floor(k/2)*68,bad=q.x.includes(k);R(bad?'#5a1f24':hov(x,y,255,56)?'#5b4a86':'#2a2236',x,y,255,56);txt(q.o[k],x+127,y+35,19,bad?'#999':'#fff')}}});
+            // ---------- 9. WORDLE: guess the secret word in 6 tries (lose = buried under letters) ----------
+            const WW=['sword','flame','ghost','crown','bones','torch','curse','witch','blade','armor','magic','skull','tower','spell','gloom','dread','abyss','relic','rogue','grave','ember','fiend','vault','haunt','demon','chain','dirge','altar','knave','siege','knife','cloak','beast','blood','crypt','death','elder','flesh','ghoul','heart','lance','noble','quest','amber','brute','charm','forge','glyph','jewel','wrath'];
             const fb=(g,w)=>{const r=Array(5).fill('x'),u=w.split('');for(let i=0;i<5;i++)if(g[i]==w[i]){r[i]='g';u[i]=null}for(let i=0;i<5;i++)if(r[i]!='g'){const k=u.indexOf(g[i]);if(k>=0){r[i]='y';u[k]=null}}return r.join('')};
-            function wgen(){for(;;){const w=rnd(WW),gs=sh(WW.filter(x=>x!=w)).slice(0,2),bad=WW.filter(x=>x!=w&&gs.some(g=>fb(g,x)!=fb(g,w)));if(bad.length<20)continue;
-                return{t:'Which word is the secret answer?',...pick4(w.toUpperCase(),bad.map(x=>x.toUpperCase())),art(c,cx,y0){gs.forEach((g,r)=>{const f=fb(g,w);for(let i=0;i<5;i++){const x=cx-93+i*38,y=y0+6+r*40;R(f[i]=='g'?'#2f9e44':f[i]=='y'?'#d9a60a':'#3a3a44',x,y,34,34);txt(g[i].toUpperCase(),x+17,y+24,20,'#fff')}});
-                    txt('green = right spot, yellow = wrong spot, grey = not in word',cx,y0+104,11,'#9ca3af');txt('The answer must fit BOTH clues above',cx,y0+126,13)}}}}
-            const wordle=room('Wordle Wall','The two guesses on the wall have colour clues. Step on the plate with the ONLY word that fits them. A wrong plate fires the darts!',()=>[wgen(),wgen()]);
-            SRM.push(chess,conn,ttt,hang,mem,slide,maze,rps,rid,wordle);
+            const WK=['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'],wk=(r,i)=>r==2?(i<0?[410,230,38]:i>=7?[629,230,31]:[452+i*25,230,23]):[410+r*12+i*25,162+r*34,23],WCOL={g:'#2f9e44',y:'#d9a60a',x:'#3a3a44'};
+            function wsub(g){if(g.cur.length<5)return;const gs=g.cur.toLowerCase(),f=fb(gs,g.w.toLowerCase());g.rows.push([g.cur,f]);[...g.cur].forEach((L,i)=>{const o={x:0,y:1,g:2};if(!(L in g.k)||o[f[i]]>o[g.k[L]])g.k[L]=f[i]});if(g.cur==g.w)g.res='win';else if(g.rows.length>=6)g.res='lose';g.cur=''}
+            function wtype(g,k){if(k=='ENTER')wsub(g);else if(k=='DEL')g.cur=g.cur.slice(0,-1);else if(g.cur.length<5)g.cur+=k}
+            const wordle=game('Wordle','Guess the secret 5-letter word in 6 tries (type or click). Green = right spot, yellow = wrong spot, grey = not in the word. Fail and you get buried alive!','letters',()=>({w:rnd(WW).toUpperCase(),rows:[],cur:'',k:{}}),{
+                down(g,x,y){WK.forEach((row,r)=>{[...row].forEach((L,i)=>{const[kx,ky,kw]=wk(r,i);if(hit(x,y,kx,ky,kw,30))wtype(g,L)});if(r==2){[[-1,'ENTER'],[7,'DEL']].forEach(([i,k])=>{const[kx,ky,kw]=wk(2,i);if(hit(x,y,kx,ky,kw,30))wtype(g,k)})}})},
+                key(g,e){if(e.ctrlKey||e.metaKey||e.altKey)return false;if(/^[a-z]$/i.test(e.key)){wtype(g,e.key.toUpperCase());return true}if(e.key=='Enter'){wtype(g,'ENTER');return true}if(e.key=='Backspace'){wtype(g,'DEL');return true}return false},
+                draw(g){say(g.res=='win'?'You cracked it!':g.res?'The word was '+g.w:'Guess '+(g.rows.length+1)+' of 6',g.res=='win'?'#6ee7a0':g.res?'#ef4444':'#ffd84a');
+                    for(let r=0;r<6;r++)for(let i=0;i<5;i++){const x=160+i*48,y=104+r*46,row=g.rows[r],ch=row?row[0][i]:r==g.rows.length?g.cur[i]:'';R(row?WCOL[row[1][i]]:'#2a2236',x,y,42,42);if(!row)R('#17121f',x+2,y+2,38,38);if(ch)txt(ch,x+21,y+30,24,'#fff')}
+                    WK.forEach((row,r)=>[...row].forEach((L,i)=>{const[kx,ky,kw]=wk(r,i);R(g.k[L]?WCOL[g.k[L]]:hov(kx,ky,kw,30)?'#5b4a86':'#2a2236',kx,ky,kw,30);txt(L,kx+kw/2,ky+21,14,'#fff')}));
+                    [[-1,'ENTER'],[7,'DEL']].forEach(([i,s])=>{const[kx,ky,kw]=wk(2,i);R(hov(kx,ky,kw,30)?'#5b4a86':'#3b2f5c',kx,ky,kw,30);txt(s,kx+kw/2,ky+20,10,'#fff')});
+                    wrap('Any 5-letter word counts. Press Enter to submit.',30).forEach((l,i)=>txt(l,540,300+i*18,12,'#9ca3af'))}});
+            // ---------- 10. MINESWEEPER (new, replaces Chess): clear the field without touching a mine (lose = blown to pieces) ----------
+            const MC=9,MR=7,MNX=190,MNY=116,MNN=10,NC=['','#4aa8ff','#4ade80','#ff6b6b','#c084fc','#fb923c','#22d3ee','#fff','#999'];
+            const mnb=i=>{const x=i%MC,y=Math.floor(i/MC),r=[];for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const nx=x+a,ny=y+b;if((a||b)&&nx>=0&&ny>=0&&nx<MC&&ny<MR)r.push(ny*MC+nx)}return r};
+            function mrev(g,i){if(g.rv[i]||g.fl[i])return;g.rv[i]=1;if(!g.mn[i]&&!mnb(i).some(j=>g.mn[j]))mnb(i).forEach(j=>mrev(g,j))}
+            const mine=game('Minesweeper','Reveal every safe square without clicking a mine. Numbers show how many mines touch a square. Right-click (or the FLAG button) marks a mine. Hit one and you are blown to pieces!','mine',()=>({mn:null,rv:Array(MC*MR).fill(0),fl:Array(MC*MR).fill(0),fm:0}),{
+                down(g,x,y,e){if(hit(x,y,580,150,84,44)){g.fm=!g.fm;return}const cx=Math.floor((x-MNX)/40),cy=Math.floor((y-MNY)/40);if(cx<0||cx>=MC||cy<0||cy>=MR)return;const i=cy*MC+cx;if(g.rv[i])return;
+                    if(e&&(e.button==2||e.shiftKey)||g.fm){g.fl[i]=g.fl[i]?0:1;return}if(g.fl[i])return;
+                    if(!g.mn){const ban=[i,...mnb(i)],pool=sh([...Array(MC*MR).keys()].filter(j=>!ban.includes(j)));g.mn=Array(MC*MR).fill(0);pool.slice(0,MNN).forEach(j=>g.mn[j]=1)}
+                    if(g.mn[i]){g.rv=g.rv.map((v,j)=>v||g.mn[j]?1:0);g.hit=i;g.res='lose';return}
+                    mrev(g,i);if(g.rv.filter(v=>v).length==MC*MR-MNN)g.res='win'},
+                draw(g,now){say('Mines left: '+(MNN-g.fl.filter(v=>v).length),'#ffd84a');R(g.fm?'#9a3b3b':hov(580,150,84,44)?'#5b4a86':'#2a2236',580,150,84,44);txt('🚩 FLAG',622,178,16,'#fff');txt(g.fm?'ON':'off',622,204,12,'#9ca3af');txt('or right-click',622,236,11,'#9ca3af');
+                    for(let i=0;i<MC*MR;i++){const[x,y]=grid(i,MNX,MNY,40,MC),v=g.rv[i];R(v?'#0f0b16':hov(x,y,40,40)?'#5b4a86':'#3b2f5c',x+1,y+1,38,38);if(!v)R('rgba(255,255,255,.12)',x+1,y+1,38,5);
+                        if(v&&g.mn&&g.mn[i]){dot(x+20,y+20,10,i==g.hit?'#ef4444':'#333');txt('✹',x+20,y+27,20,'#ffb020')}
+                        else if(v){let n=mnb(i).filter(j=>g.mn&&g.mn[j]).length;if(n)txt(n,x+20,y+28,22,NC[n])}
+                        else if(g.fl[i])txt('🚩',x+20,y+27,20,'#fff')}}});
+            SRM.push(conn,ttt,hang,mem,slide,maze,rps,rid,wordle,mine);
+            // mouse + keyboard input for the game rooms (drag and release are tracked on the whole window so a drag can never get stuck)
+            const gp=(e,f)=>{const c=G&&G.state=='secret'&&!G.paused&&G.sc;if(c&&c.def.game&&c.g){const p=cpt(e);c.def[f](c,p.x,p.y,e)}};
+            $('#c').addEventListener('pointerdown',e=>gp(e,'down'));addEventListener('pointermove',e=>gp(e,'move'));addEventListener('pointerup',e=>gp(e,'up'));
+            addEventListener('keydown',e=>{const c=G&&G.state=='secret'&&!G.paused&&G.sc;if(c&&c.def.key&&c.g&&c.def.key(c,e)){e.preventDefault();e.stopImmediatePropagation()}},true);
         })();
         function enterSecret(){
             let k;do{k=Math.random()*SRM.length|0}while(k==lastSR&&SRM.length>1);lastSR=k;const d=SRM[k];
-            G.sec.used=1;G.qtxt=$('#q').textContent;$('#q').textContent='🗝️ '+d.name+'! '+d.hint+(d.axes?' Red blade = low sweep, don\'t crawl.':' Traps only knock you back.');
+            G.sec.used=1;G.qtxt=$('#q').textContent;$('#q').textContent='🗝️ '+d.name+'! '+d.hint+(d.axes?' Red blade = low sweep, don\'t crawl.':d.game?'':' Traps only knock you back.');
             G.state='secret';G.sc={t:0,hurt:0,out:0,bl:[],rem:[],gold:0,k,def:d,vx:0,vy:0,sup:-1};d.init(G.sc);G.hx=70;G.hy=320;G.moving=0}
         function updSecret(dt){
             const c=G.sc;c.t+=dt;
