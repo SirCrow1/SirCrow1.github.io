@@ -80,6 +80,7 @@ function buildUI(){
             <input id="adm-target" class="acct-in" placeholder="Player name" maxlength="16" autocomplete="off">
             <input id="adm-amt" class="acct-in" type="number" min="1" value="1000" style="width:90px">
             <button id="adm-give" class="acct-b" style="background:#059669">Give</button>
+            <button id="adm-take" class="acct-b" style="background:#b91c1c">Take</button>
           </div>
         </div>
 
@@ -108,31 +109,34 @@ function buildUI(){
     const gs=typeof GSK!=='undefined'?GSK:['spike','axe','boulder','lava','ghost','fire','dart','gas','ice','fall'];
     S.seen=S.seen||{};for(const k of gn)S.seen[k]=S.seen[k]||1;for(const k of gs)S.seen['s:'+k]=S.seen['s:'+k]||1;
   },'All deaths unlocked in the Death Gallery');
-  $('#adm-give').onclick=giveGold;
+  $('#adm-give').onclick=()=>giveGold(1);
+  $('#adm-take').onclick=()=>giveGold(-1);
   for(const id of ['#adm-target','#adm-amt']){$(id).addEventListener('keydown',e=>e.stopPropagation());$(id).addEventListener('keyup',e=>e.stopPropagation())}
   $('#acct-namesave').onclick=saveName;
   $('#acct-nameinput').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')saveName()});
   $('#acct-nameinput').addEventListener('keyup',e=>e.stopPropagation());
 }
-async function giveGold(){
+async function giveGold(sign){
+  sign=sign===-1?-1:1;
   if(!isAdmin)return;
   const name=$('#adm-target').value.trim(),amt=Math.floor(Number($('#adm-amt').value));
-  if(!(amt>0&&amt<=1000000))return say('Enter an amount from 1 to 1,000,000');
-  if(!name||(profile.username&&name.toLowerCase()===profile.username.toLowerCase()))return admin(()=>{S.gold+=amt},'+'+amt+' gold for you');
-  const {data,error}=await sb.rpc('admin_give_gold',{target_name:name,amount:amt});
+  const self=!name||(profile.username&&name.toLowerCase()===profile.username.toLowerCase());
+  if(!(amt>0&&amt<=(self?1e9:1000000)))return say('Enter an amount from 1 to '+(self?'1,000,000,000':'1,000,000'));
+  if(self)return admin(()=>{S.gold=Math.max(0,S.gold+sign*amt)},(sign>0?'+':'-')+amt+' gold for you');
+  const {data,error}=await sb.rpc(sign>0?'admin_give_gold':'admin_take_gold',{target_name:name,amount:amt});
   if(error)return say('Failed: '+error.message);
-  if(data==='ok')say('🎁 Sent '+amt+' gold to '+name+' (they get it next time they open the game logged in)');
+  if(data==='ok')say((sign>0?'🎁 Sent ':'💸 Removed ')+amt+' gold '+(sign>0?'to ':'from ')+name+' (applies next time they open the game logged in)');
   else if(data==='no_such_player')say('No player named "'+name+'"');
-  else say('Could not send: '+data);
+  else say('Could not do that: '+data);
 }
 async function claimGold(){
   try{
     const {data:amt,error}=await sb.rpc('claim_pending_gold');
-    if(!error&&amt>0){
-      S.gold+=amt;save();
+    if(!error&&amt){
+      S.gold=Math.max(0,S.gold+amt);save();
       const g=$('#gold');if(g)g.textContent='🪙 '+S.gold;
       try{shopGold()}catch(e){}
-      say('🪙 +'+amt+' gold collected!');
+      say(amt>0?'🪙 +'+amt+' gold collected!':'🪙 An admin removed '+(-amt)+' gold');
     }
   }catch(e){console.error(e)}
 }
@@ -194,7 +198,7 @@ async function render(){
   $('#acct-nameprompt').textContent=needName?'Welcome! Pick your player name (3-16 letters, numbers or _)':'New name (3-16 letters, numbers or _)';
   $('#acct-rename').style.display=(needName||editing)?'none':'inline-block';
   $('#acct-admin').style.display=isAdmin?'block':'none';
-  $('#acct-diag').textContent='build v5 · role: '+roleName+(diag?' · '+diag:'');
+  $('#acct-diag').textContent='build v6 · role: '+roleName+(diag?' · '+diag:'');
   $('#acct-stats').innerHTML=statsHTML();
   const ranks=Object.entries(S.best||{}).slice(0,6).map(([k,v])=>k+': '+v).join(' · ');
   $('#acct-ranks').textContent=ranks?'🏆 Best ranks: '+ranks:'';
@@ -219,11 +223,15 @@ async function loadProfile(){
 }
 function adminUnlock(){
   if(!isAdmin)return;
-  if(localStorage.suff_skip_unlock){delete localStorage.suff_skip_unlock;return}   // right after 'Reset my save'   // admins always have every shop item owned and at least 100,000 gold
-  try{const h=shopS();for(const k in SKINS)h.own['skin'+k]=1;for(const k in WPNS)h.own['wpn'+k]=1;for(const k in PETS)h.own['pet'+k]=1;
+  if(S.adminSeed)return;   // already seeded once for this save: never overwrite gold again
+  if(localStorage.suff_skip_unlock){delete localStorage.suff_skip_unlock;S.adminSeed=1;save();return}   // right after 'Reset my save'
+  try{
+    const h=shopS();for(const k in SKINS)h.own['skin'+k]=1;for(const k in WPNS)h.own['wpn'+k]=1;for(const k in PETS)h.own['pet'+k]=1;
     for(const k in SHOP_ITEMS)if((h.inv[k]||0)<99)h.inv[k]=99;
-    if(S.gold<100000)S.gold=100000;save();
-    const g=$('#gold');if(g)g.textContent='\u{1FA99} '+S.gold;try{shopGold()}catch(e){}try{shopRender()}catch(e){}}catch(e){console.error(e);diag+=' unlock: '+e.message}
+    if(S.gold<100000)S.gold=100000;
+    S.adminSeed=1;save();
+    const g=$('#gold');if(g)g.textContent='\u{1FA99} '+S.gold;try{shopGold()}catch(e){}try{shopRender()}catch(e){}
+  }catch(e){console.error(e);diag+=' unlock: '+e.message}
 }
 
 // ---------- after login: redeem referral, collect gold, load profile ----------
@@ -272,6 +280,7 @@ function buildExtra(){
       <button class="acct-b lb-tab" data-sort="solved" style="background:#3f3f46">🧩 Solved</button>
       <button class="acct-b lb-tab" data-sort="streak" style="background:#3f3f46">🔥 Streak</button>
       <button class="acct-b lb-tab" data-sort="runs" style="background:#3f3f46">⚔️ Runs</button>
+      <button class="acct-b lb-tab" data-sort="players" style="background:#3f3f46">👥 Players</button>
     </div>
     <div id="lb-body"></div>
     <div style="margin-top:10px;text-align:right"><button id="lb-close" style="color:#a1a1aa;font-size:12px">Close</button></div>
@@ -336,6 +345,14 @@ async function showLB(sort){
   $('#lb-modal').style.display='flex';
   $('#lb-body').textContent='Loading…';
   await syncStats();
+  if(sort==='players'){
+    const {data,error}=await sb.rpc('get_players');
+    if(error){$('#lb-body').textContent='Could not load: '+error.message;return}
+    $('#lb-body').innerHTML=(data&&data.length)?data.map(r=>
+      `<div style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid #27272a;${r.featured?'background:#2a1f05;':''}${r.uname===profile.username?'outline:1px solid #34d399;':''}"><span>${r.featured?'⭐ ':''}<b style="color:${r.featured?'#facc15':'#fff'}">${esc(r.uname)}</b></span><span style="color:#a1a1aa;font-size:12px">${r.solved} puzzles · best streak ${r.streak}</span></div>`
+    ).join(''):'<div style="color:#a1a1aa">No players yet.</div>';
+    return;
+  }
   const {data,error}=await sb.rpc('get_leaderboard',{sort_by:sort});
   if(error){$('#lb-body').textContent='Could not load: '+error.message;return}
   const unit={solved:'puzzles',streak:'in a row',runs:'runs'}[sort]||'';
@@ -362,6 +379,7 @@ async function admLoad(){
         <div style="font-size:11px;color:#a1a1aa">Invited by: ${esc(r.invited_by_name||'—')} · Invited ${r.invited_n} players · Pending gold: ${r.pend}</div>
         <div style="margin-top:6px">
           <button class="acct-b" data-act="rename" data-uid="${esc(r.uid)}" data-name="${esc(r.uname||'')}" style="background:#3f3f46;margin:0 4px 4px 0">✏️ Rename</button>
+          <button class="acct-b" data-act="feat" data-uid="${esc(r.uid)}" data-flag="${r.feat?'0':'1'}" style="background:#ca8a04;margin:0 4px 4px 0">${r.feat?'Unfeature':'⭐ Feature'}</button>
           ${me?'':`<button class="acct-b" data-act="ban" data-uid="${esc(r.uid)}" data-flag="${r.isbanned?'0':'1'}" style="background:${r.isbanned?'#059669':'#7f1d1d'};margin:0 4px 4px 0">${r.isbanned?'Unban':'Ban'}</button>
           <button class="acct-b" data-act="role" data-uid="${esc(r.uid)}" data-role="${r.urole==='admin'?'player':'admin'}" style="background:#7c3aed;margin:0 4px 4px 0">${r.urole==='admin'?'Make player':'Make admin'}</button>`}
         </div></div>`}).join('');
@@ -404,6 +422,11 @@ async function admClick(e){
       const {data,error}=await sb.rpc('admin_set_role',{target:b.dataset.uid,new_role:b.dataset.role});
       if(error)return say(error.message);
       say(data==='ok'?'Role updated':data);
+    }else if(act==='feat'){
+      const f=b.dataset.flag==='1';
+      const {data,error}=await sb.rpc('admin_set_featured',{target:b.dataset.uid,flag:f});
+      if(error)return say(error.message);
+      say(data==='ok'?(f?'Player featured':'Feature removed'):data);
     }else if(act==='gc-create'){
       const num=id=>{const v=$(id).value.trim();return v===''?null:Math.floor(Number(v))};
       const {data,error}=await sb.rpc('admin_create_code',{p_code:$('#gc-code').value.trim(),p_gold:num('#gc-gold'),p_max_uses:num('#gc-max'),p_days:num('#gc-days')});
