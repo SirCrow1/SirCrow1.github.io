@@ -196,7 +196,7 @@ async function render(){
   $('#acct-nameprompt').textContent=needName?'Welcome! Pick your player name (3-16 letters, numbers or _)':'New name (3-16 letters, numbers or _)';
   $('#acct-rename').style.display=(needName||editing)?'none':'inline-block';
   $('#acct-admin').style.display=isAdmin?'block':'none';
-  $('#acct-diag').textContent='build v11 · role: '+roleName+' · save: '+String((S&&S.owner)||'none').slice(0,6)+' · acct: '+String(myId||'none').slice(0,6)+(diag?' · '+diag:'');
+  $('#acct-diag').textContent='build v12 · role: '+roleName+' · save: '+String((S&&S.owner)||'none').slice(0,6)+' · acct: '+String(myId||'none').slice(0,6)+(diag?' · '+diag:'');
   $('#acct-stats').innerHTML=statsHTML();
   const ranks=Object.entries(S.best||{}).slice(0,6).map(([k,v])=>k+': '+v).join(' · ');
   $('#acct-ranks').textContent=ranks?'🏆 Best ranks: '+ranks:'';
@@ -287,11 +287,26 @@ async function afterLogin(){
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let myId=null,admTab='players',spamT=null;
 
+function badgeCount(){
+  const st=S.st||{},b=S.badges||{};
+  const seenN=Object.keys(S.seen||{}).filter(k=>S.seen[k]).length;
+  const lairN=Object.keys(st.lairs||{}).filter(k=>+k>=6&&+k<=25).length;
+  const items=['orb','fav','shield','phx','key'].every(k=>st.items&&st.items[k]);
+  let bond=false;try{bond=!!(window.PBOND&&window.PBOND.top()>=10)}catch(e){}
+  return [seenN>=deathKeys().length,!!st.adr,!!st.nd,!!st.sp,(st.bs||0)>=10,!!st.pm,!!st.ng,!!(b.good&&b.bad),lairN>=20,bond,items,!!st.fr].filter(Boolean).length;
+}
+function statsBlob(){
+  const h=S.shop||{},own=h.own||{},eq=h.eq||{};
+  const cnt=p=>Object.keys(own).filter(k=>k.startsWith(p)&&own[k]).length;
+  return {gold:S.gold|0,deaths:Object.keys(S.seen||{}).filter(k=>S.seen[k]).length,deathsMax:deathKeys().length,badges:badgeCount(),badgesMax:12,
+    pets:cnt('pet'),skins:cnt('skin'),blades:cnt('wpn'),daily:(S.dly&&S.dly.b)||0,eq:{pet:eq.pet||null,skin:eq.skin||null,blade:eq.wpn||null}};
+}
 async function syncStats(){
   try{
     if(!sb)return;
     const st=S.st||{};
     await sb.rpc('sync_stats',{p_streak:st.bs||0,p_solved:Object.keys(st.sol||{}).length,p_runs:(S.mem&&S.mem.runs)||0});
+    await sb.rpc('sync_profile',{p:statsBlob()});
   }catch(e){}
 }
 
@@ -311,6 +326,11 @@ function buildExtra(){
     <div style="margin-top:10px;text-align:right"><button id="lb-close" style="color:#a1a1aa;font-size:12px">Close</button></div>
   </div></div>
 
+  <div id="pf-modal" style="${WRAP};z-index:90"><div style="${BOX}">
+    <div id="pf-body"></div>
+    <div style="margin-top:10px;text-align:right"><button id="pf-close" style="color:#a1a1aa;font-size:12px">Close</button></div>
+  </div></div>
+
   <div id="adm-modal" style="${WRAP}"><div style="${BOX}">
     <div style="font:900 20px Cinzel,serif;color:#facc15;margin-bottom:8px">🛠️ Admin panel</div>
     <div style="display:flex;gap:6px;margin-bottom:8px">
@@ -326,6 +346,8 @@ function buildExtra(){
     const m=$(id);m.addEventListener('keydown',e=>e.stopPropagation());m.addEventListener('keyup',e=>e.stopPropagation());
   }
   $('#lb-close').onclick=()=>$('#lb-modal').style.display='none';
+  $('#pf-close').onclick=()=>$('#pf-modal').style.display='none';
+  $('#lb-body').addEventListener('click',e=>{const r=e.target.closest('[data-view]');if(r)viewPlayer(r.dataset.view)});
   $('#adm-close').onclick=()=>$('#adm-modal').style.display='none';
   document.querySelectorAll('.lb-tab').forEach(b=>b.onclick=()=>showLB(b.dataset.sort));
   document.querySelectorAll('.adm-tab').forEach(b=>b.onclick=()=>{admTab=b.dataset.tab;admLoad()});
@@ -367,7 +389,7 @@ async function showLB(sort){
     const {data,error}=await sb.rpc('get_players');
     if(error){$('#lb-body').textContent='Could not load: '+error.message;return}
     $('#lb-body').innerHTML=(data&&data.length)?data.map(r=>
-      `<div style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid #27272a;${r.featured?'background:#2a1f05;':''}${r.uname===profile.username?'outline:1px solid #34d399;':''}"><span>${r.featured?'⭐ ':''}<b style="color:${r.featured?'#facc15':'#fff'}">${esc(r.uname)}</b></span><span style="color:#a1a1aa;font-size:12px">${r.solved} puzzles · best streak ${r.streak}</span></div>`
+      `<div data-view="${esc(r.uname)}" style="cursor:pointer;display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid #27272a;${r.featured?'background:#2a1f05;':''}${r.uname===profile.username?'outline:1px solid #34d399;':''}"><span>${r.featured?'⭐ ':''}<b style="color:${r.featured?'#facc15':'#fff'}">${esc(r.uname)}</b></span><span style="color:#a1a1aa;font-size:12px">${r.solved} puzzles · best streak ${r.streak}</span></div>`
     ).join(''):'<div style="color:#a1a1aa">No players yet.</div>';
     return;
   }
@@ -375,7 +397,7 @@ async function showLB(sort){
   if(error){$('#lb-body').textContent='Could not load: '+error.message;return}
   const unit={solved:'puzzles',streak:'in a row',runs:'runs'}[sort]||'';
   $('#lb-body').innerHTML=(data&&data.length)?data.map((r,i)=>
-    `<div style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid #27272a;${r.uname===profile.username?'background:#052e22;':''}"><span>${['🥇','🥈','🥉'][i]||(i+1)+'.'} ${esc(r.uname)}</span><b style="color:#facc15">${r[sort]||0} ${unit}</b></div>`
+    `<div data-view="${esc(r.uname)}" style="cursor:pointer;display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid #27272a;${r.uname===profile.username?'background:#052e22;':''}"><span>${['🥇','🥈','🥉'][i]||(i+1)+'.'} ${esc(r.uname)}</span><b style="color:#facc15">${r[sort]||0} ${unit}</b></div>`
   ).join(''):'<div style="color:#a1a1aa">No players on the board yet.</div>';
 }
 
@@ -398,6 +420,7 @@ async function admLoad(){
         <div style="font-size:11px;color:#a1a1aa">Invited by: ${esc(r.invited_by_name||'—')} · Invited ${r.invited_n} players · Pending gold: ${r.pend}</div>
         <div style="margin-top:6px">
           <button class="acct-b" data-act="rename" data-uid="${esc(r.uid)}" data-name="${esc(r.uname||'')}" style="background:#3f3f46;margin:0 4px 4px 0">✏️ Rename</button>
+          <button class="acct-b" data-act="view" data-name="${esc(r.uname||'')}" style="background:#0e7490;margin:0 4px 4px 0">👁 View</button>
           <button class="acct-b" data-act="feat" data-uid="${esc(r.uid)}" data-flag="${r.feat?'0':'1'}" style="background:#ca8a04;margin:0 4px 4px 0">${r.feat?'Unfeature':'⭐ Feature'}</button>
           ${me?'':`<button class="acct-b" data-act="ban" data-uid="${esc(r.uid)}" data-flag="${r.isbanned?'0':'1'}" style="background:${r.isbanned?'#059669':'#7f1d1d'};margin:0 4px 4px 0">${r.isbanned?'Unban':'Ban'}</button>
           <button class="acct-b" data-act="role" data-uid="${esc(r.uid)}" data-role="${r.urole==='admin'?'player':'admin'}" style="background:#7c3aed;margin:0 4px 4px 0">${r.urole==='admin'?'Make player':'Make admin'}</button>`}
@@ -443,6 +466,9 @@ async function admClick(e){
       say(data==='ok'?'Role updated':data);
     }else if(act==='it-give'||act==='it-take'){
       await itemsDo(act==='it-give'?1:-1);return;
+    }else if(act==='view'){
+      if(!b.dataset.name)return say('This player has no name yet');
+      viewPlayer(b.dataset.name);return;
     }else if(act==='feat'){
       const f=b.dataset.flag==='1';
       const {data,error}=await sb.rpc('admin_set_featured',{target:b.dataset.uid,flag:f});
@@ -526,6 +552,34 @@ function opLabel(op){
 }
 function refreshGame(){const g=$('#gold');if(g)g.textContent='🪙 '+S.gold;try{shopGold()}catch(e){}try{shopRender()}catch(e){}}
 
+async function viewPlayer(name){
+  if(!name)return;
+  $('#pf-modal').style.display='flex';
+  const body=$('#pf-body');body.textContent='Loading…';
+  const {data,error}=await sb.rpc(isAdmin?'admin_get_player':'get_player',{p_name:name});
+  if(error){body.textContent='Could not load: '+error.message;return}
+  if(!data){body.textContent='Player not found';return}
+  const st=data.stats||{},has=v=>v!==undefined&&v!==null;
+  const d=v=>v?new Date(v).toLocaleDateString():'—';
+  const box=(l,v)=>`<div class="acct-stat">${l}<b>${esc(has(v)?v:'—')}</b></div>`;
+  const eq=st.eq||{};
+  const eqTxt=[eq.pet&&typeof PETS!=='undefined'&&PETS[eq.pet]?PETS[eq.pet].n:'',eq.skin&&typeof SKINS!=='undefined'&&SKINS[eq.skin]?SKINS[eq.skin].n:'',eq.blade&&typeof WPNS!=='undefined'&&WPNS[eq.blade]?WPNS[eq.blade].n:''].filter(Boolean).join(' · ');
+  let html=`<div style="font:bold 20px sans-serif;color:#fff;margin-bottom:2px">${data.featured?'⭐ ':''}${esc(data.name)}</div>
+    <div style="font-size:12px;color:#a1a1aa;margin-bottom:10px">Joined ${d(data.joined)} · Last seen ${d(data.last_seen)}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">`
+    +box('🪙 Gold',has(st.gold)?Number(st.gold).toLocaleString():null)+box('🧩 Puzzles solved',data.solved)
+    +box('🔥 Best streak',data.streak)+box('⚔️ Runs',data.runs)
+    +box('🏅 Badges',has(st.badges)?st.badges+' / '+(st.badgesMax||12):null)+box('💀 Deaths seen',has(st.deaths)?st.deaths+' / '+(st.deathsMax||40):null)
+    +box('🐾 Pets owned',st.pets)+box('🧥 Skins owned',st.skins)+box('🗡️ Blades owned',st.blades)+box('📅 Best daily streak',st.daily)
+    +`</div>`+(eqTxt?`<div style="font-size:12px;color:#a1a1aa;margin-top:8px">Equipped: ${esc(eqTxt)}</div>`:'');
+  if(isAdmin){
+    html+=`<div style="margin-top:10px;border:1px solid #a16207;border-radius:8px;padding:8px;font-size:12px;background:#1c1408"><div style="color:#facc15;font-weight:bold;margin-bottom:4px">🛠️ Admin info</div>
+      Email: ${esc(data.email)}<br>Role: ${esc(data.role)}${data.banned?' · <span style="color:#f87171">BANNED</span>':''}<br>
+      Pending gold: ${data.pending_gold} · Pending removal: ${data.gold_penalty}<br>Invited by: ${esc(data.invited_by||'—')} · Invited ${data.invited_n} players</div>`;
+  }
+  html+=`<div style="font-size:11px;color:#71717a;margin-top:8px">Numbers are reported by the player's browser and update when they open the game.</div>`;
+  body.innerHTML=html;
+}
 function syncSpam(){   // 'unlimited abilities' is stored in the save, so it can be given to any player
   if(S.unlimAb&&!spamT)spamT=setInterval(()=>{try{if(G&&G.abUsed&&!G.abBusy)G.abUsed=null}catch(e){}},250);
   if(!S.unlimAb&&spamT){clearInterval(spamT);spamT=null}
