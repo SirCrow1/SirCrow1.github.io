@@ -64,6 +64,13 @@ function buildUI(){
           <button id="adm-gold" class="acct-b" style="background:#a16207;margin:0 6px 6px 0">+100,000 gold</button>
           <button id="adm-unlock" class="acct-b" style="background:#7c3aed;margin:0 6px 6px 0">Unlock all shop items</button>
           <button id="adm-stock" class="acct-b" style="background:#0e7490;margin:0 6px 6px 0">Stock all run items (x99)</button>
+          <button id="adm-deaths" class="acct-b" style="background:#991b1b;margin:0 6px 6px 0">Unlock all deaths</button>
+          <div style="margin-top:6px;font-size:12px;color:#fcd34d">Give gold (leave the name blank to give it to yourself)</div>
+          <div style="display:flex;gap:6px;margin-top:4px">
+            <input id="adm-target" class="acct-in" placeholder="Player name" maxlength="16" autocomplete="off">
+            <input id="adm-amt" class="acct-in" type="number" min="1" value="1000" style="width:90px">
+            <button id="adm-give" class="acct-b" style="background:#059669">Give</button>
+          </div>
         </div>
 
         <div style="font-weight:bold;color:#34d399;margin-bottom:4px">🎁 Invite friends</div>
@@ -86,9 +93,38 @@ function buildUI(){
   $('#adm-gold').onclick=()=>admin(()=>{S.gold+=100000},'+100,000 gold');
   $('#adm-unlock').onclick=()=>admin(()=>{const h=shopS();for(const k in SKINS)h.own['skin'+k]=1;for(const k in WPNS)h.own['wpn'+k]=1;for(const k in PETS)h.own['pet'+k]=1},'Everything in the shop unlocked');
   $('#adm-stock').onclick=()=>admin(()=>{const h=shopS();for(const k in SHOP_ITEMS)h.inv[k]=99},'All run items stocked');
+  $('#adm-deaths').onclick=()=>admin(()=>{
+    const gn=typeof GN!=='undefined'?GN:[...Array(30).keys()].map(String);
+    const gs=typeof GSK!=='undefined'?GSK:['spike','axe','boulder','lava','ghost','fire','dart','gas','ice','fall'];
+    S.seen=S.seen||{};for(const k of gn)S.seen[k]=S.seen[k]||1;for(const k of gs)S.seen['s:'+k]=S.seen['s:'+k]||1;
+  },'All deaths unlocked in the Death Gallery');
+  $('#adm-give').onclick=giveGold;
+  for(const id of ['#adm-target','#adm-amt']){$(id).addEventListener('keydown',e=>e.stopPropagation());$(id).addEventListener('keyup',e=>e.stopPropagation())}
   $('#acct-namesave').onclick=saveName;
   $('#acct-nameinput').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')saveName()});
   $('#acct-nameinput').addEventListener('keyup',e=>e.stopPropagation());
+}
+async function giveGold(){
+  if(!isAdmin)return;
+  const name=$('#adm-target').value.trim(),amt=Math.floor(Number($('#adm-amt').value));
+  if(!(amt>0&&amt<=1000000))return say('Enter an amount from 1 to 1,000,000');
+  if(!name||(profile.username&&name.toLowerCase()===profile.username.toLowerCase()))return admin(()=>{S.gold+=amt},'+'+amt+' gold for you');
+  const {data,error}=await sb.rpc('admin_give_gold',{target_name:name,amount:amt});
+  if(error)return say('Failed: '+error.message);
+  if(data==='ok')say('🎁 Sent '+amt+' gold to '+name+' (they get it next time they open the game logged in)');
+  else if(data==='no_such_player')say('No player named "'+name+'"');
+  else say('Could not send: '+data);
+}
+async function claimGold(){
+  try{
+    const {data:amt,error}=await sb.rpc('claim_pending_gold');
+    if(!error&&amt>0){
+      S.gold+=amt;save();
+      const g=$('#gold');if(g)g.textContent='🪙 '+S.gold;
+      try{shopGold()}catch(e){}
+      say('🪙 +'+amt+' gold collected!');
+    }
+  }catch(e){console.error(e)}
 }
 function admin(fn,msg){
   if(!isAdmin)return;
@@ -102,6 +138,7 @@ function admin(fn,msg){
 function openModal(){
   render();$('#acct-modal').style.display='flex';
   if(sb)sb.auth.getSession().then(({data:{session}})=>{
+    if(session)claimGold();
     if(session&&(!profile.code||roleName==='unknown'))loadProfile().then(()=>{adminUnlock();render()});
   });
 }
@@ -147,7 +184,7 @@ async function render(){
   $('#acct-nameprompt').textContent=needName?'Welcome! Pick your player name (3-16 letters, numbers or _)':'New name (3-16 letters, numbers or _)';
   $('#acct-rename').style.display=(needName||editing)?'none':'inline-block';
   $('#acct-admin').style.display=isAdmin?'block':'none';
-  $('#acct-diag').textContent='build v3 · role: '+roleName+(diag?' · '+diag:'');
+  $('#acct-diag').textContent='build v4 · role: '+roleName+(diag?' · '+diag:'');
   $('#acct-stats').innerHTML=statsHTML();
   const ranks=Object.entries(S.best||{}).slice(0,6).map(([k,v])=>k+': '+v).join(' · ');
   $('#acct-ranks').textContent=ranks?'🏆 Best ranks: '+ranks:'';
@@ -186,13 +223,7 @@ async function afterLogin(){
       else if(data==='invalid_code')say('That referral code is not valid');
       else if(data==='own_code')say("You can't use your own referral code");
     }
-    const {data:amt,error}=await sb.rpc('claim_pending_gold');
-    if(!error&&amt>0){
-      S.gold+=amt;save();
-      const g=$('#gold');if(g)g.textContent='🪙 '+S.gold;
-      try{shopGold()}catch(e){}
-      say('🪙 +'+amt+' referral gold collected!');
-    }
+    await claimGold();
     await loadProfile();
     adminUnlock();
   }catch(e){console.error(e)}
