@@ -711,7 +711,7 @@ window.addEventListener('pagehide',()=>cloudSave(true));
 
 // ================= v13: Profile tab (pick a player, see their gold, runs, pet, weapon and armor) =================
 let pfPlayers=[],pfSel=null,pfFilter='';
-const pfBox=(l,v)=>`<div class="acct-stat">${l}<b>${esc(v==null||v===''?'—':v)}</b></div>`;
+const pfBox=(l,v)=>`<div class="acct-stat" style="color:#d4d4d8;font-size:12px;text-align:left">${l}<b>${esc(v==null||v===''?'—':v)}</b></div>`;
 function pfTabOn(){const t=$('#t-p');return !!t&&!t.hidden}
 function pfItem(label,table,key,owned){
   const it=key&&table&&table[key];
@@ -762,15 +762,17 @@ async function pfSelect(name){
   const st=data.stats||{},eq=st.eq||{},has=v=>v!==undefined&&v!==null;
   const d=v=>v?new Date(v).toLocaleDateString():'—';
   const num=v=>has(v)?Number(v).toLocaleString():null;
+  const synced=Object.keys(st).length>0;
   const PT_=typeof PETS!=='undefined'?PETS:null,WP_=typeof WPNS!=='undefined'?WPNS:null,SK_=typeof SKINS!=='undefined'?SKINS:null;
-  card.innerHTML=`<div style="border:1px solid #27272a;border-radius:10px;padding:12px;background:#0f0c18;text-align:left">
-    <div style="font:bold 20px sans-serif;color:#fff">${data.featured?'⭐ ':''}${esc(data.name)}</div>
+  card.innerHTML=`<div style="border:1px solid #27272a;border-radius:10px;padding:12px;background:#0f0c18;text-align:left;color:#d4d4d8">
+    <div style="font:bold 22px sans-serif;color:#fff">👤 ${data.featured?'⭐ ':''}${esc(data.name)}</div>
     <div style="font-size:12px;color:#a1a1aa;margin:2px 0 10px">Joined ${d(data.joined)} · Last seen ${d(data.last_seen)}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
       ${pfBox('🪙 Gold',num(st.gold))}${pfBox('⚔️ Runs',num(data.runs))}
       ${pfBox('🧩 Puzzles solved',num(data.solved))}${pfBox('🔥 Best streak',num(data.streak))}
       ${pfBox('🏅 Achievements',has(st.badges)?st.badges+' / '+(st.badgesMax||12):null)}${pfBox('💀 Deaths seen',has(st.deaths)?st.deaths+' / '+(st.deathsMax||40):null)}
     </div>
+    ${synced?'':'<div style="margin-top:10px;font-size:12px;color:#fbbf24">⏳ This player has not synced gold, pet, weapon and armor yet. Their numbers appear after they open the game once with the latest version.</div>'}
     <div style="color:#facc15;font-weight:bold;margin:12px 0 6px;font-size:13px">Loadout</div>
     <div style="display:grid;grid-template-columns:1fr;gap:6px">
       ${pfItem('🐾 Favourite pet',PT_,eq.pet,has(st.pets)?st.pets+' pets':null)}
