@@ -97,7 +97,7 @@ function buildUI(){
   b.onclick=openModal;
   $('#acct-close').onclick=()=>$('#acct-modal').style.display='none';
   $('#acct-google').onclick=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});
-  $('#acct-logout').onclick=async()=>{stashAndClear();await sb.auth.signOut();profile={username:null,code:''};editing=false;isAdmin=false;roleName='unknown';if(spamT){clearInterval(spamT);spamT=null}render();say('Logged out');setTimeout(()=>location.reload(),300)};
+  $('#acct-logout').onclick=async()=>{await cloudSave(true);stashAndClear();await sb.auth.signOut();profile={username:null,code:''};editing=false;isAdmin=false;roleName='unknown';if(spamT){clearInterval(spamT);spamT=null}render();say('Logged out');setTimeout(()=>location.reload(),300)};
   $('#acct-copy').onclick=()=>{const i=$('#acct-link');i.select();try{navigator.clipboard.writeText(i.value)}catch(e){document.execCommand('copy')}say('Invite link copied!')};
   $('#acct-rename').onclick=()=>{editing=true;render();$('#acct-nameinput').value=profile.username||'';$('#acct-nameinput').focus()};
   $('#adm-unlock').onclick=()=>admin(()=>applyTool('shopall',1),'Everything in the shop unlocked');
@@ -196,7 +196,7 @@ async function render(){
   $('#acct-nameprompt').textContent=needName?'Welcome! Pick your player name (3-16 letters, numbers or _)':'New name (3-16 letters, numbers or _)';
   $('#acct-rename').style.display=(needName||editing)?'none':'inline-block';
   $('#acct-admin').style.display=isAdmin?'block':'none';
-  $('#acct-diag').textContent='build v12 · role: '+roleName+' · save: '+String((S&&S.owner)||'none').slice(0,6)+' · acct: '+String(myId||'none').slice(0,6)+(diag?' · '+diag:'');
+  $('#acct-diag').textContent='build v13 · role: '+roleName+' · save: '+String((S&&S.owner)||'none').slice(0,6)+' · acct: '+String(myId||'none').slice(0,6)+(diag?' · '+diag:'');
   $('#acct-stats').innerHTML=statsHTML();
   const ranks=Object.entries(S.best||{}).slice(0,6).map(([k,v])=>k+': '+v).join(' · ');
   $('#acct-ranks').textContent=ranks?'🏆 Best ranks: '+ranks:'';
@@ -269,6 +269,7 @@ async function afterLogin(){
     }
     const {data:{session}}=await sb.auth.getSession();myId=session?session.user.id:null;
     if(myId&&switchOwner(myId))return;
+    if(myId&&await cloudSync()){busy=false;return}
     await claimGold();
     await claimOps();
     await loadProfile();
@@ -586,9 +587,11 @@ function syncSpam(){   // 'unlimited abilities' is stored in the save, so it can
   const b=$('#adm-spam');if(b)b.textContent='Unlimited abilities: '+(S.unlimAb?'ON':'OFF');
 }
 function doReset(){
+  cloudPause=true;
   try{const o=(S&&S.owner)||localStorage.suff_owner;if(o)localStorage.removeItem('suff_save_'+o)}catch(e){}
   try{localStorage.sufference_backup=localStorage.sufference_save_v14||'';localStorage.removeItem('sufference_save_v14');localStorage.suff_skip_unlock='1'}catch(e){}
-  location.reload();
+  const go=()=>location.reload();
+  try{Promise.race([sb.rpc('clear_game'),new Promise(r=>setTimeout(r,2500))]).then(go,go)}catch(e){go()}
 }
 function applyTool(k,d){
   const on=d>0;
@@ -649,11 +652,68 @@ async function itemsDo(d){
   else say('Could not queue that: '+data);
 }
 
+
+// ================= v13: cloud save (progress follows the Google account, not the browser) =================
+let cloudPause=false,cloudBusy=false,cloudWarned=false;
+const CLOUD_MAX=1800000;   // matches the limit in save_game()
+function saveIsBlank(){
+  try{return !S.shop&&!(S.mem&&S.mem.runs)&&!Object.keys(S.seen||{}).length&&!(S.st&&S.st.tot)&&(!S.decks||S.decks.length<=1)}catch(e){return true}
+}
+function adoptCloud(obj,at){   // put the cloud copy in place of the local save, then reload
+  try{
+    localStorage.sufference_local_backup=localStorage[MAIN]||'';   // never throw the local copy away
+    obj.owner=myId;obj.cloudAt=at;
+    localStorage[MAIN]=JSON.stringify(obj);
+    localStorage.suff_owner=myId;
+  }catch(e){return false}
+  cloudPause=true;location.reload();return true;
+}
+// returns true if it is reloading the page
+async function cloudSync(){
+  try{
+    if(!sb||!myId||cloudPause)return false;
+    const {data,error}=await sb.rpc('load_game');
+    if(error){console.error('cloud load',error);return false}
+    const remote=data&&data.save?data:null;
+    if(!remote){                                   // nothing in the cloud yet: upload what this browser has
+      if(!saveIsBlank())await cloudSave(true,true);
+      return false;
+    }
+    const rAt=Date.parse(remote.saved_at),lAt=S.cloudAt?Date.parse(S.cloudAt):0;
+    if(saveIsBlank())return adoptCloud(remote.save,remote.saved_at);   // new browser / cleared browser: bring the progress back
+    if(lAt&&rAt<=lAt+1)return false;               // this browser is already up to date
+    const keep=confirm('Your account has a saved game in the cloud'+(lAt?' that is newer than this browser\'s copy':'')+'.\n\nOK = load the cloud save (this browser\'s copy is kept as a backup)\nCancel = keep THIS browser\'s save and overwrite the cloud');
+    if(keep)return adoptCloud(remote.save,remote.saved_at);
+    await cloudSave(true,true);
+    return false;
+  }catch(e){console.error(e);return false}
+}
+async function cloudSave(quiet,force){
+  if(cloudBusy||cloudPause||!sb||!myId)return;
+  try{
+    if(!S||S.owner!==myId||saveIsBlank())return;   // never upload another account's save or an empty one
+    const blob=JSON.stringify(S);
+    if(blob.length>CLOUD_MAX){if(!cloudWarned){cloudWarned=true;say('Your save is too large for cloud backup')}return}
+    cloudBusy=true;
+    const {data,error}=await sb.rpc('save_game',{p_save:S,p_base:S.cloudAt||null,p_force:!!force});
+    if(error){console.error('cloud save',error);return}
+    if(data&&data.status==='ok'){S.cloudAt=data.at;save()}
+    else if(data&&data.status==='conflict'&&!cloudWarned){
+      cloudWarned=true;
+      say('Another device saved newer progress. Reload the page to choose which save to keep.');
+    }
+  }catch(e){console.error(e)}
+  finally{cloudBusy=false}
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')cloudSave(true)});
+window.addEventListener('pagehide',()=>cloudSave(true));
+
 // ---------- start ----------
 function start(){
   sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
   buildUI();buildExtra();
   setInterval(()=>{if(roleName!=='unknown'||profile.code)syncStats()},90000);
+  setInterval(()=>cloudSave(true),60000);
   sb.auth.onAuthStateChange((ev,session)=>{
     if(session&&(ev==='SIGNED_IN'||ev==='INITIAL_SESSION'))setTimeout(afterLogin,0);
     else render();
