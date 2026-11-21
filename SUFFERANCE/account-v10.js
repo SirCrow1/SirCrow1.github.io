@@ -67,7 +67,6 @@ function buildUI(){
 
         <div id="acct-admin" style="display:none;border:1px solid #a16207;border-radius:8px;padding:10px;margin-bottom:12px;background:#1c1408">
           <div style="font-weight:bold;color:#facc15;margin-bottom:6px">🛠️ Admin tools</div>
-          <button id="adm-gold" class="acct-b" style="background:#a16207;margin:0 6px 6px 0">+100,000 gold</button>
           <button id="adm-unlock" class="acct-b" style="background:#7c3aed;margin:0 6px 6px 0">Unlock all shop items</button>
           <button id="adm-stock" class="acct-b" style="background:#0e7490;margin:0 6px 6px 0">Stock all run items (x99)</button>
           <button id="adm-deaths" class="acct-b" style="background:#991b1b;margin:0 6px 6px 0">Unlock all deaths</button>
@@ -101,8 +100,7 @@ function buildUI(){
   $('#acct-logout').onclick=async()=>{stashAndClear();await sb.auth.signOut();profile={username:null,code:''};editing=false;isAdmin=false;roleName='unknown';if(spamT){clearInterval(spamT);spamT=null}render();say('Logged out');setTimeout(()=>location.reload(),300)};
   $('#acct-copy').onclick=()=>{const i=$('#acct-link');i.select();try{navigator.clipboard.writeText(i.value)}catch(e){document.execCommand('copy')}say('Invite link copied!')};
   $('#acct-rename').onclick=()=>{editing=true;render();$('#acct-nameinput').value=profile.username||'';$('#acct-nameinput').focus()};
-  $('#adm-gold').onclick=()=>admin(()=>{S.gold+=100000},'+100,000 gold');
-  $('#adm-unlock').onclick=()=>admin(()=>{const h=shopS();for(const k in SKINS)h.own['skin'+k]=1;for(const k in WPNS)h.own['wpn'+k]=1;for(const k in PETS)h.own['pet'+k]=1},'Everything in the shop unlocked');
+  $('#adm-unlock').onclick=()=>admin(()=>applyTool('shopall',1),'Everything in the shop unlocked');
   $('#adm-stock').onclick=()=>admin(()=>{const h=shopS();for(const k in SHOP_ITEMS)h.inv[k]=99},'All run items stocked');
   $('#adm-deaths').onclick=()=>admin(()=>{
     const gn=typeof GN!=='undefined'?GN:[...Array(30).keys()].map(String);
@@ -198,7 +196,7 @@ async function render(){
   $('#acct-nameprompt').textContent=needName?'Welcome! Pick your player name (3-16 letters, numbers or _)':'New name (3-16 letters, numbers or _)';
   $('#acct-rename').style.display=(needName||editing)?'none':'inline-block';
   $('#acct-admin').style.display=isAdmin?'block':'none';
-  $('#acct-diag').textContent='build v9 · role: '+roleName+' · save: '+String((S&&S.owner)||'none').slice(0,6)+' · acct: '+String(myId||'none').slice(0,6)+(diag?' · '+diag:'');
+  $('#acct-diag').textContent='build v10 · role: '+roleName+' · save: '+String((S&&S.owner)||'none').slice(0,6)+' · acct: '+String(myId||'none').slice(0,6)+(diag?' · '+diag:'');
   $('#acct-stats').innerHTML=statsHTML();
   const ranks=Object.entries(S.best||{}).slice(0,6).map(([k,v])=>k+': '+v).join(' · ');
   $('#acct-ranks').textContent=ranks?'🏆 Best ranks: '+ranks:'';
@@ -228,7 +226,6 @@ function adminUnlock(){
   try{
     const h=shopS();for(const k in SKINS)h.own['skin'+k]=1;for(const k in WPNS)h.own['wpn'+k]=1;for(const k in PETS)h.own['pet'+k]=1;
     for(const k in SHOP_ITEMS)if((h.inv[k]||0)<99)h.inv[k]=99;
-    if(S.gold<100000)S.gold=100000;
     S.adminSeed=1;save();
     const g=$('#gold');if(g)g.textContent='\u{1FA99} '+S.gold;try{shopGold()}catch(e){}try{shopRender()}catch(e){}
   }catch(e){console.error(e);diag+=' unlock: '+e.message}
@@ -279,10 +276,12 @@ async function afterLogin(){
     await loadProfile();
     if(profile.banned){say('This account has been banned.');await sb.auth.signOut();profile={username:null,code:''};isAdmin=false;roleName='unknown';busy=false;render();return}
     adminUnlock();
+    syncSpam();
     syncStats();
   }catch(e){console.error(e)}
   busy=false;
   await render();
+  if(localStorage.suff_notice){say(localStorage.suff_notice);delete localStorage.suff_notice}
   if(!profile.username)openModal();   // first login: ask for a name
 }
 
@@ -339,21 +338,12 @@ function buildExtra(){
   $('#adm-body').addEventListener('click',admClick);
   $('#adm-body').addEventListener('change',e=>{if(e.target.id==='it-cat')fillItemKeys()});
 
-  $('#adm-pets').onclick=()=>admin(()=>{
-    S.pb=S.pb||{};
-    for(const k in PETS){const b=S.pb[k]||(S.pb[k]={nm:'',xp:0,fed:0,mood:50,lp:0,food:0});b.xp=Math.max(b.xp||0,1e9);b.mood=100;b.fed=Math.max(b.fed||0,99);b.food=20}
-  },'All pet bonds maxed');
-  $('#adm-spam').onclick=()=>{
-    if(!isAdmin)return;
-    if(spamT){clearInterval(spamT);spamT=null}
-    else spamT=setInterval(()=>{try{if(G&&G.abUsed&&!G.abBusy)G.abUsed=null}catch(e){}},250);
-    $('#adm-spam').textContent='Unlimited abilities: '+(spamT?'ON':'OFF');
-  };
+  $('#adm-pets').onclick=()=>admin(()=>applyTool('bonds',1),'All pet bonds maxed');
+  $('#adm-spam').onclick=()=>{if(!isAdmin)return;S.unlimAb=S.unlimAb?0:1;save();syncSpam()};
   $('#adm-reset').onclick=()=>{
     if(!isAdmin)return;
     if(!confirm('Reset YOUR save? Gold, decks, progress and shop items in this browser will be wiped (a backup copy is kept in the browser). Continue?'))return;
-    try{localStorage.sufference_backup=localStorage.sufference_save_v14||'';localStorage.removeItem('sufference_save_v14');localStorage.suff_skip_unlock='1'}catch(e){}
-    location.reload();
+    doReset();
   };
 }
 
@@ -477,7 +467,7 @@ async function admClick(e){
 
 // ================= v9: give / take items, pets, treats, badges, deaths =================
 const BADGES=[['dall','🏅 Collector (all deaths seen)'],['drun','🏅 Doomed'],['nd','🏅 Untouchable'],['sp','🏅 Blitz'],['bs','🏅 Inferno'],['pm','🏅 Flawless'],['ng','🏅 Relentless'],['two','🏅 Duality (both endings)'],['lair','🏅 Wanderer'],['bond','🏅 Soulbound'],['item','🏅 Alchemist'],['prun','🏅 Conqueror']];
-const CATS=[['item','🛡️ Run items (shield, orb, key…)'],['treat','🍖 Pet treats (food)'],['pet','🐾 Pets & mounts (1 each)'],['skin','🧥 Armor skins'],['blade','🗡️ Blades'],['death','💀 Deaths (gallery)'],['badge','🏅 Badges']];
+const CATS=[['item','🛡️ Run items (shield, orb, key…)'],['treat','🍖 Pet treats (food)'],['pet','🐾 Pets & mounts (1 each)'],['skin','🧥 Armor skins'],['blade','🗡️ Blades'],['death','💀 Deaths (gallery)'],['badge','🏅 Badges'],['tool','🧰 Tools (unlock shop, max bonds, unlimited abilities, reset save)']];
 const MAINDEATHS=()=>typeof GN!=='undefined'?GN:[...Array(30).keys()].map(String);
 const SECRETS=()=>typeof GSK!=='undefined'?GSK:['spike','axe','boulder','lava','ghost','fire','dart','gas','ice','fall'];
 const deathKeys=()=>MAINDEATHS().concat(SECRETS().map(k=>'s:'+k));
@@ -488,6 +478,7 @@ function deathName(k){
   }catch(e){return String(k)}
 }
 function optList(c){
+  if(c==='tool')return [['shopall','🛍️ Unlock all shop items'],['bonds','💞 Max pet bonds'],['unlimited','♾️ Unlimited abilities'],['reset','🗑️ Reset save']];
   if(c==='item')return Object.entries(SHOP_ITEMS).map(([k,v])=>[k,v.n]);
   if(c==='treat'||c==='pet')return Object.entries(PETS).map(([k,v])=>[k,v.n]);
   if(c==='skin')return Object.entries(SKINS).map(([k,v])=>[k,v.n]);
@@ -525,20 +516,46 @@ function applyOne(c,k,n,d){
 }
 function applyOp(op){
   const c=op.c,d=op.d>0?1:-1,n=Math.max(1,Math.min(99,Math.floor(Number(op.n)||1)));
+  if(c==='tool'){applyTool(op.k,d);return}
   const keys=op.k==='*'?optList(c).map(x=>x[0]):[op.k];
   for(const k of keys)applyOne(c,k,n,d);
 }
 function opLabel(op){
+  if(op.c==='tool'){const t=optList('tool').find(x=>x[0]===op.k);return (op.k==='reset'?'':(op.d>0?'Enabled ':'Disabled '))+(t?t[1]:op.k)}
   const cat=(CATS.find(x=>x[0]===op.c)||[0,op.c])[1];
   const it=op.k==='*'?'ALL':((optList(op.c).find(x=>x[0]===op.k)||[0,op.k])[1]);
   return (op.d>0?'Gave ':'Took ')+((op.c==='item'||op.c==='treat')&&op.k!=='*'?op.n+' x ':'')+it+' ('+cat.replace(/^\S+\s/,'')+')';
 }
 function refreshGame(){const g=$('#gold');if(g)g.textContent='🪙 '+S.gold;try{shopGold()}catch(e){}try{shopRender()}catch(e){}}
 
+function syncSpam(){   // 'unlimited abilities' is stored in the save, so it can be given to any player
+  if(S.unlimAb&&!spamT)spamT=setInterval(()=>{try{if(G&&G.abUsed&&!G.abBusy)G.abUsed=null}catch(e){}},250);
+  if(!S.unlimAb&&spamT){clearInterval(spamT);spamT=null}
+  const b=$('#adm-spam');if(b)b.textContent='Unlimited abilities: '+(S.unlimAb?'ON':'OFF');
+}
+function doReset(){
+  try{localStorage.sufference_backup=localStorage.sufference_save_v14||'';localStorage.removeItem('sufference_save_v14');localStorage.suff_skip_unlock='1'}catch(e){}
+  location.reload();
+}
+function applyTool(k,d){
+  const on=d>0;
+  if(k==='shopall'){
+    const h=shopS();
+    for(const x in SKINS){if(on)h.own['skin'+x]=1;else delete h.own['skin'+x]}
+    for(const x in WPNS){if(on)h.own['wpn'+x]=1;else delete h.own['wpn'+x]}
+    for(const x in PETS){if(on)h.own['pet'+x]=1;else if(x!=='crow')delete h.own['pet'+x]}
+    if(!on){delete h.eq.skin;delete h.eq.wpn;if(h.eq.pet&&h.eq.pet!=='crow')h.eq.pet='crow'}
+  }else if(k==='bonds'){
+    S.pb=S.pb||{};
+    for(const x in PETS){const b=S.pb[x]||(S.pb[x]={nm:'',xp:0,fed:0,mood:50,lp:0,food:0});if(on){b.xp=Math.max(b.xp||0,1e9);b.mood=100;b.fed=Math.max(b.fed||0,99);b.food=20}else b.xp=0}
+  }else if(k==='unlimited'){S.unlimAb=on?1:0;syncSpam()}
+  else if(k==='reset'&&on){doReset()}
+}
 async function claimOps(){   // apply anything an admin queued for this account
   try{
     const {data,error}=await sb.rpc('claim_ops');
     if(error||!Array.isArray(data)||!data.length)return;
+    if(data.some(o=>o.c==='tool'&&o.k==='reset'&&o.d>0)){localStorage.suff_notice='An admin reset your save.';doReset();return}
     let n=0;for(const op of data){try{applyOp(op);n++}catch(e){console.error(e)}}
     save();refreshGame();
     say('🎁 An admin updated your inventory ('+n+' change'+(n>1?'s':'')+')');
@@ -547,7 +564,7 @@ async function claimOps(){   // apply anything an admin queued for this account
 
 function fillItemKeys(){
   const c=$('#it-cat').value;
-  $('#it-key').innerHTML='<option value="*">★ ALL</option>'+optList(c).map(x=>`<option value="${esc(x[0])}">${esc(x[1])}</option>`).join('');
+  $('#it-key').innerHTML=(c==='tool'?'':'<option value="*">★ ALL</option>')+optList(c).map(x=>`<option value="${esc(x[0])}">${esc(x[1])}</option>`).join('');
   $('#it-amt').style.display=(c==='item'||c==='treat')?'block':'none';
 }
 function renderItems(){
@@ -566,6 +583,10 @@ async function itemsDo(d){
   const name=$('#it-target').value.trim(),c=$('#it-cat').value,k=$('#it-key').value;
   const n=Math.max(1,Math.min(99,Math.floor(Number($('#it-amt').value)||1)));
   const op={c,k,n,d};
+  if(c==='tool'&&k==='reset'){
+    if(d<0)return say('Reset only works with Give');
+    if(!confirm('Reset '+(name?name+"'s":'YOUR')+' save? This wipes gold, decks and progress.'))return;
+  }
   const self=!name||(profile.username&&name.toLowerCase()===profile.username.toLowerCase());
   if(self)return admin(()=>applyOp(op),opLabel(op)+' for you');
   const {data,error}=await sb.rpc('admin_queue_op',{target_name:name,p_op:op});
