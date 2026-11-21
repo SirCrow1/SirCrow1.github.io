@@ -59,12 +59,22 @@ function buildUI(){
         <div id="acct-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px"></div>
         <div id="acct-ranks" style="font-size:12px;color:#a1a1aa;margin-bottom:12px"></div>
 
+        <div style="margin-bottom:12px">
+          <button id="acct-lb" class="acct-b" style="background:#a16207;margin-bottom:10px">🏆 Leaderboard</button>
+          <div style="font-weight:bold;color:#34d399;margin-bottom:4px">🎟️ Gift code</div>
+          <div style="display:flex;gap:6px"><input id="acct-code" class="acct-in" placeholder="Enter code" maxlength="24" autocomplete="off"><button id="acct-redeem" class="acct-b" style="background:#059669">Redeem</button></div>
+        </div>
+
         <div id="acct-admin" style="display:none;border:1px solid #a16207;border-radius:8px;padding:10px;margin-bottom:12px;background:#1c1408">
           <div style="font-weight:bold;color:#facc15;margin-bottom:6px">🛠️ Admin tools</div>
           <button id="adm-gold" class="acct-b" style="background:#a16207;margin:0 6px 6px 0">+100,000 gold</button>
           <button id="adm-unlock" class="acct-b" style="background:#7c3aed;margin:0 6px 6px 0">Unlock all shop items</button>
           <button id="adm-stock" class="acct-b" style="background:#0e7490;margin:0 6px 6px 0">Stock all run items (x99)</button>
           <button id="adm-deaths" class="acct-b" style="background:#991b1b;margin:0 6px 6px 0">Unlock all deaths</button>
+          <button id="adm-pets" class="acct-b" style="background:#be185d;margin:0 6px 6px 0">Max pet bonds</button>
+          <button id="adm-spam" class="acct-b" style="background:#4338ca;margin:0 6px 6px 0">Unlimited abilities: OFF</button>
+          <button id="adm-reset" class="acct-b" style="background:#450a0a;margin:0 6px 6px 0">Reset my save</button>
+          <button id="adm-panel" class="acct-b" style="background:#ca8a04;display:block;margin:0 0 6px 0">👥 Open admin panel (players, codes)</button>
           <div style="margin-top:6px;font-size:12px;color:#fcd34d">Give gold (leave the name blank to give it to yourself)</div>
           <div style="display:flex;gap:6px;margin-top:4px">
             <input id="adm-target" class="acct-in" placeholder="Player name" maxlength="16" autocomplete="off">
@@ -87,7 +97,7 @@ function buildUI(){
   b.onclick=openModal;
   $('#acct-close').onclick=()=>$('#acct-modal').style.display='none';
   $('#acct-google').onclick=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});
-  $('#acct-logout').onclick=async()=>{await sb.auth.signOut();profile={username:null,code:''};editing=false;isAdmin=false;roleName='unknown';render();say('Logged out')};
+  $('#acct-logout').onclick=async()=>{await sb.auth.signOut();profile={username:null,code:''};editing=false;isAdmin=false;roleName='unknown';if(spamT){clearInterval(spamT);spamT=null}render();say('Logged out')};
   $('#acct-copy').onclick=()=>{const i=$('#acct-link');i.select();try{navigator.clipboard.writeText(i.value)}catch(e){document.execCommand('copy')}say('Invite link copied!')};
   $('#acct-rename').onclick=()=>{editing=true;render();$('#acct-nameinput').value=profile.username||'';$('#acct-nameinput').focus()};
   $('#adm-gold').onclick=()=>admin(()=>{S.gold+=100000},'+100,000 gold');
@@ -184,7 +194,7 @@ async function render(){
   $('#acct-nameprompt').textContent=needName?'Welcome! Pick your player name (3-16 letters, numbers or _)':'New name (3-16 letters, numbers or _)';
   $('#acct-rename').style.display=(needName||editing)?'none':'inline-block';
   $('#acct-admin').style.display=isAdmin?'block':'none';
-  $('#acct-diag').textContent='build v4 · role: '+roleName+(diag?' · '+diag:'');
+  $('#acct-diag').textContent='build v5 · role: '+roleName+(diag?' · '+diag:'');
   $('#acct-stats').innerHTML=statsHTML();
   const ranks=Object.entries(S.best||{}).slice(0,6).map(([k,v])=>k+': '+v).join(' · ');
   $('#acct-ranks').textContent=ranks?'🏆 Best ranks: '+ranks:'';
@@ -193,10 +203,14 @@ async function render(){
 
 async function loadProfile(){
   try{
-    let {data:p,error:pe}=await sb.from('profiles').select('referral_code,username').maybeSingle();
     diag='';
-    if(pe){diag='profile: '+pe.message;const r2=await sb.from('profiles').select('referral_code').maybeSingle();p=r2.data}
-    if(p){profile.code=p.referral_code;profile.username=p.username||null}
+    let p=null;
+    for(const cols of ['referral_code,username,banned','referral_code,username','referral_code']){
+      const r=await sb.from('profiles').select(cols).maybeSingle();
+      if(!r.error){p=r.data;break}
+      diag='profile: '+r.error.message;
+    }
+    if(p){profile.code=p.referral_code;profile.username=p.username||null;profile.banned=!!p.banned}
     const {data:r,error:re}=await sb.from('user_roles').select('role').maybeSingle();
     if(re)diag+=' role: '+re.message;
     roleName=r?r.role:'unknown';
@@ -204,7 +218,8 @@ async function loadProfile(){
   }catch(e){diag='load failed: '+e.message}
 }
 function adminUnlock(){
-  if(!isAdmin)return;   // admins always have every shop item owned and at least 100,000 gold
+  if(!isAdmin)return;
+  if(localStorage.suff_skip_unlock){delete localStorage.suff_skip_unlock;return}   // right after 'Reset my save'   // admins always have every shop item owned and at least 100,000 gold
   try{const h=shopS();for(const k in SKINS)h.own['skin'+k]=1;for(const k in WPNS)h.own['wpn'+k]=1;for(const k in PETS)h.own['pet'+k]=1;
     for(const k in SHOP_ITEMS)if((h.inv[k]||0)<99)h.inv[k]=99;
     if(S.gold<100000)S.gold=100000;save();
@@ -223,19 +238,192 @@ async function afterLogin(){
       else if(data==='invalid_code')say('That referral code is not valid');
       else if(data==='own_code')say("You can't use your own referral code");
     }
+    const {data:{session}}=await sb.auth.getSession();myId=session?session.user.id:null;
     await claimGold();
     await loadProfile();
+    if(profile.banned){say('This account has been banned.');await sb.auth.signOut();profile={username:null,code:''};isAdmin=false;roleName='unknown';busy=false;render();return}
     adminUnlock();
+    syncStats();
   }catch(e){console.error(e)}
   busy=false;
   await render();
   if(!profile.username)openModal();   // first login: ask for a name
 }
 
+// ================= v5: leaderboard, gift codes, admin panel, extra admin tools =================
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let myId=null,admTab='players',spamT=null;
+
+async function syncStats(){
+  try{
+    if(!sb)return;
+    const st=S.st||{};
+    await sb.rpc('sync_stats',{p_streak:st.bs||0,p_solved:Object.keys(st.sol||{}).length,p_runs:(S.mem&&S.mem.runs)||0});
+  }catch(e){}
+}
+
+function buildExtra(){
+  const BOX='background:#14101c;border:2px solid #facc15;border-radius:10px;padding:18px 22px;width:min(94vw,520px);max-height:90vh;overflow:auto;color:#e6dcc0;font:14px sans-serif';
+  const WRAP='display:none;position:fixed;inset:0;z-index:85;align-items:center;justify-content:center;background:rgba(0,0,0,.7)';
+  document.body.insertAdjacentHTML('beforeend',`
+  <div id="lb-modal" style="${WRAP}"><div style="${BOX}">
+    <div style="font:900 20px Cinzel,serif;color:#facc15;margin-bottom:8px">🏆 Leaderboard</div>
+    <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+      <button class="acct-b lb-tab" data-sort="solved" style="background:#3f3f46">🧩 Solved</button>
+      <button class="acct-b lb-tab" data-sort="streak" style="background:#3f3f46">🔥 Streak</button>
+      <button class="acct-b lb-tab" data-sort="runs" style="background:#3f3f46">⚔️ Runs</button>
+    </div>
+    <div id="lb-body"></div>
+    <div style="margin-top:10px;text-align:right"><button id="lb-close" style="color:#a1a1aa;font-size:12px">Close</button></div>
+  </div></div>
+
+  <div id="adm-modal" style="${WRAP}"><div style="${BOX}">
+    <div style="font:900 20px Cinzel,serif;color:#facc15;margin-bottom:8px">🛠️ Admin panel</div>
+    <div style="display:flex;gap:6px;margin-bottom:8px">
+      <button class="acct-b adm-tab" data-tab="players" style="background:#3f3f46">👥 Players</button>
+      <button class="acct-b adm-tab" data-tab="codes" style="background:#3f3f46">🎟️ Gift codes</button>
+    </div>
+    <div id="adm-body"></div>
+    <div style="margin-top:10px;text-align:right"><button id="adm-close" style="color:#a1a1aa;font-size:12px">Close</button></div>
+  </div></div>`);
+
+  for(const id of ['#lb-modal','#adm-modal','#acct-modal']){
+    const m=$(id);m.addEventListener('keydown',e=>e.stopPropagation());m.addEventListener('keyup',e=>e.stopPropagation());
+  }
+  $('#lb-close').onclick=()=>$('#lb-modal').style.display='none';
+  $('#adm-close').onclick=()=>$('#adm-modal').style.display='none';
+  document.querySelectorAll('.lb-tab').forEach(b=>b.onclick=()=>showLB(b.dataset.sort));
+  document.querySelectorAll('.adm-tab').forEach(b=>b.onclick=()=>{admTab=b.dataset.tab;admLoad()});
+  $('#acct-lb').onclick=()=>showLB('solved');
+  $('#acct-code').addEventListener('keydown',e=>{if(e.key==='Enter')redeemCode()});
+  $('#acct-redeem').onclick=redeemCode;
+  $('#adm-panel').onclick=openAdmin;
+  $('#adm-body').addEventListener('click',admClick);
+
+  $('#adm-pets').onclick=()=>admin(()=>{
+    S.pb=S.pb||{};
+    for(const k in PETS){const b=S.pb[k]||(S.pb[k]={nm:'',xp:0,fed:0,mood:50,lp:0,food:0});b.xp=Math.max(b.xp||0,1e9);b.mood=100;b.fed=Math.max(b.fed||0,99);b.food=20}
+  },'All pet bonds maxed');
+  $('#adm-spam').onclick=()=>{
+    if(!isAdmin)return;
+    if(spamT){clearInterval(spamT);spamT=null}
+    else spamT=setInterval(()=>{try{if(G&&G.abUsed&&!G.abBusy)G.abUsed=null}catch(e){}},250);
+    $('#adm-spam').textContent='Unlimited abilities: '+(spamT?'ON':'OFF');
+  };
+  $('#adm-reset').onclick=()=>{
+    if(!isAdmin)return;
+    if(!confirm('Reset YOUR save? Gold, decks, progress and shop items in this browser will be wiped (a backup copy is kept in the browser). Continue?'))return;
+    try{localStorage.sufference_backup=localStorage.sufference_save_v14||'';localStorage.removeItem('sufference_save_v14');localStorage.suff_skip_unlock='1'}catch(e){}
+    location.reload();
+  };
+}
+
+// ---------- gift codes (players) ----------
+async function redeemCode(){
+  const c=$('#acct-code').value.trim();
+  if(!c)return;
+  const {data,error}=await sb.rpc('redeem_code',{p_code:c});
+  if(error)return say('Could not redeem: '+error.message);
+  const msg={invalid:'That code is not valid',expired:'That code has expired',used_up:'That code has been fully used',already_used:'You already used that code',banned:'This account is banned',not_logged_in:'Log in first'};
+  if(typeof data==='string'&&data.startsWith('ok:')){
+    say('🎟️ Code accepted! +'+data.slice(3)+' gold');$('#acct-code').value='';await claimGold();render();
+  }else say(msg[data]||'Could not redeem that code');
+}
+
+// ---------- leaderboard ----------
+async function showLB(sort){
+  sort=sort||'solved';
+  $('#lb-modal').style.display='flex';
+  $('#lb-body').textContent='Loading…';
+  await syncStats();
+  const {data,error}=await sb.rpc('get_leaderboard',{sort_by:sort});
+  if(error){$('#lb-body').textContent='Could not load: '+error.message;return}
+  const unit={solved:'puzzles',streak:'in a row',runs:'runs'}[sort]||'';
+  $('#lb-body').innerHTML=(data&&data.length)?data.map((r,i)=>
+    `<div style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid #27272a;${r.uname===profile.username?'background:#052e22;':''}"><span>${['🥇','🥈','🥉'][i]||(i+1)+'.'} ${esc(r.uname)}</span><b style="color:#facc15">${r[sort]||0} ${unit}</b></div>`
+  ).join(''):'<div style="color:#a1a1aa">No players on the board yet.</div>';
+}
+
+// ---------- admin panel ----------
+function openAdmin(){if(!isAdmin)return;$('#adm-modal').style.display='flex';admLoad()}
+
+async function admLoad(){
+  if(!isAdmin)return;
+  const body=$('#adm-body');body.textContent='Loading…';
+  document.querySelectorAll('.adm-tab').forEach(b=>b.style.background=b.dataset.tab===admTab?'#a16207':'#3f3f46');
+  if(admTab==='players'){
+    const {data,error}=await sb.rpc('admin_list_players');
+    if(error){body.textContent='Error: '+error.message;return}
+    body.innerHTML=`<div style="font-size:12px;color:#a1a1aa;margin-bottom:6px">${data.length} players</div>`+data.map(r=>{
+      const me=r.uid===myId;
+      return `<div style="border:1px solid #27272a;border-radius:8px;padding:8px;margin-bottom:6px;background:#0b0912">
+        <div><b style="color:#fff">${esc(r.uname||'(no name yet)')}</b> ${r.urole==='admin'?'<span style="color:#facc15">[admin]</span>':''} ${r.isbanned?'<span style="color:#f87171">[BANNED]</span>':''} ${me?'<span style="color:#34d399">(you)</span>':''}</div>
+        <div style="font-size:11px;color:#a1a1aa">${esc(r.mail||'')}</div>
+        <div style="font-size:11px;color:#a1a1aa">Invited by: ${esc(r.invited_by_name||'—')} · Invited ${r.invited_n} players · Pending gold: ${r.pend}</div>
+        <div style="margin-top:6px">
+          <button class="acct-b" data-act="rename" data-uid="${esc(r.uid)}" data-name="${esc(r.uname||'')}" style="background:#3f3f46;margin:0 4px 4px 0">✏️ Rename</button>
+          ${me?'':`<button class="acct-b" data-act="ban" data-uid="${esc(r.uid)}" data-flag="${r.isbanned?'0':'1'}" style="background:${r.isbanned?'#059669':'#7f1d1d'};margin:0 4px 4px 0">${r.isbanned?'Unban':'Ban'}</button>
+          <button class="acct-b" data-act="role" data-uid="${esc(r.uid)}" data-role="${r.urole==='admin'?'player':'admin'}" style="background:#7c3aed;margin:0 4px 4px 0">${r.urole==='admin'?'Make player':'Make admin'}</button>`}
+        </div></div>`}).join('');
+  }else{
+    const {data,error}=await sb.rpc('admin_list_codes');
+    if(error){body.textContent='Error: '+error.message;return}
+    body.innerHTML=`<div style="font-weight:bold;color:#facc15;margin-bottom:6px">Create a gift code</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+        <input id="gc-code" class="acct-in" placeholder="CODE (A-Z, 0-9)" maxlength="24" autocomplete="off">
+        <input id="gc-gold" class="acct-in" type="number" min="1" placeholder="Gold" value="500">
+        <input id="gc-max" class="acct-in" type="number" min="1" placeholder="Max uses (blank = unlimited)">
+        <input id="gc-days" class="acct-in" type="number" min="1" placeholder="Valid days (blank = forever)">
+      </div>
+      <button id="gc-create" class="acct-b" data-act="gc-create" style="background:#059669;margin-bottom:12px">Create code</button>
+      <div style="font-weight:bold;color:#facc15;margin-bottom:6px">Existing codes</div>`+
+      ((data&&data.length)?data.map(r=>`<div style="display:flex;justify-content:space-between;align-items:center;border:1px solid #27272a;border-radius:8px;padding:8px;margin-bottom:6px;background:#0b0912">
+        <div><b style="color:#fff">${esc(r.code)}</b> · ${r.gold} gold<div style="font-size:11px;color:#a1a1aa">Used ${r.uses}${r.max_uses?' / '+r.max_uses:''} · ${r.expires_at?'expires '+new Date(r.expires_at).toLocaleDateString():'no expiry'}</div></div>
+        <button class="acct-b" data-act="gc-del" data-code="${esc(r.code)}" style="background:#7f1d1d">Delete</button></div>`).join(''):'<div style="color:#a1a1aa">No codes yet.</div>');
+  }
+}
+
+async function admClick(e){
+  const b=e.target.closest('button[data-act]');if(!b||!isAdmin)return;
+  const act=b.dataset.act;
+  try{
+    if(act==='rename'){
+      const n=prompt('New name for '+(b.dataset.name||'this player')+' (3-16 letters, numbers or _):',b.dataset.name||'');
+      if(n===null)return;
+      const {data,error}=await sb.rpc('admin_set_username',{target:b.dataset.uid,new_name:n.trim()});
+      if(error)return say(error.message);
+      say({ok:'Renamed',taken:'That name is taken',invalid:'Invalid name'}[data]||data);
+    }else if(act==='ban'){
+      const ban=b.dataset.flag==='1';
+      if(!confirm((ban?'Ban':'Unban')+' this player?'))return;
+      const {data,error}=await sb.rpc('admin_set_banned',{target:b.dataset.uid,flag:ban});
+      if(error)return say(error.message);
+      say(data==='ok'?(ban?'Player banned':'Player unbanned'):data);
+    }else if(act==='role'){
+      if(!confirm('Make this player a '+b.dataset.role+'?'))return;
+      const {data,error}=await sb.rpc('admin_set_role',{target:b.dataset.uid,new_role:b.dataset.role});
+      if(error)return say(error.message);
+      say(data==='ok'?'Role updated':data);
+    }else if(act==='gc-create'){
+      const num=id=>{const v=$(id).value.trim();return v===''?null:Math.floor(Number(v))};
+      const {data,error}=await sb.rpc('admin_create_code',{p_code:$('#gc-code').value.trim(),p_gold:num('#gc-gold'),p_max_uses:num('#gc-max'),p_days:num('#gc-days')});
+      if(error)return say(error.message);
+      say({ok:'Code created',exists:'That code already exists',invalid:'Code must be 3-24 letters, numbers, - or _',bad_gold:'Gold must be 1 to 1,000,000'}[data]||data);
+    }else if(act==='gc-del'){
+      if(!confirm('Delete code '+b.dataset.code+'?'))return;
+      const {error}=await sb.rpc('admin_delete_code',{p_code:b.dataset.code});
+      if(error)return say(error.message);
+      say('Code deleted');
+    }
+  }catch(err){say('Failed: '+err.message)}
+  admLoad();
+}
+
 // ---------- start ----------
 function start(){
   sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-  buildUI();
+  buildUI();buildExtra();
+  setInterval(()=>{if(roleName!=='unknown'||profile.code)syncStats()},90000);
   sb.auth.onAuthStateChange((ev,session)=>{
     if(session&&(ev==='SIGNED_IN'||ev==='INITIAL_SESSION'))setTimeout(afterLogin,0);
     else render();
