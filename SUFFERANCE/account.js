@@ -22,11 +22,8 @@ function buildUI(){
     <div style="background:#14101c;border:2px solid #34d399;border-radius:10px;padding:18px 22px;width:min(92vw,360px);color:#e6dcc0;font:14px sans-serif">
       <div style="font:900 20px Cinzel,serif;color:#34d399;margin-bottom:10px">👤 Account</div>
       <div id="acct-out">
-        <input id="acct-email" type="email" placeholder="Email" autocomplete="email" style="width:100%;margin-bottom:8px;padding:8px;border-radius:6px;background:#0b0912;border:1px solid #3f3f46;color:#fff">
-        <input id="acct-pass" type="password" placeholder="Password (6+ characters)" autocomplete="current-password" style="width:100%;margin-bottom:8px;padding:8px;border-radius:6px;background:#0b0912;border:1px solid #3f3f46;color:#fff">
         <div id="acct-ref" style="font-size:12px;color:#fcd34d;margin-bottom:8px"></div>
-        <button id="acct-login" style="background:#059669;color:#fff;font-weight:bold;padding:8px 16px;border-radius:6px;margin-right:8px">Log in</button>
-        <button id="acct-signup" style="background:#1d4ed8;color:#fff;font-weight:bold;padding:8px 16px;border-radius:6px">Sign up</button>
+        <button id="acct-google" style="width:100%;background:#fff;color:#111;font-weight:bold;padding:9px 16px;border-radius:6px;margin-bottom:10px">Continue with Google</button>
       </div>
       <div id="acct-in" style="display:none">
         <div id="acct-who" style="margin-bottom:10px;color:#a7f3d0"></div>
@@ -40,8 +37,7 @@ function buildUI(){
   </div>`);
   b.onclick=()=>{refreshUI();$('#acct-modal').style.display='flex'};
   $('#acct-close').onclick=()=>$('#acct-modal').style.display='none';
-  $('#acct-login').onclick=login;
-  $('#acct-signup').onclick=signup;
+  $('#acct-google').onclick=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});
   $('#acct-logout').onclick=async()=>{await sb.auth.signOut();myCode='';refreshUI();say('Logged out')};
   $('#acct-copy').onclick=()=>{const i=$('#acct-link');i.select();try{navigator.clipboard.writeText(i.value)}catch(e){document.execCommand('copy')}say('Invite link copied!')};
 }
@@ -52,7 +48,7 @@ async function refreshUI(){
   $('#acct-out').style.display=session?'none':'block';
   $('#acct-in').style.display=session?'block':'none';
   const ref=localStorage.suff_ref;
-  $('#acct-ref').textContent=ref?'🎁 Referral code applied: sign up to get 350 gold!':'';
+  $('#acct-ref').textContent=ref?'🎁 Referral code applied: sign in with Google to get 350 gold!':'';
   if(session){
     $('#acct-who').textContent='Logged in as '+session.user.email;
     $('#acct-link').value=myCode?location.origin+location.pathname+'?ref='+myCode:'Loading…';
@@ -61,18 +57,6 @@ async function refreshUI(){
 }
 
 // ---------- auth ----------
-async function signup(){
-  const email=$('#acct-email').value.trim(),password=$('#acct-pass').value;
-  if(!email||password.length<6)return say('Enter an email and a password of 6+ characters');
-  const {data,error}=await sb.auth.signUp({email,password});
-  if(error)return say(error.message);
-  if(!data.session)say('Check your email and click the confirmation link, then log in.');
-}
-async function login(){
-  const email=$('#acct-email').value.trim(),password=$('#acct-pass').value;
-  const {error}=await sb.auth.signInWithPassword({email,password});
-  if(error)say(error.message);
-}
 
 // ---------- after login: redeem referral, collect gold ----------
 async function afterLogin(){
