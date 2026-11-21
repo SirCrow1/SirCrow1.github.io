@@ -1,5 +1,6 @@
 /* SUFFERANCE accounts + referrals + player name + stats (Supabase, Google sign-in only) */
 (function(){
+if(window.__sufAcct)return;window.__sufAcct=1;   // loading this file twice must not build the UI twice
 const SUPABASE_URL='https://qtkgagopbvmvpdgmvghz.supabase.co';
 const SUPABASE_KEY='sb_publishable_yuGBDQKsZlJ0IR37wXMOMQ_rR_N8mR-';
 
@@ -743,10 +744,11 @@ async function renderProfileTab(){
   }catch(e){console.error(e)}
 }
 
+window.renderProfileTab=renderProfileTab;
 // ---------- start ----------
 function start(){
   sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-  buildUI();buildExtra();buildProfileTab();
+  buildUI();buildExtra();buildProfileTab();renderProfileTab();
   setInterval(()=>{if(roleName!=='unknown'||profile.code)syncStats()},90000);
   sb.auth.onAuthStateChange((ev,session)=>{
     if(session&&(ev==='SIGNED_IN'||ev==='INITIAL_SESSION'))setTimeout(afterLogin,0);
