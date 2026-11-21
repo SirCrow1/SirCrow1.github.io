@@ -152,7 +152,7 @@ function admin(fn,msg){
 function openModal(){
   render();$('#acct-modal').style.display='flex';
   if(sb)sb.auth.getSession().then(({data:{session}})=>{
-    if(session)claimGold();
+    if(session){claimGold();claimOps()}
     if(session&&(!profile.code||roleName==='unknown'))loadProfile().then(()=>{adminUnlock();render()});
   });
 }
@@ -198,7 +198,7 @@ async function render(){
   $('#acct-nameprompt').textContent=needName?'Welcome! Pick your player name (3-16 letters, numbers or _)':'New name (3-16 letters, numbers or _)';
   $('#acct-rename').style.display=(needName||editing)?'none':'inline-block';
   $('#acct-admin').style.display=isAdmin?'block':'none';
-  $('#acct-diag').textContent='build v8 · role: '+roleName+' · save: '+String((S&&S.owner)||'none').slice(0,6)+' · acct: '+String(myId||'none').slice(0,6)+(diag?' · '+diag:'');
+  $('#acct-diag').textContent='build v9 · role: '+roleName+' · save: '+String((S&&S.owner)||'none').slice(0,6)+' · acct: '+String(myId||'none').slice(0,6)+(diag?' · '+diag:'');
   $('#acct-stats').innerHTML=statsHTML();
   const ranks=Object.entries(S.best||{}).slice(0,6).map(([k,v])=>k+': '+v).join(' · ');
   $('#acct-ranks').textContent=ranks?'🏆 Best ranks: '+ranks:'';
@@ -275,6 +275,7 @@ async function afterLogin(){
     const {data:{session}}=await sb.auth.getSession();myId=session?session.user.id:null;
     if(myId&&switchOwner(myId))return;
     await claimGold();
+    await claimOps();
     await loadProfile();
     if(profile.banned){say('This account has been banned.');await sb.auth.signOut();profile={username:null,code:''};isAdmin=false;roleName='unknown';busy=false;render();return}
     adminUnlock();
@@ -318,6 +319,7 @@ function buildExtra(){
     <div style="display:flex;gap:6px;margin-bottom:8px">
       <button class="acct-b adm-tab" data-tab="players" style="background:#3f3f46">👥 Players</button>
       <button class="acct-b adm-tab" data-tab="codes" style="background:#3f3f46">🎟️ Gift codes</button>
+      <button class="acct-b adm-tab" data-tab="items" style="background:#3f3f46">🎒 Items</button>
     </div>
     <div id="adm-body"></div>
     <div style="margin-top:10px;text-align:right"><button id="adm-close" style="color:#a1a1aa;font-size:12px">Close</button></div>
@@ -335,6 +337,7 @@ function buildExtra(){
   $('#acct-redeem').onclick=redeemCode;
   $('#adm-panel').onclick=openAdmin;
   $('#adm-body').addEventListener('click',admClick);
+  $('#adm-body').addEventListener('change',e=>{if(e.target.id==='it-cat')fillItemKeys()});
 
   $('#adm-pets').onclick=()=>admin(()=>{
     S.pb=S.pb||{};
@@ -395,6 +398,7 @@ async function admLoad(){
   if(!isAdmin)return;
   const body=$('#adm-body');body.textContent='Loading…';
   document.querySelectorAll('.adm-tab').forEach(b=>b.style.background=b.dataset.tab===admTab?'#a16207':'#3f3f46');
+  if(admTab==='items'){renderItems();return}
   if(admTab==='players'){
     const {data,error}=await sb.rpc('admin_list_players');
     if(error){body.textContent='Error: '+error.message;return}
@@ -449,6 +453,8 @@ async function admClick(e){
       const {data,error}=await sb.rpc('admin_set_role',{target:b.dataset.uid,new_role:b.dataset.role});
       if(error)return say(error.message);
       say(data==='ok'?'Role updated':data);
+    }else if(act==='it-give'||act==='it-take'){
+      await itemsDo(act==='it-give'?1:-1);return;
     }else if(act==='feat'){
       const f=b.dataset.flag==='1';
       const {data,error}=await sb.rpc('admin_set_featured',{target:b.dataset.uid,flag:f});
@@ -467,6 +473,106 @@ async function admClick(e){
     }
   }catch(err){say('Failed: '+err.message)}
   admLoad();
+}
+
+// ================= v9: give / take items, pets, treats, badges, deaths =================
+const BADGES=[['dall','🏅 Collector (all deaths seen)'],['drun','🏅 Doomed'],['nd','🏅 Untouchable'],['sp','🏅 Blitz'],['bs','🏅 Inferno'],['pm','🏅 Flawless'],['ng','🏅 Relentless'],['two','🏅 Duality (both endings)'],['lair','🏅 Wanderer'],['bond','🏅 Soulbound'],['item','🏅 Alchemist'],['prun','🏅 Conqueror']];
+const CATS=[['item','🛡️ Run items (shield, orb, key…)'],['treat','🍖 Pet treats (food)'],['pet','🐾 Pets & mounts (1 each)'],['skin','🧥 Armor skins'],['blade','🗡️ Blades'],['death','💀 Deaths (gallery)'],['badge','🏅 Badges']];
+const MAINDEATHS=()=>typeof GN!=='undefined'?GN:[...Array(30).keys()].map(String);
+const SECRETS=()=>typeof GSK!=='undefined'?GSK:['spike','axe','boulder','lava','ghost','fire','dart','gas','ice','fall'];
+const deathKeys=()=>MAINDEATHS().concat(SECRETS().map(k=>'s:'+k));
+function deathName(k){
+  try{
+    if(String(k).startsWith('s:')){const sk=k.slice(2);return '🔒 Secret: '+((typeof SDN!=='undefined'&&SDN[sk]&&SDN[sk][0])||sk)}
+    return typeof galNName==='function'?galNName(k):'Death #'+(+k+1);
+  }catch(e){return String(k)}
+}
+function optList(c){
+  if(c==='item')return Object.entries(SHOP_ITEMS).map(([k,v])=>[k,v.n]);
+  if(c==='treat'||c==='pet')return Object.entries(PETS).map(([k,v])=>[k,v.n]);
+  if(c==='skin')return Object.entries(SKINS).map(([k,v])=>[k,v.n]);
+  if(c==='blade')return Object.entries(WPNS).map(([k,v])=>[k,v.n]);
+  if(c==='death')return deathKeys().map(k=>[k,deathName(k)]);
+  if(c==='badge')return BADGES;
+  return [];
+}
+function applyBadge(id,d){
+  const on=d>0,st=S.st=S.st||{};
+  switch(id){
+    case 'dall':S.seen=S.seen||{};if(on){for(const k of deathKeys())S.seen[k]=S.seen[k]||1}else S.seen={};break;
+    case 'drun':st.adr=on?1:0;st.bdk=on?Math.max(st.bdk||0,deathKeys().length):0;break;
+    case 'nd':st.nd=on?1:0;break;
+    case 'sp':st.sp=on?1:0;st.bsp=on?Math.min(st.bsp||12,12):0;break;
+    case 'bs':st.bs=on?Math.max(st.bs||0,10):0;break;
+    case 'pm':st.pm=on?1:0;break;
+    case 'ng':st.ng=on?1:0;st.bng=on?Math.max(st.bng||0,10):0;break;
+    case 'two':S.badges=S.badges||{good:0,bad:0};S.badges.good=on?Math.max(1,S.badges.good||0):0;S.badges.bad=on?Math.max(1,S.badges.bad||0):0;break;
+    case 'lair':st.lairs=st.lairs||{};if(on){for(let i=6;i<=25;i++)st.lairs[i]=1}else st.lairs={};break;
+    case 'bond':S.pb=S.pb||{};for(const k in PETS){const b=S.pb[k]||(S.pb[k]={nm:'',xp:0,fed:0,mood:50,lp:0,food:0});b.xp=on?Math.max(b.xp||0,1e9):0}break;
+    case 'item':st.items=st.items||{};for(const k of ['orb','fav','shield','phx','key']){if(on)st.items[k]=1;else delete st.items[k]}break;
+    case 'prun':st.fr=on?1:0;break;
+  }
+}
+function applyOne(c,k,n,d){
+  const h=shopS();
+  if(c==='item'){h.inv[k]=Math.max(0,(h.inv[k]||0)+d*n)}
+  else if(c==='treat'){S.pb=S.pb||{};const b=S.pb[k]||(S.pb[k]={nm:'',xp:0,fed:0,mood:50,lp:0,food:0});b.food=Math.min(20,Math.max(0,(b.food||0)+d*n))}
+  else if(c==='pet'){if(d>0)h.own['pet'+k]=1;else{delete h.own['pet'+k];if(h.eq.pet===k)h.eq.pet='crow'}}
+  else if(c==='skin'){if(d>0)h.own['skin'+k]=1;else{delete h.own['skin'+k];if(h.eq.skin===k)delete h.eq.skin}}
+  else if(c==='blade'){if(d>0)h.own['wpn'+k]=1;else{delete h.own['wpn'+k];if(h.eq.wpn===k)delete h.eq.wpn}}
+  else if(c==='death'){S.seen=S.seen||{};if(d>0)S.seen[k]=S.seen[k]||1;else delete S.seen[k]}
+  else if(c==='badge'){applyBadge(k,d)}
+}
+function applyOp(op){
+  const c=op.c,d=op.d>0?1:-1,n=Math.max(1,Math.min(99,Math.floor(Number(op.n)||1)));
+  const keys=op.k==='*'?optList(c).map(x=>x[0]):[op.k];
+  for(const k of keys)applyOne(c,k,n,d);
+}
+function opLabel(op){
+  const cat=(CATS.find(x=>x[0]===op.c)||[0,op.c])[1];
+  const it=op.k==='*'?'ALL':((optList(op.c).find(x=>x[0]===op.k)||[0,op.k])[1]);
+  return (op.d>0?'Gave ':'Took ')+((op.c==='item'||op.c==='treat')&&op.k!=='*'?op.n+' x ':'')+it+' ('+cat.replace(/^\S+\s/,'')+')';
+}
+function refreshGame(){const g=$('#gold');if(g)g.textContent='🪙 '+S.gold;try{shopGold()}catch(e){}try{shopRender()}catch(e){}}
+
+async function claimOps(){   // apply anything an admin queued for this account
+  try{
+    const {data,error}=await sb.rpc('claim_ops');
+    if(error||!Array.isArray(data)||!data.length)return;
+    let n=0;for(const op of data){try{applyOp(op);n++}catch(e){console.error(e)}}
+    save();refreshGame();
+    say('🎁 An admin updated your inventory ('+n+' change'+(n>1?'s':'')+')');
+  }catch(e){console.error(e)}
+}
+
+function fillItemKeys(){
+  const c=$('#it-cat').value;
+  $('#it-key').innerHTML='<option value="*">★ ALL</option>'+optList(c).map(x=>`<option value="${esc(x[0])}">${esc(x[1])}</option>`).join('');
+  $('#it-amt').style.display=(c==='item'||c==='treat')?'block':'none';
+}
+function renderItems(){
+  $('#adm-body').innerHTML=`<div style="font-weight:bold;color:#facc15;margin-bottom:6px">Give or take items</div>
+    <div style="font-size:12px;color:#a1a1aa;margin-bottom:6px">Blank name = you (instant). A player's name = queued, and it applies the next time they open the game logged in.</div>
+    <input id="it-target" class="acct-in" placeholder="Player name (blank = you)" maxlength="16" autocomplete="off" style="margin-bottom:6px">
+    <select id="it-cat" class="acct-in" style="margin-bottom:6px">${CATS.map(x=>`<option value="${x[0]}">${esc(x[1])}</option>`).join('')}</select>
+    <select id="it-key" class="acct-in" style="margin-bottom:6px"></select>
+    <input id="it-amt" class="acct-in" type="number" min="1" max="99" value="1" style="margin-bottom:6px" placeholder="Amount">
+    <button class="acct-b" data-act="it-give" style="background:#059669;margin-right:6px">Give</button>
+    <button class="acct-b" data-act="it-take" style="background:#b91c1c">Take</button>
+    <div style="font-size:11px;color:#71717a;margin-top:10px">Pets, skins, blades, deaths and badges are on/off (1 each). Run items and pet treats use the amount (treats max 20 per pet). The Scholar badge (solve every question) isn't included.</div>`;
+  fillItemKeys();
+}
+async function itemsDo(d){
+  const name=$('#it-target').value.trim(),c=$('#it-cat').value,k=$('#it-key').value;
+  const n=Math.max(1,Math.min(99,Math.floor(Number($('#it-amt').value)||1)));
+  const op={c,k,n,d};
+  const self=!name||(profile.username&&name.toLowerCase()===profile.username.toLowerCase());
+  if(self)return admin(()=>applyOp(op),opLabel(op)+' for you');
+  const {data,error}=await sb.rpc('admin_queue_op',{target_name:name,p_op:op});
+  if(error)return say('Failed: '+error.message);
+  if(data==='ok')say('📨 Queued for '+name+': '+opLabel(op));
+  else if(data==='no_such_player')say('No player named "'+name+'"');
+  else say('Could not queue that: '+data);
 }
 
 // ---------- start ----------
