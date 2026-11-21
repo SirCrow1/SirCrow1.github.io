@@ -2045,7 +2045,7 @@ ${G}
         const _c=(h,k)=>'#'+[1,3,5].map(i=>Math.max(0,Math.min(255,Math.round(parseInt(h.substr(i,2),16)*k))).toString(16).padStart(2,'0')).join('');
         const mkT=(w,f,tr,o)=>Object.assign({wall:[1,.93,1.08,.85].map(k=>_c(w,k)),hi:_c(w,1.7),mortar:_c(w,.38),floor:[1,.94,1.06,.84,1.14].map(k=>_c(f,k)),fhi:_c(f,1.6),fsh:_c(f,.45),trim:tr},o);
         THEMES.push(
-            mkT('#52302a','#3a2723','#b0602c',{lit:'255,120,40',mote:'ember',lava:1,fall:['#ffb42e','#ff4a12','#ffe58a','255,110,30']}),   // 6 lava forge (floor lava kills)
+            mkT('#52302a','#3a2723','#b0602c',{lit:'255,120,40',mote:'ember',lava:1,fall:['#ffb42e','#ff4a12','#ffe58a','255,110,30']}),   // 6 lava forge (floor lava is now harmless scenery)
             mkT('#45306c','#3a2958','#b27cf0',{lit:'210,90,255',mote:'dust',cl:{k:'spike',c:['#8a4be0','#e0b4ff']}}),   // 7 crystal lair
             mkT('#3f6a8e','#34587a','#9fd8ff',{lit:'120,200,255',mote:'snow',cl:{k:'spike',c:['#4aa8e0','#e8faff']},fall:['#9fe4ff','#3a8ed0','#eaffff','120,200,255']}),   // 8 frost cavern
             mkT('#2f5a30','#2a4a28','#8fe04a',{lit:'100,255,90',mote:'fly',cl:{k:'shroom',c:['#2f8a3a','#b6ff6a']},fall:['#b6ff3a','#2f9a1a','#eaffa0','150,255,60']}),   // 9 toxic swamp
@@ -2069,7 +2069,7 @@ ${G}
             mkT('#17131f','#0f0c16','#7a6aff',{lit:'110,90,255',mote:'wisp',bolt:1})   // 25 shadow realm
         );
         function lairPaint(g,P,rng,XM,used){
-            const L={cv:null,lit:P.lit||'255,150,50',cracks:[],falls:[],cl:[],pools:[],ly:0,kill:!!P.lava,mote:P.mote||'dust',bolt:!!P.bolt,fc:P.fall?P.fall[3]:'255,255,255',xm:XM,wb:WB};
+            const L={cv:null,lit:P.lit||'255,150,50',cracks:[],falls:[],cl:[],pools:[],ly:0,kill:false,mote:P.mote||'dust',bolt:!!P.bolt,fc:P.fall?P.fall[3]:'255,255,255',xm:XM,wb:WB};
             const q=(c,x,y,w,h)=>{g.fillStyle=c;g.fillRect(x,y,w,h)},E=(c,x,y,rx,ry,a,b)=>{g.fillStyle=c;g.beginPath();g.ellipse(x,y,rx,ry,0,a||0,b==null?7:b);g.fill()};
             const spot=w=>{for(let k=0;k<40;k++){const x=Math.round(w/2+14+rng()*(XM-w-28));if(used.every(u=>x+w/2+4<u[0]||x-w/2-4>u[1])){used.push([x-w/2,x+w/2]);return x}}return null};
             if(P.fall)for(let i=0;i<2;i++){const x=spot(44);if(x==null)continue;L.falls.push(x);   // something pours out of an iron grate in the wall
@@ -2220,7 +2220,7 @@ ${G}
 
         // ================= DEATH GALLERY =================
         let SAVED=null;   // whatever screen you were on (a live run, or the scorecard) while the Death Gallery page is open
-        const GN=[...Array(31).keys()].map(String);
+        const GN=[...Array(30).keys()].map(String);   // 30 main deaths: #30 'Lava Bath' was removed, so badges can still be completed
         const GNI=['☠️','🪓','🦷','🧪','👻','⛰️','🏹','🔥','❄️','⚡','🚚','🐊','💥','🕳️','⚔️','🌊','📦','👹','⚙️','🪳','🔨','🍲','🌀','🪆','🪦','🥩','🌳','☢️','⏳','🦠','🌋'];
         const GSK=['spike','axe','boulder','lava','ghost','fire','dart','gas','ice','fall'];
         const GSI={spike:'🗡️',axe:'🪓',boulder:'🪨',lava:'🌋',ghost:'👻',fire:'🔔',dart:'🎯',gas:'☁️',ice:'🧊',fall:'🕳️'};
@@ -5602,18 +5602,18 @@ const WPNS={flame:{n:'🔥 Flame Blade',p:350,d:'A roaring fire aura with embers
  tidal:{n:'🌊 Tidal Edge',p:450,d:'A deep-blue wavy blade with rolling water arcs.',c:'#4a7bff',rgb:'74,123,255'},
  holy:{n:'✨ Holy Lightbringer',p:550,d:'A white-gold blade crowned with a pulsing halo.',c:'#fff6d0',rgb:'255,246,208'},
  obsidian:{n:'🖤 Obsidian Fang',p:500,d:'A jagged black blade wreathed in grey mist.',c:'#8b8b9e',rgb:'139,139,158'}};
-const PETS={crow:{n:'🐦‍⬛ Crow',p:0,e:'🐦‍⬛',d:'A glossy black crow with layered feathers, a violet sheen and a fanned tail. +1 gold from every chest, barrel and crate.'},cat:{n:'🐈‍⬛ Cat',p:500,e:'🐈‍⬛',d:'A fluffy tabby cat with a banded, bushy tail and a furry belly. +3 gold every room you clear.'},dragon:{n:'🐉 Azure Dragon (Mount)',p:1200,e:'🐉',d:'Ride a towering, serpentine azure dragon with flaming spines and a glowing mane! +5 gold every room you clear.'},
- cerb:{n:'🐕 Cerberus (Mount)',p:1000,e:'🐕',d:'Ride a giant three-headed hellhound with a flaming spine and glowing eyes! +6 gold every room you clear.'},
- fox:{n:'🦊 Nine-Tailed Fox (Mount)',p:800,e:'🦊',d:'Ride a golden nine-tailed spirit fox with a white chest, a shaggy fur coat, a dark jeweled collar with gold rings and nine fluffy white-tipped fire tails! +5 gold every room you clear.'},
- tiger:{n:'🐅 White Tiger (Mount)',p:900,e:'🐅',d:'Ride a big, powerful ghost-white tiger with a thick fluffy coat, jet-black stripes and icy-blue eyes! +5 gold every room you clear.'},
- turtle:{n:'🐢 Treasure Turtle (Mount)',p:600,e:'🐢',d:'Ride a giant treasure-shell turtle! +2 gold from every chest, barrel and crate.'},
- horse:{n:'🐴 Flaming Black Horse (Mount)',p:900,e:'🐴',d:'Ride a flaming black warhorse, a Ghost Rider-style steed with a blazing mane, tail and hooves and a glowing red eye! +4 gold every room you clear.'},
- phoenix:{n:'🔥 Phoenix (Mount)',p:1100,e:'🔥',d:'Soar on a blazing phoenix! +4 gold every room you clear.'},
- frog:{n:'🐸 Ninja Frog (Mount)',p:700,e:'🐸',d:'Ride a giant Greninja-style ninja frog: deep blue skin, a cream chest, white joint spots, twin cream head fins and a long pink tongue that lashes out when you click! It bounces with every hop as you move. +3 gold every room you clear.'},
- raccoon:{n:'🦝 Sand Raccoon (Mount)',p:850,e:'🦝',d:"Ride a giant raccoon sculpted from desert sand, with grains forever blowing off his back! +4 gold every room you clear."},
- dodo:{n:'🦤 Giant Dodo (Mount)',p:650,e:'🦤',d:'Ride a gigantic, plump golden dodo in a cute little aviator cap that waddles through the dungeon! +3 gold every room you clear.'},
- trex:{n:'🦖 T-Rex (Mount)',p:1300,e:'🦖',d:'Ride a colossal, spiked tyrannosaurus rex that stomps through the dungeon and chomps your enemies with its massive jaws! +6 gold every room you clear.'},
- bison:{n:'🦬 Sky Bison (Mount)',p:1400,e:'🦬',d:'Ride a giant, fluffy white flying bison with six legs, curved horns, a flat beaver tail and a big brown arrow on his head! +5 gold every room you clear.'}};
+const PETS={crow:{n:'🐦‍⬛ Crow',p:0,e:'🐦‍⬛',d:'A black crow. +1 gold from every chest, barrel and crate.'},cat:{n:'🐈‍⬛ Cat',p:500,e:'🐈‍⬛',d:'A fluffy tabby cat. +3 gold every room you clear.'},dragon:{n:'🐉 Azure Dragon (Mount)',p:1200,e:'🐉',d:'A big blue dragon you can ride. +5 gold every room you clear.'},
+ cerb:{n:'🐕 Cerberus (Mount)',p:1000,e:'🐕',d:'A three-headed fire dog you can ride. +6 gold every room you clear.'},
+ fox:{n:'🦊 Nine-Tailed Fox (Mount)',p:800,e:'🦊',d:'A golden nine-tailed fox you can ride. +5 gold every room you clear.'},
+ tiger:{n:'🐅 White Tiger (Mount)',p:900,e:'🐅',d:'A white tiger you can ride. +5 gold every room you clear.'},
+ turtle:{n:'🐢 Treasure Turtle (Mount)',p:600,e:'🐢',d:'A treasure turtle you can ride. +2 gold from every chest, barrel and crate.'},
+ horse:{n:'🐴 Flaming Black Horse (Mount)',p:900,e:'🐴',d:'A flaming black horse you can ride. +4 gold every room you clear.'},
+ phoenix:{n:'🔥 Phoenix (Mount)',p:1100,e:'🔥',d:'A fire bird you can ride. +4 gold every room you clear.'},
+ frog:{n:'🐸 Ninja Frog (Mount)',p:700,e:'🐸',d:'A ninja frog you can ride. +3 gold every room you clear.'},
+ raccoon:{n:'🦝 Sand Raccoon (Mount)',p:850,e:'🦝',d:'A sand raccoon you can ride. +4 gold every room you clear.'},
+ dodo:{n:'🦤 Giant Dodo (Mount)',p:650,e:'🦤',d:'A big golden dodo you can ride. +3 gold every room you clear.'},
+ trex:{n:'🦖 T-Rex (Mount)',p:1300,e:'🦖',d:'A T-Rex you can ride. +6 gold every room you clear.'},
+ bison:{n:'🦬 Sky Bison (Mount)',p:1400,e:'🦬',d:'A flying white bison you can ride. +5 gold every room you clear.'}};
 function petGold(){const p=shopS().eq.pet;return p=='crow'?1:p=='turtle'?2:0}
 function shopS(){if(!S.shop)S.shop={};const h=S.shop;h.inv=h.inv||{};h.own=h.own||{};h.eq=h.eq||{};if(h.own.petrfrog){delete h.own.petrfrog;h.own.petraccoon=1}if(h.eq.pet=='rfrog')h.eq.pet='raccoon';return h}
 let shopTab='items',shopPaused=0;
@@ -5737,7 +5737,28 @@ const _ds=drawSprite;drawSprite=function(){const h=shopS(),sk=SKINS[h.eq.skin],w
   ctx.fillStyle='#ef4444';ctx.beginPath();ctx.moveTo(-1,-2);ctx.quadraticCurveTo(-3+w,-12,-10+w*2,-11);ctx.quadraticCurveTo(-4,-7,0,-1);ctx.fill();
   ctx.fillStyle='#fde68a';ctx.fillRect(-1,-4,2,2);ctx.restore()}};
 /* BLACK HORSE: you ride it. It is drawn under the knight and the knight is lifted onto the saddle */
-function horseDraw(t,mv,over,part){part=part||'bh';const PB=part.indexOf('b')>=0,PH=part.indexOf('h')>=0;const el=(x,y,rx,ry,c,r)=>{ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,y,rx,ry,r||0,0,6.3);ctx.fill()},tri=(a,b,c2,d,e,f,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c2,d);ctx.lineTo(e,f);ctx.fill()};
+/* FLAME CHARGE look: while window.HORSEFIRE>0 the horse's black coat turns glowing orange and a moving fire texture covers its body and head (on top of its normal flames). It fades back to black after the move. */
+function hfTint(c,f){let r,g,b,a=1,m;if(m=/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(c)){let h=m[1];if(h.length==3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];r=parseInt(h.slice(0,2),16);g=parseInt(h.slice(2,4),16);b=parseInt(h.slice(4,6),16)}
+ else if(m=/^rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:[,\s/]+([\d.]+))?/i.exec(c)){r=+m[1];g=+m[2];b=+m[3];if(m[4]!=null)a=+m[4]}else return c;
+ const l=(.3*r+.59*g+.11*b)/255,w=f*(l<.6?.97:.55),tr=255,tg=125+l*110,tb=20+l*50;   // dark coat -> deep orange, bright bits stay bright
+ return 'rgba('+Math.round(r+(tr-r)*w)+','+Math.round(g+(tg-g)*w)+','+Math.round(b+(tb-b)*w)+','+a+')'}
+function hfTexture(t,f,x0,x1,y0,y1,n,lean,scl){lean=lean||0;scl=scl||1;ctx.save();ctx.globalCompositeOperation='lighter';
+ for(let k=0;k<n;k++){const r1=Math.abs(Math.sin(k*91.7)),r2=Math.abs(Math.sin(k*47.3+1)),r3=Math.abs(Math.sin(k*12.9+2)),u=(t*(.9+r3*.8)+r2)%1,px=x0+r1*(x1-x0),py=y1-u*(y1-y0)*1.25,sz=(2.2+r3*3.2)*(1-u*.6)*scl,al=.75*f*Math.sin(Math.PI*Math.min(1,u*1.05));
+  for(const [c,q] of [['255,70,0',1],['255,170,30',.62],['255,235,120',.3]]){ctx.fillStyle='rgba('+c+','+al+')';ctx.beginPath();ctx.moveTo(px-sz*.5*q,py);ctx.quadraticCurveTo(px-sz*.2*q+Math.sin(t*9+k)*.8-lean*sz*.8*q,py-sz*1.6*q,px+Math.sin(t*7+k)*1-lean*sz*1.7*q,py-sz*2.6*q);ctx.quadraticCurveTo(px+sz*.5*q-lean*sz*.6*q,py-sz*1.1*q,px+sz*.5*q,py);ctx.closePath();ctx.fill()}}
+ ctx.restore()}
+function horseDraw(t,mv,over,part){if(window.HORSEFIRE_T&&performance.now()>window.HORSEFIRE_T)window.HORSEFIRE=0;   // safety: if the move is cut short the horse still goes back to normal
+ const HF=Math.max(0,Math.min(1,window.HORSEFIRE||0));if(!HF)return horseDraw0(t,mv,over,part);
+ part=part||'bh';const PB=part.indexOf('b')>=0,PH=part.indexOf('h')>=0,P=CanvasRenderingContext2D.prototype,fd=Object.getOwnPropertyDescriptor(P,'fillStyle'),sd=Object.getOwnPropertyDescriptor(P,'strokeStyle');
+ Object.defineProperty(ctx,'fillStyle',{configurable:true,get(){return fd.get.call(ctx)},set(v){fd.set.call(ctx,typeof v=='string'?hfTint(v,HF):v)}});
+ Object.defineProperty(ctx,'strokeStyle',{configurable:true,get(){return sd.get.call(ctx)},set(v){sd.set.call(ctx,typeof v=='string'?hfTint(v,HF):v)}});
+ try{horseDraw0(t,mv,over,part)}finally{delete ctx.fillStyle;delete ctx.strokeStyle}   // always restore the real colour setters
+ ctx.save();ctx.beginPath();
+ if(PB)ctx.ellipse(0,-6,26,10,0,0,6.3);
+ if(PH){ctx.moveTo(12.3,-12.9);ctx.lineTo(21.7,-7.1);ctx.lineTo(32.7,-25.1);ctx.lineTo(23.3,-30.9);ctx.closePath();ctx.moveTo(42.2,-32);ctx.ellipse(33,-32,9.2,5.2,.5,0,6.3);ctx.moveTo(45.7,-28);ctx.ellipse(40,-28,5.7,4.2,.5,0,6.3)}
+ ctx.globalCompositeOperation='lighter';ctx.fillStyle='rgba(255,110,10,'+.2*HF+')';ctx.fill();   // the whole body glows like a hot coal
+ ctx.clip();if(PB)hfTexture(t,HF,-26,26,-16,4,34);if(PH)hfTexture(t,HF,12,46,-38,-8,26);ctx.restore();
+ if(PH){ctx.save();ctx.shadowColor='#ff7a00';ctx.shadowBlur=14*HF;hfTexture(t,HF,-38,46,-34,12,34,1,1.3);ctx.restore()}}   // HUMAN TORCH: flames pour off the entire horse, streaming back
+function horseDraw0(t,mv,over,part){part=part||'bh';const PB=part.indexOf('b')>=0,PH=part.indexOf('h')>=0;const el=(x,y,rx,ry,c,r)=>{ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,y,rx,ry,r||0,0,6.3);ctx.fill()},tri=(a,b,c2,d,e,f,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c2,d);ctx.lineTo(e,f);ctx.fill()};
  const g=14,ph=mv?t*13:0;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
  const fl=(x,y,s,sd,lean)=>{const f=Math.sin(t*12+sd*1.7),h=s*(1+.3*f),w=s*.42,l=(lean||0)*s+Math.sin(t*8+sd)*s*.22;for(const [c,k] of [['#ff3d00',1],['#ff9d00',.68],['#ffe45a',.4]]){ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x-w*k,y);ctx.quadraticCurveTo(x-w*k*.5+l*.2*k,y-h*k*.55,x+l*k,y-h*k);ctx.quadraticCurveTo(x+w*k*.5+l*.2*k,y-h*k*.5,x+w*k,y);ctx.closePath();ctx.fill()}};   // one licking flame tongue (Ghost Rider's flaming steed)
  if(!over&&PB){ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(0,g+1,34,5,0,0,6.3);ctx.fill()}
@@ -5827,6 +5848,13 @@ let _mtk=null;function mtSync(){const b=document.getElementById('mtb');if(!b)ret
 {const b=document.getElementById('mtb');if(b){b.addEventListener('click',e=>{e.stopPropagation();mtToggle();b.blur()});b.addEventListener('mousedown',e=>e.stopPropagation())}}
 addEventListener('keydown',e=>{if(e.code=='KeyV'&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!/INPUT|TEXTAREA|SELECT/.test((e.target&&e.target.tagName)||'')){mtToggle()}});
 {const _dr=draw;draw=function(now){_dr(now);mtSync()}}
+/* ===== PET KEY HINTS: sit right beside the Dismount button so players know which key does what (F feed, P pet, Q special move). They are clickable too. ===== */
+{const mtb=document.getElementById('mtb');if(mtb&&mtb.parentNode){const box=document.createElement('div');box.id='pkeys';box.style.cssText='display:none;bottom:.5rem;left:.5rem';box.className='absolute z-20 flex gap-1';
+ const mk=(k,label,code,tip)=>{const b=document.createElement('button');b.type='button';b.title=tip;b.className='px-2 py-1 rounded-md bg-black/70 border border-amber-600/70 text-amber-300 text-xs font-mono hover:bg-amber-900/60';
+  b.innerHTML='<span style="display:inline-block;min-width:1.1em;text-align:center;padding:0 .25em;margin-right:.35em;border:1px solid currentColor;border-radius:4px;color:#fde68a">'+k+'</span>'+label;
+  b.addEventListener('mousedown',e=>e.stopPropagation());b.addEventListener('click',e=>{e.stopPropagation();dispatchEvent(new KeyboardEvent('keydown',{code:code,key:k.toLowerCase(),bubbles:true}));b.blur()});return b};
+ box.append(mk('F','Feed','KeyF','Feed your pet (F)'),mk('P','Pet','KeyP','Pet your pet (P)'),mk('Q','Special move','KeyQ',"Use your pet's special move (Q), one per run"));
+ mtb.parentNode.appendChild(box);let _pk=null;const _dp=draw;draw=function(now){_dp(now);try{const p=shopS().eq.pet,on=!!(G&&!G.gal&&G.state!='dying'&&G.state!='secretDie'&&p&&PETS[p]),vis=mtb.style.display!='none';box.style.display=on?'flex':'none';if(on){const l=vis?(mtb.offsetLeft+mtb.offsetWidth+6):8;if(l!==_pk){_pk=l;box.style.left=l+'px'}}}catch(e){}}}}
 function weaponDraw(k,t){const P=(c,pts)=>{ctx.fillStyle=c;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill()};ctx.lineJoin='round';
  ctx.fillStyle='#3b2a1a';ctx.fillRect(-1.5,-2,3,10);   // grip
  if(k=='flame'){P('#7a1a0a',[[-8,-2],[8,-2],[8,-5],[-8,-5]]);ctx.shadowColor='#ff6a1a';ctx.shadowBlur=10;const w=Math.sin(t*9)*1.5;P('#ff5a14',[[-4,-5],[-3+w,-18],[-5,-26+w],[0,-40],[5,-26-w],[3-w,-18],[4,-5]]);P('#ffb02e',[[-2,-5],[-1,-17],[0,-33],[1,-17],[2,-5]]);P('#fff3b0',[[-.8,-6],[0,-22],[.8,-6]])}
@@ -5860,7 +5888,8 @@ function petAtkStart(k){const sw=G.sw>0,was=PT.psw>0;PT.psw=G.sw;if(PT.atk)retur
  else if(sw&&!was){let b=null,bd=230;(G.tg||[]).forEach(o=>{const d=Math.hypot(o.x-G.hx,o.y-G.hy);if(d<bd){bd=d;b=o}});if(b)tg={x:b.x,y:b.y-16,dur:.55}}
  if(tg){PT.atk={x:tg.x,y:tg.y,t:0,dur:tg.dur,s:tg.x>=PT.x?1:-1,hit:0};petSnd(k)}}
 function petSnd(k){try{SND.pet(k)}catch(e){}}
-function mLunge(F,sc){const a=PT.mA;return a?F*Math.sin(Math.PI*Math.min(1,a.t/a.dur))*16*sc:0}
+function mChargeDx(a){const u=Math.min(1,a.t/a.dur),sm=v=>v*v*(3-2*v);let e;if(a.walk)e=u<.5?sm(u/.5):u<.62?1:1-sm((u-.62)/.38);else e=u<.4?Math.pow(u/.4,1.6):u<.55?1:1-Math.pow((u-.55)/.45,.8);return a.dx*e}   // out to the demon, hold for the hit, back again
+function mLunge(F,sc){const a=PT.mA;return a?(a.dx!=null?mChargeDx(a):F*Math.sin(Math.PI*Math.min(1,a.t/a.dur))*16*sc):0}
 function mountAtkTick(k,dt){const sw=G.sw>0,was=PT.psw>0;PT.psw=G.sw;const sk=(G.sk&&typeof G.sk=='object'&&isFinite(G.sk.tx))?G.sk:null;let go=0;
  if(sk&&PT.lsk!==sk){PT.lsk=sk;go=1}else if(sw&&!was)go=1;
  if(go){PT.mA={t:0,dur:.5};petSnd(k)}
@@ -6615,20 +6644,20 @@ const ST=()=>{const s=S.st;if(!s.pr)s.pr={};if(!s.ab)s.ab={};if(typeof s.rd!='nu
 
 /* ---------------- PET ABILITIES: every animal wipes out ALL the wrong demons (the right answer is spared) ---------------- */
 const AB={
- dragon:{n:'Inferno Breath',ic:'🐉',c:'255,120,30',d:'It breathes a giant jet of fire from its mouth and incinerates every wrong demon.'},
- bison:{n:'Gale Blast',ic:'🦬',c:'200,235,255',d:'A roaring wind blast blows every wrong demon away.'},
- fox:{n:'Nine-Tail Lasers',ic:'🦊',c:'255,230,60',d:'Its nine tails charge up and fire nine yellow lasers that vaporize every wrong demon.'},
- raccoon:{n:'Sandblast',ic:'🦝',c:'230,195,120',d:'A desert sandblast scours every wrong demon to dust.'},
- crow:{n:'Murder of Crows',ic:'🐦‍⬛',c:'170,140,255',d:'A flock of crows swoops in, circles and tears every wrong demon apart.'},
- frog:{n:'Hydro Cannon',ic:'🐸',c:'80,170,255',d:'It spits a giant jet of water from its mouth and blasts every wrong demon away.'},
- cat:{n:'Phantom Claws',ic:'🐈‍⬛',c:'255,150,230',d:'Spectral claws shred every wrong demon.'},
- turtle:{n:'Shell Cannon',ic:'🐢',c:'110,230,140',d:'Launches its shell like a cannonball and smashes every wrong demon.'},
- horse:{n:'Meltdown',ic:'🐴',c:'255,90,30',d:'Turns into living fire and melts every wrong demon.'},
- tiger:{n:'Absolute Zero',ic:'🐅',c:'170,225,255',d:'Freezes every wrong demon solid, then shatters them.'},
- cerb:{n:'Triple Darkness',ic:'🐕',c:'180,80,255',d:'Three beams of darkness annihilate every wrong demon.'},
- phoenix:{n:'Cleansing Fire',ic:'🔥',c:'255,170,50',d:'A phoenix firestorm burns every wrong demon to ash.'},
- trex:{n:'Devour',ic:'🦖',c:'160,220,70',d:'Eats every wrong demon. Nom nom nom.'},
- dodo:{n:'Egg Bomb Barrage',ic:'🦤',c:'255,225,90',d:'Lays golden eggs that fly out and explode on every wrong demon.'}
+ dragon:{n:'Inferno Breath',ic:'🐉',c:'255,120,30',d:'Breathes fire at each wrong demon, one at a time.'},
+ bison:{n:'Gale Blast',ic:'🦬',c:'200,235,255',d:'Blows each wrong demon away, one at a time.'},
+ fox:{n:'Nine-Tail Lasers',ic:'🦊',c:'255,230,60',d:'Fires yellow lasers from its tails at each wrong demon, one at a time.'},
+ raccoon:{n:'Sandblast',ic:'🦝',c:'230,195,120',d:'Blasts each wrong demon with sand, one at a time.'},
+ crow:{n:'Murder of Crows',ic:'🐦‍⬛',c:'170,140,255',d:'Crows attack each wrong demon, one at a time.'},
+ frog:{n:'Hydro Cannon',ic:'🐸',c:'80,170,255',d:'Sprays water at each wrong demon, one at a time.'},
+ cat:{n:'Phantom Claws',ic:'🐈‍⬛',c:'255,150,230',d:'Slashes each wrong demon, one at a time.'},
+ turtle:{n:'Shell Cannon',ic:'🐢',c:'110,230,140',d:'Shoots its shell at each wrong demon, one at a time.'},
+ horse:{n:'Flame Charge',ic:'🐴',c:'255,90,30',d:'Catches fire and charges into each wrong demon, one at a time.'},
+ tiger:{n:'Absolute Zero',ic:'🐅',c:'170,225,255',d:'Freezes each wrong demon and shatters it, one at a time.'},
+ cerb:{n:'Triple Darkness',ic:'🐕',c:'180,80,255',d:'Shoots dark beams at each wrong demon, one at a time.'},
+ phoenix:{n:'Cleansing Fire',ic:'🔥',c:'255,170,50',d:'Sweeps a wall of fire across the room and burns the wrong demons.'},
+ trex:{n:'Devour',ic:'🦖',c:'160,220,70',d:'Walks up to each wrong demon and eats it, one at a time.'},
+ dodo:{n:'Egg Bomb Barrage',ic:'🦤',c:'255,225,90',d:'Throws exploding eggs at each wrong demon, one at a time.'}
 };
 // show the ability in the Armory's pet list
 ALL.forEach(k=>{const a=AB[k];if(a&&PETS[k].d.indexOf('✨')<0)PETS[k].d+=' ✨ Ability (once per run, shared by all your pets): '+a.n+' - '+a.d+' Only the right answer survives.'});
@@ -6771,74 +6800,77 @@ const SPX=(()=>{
  /* a clone that travels through a list of points: returns the state at time t */
  const lerpArc=(a,b,q,arc)=>({x:a.x+(b.x-a.x)*q,y:a.y+(b.y-a.y)*q-Math.sin(q*Math.PI)*arc});
 
+  /* charge(): the mounted animal itself travels to the demon (walk=1: slow stomp, walk=0: fast gallop); an unmounted pet dashes there like a normal attack */
+  const charge=(p,delay,dur,walk)=>setTimeout(()=>{try{if(mountedNow()){const f=frame(walk?'trex':'horse'),dir=p.x>=f.x?1:-1;PT.mA={t:0,dur,dx:p.x-f.x-dir*(walk?50:44)*f.s*.9,walk:walk}}else if(!PT.atk)PT.atk={x:p.x,y:p.y,t:0,dur:Math.max(.3,dur*.6),s:p.x>=PT.x?1:-1,hit:0}}catch(e){}},Math.max(0,delay)*1000);
   const lunge=(k,p,delay,dur)=>setTimeout(()=>{try{if(mountedNow()){if(!PT.mA)PT.mA={t:0,dur:.5}}else if(!PT.atk)PT.atk={x:p.x,y:p.y,t:0,dur:dur||.3,s:p.x>=PT.x?1:-1,hit:0}}catch(e){}},Math.max(0,delay)*1000);
  /* ================= one show per animal. each returns when (seconds) each wrong demon dies ================= */
  const SC={
   dragon:C=>{const m=()=>C.P(62,-18),ts=[];flash('255,140,40',.35,1.2);dim('40,10,0',.35,1.8);
-   C.D.forEach((p,i)=>{const d=.2+i*.34;jet(m,p,{dur:.8,delay:d,cols:['255,200,70','255,110,25','255,60,10'],core:'255,250,205',w:22,n:90,spread:46,sz:9,wob:7});
+   C.D.forEach((p,i)=>{const d=.2+i*.95;jet(m,p,{dur:.8,delay:d,cols:['255,200,70','255,110,25','255,60,10'],core:'255,250,205',w:22,n:90,spread:46,sz:9,wob:7});
     parts(p.x,p.y,d+.18,{n:26,cols:['255,220,90','255,120,30','255,70,20'],spd:150,life:.9,sz:7,grav:-90,up:70,grow:.6});boom(p.x,p.y,d+.2,'255,140,40',1);fire(p,d+.2,1);ts.push(d+.35)});return ts},
   bison:C=>{const m=()=>C.P(46,2),ts=[];flash('220,245,255',.3,.9);
-   C.D.forEach((p,i)=>{const d=.15+i*.14;jet(m,p,{dur:.85,delay:d,cols:['255,255,255','190,235,255','150,215,255'],core:'255,255,255',w:12,n:130,spread:90,sz:11,wob:16,streak:1});
+   C.D.forEach((p,i)=>{const d=.15+i*.7;jet(m,p,{dur:.85,delay:d,cols:['255,255,255','190,235,255','150,215,255'],core:'255,255,255',w:12,n:130,spread:90,sz:11,wob:16,streak:1});
     swirl(p,d+.3,.9,'230,250,255');parts(p.x,p.y,d+.3,{n:16,cols:['255,255,255','200,235,255'],spd:320,life:.8,sz:8,kind:'streak'});cloud(p,d+.45,.7,'230,240,250',55);ts.push(d+.5)});return ts},
   fox:C=>{const tipL=i=>{const t=now(),a=3.0+i*.27+Math.sin(t*2.4+i*.8)*.05,Lg=34+(i%2)*7;return C.P(-10+Math.cos(a)*Lg,-21+Math.sin(a)*Lg)},ts=C.D.map(()=>0),n=C.D.length;
    flash('255,235,90',.4,.9);dim('40,25,0',.25,1.6);
-   add(1.3,u=>{lite();const e=Math.sin(Math.PI*Math.min(1,u*1.2));for(let i=0;i<9;i++){const q=tipL(i);glow(q.x,q.y,26*e,'255,225,40',.9*e)}});   // all nine tails glow
-   for(let i=0;i<9;i++){const j=i%n,p=C.D[j],d=.3+i*.07,off={x:((i/n|0)%3-1)*16,y:(i%3-1)*10};
+   add(.5+n*.85+.8,u=>{lite();const e=Math.sin(Math.PI*Math.min(1,u*1.2));for(let i=0;i<9;i++){const q=tipL(i);glow(q.x,q.y,26*e,'255,225,40',.9*e)}});   // all nine tails glow
+   for(let i=0;i<9;i++){const j=i%n,p=C.D[j],d=.3+j*.85+Math.floor(i/n)*.14,off={x:((i/n|0)%3-1)*16,y:(i%3-1)*10};
     beam(()=>tipL(i),{x:p.x+off.x,y:p.y+off.y},{delay:d,dur:.55,w:6,col:'255,215,40',core:'255,255,225'});
     parts(p.x+off.x,p.y+off.y,d+.1,{n:8,cols:['255,240,120','255,255,255','255,200,40'],spd:130,life:.6,sz:3.5,kind:'streak'});ring(p.x+off.x,p.y+off.y,'255,225,60',60,.5,5,d+.1);ts[j]=Math.max(ts[j],d+.2)}
    return ts},
   raccoon:C=>{const m=()=>C.P(34,-26),tl=()=>C.P(-22,0),ts=[];flash('230,195,120',.28,1);dim('60,40,10',.25,2);
    add(1.5,(u,t)=>{const q=tl();ctx.fillStyle='rgb('+(t*20%2<1?'230,195,120':'200,160,90')+')';for(let j=0;j<6;j++){const a=(t*5+j*.17)%1;ctx.globalAlpha=1-a;ctx.beginPath();ctx.arc(q.x-a*30-j,q.y-a*40+Math.sin(j+t*9)*5,3+a*5,0,TAU);ctx.fill()}});   // its tail whips the sand up
-   C.D.forEach((p,i)=>{const d=.2+i*.2;jet(m,p,{dur:.85,delay:d,cols:['230,195,120','200,160,90','245,220,160'],core:'255,240,200',w:11,n:150,spread:80,sz:5,wob:12});
+   C.D.forEach((p,i)=>{const d=.2+i*.8;jet(m,p,{dur:.85,delay:d,cols:['230,195,120','200,160,90','245,220,160'],core:'255,240,200',w:11,n:150,spread:80,sz:5,wob:12});
     swirl(p,d+.3,1.1,'230,195,120');cloud(p,d+.5,.9,'205,170,100',60);parts(p.x,p.y,d+.4,{n:24,cols:['230,195,120','200,160,90'],spd:130,life:.9,sz:3.5,grav:60});ts.push(d+.62)});return ts},
   crow:C=>{const ts=[];dim('25,10,50',.45,2,0);
-   C.D.forEach((p,i)=>{const d=i*.2,T=1.3,fl=[];for(let j=0;j<6;j++)fl.push({sx:R()<.5?-80:880,sy:10+R()*170,ph:R()*TAU,r:22+R()*22,w:(R()<.5?-1:1)*(8+R()*4),o:R()*.12});
+   C.D.forEach((p,i)=>{const d=i*.85,T=1.3,fl=[];for(let j=0;j<6;j++)fl.push({sx:R()<.5?-80:880,sy:10+R()*170,ph:R()*TAU,r:22+R()*22,w:(R()<.5?-1:1)*(8+R()*4),o:R()*.12});
     add(T+.2,(u,t)=>{fl.forEach(c=>{const pos=tt=>{const q=tt/T;if(q<.38){const e=ez(cl(q/.38));return{x:c.sx+(p.x+Math.cos(c.ph)*c.r-c.sx)*e,y:c.sy+(p.y+Math.sin(c.ph)*c.r*.6-c.sy)*e-Math.sin(e*Math.PI)*40}}
      const a0=c.ph+c.w*(T*.4);if(q<.78){const a=c.ph+c.w*(tt-T*.38);return{x:p.x+Math.cos(a)*c.r,y:p.y+Math.sin(a)*c.r*.6}}
      const e=ez(cl((q-.78)/.22));return{x:p.x+Math.cos(a0)*c.r+(c.sx<0?-1:1)*e*700,y:p.y+Math.sin(a0)*c.r*.6-e*200}};
      const tt=Math.max(0,t-c.o);if(tt>T)return;const a=pos(tt),b=pos(Math.min(T,tt+.03));model('crow',a.x,a.y,1.5,b.x>=a.x?1:-1,now()+c.ph,0,1)})},d);
     parts(p.x,p.y,d+T*.4,{n:16,cols:['40,30,70','90,70,160','20,15,40'],spd:150,life:1.1,sz:5,grav:60,kind:'feather',dark:1});cloud(p,d+T*.4,.8,'30,15,55',50);ring(p.x,p.y,'170,140,255',90,.7,5,d+T*.42);ts.push(d+T*.5)});return ts},
   frog:C=>{const m=()=>C.P(28,-11),ts=[];flash('90,170,255',.3,.9);
-   C.D.forEach((p,i)=>{const d=.2+i*.3;jet(m,p,{dur:.7,delay:d,cols:['120,200,255','70,150,255','230,250,255'],core:'240,252,255',w:20,n:100,spread:30,sz:6,wob:4,grav:140});
+   C.D.forEach((p,i)=>{const d=.2+i*.9;jet(m,p,{dur:.7,delay:d,cols:['120,200,255','70,150,255','230,250,255'],core:'240,252,255',w:20,n:100,spread:30,sz:6,wob:4,grav:140});
     parts(p.x,p.y,d+.25,{n:30,cols:['120,200,255','255,255,255','70,150,255'],spd:170,life:1,sz:5,grav:330,up:110});cloud(p,d+.25,.7,'170,215,255',55);ring(p.x,p.y,'160,220,255',110,.7,7,d+.25);ts.push(d+.32)});return ts},
-  horse:C=>{const t0=.3,seg=.34,n=C.D.length,ts=[],T=t0+seg*n+.9,mouth=()=>C.P(46,-32);
-   flash('255,110,30',.5,1);dim('50,10,0',.3,T);
-   add(T,(u,t)=>{const f=frame('horse'),e=Math.min(cl(t/.3),cl((T-t)/.4));lite();   // the real horse is swallowed by living fire
-    for(let j=0;j<22;j++){const fx=f.x+f.d*f.s*(-42+j*4+Math.sin(now()*9+j)*3),fy=f.y+f.s*(-8-(j%4)*9)-((now()*80+j*17)%38);glow(fx,fy,(15+(j%3)*6)*e,j%2?'255,120,30':'255,200,70',.75*e)}
-    const m=mouth();glow(m.x,m.y,50*e,'255,90,20',.6*e)});
-   C.D.forEach((p,i)=>{const t=t0+seg*i;lunge('horse',p,t,.3);jet(mouth,p,{dur:.5,delay:t,cols:['255,200,70','255,100,25','255,50,10'],core:'255,245,190',w:16,n:70,spread:36,sz:8,wob:8});
-    parts(p.x,p.y+10,t+.2,{n:26,cols:['255,120,30','255,60,20','255,200,70'],spd:80,life:1,sz:6,grav:380,up:40});fire(p,t+.2,1.1);boom(p.x,p.y,t+.2,'255,90,20',1);ts.push(t+.3)});return ts},
+  horse:C=>{const t0=.25,seg=.8,n=C.D.length,ts=[],T=t0+seg*n+.5;   // FLAMING CHARGE: the horse catches fire and gallops through every demon
+   flash('255,110,30',.45,.8);dim('50,10,0',.25,T);
+   add(T,(u,t)=>{const f=frame('horse'),off=(mountedNow()&&PT.mA&&PT.mA.dx!=null)?mChargeDx(PT.mA):0,e=Math.min(cl(t/.25),cl((T-t)/.35));window.HORSEFIRE=e;window.HORSEFIRE_T=performance.now()+400;lite();   // living fire wraps the real horse and follows it; HORSEFIRE turns its skin orange + adds the fire texture
+    for(let j=0;j<34;j++){const fx=f.x+off+f.d*f.s*(-48+j*3+Math.sin(now()*11+j)*3),fy=f.y+f.s*(-4-(j%5)*8)-((now()*95+j*17)%42);glow(fx,fy,(15+(j%3)*6)*e,j%2?'255,120,30':'255,200,70',.8*e)}
+    glow(f.x+off+f.d*f.s*46,f.y-f.s*30,52*e,'255,90,20',.6*e);glow(f.x+off,f.y-f.s*24,70*e,'255,140,40',.35*e)});
+   add(.05,()=>{window.HORSEFIRE=0},T+.15);   // after the move the horse changes back to black
+   C.D.forEach((p,i)=>{const t=t0+seg*i,hit=t+seg*.9*.42;charge(p,t,seg*.9,0);
+    parts(p.x,p.y+10,hit,{n:30,cols:['255,120,30','255,60,20','255,200,70'],spd:90,life:1,sz:6,grav:380,up:40});fire(p,hit,1.1);boom(p.x,p.y,hit,'255,90,20',1);ring(p.x,p.y,'255,140,40',110,.45,6,hit);ts.push(hit+.04)});return ts},
   tiger:C=>{const m=()=>C.P(35,-25),ts=[];flash('150,215,255',.35,.9);dim('10,30,60',.3,1.9);
-   C.D.forEach((p,i)=>{const d=.2+i*.3,tf=d+.28,hold=.62;jet(m,p,{dur:.55,delay:d,cols:['190,235,255','130,200,255','255,255,255'],core:'255,255,255',w:18,n:90,spread:50,sz:6,wob:6});
+   C.D.forEach((p,i)=>{const d=.2+i*1,tf=d+.28,hold=.62;jet(m,p,{dur:.55,delay:d,cols:['190,235,255','130,200,255','255,255,255'],core:'255,255,255',w:18,n:90,spread:50,sz:6,wob:6});
     parts(p.x,p.y,d+.1,{n:14,cols:['230,250,255','160,215,255'],spd:70,life:.9,sz:4,grav:20});ice(p,tf,hold);
     parts(p.x,p.y,tf+hold,{n:26,cols:['200,240,255','255,255,255','140,200,255'],spd:230,life:1,sz:8,grav:420,up:70,kind:'shard'});ring(p.x,p.y,'230,250,255',130,.6,6,tf+hold);ts.push(tf+hold)});return ts},
   cerb:C=>{const hd=[[47,-60],[63,-45],[64.5,-28]],ts=[];dim('20,0,40',.55,2.2);
    add(.45,u=>{lite();hd.forEach(h=>{const q=C.P(h[0],h[1]);glow(q.x,q.y,34*u,'170,80,255',.85*u)})});   // three mouths charge
-   C.D.forEach((p,i)=>{const j=i%3,d=.35+Math.floor(i/3)*.4+j*.06;beam(()=>C.P(hd[j][0],hd[j][1]),p,{delay:d,dur:.75,w:20,col:'170,80,255',dark:1});vortex(p,d+.1,.7);
+   C.D.forEach((p,i)=>{const j=i%3,d=.35+i*.75;beam(()=>C.P(hd[j][0],hd[j][1]),p,{delay:d,dur:.75,w:20,col:'170,80,255',dark:1});vortex(p,d+.1,.7);
     parts(p.x,p.y,d+.2,{n:14,cols:['20,5,40','150,70,230'],spd:110,life:.9,sz:5,grav:-30,dark:1});ring(p.x,p.y,'180,90,255',130,.8,7,d+.2);ts.push(d+.36)});return ts},
   phoenix:C=>{const T=1.5,ts=[],beak=()=>C.P(20,-1.3);flash('255,190,80',.55,1.1);dim('60,15,0',.3,2.2);
    add(T+.4,(u,t)=>{const e=Math.min(cl(t/.25),cl((T+.4-t)/.3)),m=beak(),f=frame('phoenix');lite();glow(f.x,f.y-14*f.s,70*f.s*.5*e,'255,120,30',.5*e);glow(m.x,m.y,40*e,'255,220,120',.8*e)});   // the real phoenix blazes and screams
    add(T,u=>{const x=WW*ez(u)*1.15-40;lite();for(let j=0;j<26;j++){const y=30+j*11+Math.sin(j*1.7+now()*8)*6;glow(x,y,46,'255,140,40',.5);ctx.strokeStyle='rgba(255,'+(j%2?150:210)+',70,.6)';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-90-(j%5)*14,y+Math.sin(j+now()*6)*5);ctx.stroke()}glow(x,HH/2,120,'255,230,150',.35)});   // a wall of cleansing fire sweeps the room
    jet(beak,{x:WW,y:150},{dur:T,delay:0,cols:['255,200,70','255,110,25','255,60,10'],core:'255,250,205',w:24,n:100,spread:70,sz:9,wob:10});
    C.D.forEach(p=>{const t=Math.max(.1,(p.x/(WW*1.15)+0)*T*.82);boom(p.x,p.y,t,'255,200,90',1.2);fire(p,t,1.1);cloud(p,t+.15,1,'70,60,55',55);parts(p.x,p.y,t,{n:26,cols:['255,170,50','255,90,20','90,80,75'],spd:140,life:1.1,sz:6,up:80,grav:-30});ts.push(t+.05)});return ts},
-  trex:C=>{const seg=.5,n=C.D.length,ts=[],mouth=()=>C.P(50,-41),T=.3+n*seg+.4,arr=i=>.4+i*seg;
+  trex:C=>{const seg=1.15,n=C.D.length,ts=[],mouth=()=>C.P(50,-41),T=.3+n*seg+.6,st=i=>.2+i*seg,arr=i=>st(i)+seg*.95*.5;   // it WALKS up to each demon, then bites
    add(T,(u,t)=>{let o=0;for(let i=0;i<n;i++){const a=arr(i),d=t-a;if(d>-.3&&d<0)o=Math.max(o,ez(cl((t-(a-.3))/.3)));else if(d>=0&&d<.07)o=Math.max(o,1-d/.07);else if(d>=.07&&d<.25)o=Math.max(o,.22*Math.abs(Math.sin(d*22)))}
     window.TREXO=o});   // the REAL T-rex's jaws open wide, then SNAP shut on every demon
    add(.05,()=>{window.TREXO=0},T+.1);
-   C.D.forEach((p,i)=>{const a=arr(i);lunge('trex',p,a-.25,.28);ring(mouth().x,mouth().y,'255,200,90',80,.4,4,a-.3);
+   C.D.forEach((p,i)=>{const a=arr(i);charge(p,st(i),seg*.95,1);ring(p.x,p.y,'255,200,90',80,.4,4,a-.3);
     add(.55,(u,t)=>{const gap=(1-ez(cl(t/.1)))*38,al=1-cl((t-.3)/.25);ctx.globalAlpha=al;ctx.fillStyle='rgba(120,10,30,.6)';ctx.beginPath();ctx.ellipse(p.x,p.y,40,gap/2+4,0,0,TAU);ctx.fill();ctx.fillStyle='rgb(255,250,230)';for(let k=0;k<7;k++){const bx=p.x-36+k*12;ctx.beginPath();ctx.moveTo(bx-4,p.y-gap/2-8);ctx.lineTo(bx+4,p.y-gap/2-8);ctx.lineTo(bx,p.y-gap/2+6);ctx.fill();ctx.beginPath();ctx.moveTo(bx-4,p.y+gap/2+8);ctx.lineTo(bx+4,p.y+gap/2+8);ctx.lineTo(bx,p.y+gap/2-6);ctx.fill()}},a);   // giant teeth closing on the demon
-    text(p.x,p.y-60,'NOM!','255,230,120',.7,26,a);parts(p.x,p.y,a,{n:14,cols:['255,250,225','255,225,170','255,100,60'],spd:140,life:.9,sz:6,grav:300,up:90,kind:'shard'});boom(p.x,p.y,a,'255,120,60',.8);ts.push(a+.05)});return ts},
-  cat:C=>{const seg=.32,ts=[];dim('40,10,50',.35,1.8);
+    text(p.x,p.y-60,'NOM!','255,230,120',.7,26,a);parts(p.x,p.y,a,{n:14,cols:['255,250,225','255,225,170','255,100,60'],spd:140,life:.9,sz:6,grav:300,up:90,kind:'shard'});boom(p.x,p.y,a,'255,120,60',.8);text(p.x,p.y-38,'*munch munch*','255,200,120',.9,17,a+.3);parts(p.x,p.y,a+.3,{n:10,cols:['255,230,190','200,60,50','255,250,225'],spd:70,life:.8,sz:4,grav:300,up:50});ts.push(a+.05)});return ts},
+  cat:C=>{const seg=.6,ts=[];dim('40,10,50',.35,1.8);
    C.D.forEach((p,i)=>{const d=.2+i*seg;lunge('cat',p,d,.3);beam(()=>C.P(8,-20),p,{delay:d+.02,dur:.3,w:3.5,col:'255,150,230',core:'255,255,255'});   // the real cat dashes in, leaving a streak
     slashes(p,d+.22);parts(p.x,p.y,d+.22,{n:12,cols:['255,150,230','255,255,255'],spd:130,life:.8,sz:4,kind:'streak'});ring(p.x,p.y,'255,150,230',90,.6,5,d+.22);ts.push(d+.42)});return ts},
-  turtle:C=>{const seg=.34,n=C.D.length,ts=[],top=()=>C.P(0,-30),T=seg*(n+1)+.2;
+  turtle:C=>{const seg=.75,n=C.D.length,ts=[],top=()=>C.P(0,-30),T=seg*(n+1)+.2;
    const shell=(x,y,rot)=>{ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.fillStyle='#46522f';ctx.beginPath();ctx.ellipse(0,0,26,19,0,0,TAU);ctx.fill();ctx.strokeStyle='#2a3319';ctx.lineWidth=2;for(const a of [-.9,0,.9]){ctx.beginPath();ctx.moveTo(Math.sin(a)*6,-17);ctx.lineTo(Math.sin(a)*22,12);ctx.stroke()}ctx.beginPath();ctx.moveTo(-24,2);ctx.lineTo(24,2);ctx.stroke();ctx.strokeStyle='#d4a017';ctx.lineWidth=3.2;ctx.beginPath();ctx.ellipse(0,0,26,19,0,0,TAU);ctx.stroke();ctx.restore()};
    const o=top();flash('110,230,140',.3,.7);parts(o.x,o.y,0,{n:16,cols:['110,230,140','255,255,255'],spd:120,life:.6,sz:5,up:50});ring(o.x,o.y,'110,230,140',70,.5,6,0);   // the shell fires from the turtle's own back
    const path=()=>[top()].concat(C.D).concat([top()]);const pts0=path();
    add(T,(u,t)=>{const w=t/seg,i=cl(Math.floor(w),0,n),pp=path(),q=ez(cl(w-i)),pos=k=>{const w2=Math.max(0,t-k*.018)/seg,i2=cl(Math.floor(w2),0,n);return lerpArc(pp[i2],pp[i2+1],ez(cl(w2-i2)),20)},a=pos(0);lite();for(let j=1;j<=5;j++){const g=pos(j);glow(g.x,g.y,26-j*3.5,'110,230,140',.38-j*.06)}ctx.globalCompositeOperation='source-over';shell(a.x,a.y,t*16)});
    C.D.forEach((p,i)=>{const arr=seg*(i+1);parts(p.x,p.y,arr,{n:18,cols:['150,230,150','200,170,110','255,255,255'],spd:230,life:.8,sz:7,grav:420,up:60,kind:'shard'});boom(p.x,p.y,arr,'110,230,140',1);ts.push(arr+.02)});return ts},
   dodo:C=>{const rear=()=>C.P(-17,-14),ts=C.D.map(()=>0);flash('255,225,90',.25,.8);
-   C.D.forEach((p,j)=>{for(let e=0;e<2;e++){const d=.15+j*.24+e*.12,fl=.5,sx=(e?18:-18)+(j%2?10:-10);let st=null;
+   C.D.forEach((p,j)=>{for(let e=0;e<2;e++){const d=.15+j*.85+e*.12,fl=.5,sx=(e?18:-18)+(j%2?10:-10);let st=null;
      add(fl+.05,(u,t)=>{if(!st)st=rear();const q=cl(t/fl),x=st.x+(p.x+sx-st.x)*q,y=st.y+(p.y-st.y)*q-Math.sin(q*Math.PI)*(110+e*30);if(t<fl)egg(x,y,1.5,q*9+e)},d);
      parts(C.P(-17,-14).x,C.P(-17,-14).y,d,{n:6,cols:['255,240,150','255,255,255'],spd:70,life:.5,sz:3,up:20});
      const ti=d+fl,ex=p.x+sx;boom(ex,p.y,ti,'255,200,60',1);ring(ex,p.y,'255,230,120',90,.6,6,ti);cloud({x:ex,y:p.y},ti,.8,'255,235,170',40);
