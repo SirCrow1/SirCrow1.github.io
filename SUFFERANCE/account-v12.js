@@ -196,7 +196,7 @@ async function render(){
   $('#acct-nameprompt').textContent=needName?'Welcome! Pick your player name (3-16 letters, numbers or _)':'New name (3-16 letters, numbers or _)';
   $('#acct-rename').style.display=(needName||editing)?'none':'inline-block';
   $('#acct-admin').style.display=isAdmin?'block':'none';
-  $('#acct-diag').textContent='build v12 · role: '+roleName+' · save: '+String((S&&S.owner)||'none').slice(0,6)+' · acct: '+String(myId||'none').slice(0,6)+(diag?' · '+diag:'');
+  $('#acct-diag').textContent='build v13 · role: '+roleName+' · save: '+String((S&&S.owner)||'none').slice(0,6)+' · acct: '+String(myId||'none').slice(0,6)+(diag?' · '+diag:'');
   $('#acct-stats').innerHTML=statsHTML();
   const ranks=Object.entries(S.best||{}).slice(0,6).map(([k,v])=>k+': '+v).join(' · ');
   $('#acct-ranks').textContent=ranks?'🏆 Best ranks: '+ranks:'';
@@ -563,15 +563,23 @@ async function viewPlayer(name){
   const d=v=>v?new Date(v).toLocaleDateString():'—';
   const box=(l,v)=>`<div class="acct-stat">${l}<b>${esc(has(v)?v:'—')}</b></div>`;
   const eq=st.eq||{};
-  const eqTxt=[eq.pet&&typeof PETS!=='undefined'&&PETS[eq.pet]?PETS[eq.pet].n:'',eq.skin&&typeof SKINS!=='undefined'&&SKINS[eq.skin]?SKINS[eq.skin].n:'',eq.blade&&typeof WPNS!=='undefined'&&WPNS[eq.blade]?WPNS[eq.blade].n:''].filter(Boolean).join(' · ');
+  const gearName=(L,k,none)=>{if(!k)return none;try{const o=typeof L!=='undefined'&&L[k];return o&&o.n?o.n:String(k)}catch(e){return String(k)}};
+  const hasGear=!!(st.eq);
+  const gearBox=(label,val)=>`<div style="background:#0b0912;border:1px solid #27272a;border-radius:6px;padding:6px 8px;min-width:0"><div style="font-size:11px;color:#a1a1aa">${label}</div><div style="color:#facc15;font-weight:bold;font-size:13px;overflow-wrap:anywhere">${esc(val)}</div></div>`;
+  const gearHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px">`
+    +gearBox('🛡️ Armor',hasGear?gearName(typeof SKINS!=='undefined'?SKINS:null,eq.skin,'Default armor'):'—')
+    +gearBox('🗡️ Blade',hasGear?gearName(typeof WPNS!=='undefined'?WPNS:null,eq.blade,'Default blade'):'—')
+    +gearBox('🐾 Pet',hasGear?gearName(typeof PETS!=='undefined'?PETS:null,eq.pet,'No pet'):'—')
+    +`</div>`;
   let html=`<div style="font:bold 20px sans-serif;color:#fff;margin-bottom:2px">${data.featured?'⭐ ':''}${esc(data.name)}</div>
     <div style="font-size:12px;color:#a1a1aa;margin-bottom:10px">Joined ${d(data.joined)} · Last seen ${d(data.last_seen)}</div>
+    ${gearHTML}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">`
     +box('🪙 Gold',has(st.gold)?Number(st.gold).toLocaleString():null)+box('🧩 Puzzles solved',data.solved)
     +box('🔥 Best streak',data.streak)+box('⚔️ Runs',data.runs)
     +box('🏅 Badges',has(st.badges)?st.badges+' / '+(st.badgesMax||12):null)+box('💀 Deaths seen',has(st.deaths)?st.deaths+' / '+(st.deathsMax||40):null)
     +box('🐾 Pets owned',st.pets)+box('🧥 Skins owned',st.skins)+box('🗡️ Blades owned',st.blades)+box('📅 Best daily streak',st.daily)
-    +`</div>`+(eqTxt?`<div style="font-size:12px;color:#a1a1aa;margin-top:8px">Equipped: ${esc(eqTxt)}</div>`:'');
+    +`</div>`;
   if(isAdmin){
     html+=`<div style="margin-top:10px;border:1px solid #a16207;border-radius:8px;padding:8px;font-size:12px;background:#1c1408"><div style="color:#facc15;font-weight:bold;margin-bottom:4px">🛠️ Admin info</div>
       Email: ${esc(data.email)}<br>Role: ${esc(data.role)}${data.banned?' · <span style="color:#f87171">BANNED</span>':''}<br>
