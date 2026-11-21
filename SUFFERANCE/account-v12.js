@@ -179,6 +179,7 @@ function statsHTML(){
 }
 
 async function render(){
+  try{renderProfileTab()}catch(e){}
   if(!sb)return;
   const {data:{session}}=await sb.auth.getSession();
   $('#acct-out').style.display=session?'none':'block';
@@ -657,10 +658,95 @@ async function itemsDo(d){
   else say('Could not queue that: '+data);
 }
 
+// ================= Profile tab (own profile, inside the main tab bar) =================
+function buildProfileTab(){
+  const first=document.querySelector('.tab-btn');
+  if(!first||$('#tabp'))return;
+  const nav=first.parentNode;
+  const by=t=>nav.querySelector('.tab-btn[data-t="'+t+'"]');
+  const b=document.createElement('button');
+  b.id='tabp';b.type='button';b.dataset.t='p';b.textContent='👤 Profile';
+  b.className=(by('s')||first).className.replace(/\bon\b/,'').replace('bg-emerald-600','bg-zinc-800').replace('text-zinc-950','text-zinc-200');
+  const sec=document.createElement('section');
+  sec.id='t-p';sec.hidden=true;sec.className='space-y-4';
+  sec.innerHTML='<div id="profile-tab"></div>';
+  const anchor=$('#t-a')||$('#t-d');
+  if(anchor)anchor.after(sec);else return;
+  // 3 buttons on top, 3 underneath: Dungeon | Profile | Achievements  /  Question Pool | Death Gallery | Armory
+  for(const t of ['d','p','a','g','h','s']){const x=t==='p'?b:by(t);if(x)nav.appendChild(x)}
+  nav.style.cssText='display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:560px;margin:0 auto 1.5rem';
+  nav.querySelectorAll('.tab-btn').forEach(x=>{x.style.width='100%';x.style.padding='9px 4px';x.style.fontSize='clamp(11px,3vw,14px)'});
+  const ACTIVE=['on','bg-emerald-600','text-zinc-950','shadow-[0_0_10px_rgba(16,185,129,0.4)]'];
+  b.addEventListener('click',()=>{
+    nav.querySelectorAll('.tab-btn').forEach(x=>{x.classList.remove(...ACTIVE);x.classList.add('bg-zinc-800','text-zinc-200')});
+    b.classList.add(...ACTIVE);b.classList.remove('bg-zinc-800','text-zinc-200');
+    for(const id of ['d','s','g','h','a']){const el=$('#t-'+id);if(el)el.hidden=true}
+    sec.hidden=false;renderProfileTab();
+  });
+  // opening any other tab hides the profile again (the game's own handler hides the rest)
+  nav.querySelectorAll('.tab-btn').forEach(x=>{if(x!==b)x.addEventListener('click',()=>{sec.hidden=true})});
+  renderProfileTab();
+}
+async function renderProfileTab(){
+  const box=$('#profile-tab');if(!box)return;
+  try{
+    let session=null;
+    try{if(sb)session=(await sb.auth.getSession()).data.session}catch(e){}
+    const meta=session?(session.user.user_metadata||{}):{};
+    const pic=meta.avatar_url||meta.picture||'';
+    const h=shopS(),eq=h.eq||{};
+    const nm=(L,k,none)=>{if(!k)return none;try{const o=L&&L[k];return o&&o.n?o.n:String(k)}catch(e){return String(k)}};
+    const blob=statsBlob(),st=S.st||{},mem=S.mem||{};
+    const name=session?(profile.username||'New player'):'Guest';
+    const gear=(l,v)=>`<div class="pf-g"><div class="pf-l">${l}</div><div class="pf-gv">${esc(v)}</div></div>`;
+    const cell=(l,v)=>`<div class="pf-c"><div class="pf-l">${l}</div><div class="pf-v">${esc(v)}</div></div>`;
+    box.innerHTML=`<style>
+      .pf-l{font-size:11px;color:#a1a1aa}
+      .pf-g,.pf-c{background:#0b0912;border:1px solid #27272a;border-radius:8px;padding:8px 10px;min-width:0}
+      .pf-gv{color:#facc15;font-weight:bold;font-size:14px;overflow-wrap:anywhere}
+      .pf-v{color:#facc15;font-weight:bold;font-size:17px}
+      .pf-btn{color:#fff;font-weight:bold;padding:8px 14px;border-radius:6px;cursor:pointer}
+    </style>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      ${pic?`<img src="${esc(pic)}" referrerpolicy="no-referrer" style="width:56px;height:56px;border-radius:50%;border:2px solid #34d399">`
+           :`<div style="width:56px;height:56px;border-radius:50%;border:2px solid #3f3f46;display:flex;align-items:center;justify-content:center;font-size:26px">👤</div>`}
+      <div style="min-width:0"><div style="font:bold 22px sans-serif;color:#fff;overflow-wrap:anywhere">${esc(name)}</div>
+        <div style="font-size:12px;color:#a1a1aa">${session?'Signed in with Google':'Not signed in: progress stays on this device'}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+      ${gear('🛡️ Armor',nm(typeof SKINS!=='undefined'?SKINS:null,eq.skin,'Default armor'))}
+      ${gear('🗡️ Blade',nm(typeof WPNS!=='undefined'?WPNS:null,eq.wpn,'Default blade'))}
+      ${gear('🐾 Pet',nm(typeof PETS!=='undefined'?PETS:null,eq.pet,'No pet'))}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px">
+      ${cell('🪙 Gold',(S.gold|0).toLocaleString())}
+      ${cell('🧩 Puzzles solved',Object.keys(st.sol||{}).length)}
+      ${cell('🔥 Best streak',(st.bs||0)+' in a row')}
+      ${cell('⚔️ Runs played',mem.runs||0)}
+      ${cell('🏁 Best run',(st.bp||0)+' puzzles')}
+      ${cell('📅 Best daily streak',(S.dly&&S.dly.b)||0)}
+      ${cell('🏅 Badges',blob.badges+' / '+blob.badgesMax)}
+      ${cell('💀 Deaths seen',blob.deaths+' / '+blob.deathsMax)}
+      ${cell('🐾 Pets owned',blob.pets)}
+      ${cell('🧥 Skins owned',blob.skins)}
+      ${cell('🗡️ Blades owned',blob.blades)}
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      ${session?'':`<button id="pf-signin" class="pf-btn" style="background:#fff;color:#111">Sign in with Google</button>`}
+      <button id="pf-acct" class="pf-btn" style="background:#3f3f46">⚙️ Account &amp; name</button>
+      <button id="pf-lb" class="pf-btn" style="background:#a16207">🏆 Leaderboard</button>
+    </div>
+    ${session&&!profile.username?'<div style="margin-top:8px;font-size:12px;color:#fcd34d">Pick a player name in Account so others can find you.</div>':''}`;
+    const si=$('#pf-signin');if(si)si.onclick=()=>{if(sb)sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}})};
+    $('#pf-acct').onclick=openModal;
+    $('#pf-lb').onclick=()=>{if(session)showLB('solved');else say('Sign in first to see the leaderboard')};
+  }catch(e){console.error(e)}
+}
+
 // ---------- start ----------
 function start(){
   sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-  buildUI();buildExtra();
+  buildUI();buildExtra();buildProfileTab();
   setInterval(()=>{if(roleName!=='unknown'||profile.code)syncStats()},90000);
   sb.auth.onAuthStateChange((ev,session)=>{
     if(session&&(ev==='SIGNED_IN'||ev==='INITIAL_SESSION'))setTimeout(afterLogin,0);
