@@ -98,7 +98,7 @@ function buildUI(){
   b.onclick=openModal;
   $('#acct-close').onclick=()=>$('#acct-modal').style.display='none';
   $('#acct-google').onclick=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});
-  $('#acct-logout').onclick=async()=>{await sb.auth.signOut();profile={username:null,code:''};editing=false;isAdmin=false;roleName='unknown';if(spamT){clearInterval(spamT);spamT=null}render();say('Logged out')};
+  $('#acct-logout').onclick=async()=>{stashAndClear();await sb.auth.signOut();profile={username:null,code:''};editing=false;isAdmin=false;roleName='unknown';if(spamT){clearInterval(spamT);spamT=null}render();say('Logged out');setTimeout(()=>location.reload(),300)};
   $('#acct-copy').onclick=()=>{const i=$('#acct-link');i.select();try{navigator.clipboard.writeText(i.value)}catch(e){document.execCommand('copy')}say('Invite link copied!')};
   $('#acct-rename').onclick=()=>{editing=true;render();$('#acct-nameinput').value=profile.username||'';$('#acct-nameinput').focus()};
   $('#adm-gold').onclick=()=>admin(()=>{S.gold+=100000},'+100,000 gold');
@@ -198,7 +198,7 @@ async function render(){
   $('#acct-nameprompt').textContent=needName?'Welcome! Pick your player name (3-16 letters, numbers or _)':'New name (3-16 letters, numbers or _)';
   $('#acct-rename').style.display=(needName||editing)?'none':'inline-block';
   $('#acct-admin').style.display=isAdmin?'block':'none';
-  $('#acct-diag').textContent='build v6 · role: '+roleName+(diag?' · '+diag:'');
+  $('#acct-diag').textContent='build v7 · role: '+roleName+(diag?' · '+diag:'');
   $('#acct-stats').innerHTML=statsHTML();
   const ranks=Object.entries(S.best||{}).slice(0,6).map(([k,v])=>k+': '+v).join(' · ');
   $('#acct-ranks').textContent=ranks?'🏆 Best ranks: '+ranks:'';
@@ -234,6 +234,28 @@ function adminUnlock(){
   }catch(e){console.error(e);diag+=' unlock: '+e.message}
 }
 
+// ---------- one save per account (the game keeps its save in the browser) ----------
+const MAIN='sufference_save_v14';
+function stashAndClear(){   // on logout: park this account's save under its own key, leave a clean slate
+  try{
+    const o=localStorage.suff_owner;
+    if(o){localStorage['suff_save_'+o]=localStorage[MAIN]||'';localStorage.removeItem(MAIN);localStorage.removeItem('suff_owner')}
+  }catch(e){}
+}
+function switchOwner(uid){  // returns true if it swapped saves and is reloading the page
+  try{
+    const o=localStorage.suff_owner;
+    if(o===uid)return false;
+    if(!o){localStorage.suff_owner=uid;return false}   // first account on this browser adopts the existing save
+    localStorage['suff_save_'+o]=localStorage[MAIN]||'';   // park the previous account's save
+    const mine=localStorage['suff_save_'+uid];
+    if(mine)localStorage[MAIN]=mine;else localStorage.removeItem(MAIN);   // this account's own save, or a fresh start
+    localStorage.suff_owner=uid;
+    location.reload();
+    return true;
+  }catch(e){return false}
+}
+
 // ---------- after login: redeem referral, collect gold, load profile ----------
 async function afterLogin(){
   if(busy)return;busy=true;
@@ -247,6 +269,7 @@ async function afterLogin(){
       else if(data==='own_code')say("You can't use your own referral code");
     }
     const {data:{session}}=await sb.auth.getSession();myId=session?session.user.id:null;
+    if(myId&&switchOwner(myId))return;
     await claimGold();
     await loadProfile();
     if(profile.banned){say('This account has been banned.');await sb.auth.signOut();profile={username:null,code:''};isAdmin=false;roleName='unknown';busy=false;render();return}
