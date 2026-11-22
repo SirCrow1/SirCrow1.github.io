@@ -797,7 +797,7 @@ delete VO[14];delete VO[18];delete VO[27];   // these are now timed in absolute 
 Object.assign(BA,{'s:spike':1.2,'s:axe':1.6,'s:boulder':1.5,'s:lava':2.8,'s:ghost':2.8,'s:fire':2.9,'s:dart':1.6,'s:gas':1.7,'s:ice':1.2,'s:fall':1.8});Object.assign(LD,{'s:spike':1.4,'s:axe':1.6,'s:boulder':1.5,'s:lava':3.0,'s:ghost':3.0,'s:fire':1.6,'s:dart':1.6,'s:gas':1.8,'s:ice':1.4,'s:fall':1.8});
 KN[30]='Lava Bath';ONES[30]=ONES['s:lava'];BEDS[30]=BEDS['s:lava'];BA[30]=2.8;LD[30]=3.4;
 // puzzle-room deaths: each gets its own entry and reuses the sound of a death that fits it
-[['quarter','s:axe','Quartered',2.0],['stack','s:boulder','Disc Stack',2.2],['hang','s:gas','Hanged',1.8],['card','s:axe','Razor Cards',2.0],['slab','s:boulder','Tile Crush',1.8],['chomp','s:ghost','Pac Chomp',2.4],['rps','s:axe','Throw Down',2.2],['sand','s:boulder','Buried Alive',2.6],['squash',5,'Spike Walls',1.5],['flag','s:dart','Flagpole',1.6]].forEach(([n,s,nm,d])=>{const k='s:'+n;ONES[k]=t=>ONES[s](t);BEDS[k]=()=>{BEDS[s]&&BEDS[s]()};BA[k]=d;LD[k]=d+.2;KN[k]=nm});
+[['quarter','s:axe','Quartered',2.0],['stack','s:boulder','Disc Stack',2.2],['hang','s:gas','Hanged',1.8],['card','s:axe','Razor Cards',2.0],['slab','s:boulder','Tile Crush',1.8],['chomp','s:ghost','Pac Chomp',2.4],['rps','s:axe','Throw Down',2.2],['sand','s:boulder','Buried Alive',2.6],['squash','s:ghost','Blended',8.5],['flag','s:dart','Flagpole',1.6]].forEach(([n,s,nm,d])=>{const k='s:'+n;ONES[k]=t=>ONES[s](t);BEDS[k]=()=>{BEDS[s]&&BEDS[s]()};BA[k]=d;LD[k]=d+.2;KN[k]=nm});
 const KO=Object.keys(ONES).map(k=>/^\d+$/.test(k)?+k:k);let tc=0,lastFit='';
 function newSession(){const P={};P.d=ac.createGain();P.d.gain.value=DG;P.d.connect(B.s.d);const cv=ac.createConvolver();cv.buffer=rvb;const rgn=ac.createGain();rgn.gain.value=.45;cv.connect(rgn);rgn.connect(P.d);P.r=cv;P.srcs=[];P.em=[];P.tm=0;P.t0=0;return P}
 function runSession(S){S.nt=S.t0;S.tm=setInterval(safe(()=>{const now=ac.currentTime;if(S.nt<now-.05)S.nt=now;
@@ -2230,7 +2230,7 @@ ${G}
         const GN=[...Array(30).keys()].map(String);   // 30 main deaths: #30 'Lava Bath' was removed, so badges can still be completed
         const GNI=['☠️','🪓','🦷','🧪','👻','⛰️','🏹','🔥','❄️','⚡','🚚','🐊','💥','🕳️','⚔️','🌊','📦','👹','⚙️','🪳','🔨','🍲','🌀','🪆','🪦','🥩','🌳','☢️','⏳','🦠','🌋'];
         const GSK=['spike','axe','boulder','lava','ghost','fire','dart','gas','ice','fall','quarter','stack','hang','card','slab','chomp','rps','sand','squash','flag'];
-        const GSI={spike:'🗡️',axe:'🪓',boulder:'🪨',lava:'🌋',ghost:'👻',fire:'🔔',dart:'🎯',gas:'☁️',ice:'🧊',fall:'🕳️',quarter:'⛓️',stack:'🔴',hang:'🪢',card:'🃏',slab:'🔢',chomp:'🟡',rps:'✂️',sand:'🏜️',squash:'🧱',flag:'🚩'};
+        const GSI={spike:'🗡️',axe:'🪓',boulder:'🪨',lava:'🌋',ghost:'👻',fire:'🔔',dart:'🎯',gas:'☁️',ice:'🧊',fall:'🕳️',quarter:'⛓️',stack:'🔴',hang:'🪢',card:'🃏',slab:'🔢',chomp:'🟡',rps:'✂️',sand:'🏜️',squash:'🥤',flag:'🚩'};
         const SRIDX={spike:0,boulder:1,axe:2,fire:3,dart:4,gas:5,fall:6,lava:7,ghost:8,ice:9,quarter:11,stack:10,hang:12,card:13,slab:14,chomp:15,rps:16,sand:17,squash:18,flag:19};
         const galNName=k=>k=='24'?'Family Reunion':k=='25'?'Meat Grinder':k=='26'?'The Life Tree':k=='27'?'Nuclear Strike':k=='28'?'The Hundred-Year Second':k=='29'?'Patient Zero':k=='30'?'Lava Bath':DN[+k];
         const galTitle=t=>t.toLowerCase().replace(/(^|\s)\S/g,m=>m.toUpperCase());
@@ -2511,7 +2511,7 @@ ${G}
         const SRP={stone:{a:'#231c2e',b:'#2a2236',f:'#1d1627',g:'#241c30'},moss:{a:'#1b2a24',b:'#223329',f:'#142019',g:'#1a2b22'},lava:{a:'#2e1c1c',b:'#3a2222',f:'#241313',g:'#301919'},ice:{a:'#1d2a3a',b:'#243649',f:'#16212f',g:'#1c2b3d'}};
         let lastSR=-1;
         const srNear=(ax,ay,r)=>Math.hypot(G.hx-ax,(G.hy-8)-ay)<r;
-        const SDN={spike:['IMPALED ON SPIKES','#ff4a4a'],axe:['CHOPPED IN HALF','#ff8c1a'],boulder:['SQUISHED BY A BOULDER','#d2b48c'],lava:['SWALLOWED BY LAVA','#ff6a1a'],ghost:['LIFE DRAINED BY A GHOST','#9fd8ff'],fire:['TORN APART BY THE CHAOS MELODY','#ff7bd5'],dart:['RIDDLED WITH DARTS','#ffb347'],gas:['GASSED','#a8ff3c'],ice:['PIERCED BY ICE SPIKES','#8fe8ff'],fall:['FELL INTO THE PIT','#c9b8ff'],quarter:['PULLED APART BY CHAINS','#9ca3af'],stack:['DROPPED INTO THE BOARD AS A PIECE','#f87171'],hang:['HANGED','#d2b48c'],card:['SHREDDED BY THE JESTER\'S RAZOR CARDS','#ff7bd5'],slab:['GROUND INTO THE WALL BY A TILE','#9ca3af'],chomp:['EATEN BY PAC-MAN','#fde047'],rps:['CUT AND SMASHED BY HIS THROWS','#e5e7eb'],sand:['BURIED ALIVE IN A GIANT HOURGLASS','#e0ad4a'],squash:['IMPALED BETWEEN THE SPIKE WALLS','#6ee7a0'],flag:['SKEWERED BY A FLAGPOLE','#ff6b6b']};
+        const SDN={spike:['IMPALED ON SPIKES','#ff4a4a'],axe:['CHOPPED IN HALF','#ff8c1a'],boulder:['SQUISHED BY A BOULDER','#d2b48c'],lava:['SWALLOWED BY LAVA','#ff6a1a'],ghost:['LIFE DRAINED BY A GHOST','#9fd8ff'],fire:['TORN APART BY THE CHAOS MELODY','#ff7bd5'],dart:['RIDDLED WITH DARTS','#ffb347'],gas:['GASSED','#a8ff3c'],ice:['PIERCED BY ICE SPIKES','#8fe8ff'],fall:['FELL INTO THE PIT','#c9b8ff'],quarter:['PULLED APART BY CHAINS','#9ca3af'],stack:['DROPPED INTO THE BOARD AS A PIECE','#f87171'],hang:['HANGED','#d2b48c'],card:['SHREDDED BY THE JESTER\'S RAZOR CARDS','#ff7bd5'],slab:['GROUND INTO THE WALL BY A TILE','#9ca3af'],chomp:['EATEN BY PAC-MAN','#fde047'],rps:['CUT AND SMASHED BY HIS THROWS','#e5e7eb'],sand:['BURIED ALIVE IN A GIANT HOURGLASS','#e0ad4a'],squash:['BLENDED INTO JUICE','#ff6b8a'],flag:['SKEWERED BY A FLAGPOLE','#ff6b6b']};
         const SRC={stone:'#ffd84a',moss:'#86efac',lava:'#ff8c1a',ice:'#8fe8ff'};
         // ICE SLIDE layout: 7 spike clusters spread over the WHOLE floor. A layout is only used if (1) no straight lane gets through (so walking straight always kills you)
         // and (2) a weaving path still exists (checked with a flood-fill, keeping a safety margin), so it is hard but never impossible.
@@ -2559,7 +2559,7 @@ ${G}
                 if(g>=1&&s.h>20&&Math.sin(now/240+j*1.7)>.8){R('#fff',tx-1,ty-3,2,6);R('#fff',tx-3,ty-1,6,2)}})}
         function srSnd(type,blx,x,v,c){let w=0;if(type=='boulder'&&blx!=null)w=Math.max(0,Math.max(.06,(blx-x)/Math.max(150,v||200))-.17);SND.dead(0,'s:'+type,0,w);
             if(type=='axe'&&c&&c.ph&&c.sp){const ts=[];c.ph.forEach((ph,i)=>{const sp=c.sp[i],wv=c.t*sp+ph;let tt=(Math.ceil(wv/Math.PI)*Math.PI-wv)/sp;if(tt<.05)tt+=Math.PI/sp;for(;tt<8;tt+=Math.PI/sp)ts.push(tt)});SND.axeSwings(ts)}}   // each axe passes the bottom of its swing (blade red, scraping the floor) every half period
-        function srHurt(c,type){type=SDN[type]?type:'spike';srSnd(type,c.hit?c.hit.x:null,G.hx,c.hit?c.hit.v:200,c);c.dead={type,t:0,x:(type=='spike'&&c.spx!=null)?c.spx:G.hx,spx:type=='spike'?c.spx:null,y:G.hy,f:G.face,sp:[0,1,2].map(()=>Math.random()*23|0),click:false,bi:type=='boulder'&&c.hit?c.hit.i:null,blx:type=='boulder'&&c.hit?c.hit.x:null,bly:type=='boulder'&&c.hit?c.hit.ly:null,bv:type=='boulder'&&c.hit?c.hit.v:200};if(type=='ice'&&c.sx){let bp=null,bd=1e9;c.sx.forEach(p=>{const d=Math.hypot(p[0]-G.hx,p[1]-G.hy);if(d<bd){bd=d;bp=p}});if(bp){c.dead.x=bp[0];c.dead.y=bp[1]}}   // he lands ON the nearest spike cluster that was already there
+        function srHurt(c,type){type=SDN[type]?type:'spike';srSnd(type,c.hit?c.hit.x:null,G.hx,c.hit?c.hit.v:200,c);c.dead={type,w:(c.g&&c.g.w)||null,t:0,x:(type=='spike'&&c.spx!=null)?c.spx:G.hx,spx:type=='spike'?c.spx:null,y:G.hy,f:G.face,sp:[0,1,2].map(()=>Math.random()*23|0),click:false,bi:type=='boulder'&&c.hit?c.hit.i:null,blx:type=='boulder'&&c.hit?c.hit.x:null,bly:type=='boulder'&&c.hit?c.hit.ly:null,bv:type=='boulder'&&c.hit?c.hit.v:200};if(type=='ice'&&c.sx){let bp=null,bd=1e9;c.sx.forEach(p=>{const d=Math.hypot(p[0]-G.hx,p[1]-G.hy);if(d<bd){bd=d;bp=p}});if(bp){c.dead.x=bp[0];c.dead.y=bp[1]}}   // he lands ON the nearest spike cluster that was already there
             G.deaths++;$('#dc').textContent='💀 Deaths: '+G.deaths;G.state='secretDie';G.moving=0;c.vx=0;c.vy=0;if(!G.gal){unlock('s:'+type,1);trackStat('d','s:'+type)}}
         addEventListener('mousedown',()=>{if(G&&G.state=='secretDie'&&!G.paused&&G.sc&&G.sc.dead)G.sc.dead.click=true});
         function srDeathDraw(c,now){
@@ -2571,7 +2571,7 @@ ${G}
                 ctx.save();ctx.globalAlpha=o.a??1;if(o.f)ctx.filter=o.f;if(o.clip){ctx.beginPath();ctx.rect(o.clip[0],o.clip[1],o.clip[2],o.clip[3]);ctx.clip()}
                 const pv=o.pv||0;ctx.translate(x+(o.dx||0),fy+(o.dy||0)-pv);ctx.rotate(o.rot||0);ctx.scale(F*(o.mx||1),o.my??1);if(o.lc){ctx.beginPath();o.lc.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.clip()}ctx.drawImage(im.img,n*120,0,120,80,-132,-176+pv,264,176);ctx.restore()};
             const spray=(t0)=>{if(t<t0)return;const u=Math.min(1,(t-t0)/.7),old=G.sp;G.sp=D.sp;for(let j=0;j<3;j++)sprayAt(j,x+(j-1)*18,fy-50-j*6,.7+u*.8,1-u*.9,j==1?-1:1);G.sp=old};
-            const PT={spike:[0,32],axe:[.2,46],dart:[.9,34],gas:[1.4,30],ice:[.35,38],quarter:[1.3,44],slab:[1.1,46],squash:[1.4,42],rps:[.5,52],card:[1.3,40],flag:[.5,40]};   // blood pool: [starts at, size]
+            const PT={spike:[0,32],axe:[.2,46],dart:[.9,34],gas:[1.4,30],ice:[.35,38],quarter:[1.3,44],slab:[1.1,46],rps:[.5,52],card:[1.3,40],flag:[.5,40]};   // blood pool: [starts at, size]
             if(PT[type]){const pt=PT[type],pu=cl((t-pt[0])/.9,0,1),pcx=type=='fire'?bx:x;if(pu>0){ctx.fillStyle='rgba(110,15,23,.9)';ctx.beginPath();ctx.ellipse(pcx,fy-2,pu*pt[1],pu*pt[1]*.28,0,0,7);ctx.fill()}}
 
             if(type=='spike'){ // impaled on the pit's own spikes (they stay raised, the pit is drawn by the room)
@@ -2832,17 +2832,48 @@ ${G}
                 [-1,1].forEach(q=>R('#5a3b1c',cx+q*166-5,top0,10,bot-top0));
                 if(t>1.0&&t<3.2){ctx.save();ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.fillStyle='#e6dcc0';ctx.fillText('*cough*',x+40,fy-100-((now/25)%18));ctx.restore()}}
 
-            else if(type=='squash'){ // WORDLE (lose): two stone walls studded with long iron spikes close in on him, slowly. The spikes drive through him from both sides and hold him up while he bleeds out
-                const u1=cl((t-.1)/.6,0,1),u2=cl((t-.7)/.8,0,1),d=t<.7?320-u1*u1*220:100-u2*78,LT='WORDLE',SL=66,SP=cl((t-1.5)/.4,0,1);
-                if(t<.1)sp({idle:1});
-                else sp({idle:1,n:0,pv:40,dx:d<85&&t<1.5?Math.sin(now/22)*2.2:0,rot:F*.1*SP,dy:5*SP});   // he thrashes while the spikes go in, then hangs
-                [-1,1].forEach(q=>{const wx=x+q*d,x0=q<0?wx-90:wx;R('#4b4358',x0,fy-175,90,195);R('#2a2236',x0,fy-175,90,6);
-                    for(let j=0;j<3;j++){const c2=(j+(q<0?0:3));R(['#2f9e44','#d9a60a','#3a3a44'][c2%3],x0+(q<0?50:6),fy-160+j*52,34,34);txt(LT[c2],x0+(q<0?67:23),fy-135+j*52,22,'#fff')}
-                    const spikes=(fill,edge)=>{for(let k2=0;k2<7;k2++){const y=fy-160+k2*26+(q>0?13:0),tp=wx-q*SL;ctx.fillStyle=fill;ctx.beginPath();ctx.moveTo(wx,y-5);ctx.lineTo(tp,y);ctx.lineTo(wx,y+5);ctx.closePath();ctx.fill();ctx.strokeStyle=edge;ctx.lineWidth=1;ctx.stroke()}};
-                    spikes('#aab2bd','#4a4f5c');   // long iron spikes, the left ones and the right ones are staggered so they pass between each other
-                    ctx.save();ctx.beginPath();ctx.rect(x-24,fy-95,48,110);ctx.clip();spikes('#8a141c','#5a0d12');ctx.restore()});   // the part of every spike that is inside his body is red
-                if(d<85){for(let j=0;j<7;j++)R('#8a141c',x-15+j*5,fy-88+((now/16+j*23)%80),2,6+(j%3)*2)}   // blood pours down his body and off the spikes
-                if(t>1.0)spray(1.0)}
+            else if(type=='squash'){ // WORDLE (lose): the demons drop a giant BLENDER over him, throw in the secret word, blend him into juice and slurp it through a straw
+                const W=String(D.w||'DEMON').toUpperCase().slice(0,5),top=fy-186,bot=fy-36,hT=56,hB=36,STOP=4.3,run=t>1.8&&t<STOP,
+                    jd=-380*Math.pow(1-cl((t-.05)/.25,0,1),2),sh=run?Math.sin(now/22)*2.2:0,X=x+sh,
+                    lq=t<1.8?0:t<STOP?Math.min(1,(t-1.8)/2.5)*.82:Math.max(.32,.82-(t-STOP-.1)*.09),ly=bot-lq*(bot-top-6),lidY=-260*Math.pow(1-cl((t-1.5)/.2,0,1),2),
+                    hw=yy=>hB+(hT-hB)*(bot-yy)/(bot-top),jar=()=>{ctx.beginPath();ctx.moveTo(X-hT,top);ctx.lineTo(X+hT,top);ctx.lineTo(X+hB,bot);ctx.lineTo(X-hB,bot);ctx.closePath()};
+                const idleN=Math.floor(now/150)%6,sw=t>=1.55&&t<2.25?40+Math.min(14,Math.floor((t-1.55)/.7*15)):idleN;
+                ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(x,fy+4,92,10,0,0,7);ctx.fill();
+                drawMon(x+175,fy+14,sw,1,0,false);   // the game's own demon on the right: slams the button
+                drawMon(x-175,fy+14-(t>STOP+.2&&t<7.2?Math.abs(Math.sin(now/130))*3:0),idleN,1,1,true);   // a second demon on the left: waits for the juice
+                ctx.save();ctx.translate(sh,jd);
+                R('#2b303b',x-72,fy-36,144,36);R('#4a5160',x-72,fy-36,144,6);R('#171a21',x-72,fy-6,144,6);   // motor base
+                dot(x+50,fy-18,7,run?'#ff3b3b':'#7f1d1d');dot(x+28,fy-18,7,'#374151');dot(x-50,fy-18,4,run?'#facc15':'#4b5563');
+                ctx.save();jar();ctx.fillStyle='rgba(190,225,240,.14)';ctx.fill();ctx.restore();   // back of the glass jar
+                const u=cl((t-1.8)/2.1,0,1);
+                if(t<3.95){
+                    if(t<1.8)sp({idle:1,n:0,dy:-36*cl((t-.25)/.1,0,1)+jd*0,dx:t>1?Math.sin(now/30)*2:0,clip:[x-hT,top,hT*2,bot-top]});
+                    else sp({idle:1,n:0,pv:40,dy:-36-6*u,rot:now/(95-60*u)*F*(.3+u),mx:1-.45*u,my:1-.8*u,a:1-cl((u-.75)/.25,0,1),clip:[x-hT,top,hT*2,bot-top]})}
+                W.split('').forEach((L,i)=>{   // the secret word's letter tiles fall into the jar, then get whirled around the blades
+                    const ts=.35+i*.18,g=cl((t-ts)/.45,0,1);if(t<ts||t>=3.9)return;
+                    const rx=X+(i-2)*17,ry=bot-16-(i%2)*6,s2=1-cl((t-3)/.9,0,1);let px,py;
+                    if(t<1.8){px=rx;py=(top-220)+(ry-(top-220))*g*g}else{const an=now/70+i*1.26,rd=(10+i*3)*(1-u*.3);px=X+Math.cos(an)*rd;py=bot-36-(i%3)*14+Math.sin(an)*8}
+                    ctx.save();ctx.translate(px,py);ctx.rotate(t<1.8?0:now/120+i);ctx.fillStyle=i%2?'#2f9e44':'#d9a60a';ctx.fillRect(-11*s2,-11*s2,22*s2,22*s2);txt(L,0,6*s2,15*s2,'#fff');ctx.restore()});
+                if(lq>0){   // the juice
+                    ctx.save();jar();ctx.clip();const g2=ctx.createLinearGradient(0,ly,0,bot);g2.addColorStop(0,'rgba(232,69,95,.92)');g2.addColorStop(1,'rgba(150,15,42,.95)');ctx.fillStyle=g2;
+                    ctx.beginPath();ctx.moveTo(X-hT,bot+2);ctx.lineTo(X-hT,ly);for(let q=-hT;q<=hT;q+=8)ctx.lineTo(X+q,ly+(run?Math.sin(now/60+q*.3)*3:Math.sin(now/300+q*.1)));ctx.lineTo(X+hT,bot+2);ctx.closePath();ctx.fill();
+                    ctx.fillStyle='rgba(255,194,207,.75)';ctx.fillRect(X-hT,ly-1,hT*2,5);
+                    if(run)for(let j=0;j<8;j++){const by=bot-((now/9+j*29)%Math.max(10,bot-ly));dot(X+Math.sin(j*5.3+now/200)*(hw(by)-8),by,2+(j%3),'rgba(255,214,222,.8)')}
+                    if(t>=3.9)W.split('').forEach((L,i)=>{ctx.fillStyle=i%2?'#2f9e44':'#d9a60a';ctx.fillRect(X-30+i*15+Math.sin(now/500+i)*3,ly+7+(i%2)*9+Math.sin(now/400+i*2),6,6)});   // bits of the word still floating in it
+                    ctx.restore()}
+                if(run){const w=24*Math.abs(Math.cos(now/35));R('#cbd5e1',X-w,bot-5,w*2,3);R('#94a3b8',X-3,bot-9,6,9)}   // spinning blades
+                ctx.save();jar();ctx.strokeStyle='rgba(225,247,255,.85)';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='rgba(255,255,255,.2)';ctx.beginPath();ctx.moveTo(X-hT+8,top+8);ctx.lineTo(X-hT+16,top+8);ctx.lineTo(X-hB+12,bot-10);ctx.lineTo(X-hB+6,bot-10);ctx.fill();ctx.restore();   // glass edge and shine
+                for(let j=1;j<5;j++)R('rgba(255,255,255,.55)',X+hw(bot-j*26)-14,bot-j*26,10,2);   // measuring marks
+                R('#1f2937',X-hT-7,top-12+lidY,hT*2+14,12);R('#374151',X-hT-7,top-12+lidY,hT*2+14,3);R('#111827',X-9,top-20+lidY,18,8);   // lid with a knob
+                if(run)for(let j=0;j<6;j++){const jy=top-4-((now/10+j*23)%26);dot(X+Math.sin(j*4.7)*hT*.8,jy,2,'#c2223a')}   // juice slapping the lid
+                ctx.restore();
+                if(run)txt('WHIRRRR!',x+sh,top-34+Math.sin(now/40)*2,24,'#ffd84a');
+                if(t>=STOP+.1){   // the left demon drinks the juice through a long straw
+                    const P=[[x-14,bot-14],[x-14,top-26],[x-146,fy-84]],e=cl((t-STOP-.1)/.5,0,1),L1=P[0][1]-P[1][1],L2=Math.hypot(P[2][0]-P[1][0],P[2][1]-P[1][1]),TL=(L1+L2)*e,at=d=>d<=L1?[P[0][0],P[0][1]-d]:[P[1][0]+(P[2][0]-P[1][0])*(d-L1)/L2,P[1][1]+(P[2][1]-P[1][1])*(d-L1)/L2];
+                    ctx.save();ctx.lineCap='round';ctx.lineJoin='round';[['#f8fafc',7,[]],['#ef4444',7,[7,7]]].forEach(([c2,lw,da])=>{ctx.strokeStyle=c2;ctx.lineWidth=lw;ctx.setLineDash(da);ctx.beginPath();ctx.moveTo(P[0][0],P[0][1]);let d=0;P.slice(1).forEach((pt,i)=>{const sl=i?L2:L1,k=Math.min(1,Math.max(0,(TL-d)/sl));ctx.lineTo(P[i][0]+(pt[0]-P[i][0])*k,P[i][1]+(pt[1]-P[i][1])*k);d+=sl});ctx.stroke()});ctx.restore();
+                    if(e>=1&&t<7.2)for(let j=0;j<5;j++){const q=at(((now/260+j/5)%1)*(L1+L2));dot(q[0],q[1],2.5,'#e8455f')}}
+                if(t>STOP+.7&&t<7.2)txt('SLUUURP!',x-146,fy-150,22,'#ff9fb4');
+                else if(t>=7.2)txt('BURP!',x-146,fy-150,24,'#ffd84a')}
 
             else if(type=='flag'){ // MINESWEEPER: a giant flagpole is driven straight down through the middle of his body (head to feet) and plants him in the floor, a red flag unfurling on top
                 const px=x-6.6*F,u=cl((t-.3)/.14,0,1),ty=-110+(fy+8+110)*u*u,hit=ty>=fy-82,pe=cl((t-.5)/.6,0,1),top=ty-226,w=Math.sin(now/110)*5*pe;
@@ -3144,13 +3175,13 @@ ${G}
                 draw(g){const q=g.q[Math.min(g.i,4)];say('Riddle '+Math.min(g.i+1,5)+' of 5');txt('♥ '.repeat(g.lv).trim()||'',620,92,18,'#ef4444','right');
                     wrap(q.t,34).forEach((l,i)=>txt(l,395,150+i*32,24,g.fl>0?'#ef4444':'#ffd84a'));
                     for(let k=0;k<4;k++){const x=137+(k%2)*271,y=290+Math.floor(k/2)*68,bad=q.x.includes(k);R(bad?'#5a1f24':hov(x,y,255,56)?'#5b4a86':'#2a2236',x,y,255,56);txt(q.o[k],x+127,y+35,19,bad?'#999':'#fff')}}});
-            // ---------- 9. WORDLE: guess the secret word in 6 tries (lose = impaled between spiked walls) ----------
+            // ---------- 9. WORDLE: guess the secret word in 6 tries (lose = blended into juice by the demons) ----------
             const WW=['sword','flame','ghost','crown','bones','torch','curse','witch','blade','armor','magic','skull','tower','spell','gloom','dread','abyss','relic','rogue','grave','ember','fiend','vault','haunt','demon','chain','dirge','altar','knave','siege','knife','cloak','beast','blood','crypt','death','elder','flesh','ghoul','heart','lance','noble','quest','amber','brute','charm','forge','glyph','jewel','wrath'];
             const fb=(g,w)=>{const r=Array(5).fill('x'),u=w.split('');for(let i=0;i<5;i++)if(g[i]==w[i]){r[i]='g';u[i]=null}for(let i=0;i<5;i++)if(r[i]!='g'){const k=u.indexOf(g[i]);if(k>=0){r[i]='y';u[k]=null}}return r.join('')};
             const WK=['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'],wk=(r,i)=>r==2?(i<0?[410,230,38]:i>=7?[629,230,31]:[452+i*25,230,23]):[410+r*12+i*25,162+r*34,23],WCOL={g:'#2f9e44',y:'#d9a60a',x:'#3a3a44'};
             function wsub(g){if(g.cur.length<5)return;const gs=g.cur.toLowerCase(),f=fb(gs,g.w.toLowerCase());g.rows.push([g.cur,f]);[...g.cur].forEach((L,i)=>{const o={x:0,y:1,g:2};if(!(L in g.k)||o[f[i]]>o[g.k[L]])g.k[L]=f[i]});if(g.cur==g.w)g.res='win';else if(g.rows.length>=6)g.res='lose';g.cur=''}
             function wtype(g,k){if(k=='ENTER')wsub(g);else if(k=='DEL')g.cur=g.cur.slice(0,-1);else if(g.cur.length<5)g.cur+=k}
-            const wordle=game('Wordle','Guess the secret 5-letter word in 6 tries (type or click). Green = right spot, yellow = wrong spot, grey = not in the word. Fail and spiked walls close in and impale you!','squash',()=>({w:rnd(WW).toUpperCase(),rows:[],cur:'',k:{}}),{hx:395,
+            const wordle=game('Wordle','Guess the secret 5-letter word in 6 tries (type or click). Green = right spot, yellow = wrong spot, grey = not in the word. Fail and the demons toss you in a blender and drink you!','squash',()=>({w:rnd(WW).toUpperCase(),rows:[],cur:'',k:{}}),{hx:395,
                 down(g,x,y){WK.forEach((row,r)=>{[...row].forEach((L,i)=>{const[kx,ky,kw]=wk(r,i);if(hit(x,y,kx,ky,kw,30))wtype(g,L)});if(r==2){[[-1,'ENTER'],[7,'DEL']].forEach(([i,k])=>{const[kx,ky,kw]=wk(2,i);if(hit(x,y,kx,ky,kw,30))wtype(g,k)})}})},
                 key(g,e){if(e.ctrlKey||e.metaKey||e.altKey)return false;if(/^[a-z]$/i.test(e.key)){wtype(g,e.key.toUpperCase());return true}if(e.key=='Enter'){wtype(g,'ENTER');return true}if(e.key=='Backspace'){wtype(g,'DEL');return true}return false},
                 draw(g){say(g.res=='win'?'You cracked it!':g.res?'The word was '+g.w:'Guess '+(g.rows.length+1)+' of 6',g.res=='win'?'#6ee7a0':g.res?'#ef4444':'#ffd84a');
@@ -3197,7 +3228,7 @@ ${G}
                 const bad=d.upd(c,dt);if(bad&&c.hurt<=0)srHurt(c,typeof bad=='string'?bad:'spike');
                 if(G.state=='secret'&&G.hx>=715){c.gold=90+Math.floor(Math.random()*61);G.xg+=c.gold;G.state='secretOut';c.out=0;G.moving=0;   // puzzle-room reward: 90-150 (was 35-60)
                     for(let i=0;i<30;i++)G.cn.push({x:745,y:320,vx:(Math.random()-.5)*300,vy:-Math.random()*320,l:1.3})}
-            }else if(G.state=='secretDie'){const D=c.dead;D.t+=dt;G.moving=0;if(c.def.tick)c.def.tick(c,dt);if(G.gal&&D.click&&D.t>.6){galExit();return}if(D.click&&D.t>.6){c.bl.push({x:D.x,y:D.y+12,sd:Math.random()*100});c.rem.push({x:D.x,y:D.y+14,f:D.f,kind:({spike:'impale',axe:'chop',boulder:'smear',lava:'lavacrust',ghost:'soul',fire:'scorch',dart:'darts',gas:'toxic',ice:'iceimpale',fall:'rubble'})[D.type]||'rubble',nohusk:1,sd:Math.random()*100});G.state='secret';G.hx=70;G.hy=320;c.hurt=.8;c.vx=0;c.vy=0;c.dead=null;if(c.def.reset)c.def.reset(c)}}else{c.out+=dt;if(c.out>1.8){G.state='play';$('#q').textContent=G.qtxt;G.hx=G.sec.x;G.hy=186;G.face=1}}}
+            }else if(G.state=='secretDie'){const D=c.dead;D.t+=dt;G.moving=0;if(c.def.tick)c.def.tick(c,dt);if(G.gal&&D.click&&D.t>.6){galExit();return}if(D.click&&D.t>.6){c.bl.push({x:D.x,y:D.y+12,sd:Math.random()*100});c.rem.push({x:D.x,y:D.y+14,f:D.f,kind:({spike:'impale',axe:'chop',boulder:'smear',lava:'lavacrust',ghost:'soul',fire:'scorch',dart:'darts',gas:'toxic',ice:'iceimpale',fall:'rubble',squash:'juice'})[D.type]||'rubble',nohusk:1,sd:Math.random()*100});G.state='secret';G.hx=70;G.hy=320;c.hurt=.8;c.vx=0;c.vy=0;c.dead=null;if(c.def.reset)c.def.reset(c)}}else{c.out+=dt;if(c.out>1.8){G.state='play';$('#q').textContent=G.qtxt;G.hx=G.sec.x;G.hy=186;G.face=1}}}
         function drawSecret(now){
             const c=G.sc,d=c.def,P=SRP[d.pal]||SRP.stone;ctx.fillStyle='#0a0710';ctx.fillRect(0,0,W,H);
             for(let y=0;y<230;y+=20)for(let x=((y/20|0)%2)*25-25;x<W;x+=50){ctx.fillStyle=(Math.abs(x*3+y*5)%4)?P.a:P.b;ctx.fillRect(x+1,y+1,48,18)}
@@ -4072,6 +4103,11 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 const m=(o.m||1)>1?1.25:1,sg=Math.sin(o.sd||0)>0?1:-1;
                 for(let j=0;j<6;j++){O(j%2?'#d8e08a':'#8fcf3f',x+sg*(30+j*9)*m+Math.sin(j*4.1)*3,b+3+Math.sin(j*2.7)*4,2+(j%3))}
                 lifeFruit(x,b+2,m,1,true,.5+.3*Math.sin(now/500))}
+            else if(o.kind=='juice'){ // all that is left of him: a spilled puddle of red juice, a few foam bubbles and the word's letter tiles
+                const rr=54;ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.ellipse(x,b+3,rr+4,rr*.3+2,0,0,7);ctx.fill();
+                ctx.fillStyle='#b5173a';ctx.beginPath();ctx.ellipse(x,b+2,rr,rr*.27,0,0,7);ctx.fill();ctx.fillStyle='#e8455f';ctx.beginPath();ctx.ellipse(x-4,b+1,rr*.66,rr*.17,0,0,7);ctx.fill();
+                for(let j=0;j<5;j++){const q=Math.sin((o.sd||0)*7.1+j*3.9);ctx.fillStyle=j%2?'#2f9e44':'#d9a60a';ctx.fillRect(x+q*rr*.7-4,b-2+Math.sin(j*2.3)*3,8,8)}
+                for(let j=0;j<4;j++){const q=Math.sin((o.sd||0)*3.3+j*5.7);ctx.fillStyle='#ffc2cf';ctx.beginPath();ctx.arc(x+q*rr*.6,b+1+Math.cos(j*4.1)*3,2+(j%2),0,7);ctx.fill()}}
             else if(o.kind=='paste'){ // what is left of him: a puddle of pink paste with chunks, under where the spout was
                 const m=o.m||1,rr=48*(m>1?1.25:1);ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.ellipse(x,b+3,rr+4,rr*.3+2,0,0,7);ctx.fill();
                 ctx.fillStyle='#a8505c';ctx.beginPath();ctx.ellipse(x,b+2,rr,rr*.27,0,0,7);ctx.fill();ctx.fillStyle='#d9808a';ctx.beginPath();ctx.ellipse(x-3,b+1,rr*.7,rr*.19,0,0,7);ctx.fill();
