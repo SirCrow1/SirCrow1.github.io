@@ -797,7 +797,7 @@ delete VO[14];delete VO[18];delete VO[27];   // these are now timed in absolute 
 Object.assign(BA,{'s:spike':1.2,'s:axe':1.6,'s:boulder':1.5,'s:lava':2.8,'s:ghost':2.8,'s:fire':2.9,'s:dart':1.6,'s:gas':1.7,'s:ice':1.2,'s:fall':1.8});Object.assign(LD,{'s:spike':1.4,'s:axe':1.6,'s:boulder':1.5,'s:lava':3.0,'s:ghost':3.0,'s:fire':1.6,'s:dart':1.6,'s:gas':1.8,'s:ice':1.4,'s:fall':1.8});
 KN[30]='Lava Bath';ONES[30]=ONES['s:lava'];BEDS[30]=BEDS['s:lava'];BA[30]=2.8;LD[30]=3.4;
 // puzzle-room deaths: each gets its own entry and reuses the sound of a death that fits it
-[['crush',20,'Disc Crush',1.5],['stack','s:boulder','Disc Stack',2.2],['hang','s:gas','Hanged',1.8],['card','s:axe','Razor Cards',2.0],['slab','s:boulder','Tile Crush',1.8],['chomp','s:ghost','Pac Chomp',2.4],['rps','s:axe','Throw Down',2.2],['claw','s:axe','Sphinx Claws',2.2],['squash',5,'Spike Walls',1.5],['punch','s:boulder','Fist',1.4]].forEach(([n,s,nm,d])=>{const k='s:'+n;ONES[k]=t=>ONES[s](t);BEDS[k]=()=>{BEDS[s]&&BEDS[s]()};BA[k]=d;LD[k]=d+.2;KN[k]=nm});
+[['quarter','s:axe','Quartered',2.0],['stack','s:boulder','Disc Stack',2.2],['hang','s:gas','Hanged',1.8],['card','s:axe','Razor Cards',2.0],['slab','s:boulder','Tile Crush',1.8],['chomp','s:ghost','Pac Chomp',2.4],['rps','s:axe','Throw Down',2.2],['sand','s:boulder','Buried Alive',2.6],['squash',5,'Spike Walls',1.5],['flag','s:dart','Flagpole',1.6]].forEach(([n,s,nm,d])=>{const k='s:'+n;ONES[k]=t=>ONES[s](t);BEDS[k]=()=>{BEDS[s]&&BEDS[s]()};BA[k]=d;LD[k]=d+.2;KN[k]=nm});
 const KO=Object.keys(ONES).map(k=>/^\d+$/.test(k)?+k:k);let tc=0,lastFit='';
 function newSession(){const P={};P.d=ac.createGain();P.d.gain.value=DG;P.d.connect(B.s.d);const cv=ac.createConvolver();cv.buffer=rvb;const rgn=ac.createGain();rgn.gain.value=.45;cv.connect(rgn);rgn.connect(P.d);P.r=cv;P.srcs=[];P.em=[];P.tm=0;P.t0=0;return P}
 function runSession(S){S.nt=S.t0;S.tm=setInterval(safe(()=>{const now=ac.currentTime;if(S.nt<now-.05)S.nt=now;
@@ -2229,9 +2229,9 @@ ${G}
         let SAVED=null;   // whatever screen you were on (a live run, or the scorecard) while the Death Gallery page is open
         const GN=[...Array(30).keys()].map(String);   // 30 main deaths: #30 'Lava Bath' was removed, so badges can still be completed
         const GNI=['☠️','🪓','🦷','🧪','👻','⛰️','🏹','🔥','❄️','⚡','🚚','🐊','💥','🕳️','⚔️','🌊','📦','👹','⚙️','🪳','🔨','🍲','🌀','🪆','🪦','🥩','🌳','☢️','⏳','🦠','🌋'];
-        const GSK=['spike','axe','boulder','lava','ghost','fire','dart','gas','ice','fall','crush','stack','hang','card','slab','chomp','rps','claw','squash','punch'];
-        const GSI={spike:'🗡️',axe:'🪓',boulder:'🪨',lava:'🌋',ghost:'👻',fire:'🔔',dart:'🎯',gas:'☁️',ice:'🧊',fall:'🕳️',crush:'🔵',stack:'🔴',hang:'🪢',card:'🃏',slab:'🔢',chomp:'🟡',rps:'✂️',claw:'🐾',squash:'🧱',punch:'🥊'};
-        const SRIDX={spike:0,boulder:1,axe:2,fire:3,dart:4,gas:5,fall:6,lava:7,ghost:8,ice:9,crush:11,stack:10,hang:12,card:13,slab:14,chomp:15,rps:16,claw:17,squash:18,punch:19};
+        const GSK=['spike','axe','boulder','lava','ghost','fire','dart','gas','ice','fall','quarter','stack','hang','card','slab','chomp','rps','sand','squash','flag'];
+        const GSI={spike:'🗡️',axe:'🪓',boulder:'🪨',lava:'🌋',ghost:'👻',fire:'🔔',dart:'🎯',gas:'☁️',ice:'🧊',fall:'🕳️',quarter:'⛓️',stack:'🔴',hang:'🪢',card:'🃏',slab:'🔢',chomp:'🟡',rps:'✂️',sand:'🏜️',squash:'🧱',flag:'🚩'};
+        const SRIDX={spike:0,boulder:1,axe:2,fire:3,dart:4,gas:5,fall:6,lava:7,ghost:8,ice:9,quarter:11,stack:10,hang:12,card:13,slab:14,chomp:15,rps:16,sand:17,squash:18,flag:19};
         const galNName=k=>k=='24'?'Family Reunion':k=='25'?'Meat Grinder':k=='26'?'The Life Tree':k=='27'?'Nuclear Strike':k=='28'?'The Hundred-Year Second':k=='29'?'Patient Zero':k=='30'?'Lava Bath':DN[+k];
         const galTitle=t=>t.toLowerCase().replace(/(^|\s)\S/g,m=>m.toUpperCase());
         let toastT=0;
@@ -2511,7 +2511,7 @@ ${G}
         const SRP={stone:{a:'#231c2e',b:'#2a2236',f:'#1d1627',g:'#241c30'},moss:{a:'#1b2a24',b:'#223329',f:'#142019',g:'#1a2b22'},lava:{a:'#2e1c1c',b:'#3a2222',f:'#241313',g:'#301919'},ice:{a:'#1d2a3a',b:'#243649',f:'#16212f',g:'#1c2b3d'}};
         let lastSR=-1;
         const srNear=(ax,ay,r)=>Math.hypot(G.hx-ax,(G.hy-8)-ay)<r;
-        const SDN={spike:['IMPALED ON SPIKES','#ff4a4a'],axe:['CHOPPED IN HALF','#ff8c1a'],boulder:['SQUISHED BY A BOULDER','#d2b48c'],lava:['SWALLOWED BY LAVA','#ff6a1a'],ghost:['LIFE DRAINED BY A GHOST','#9fd8ff'],fire:['TORN APART BY THE CHAOS MELODY','#ff7bd5'],dart:['RIDDLED WITH DARTS','#ffb347'],gas:['GASSED','#a8ff3c'],ice:['PIERCED BY ICE SPIKES','#8fe8ff'],fall:['FELL INTO THE PIT','#c9b8ff'],crush:['CRUSHED BY A GIANT DISC','#60a5fa'],stack:['PACKED UNDER FOUR DISCS','#f87171'],hang:['HANGED','#d2b48c'],card:['SHREDDED BY RAZOR CARDS','#ffd84a'],slab:['GROUND INTO THE WALL BY A TILE','#9ca3af'],chomp:['CHOMPED BY THE PAC-DEMON','#fde047'],rps:['CUT AND SMASHED BY HIS THROWS','#e5e7eb'],claw:['MAULED BY THE SPHINX','#e0ad4a'],squash:['IMPALED BETWEEN SPIKED WALLS','#6ee7a0'],punch:['PUNCHED INTO A WALL','#ff7a3a']};
+        const SDN={spike:['IMPALED ON SPIKES','#ff4a4a'],axe:['CHOPPED IN HALF','#ff8c1a'],boulder:['SQUISHED BY A BOULDER','#d2b48c'],lava:['SWALLOWED BY LAVA','#ff6a1a'],ghost:['LIFE DRAINED BY A GHOST','#9fd8ff'],fire:['TORN APART BY THE CHAOS MELODY','#ff7bd5'],dart:['RIDDLED WITH DARTS','#ffb347'],gas:['GASSED','#a8ff3c'],ice:['PIERCED BY ICE SPIKES','#8fe8ff'],fall:['FELL INTO THE PIT','#c9b8ff'],quarter:['PULLED APART BY CHAINS','#9ca3af'],stack:['PACKED UNDER FOUR DISCS','#f87171'],hang:['HANGED','#d2b48c'],card:['SHREDDED BY RAZOR CARDS','#ffd84a'],slab:['GROUND INTO THE WALL BY A TILE','#9ca3af'],chomp:['CHOMPED BY THE PAC-DEMON','#fde047'],rps:['CUT AND SMASHED BY HIS THROWS','#e5e7eb'],sand:['BURIED ALIVE BY THE SPHINX','#e0ad4a'],squash:['IMPALED BETWEEN SPIKED WALLS','#6ee7a0'],flag:['SKEWERED BY A FLAGPOLE','#ff6b6b']};
         const SRC={stone:'#ffd84a',moss:'#86efac',lava:'#ff8c1a',ice:'#8fe8ff'};
         // ICE SLIDE layout: 7 spike clusters spread over the WHOLE floor. A layout is only used if (1) no straight lane gets through (so walking straight always kills you)
         // and (2) a weaving path still exists (checked with a flood-fill, keeping a safety margin), so it is hard but never impossible.
@@ -2571,7 +2571,7 @@ ${G}
                 ctx.save();ctx.globalAlpha=o.a??1;if(o.f)ctx.filter=o.f;if(o.clip){ctx.beginPath();ctx.rect(o.clip[0],o.clip[1],o.clip[2],o.clip[3]);ctx.clip()}
                 const pv=o.pv||0;ctx.translate(x+(o.dx||0),fy+(o.dy||0)-pv);ctx.rotate(o.rot||0);ctx.scale(F*(o.mx||1),o.my??1);if(o.lc){ctx.beginPath();o.lc.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.clip()}ctx.drawImage(im.img,n*120,0,120,80,-132,-176+pv,264,176);ctx.restore()};
             const spray=(t0)=>{if(t<t0)return;const u=Math.min(1,(t-t0)/.7),old=G.sp;G.sp=D.sp;for(let j=0;j<3;j++)sprayAt(j,x+(j-1)*18,fy-50-j*6,.7+u*.8,1-u*.9,j==1?-1:1);G.sp=old};
-            const PT={spike:[0,32],axe:[.2,46],dart:[.9,34],gas:[1.4,30],ice:[.35,38],crush:[.5,50],squash:[.8,42],stack:[.5,58],slab:[1.1,46],chomp:[1.25,46],rps:[1.7,54],card:[1.3,40],claw:[1.8,50]};   // blood pool: [starts at, size]
+            const PT={spike:[0,32],axe:[.2,46],dart:[.9,34],gas:[1.4,30],ice:[.35,38],quarter:[1.3,44],squash:[.8,42],stack:[.5,58],slab:[1.1,46],chomp:[1.25,46],rps:[.5,52],card:[1.3,40],flag:[.5,40]};   // blood pool: [starts at, size]
             if(PT[type]){const pt=PT[type],pu=cl((t-pt[0])/.9,0,1),pcx=type=='fire'?bx:x;if(pu>0){ctx.fillStyle='rgba(110,15,23,.9)';ctx.beginPath();ctx.ellipse(pcx,fy-2,pu*pt[1],pu*pt[1]*.28,0,0,7);ctx.fill()}}
 
             if(type=='spike'){ // impaled on the pit's own spikes (they stay raised, the pit is drawn by the room)
@@ -2702,11 +2702,16 @@ ${G}
                 if(t>.3)for(let j=0;j<5;j++)R('#7a121b',x-16+j*8,fy-100+((now/14+j*23)%100),2,5);
                 for(let j=0;j<10;j++){const ph=(now/1600+j*.1)%1;R('rgba(220,245,255,'+(.6*(1-ph))+')',x-70+j*15+Math.sin(now/500+j)*6,fy-ph*70,3,3)}}
 
-            else if(type=='crush'){ // TIC-TAC-TOE: a giant "O" disc drops from the ceiling, flattens him, then rolls away
-                const u=cl(t/.45,0,1),k=cl((t-.45)/.15,0,1),dcy=fy-62-(1-u*u)*420,rl=t>1.3?(t-1.3)*120+(t-1.3)*(t-1.3)*260:0;
-                if(t<.45)sp({idle:1});else sp({idle:1,n:0,my:1-.88*k,mx:1+.6*k});
-                if(t>.5)for(let j=0;j<8;j++)R('#7a121b',x-40+j*11,fy-4,6,3);
-                const dx=x+rl;dot(dx,dcy,62,'#1d4ed8');dot(dx,dcy,52,'#3b82f6');ctx.strokeStyle='#dbeafe';ctx.lineWidth=11;ctx.beginPath();ctx.arc(dx,dcy,29,0,7);ctx.stroke()}
+            else if(type=='quarter'){ // TIC-TAC-TOE: four chain hooks fly in from the corners of a giant X, grab him and tear him into four pieces
+                const e=Math.pow(cl((t-.55)/.8,0,1),2),hk=cl((t-.1)/.3,0,1),Q=[[-1,-1],[1,-1],[-1,1],[1,1]],sway=Math.sin(now/260)*(t>1.4?3:0);
+                if(t<.55)sp({idle:1,dx:t>.35?Math.sin(now/28)*2:0});
+                else Q.forEach(q=>{const x0=q[0]<0?-300:0,y0=q[1]<0?-300:0;sp({idle:1,n:0,pv:44,dx:q[0]*e*150+sway,dy:q[1]*e*95,rot:q[0]*q[1]*e*.12,lc:[[x0,y0],[x0+300,y0],[x0+300,y0+300],[x0,y0+300]]})});
+                ctx.save();ctx.lineCap='round';
+                Q.forEach(q=>{const ax=x+q[0]*340,ay=q[1]<0?8:fy+34,kx=x+q[0]*(e*150+10)+sway,ky=fy-44+q[1]*e*95,hx=ax+(kx-ax)*hk,hy=ay+(ky-ay)*hk;
+                    ctx.setLineDash([9,5]);ctx.strokeStyle='#9ca3af';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(hx,hy);ctx.stroke();ctx.setLineDash([]);
+                    ctx.fillStyle='#e5e7eb';ctx.beginPath();ctx.arc(hx,hy,7,0,7);ctx.fill();ctx.strokeStyle='#e5e7eb';ctx.lineWidth=3;ctx.beginPath();ctx.arc(hx,hy,11,.3,2.6);ctx.stroke()});
+                if(e>0){ctx.strokeStyle='#b3121c';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x-e*150-22,fy-44);ctx.lineTo(x+e*150+22,fy-44);ctx.moveTo(x,fy-44-e*95-22);ctx.lineTo(x,fy-44+e*95+22);ctx.stroke()}
+                ctx.restore();if(t>.55)spray(.6)}
 
             else if(type=='stack'){ // CONNECT 4: four giant discs drop down his column one after another, each one packing him flatter
                 const n=[0,1,2,3].map(j=>cl((t-.15-j*.5)/.3,0,1)),L=n.filter(v=>v>=1).length;
@@ -2749,20 +2754,28 @@ ${G}
                 if(cx>x-80&&t<2.4){ctx.fillStyle='#b91c1c';for(let j=0;j<5;j++)ctx.fillRect(cx+r0*.7-j*3,cy-6+j*5+((now/25+j*9)%14),4,7)}
                 if(t>.9)spray(1.0)}
 
-            else if(type=='rps'){ // ROCK PAPER SCISSORS: all three of the demon's throws land on him: scissors snip, paper slices, then the rock smashes him flat
-                const sn=cl((t-.2)/.35,0,1),pp=cl((t-.85)/.3,0,1),rk=cl((t-1.45)/.22,0,1);
-                if(t<1.67)sp({idle:1,dx:t>.55?Math.sin(now/28)*2:0});else sp({idle:1,n:0,mx:1.55,my:.1});
-                if(t<1.67){[-1,1].forEach(s=>{const base=x+s*200,tip=x+s*(70-106*sn),yy=fy-48+s*14*(1-sn);ctx.fillStyle='#cbd5e1';ctx.beginPath();ctx.moveTo(base,yy-9);ctx.lineTo(tip,yy);ctx.lineTo(base,yy+9);ctx.fill();dot(base,yy,15,'#f97316');dot(base,yy,7,'#17121f')});if(sn>=1&&t<.8)txt('SNIP!',x,fy-100,24,'#ffd84a')}
-                if(pp>0&&t<1.67){const sx=x-120+240*pp,sy=fy-135+120*pp;ctx.save();ctx.lineCap='round';[['#ff2d2d',6],['#fff',2]].forEach(([c,w])=>{ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x-120,fy-135);ctx.lineTo(sx,sy);ctx.stroke()});ctx.translate(sx,sy);ctx.rotate(.6);R('#f8fafc',-34,-26,68,52);R('#c0262d',-34,24,68,3);ctx.restore()}
-                if(rk>0){const ry=-80+(fy-48+80)*rk*rk;ctx.fillStyle='#6b7280';ctx.beginPath();[[-52,30],[-40,-26],[-6,-46],[34,-34],[54,6],[40,38],[-20,46]].forEach((q,i)=>i?ctx.lineTo(x+q[0],ry+q[1]):ctx.moveTo(x+q[0],ry+q[1]));ctx.closePath();ctx.fill();ctx.fillStyle='#9ca3af';ctx.beginPath();ctx.moveTo(x-34,ry-18);ctx.lineTo(x-4,ry-38);ctx.lineTo(x+22,ry-26);ctx.lineTo(x-10,ry-6);ctx.fill();if(rk>=1&&t<2.1)txt('SMASH!',x,fy-110,28,'#ffd84a')}
-                if(t>1.67)spray(1.7)}
+            else if(type=='rps'){ // ROCK PAPER SCISSORS: the demon throws all three at him: the ROCK crushes him flat, he is turned to PAPER and folded up, then SCISSORS cut the packet to shreds
+                const ph=(a,b)=>cl((t-a)/(b-a),0,1),rk=ph(.2,.45),rl=ph(1.0,1.25),inf=ph(1.25,1.55),f1=ph(1.7,2.2),f2=ph(2.3,2.8),sn=ph(3.05,3.4),pcx=x+16,pcy=fy-66,Tn=(a)=>t>=a&&t<a+.7?40+Math.min(14,Math.floor((t-a)/.7*15)):-1;
+                drawMon(x+200,fy+14,[Tn(0),Tn(1.0),Tn(2.4)].find(v=>v>=0)??Math.floor(now/150)%6,1,0,false);   // the game's own demon, winding up and swinging for each throw
+                const pc=(qx,qy,sx,sy,gy)=>{const im=sprites.idle;if(!im.loaded)return;ctx.save();ctx.filter='grayscale(1) brightness(1.8) contrast(.85)';ctx.translate(x,fy);ctx.scale(F,gy);ctx.translate(0,-44);ctx.scale(sx,sy);ctx.beginPath();ctx.rect(qx<0?-300:0,qy<0?-300:0,300,300);ctx.clip();ctx.drawImage(im.img,0,0,120,80,-132,-132,264,176);ctx.restore()};
+                if(t<.45)sp({idle:1,dx:t>.15?Math.sin(now/28)*2:0});
+                else if(t<1.25)sp({idle:1,n:0,mx:1.55,my:.1});
+                else if(t<3.4){const c1=Math.cos(f1*Math.PI),c2=Math.cos(f2*Math.PI),g=.1+.9*inf;[[-1,-1,c2,1],[1,-1,1,1],[-1,1,c2,c1],[1,1,1,c1]].forEach(q=>pc(q[0],q[1],q[2],q[3],g))}
+                if(t>.45&&t<1.3)spray(.45);
+                if(rk>0&&t<1.3){const ry=t<1?-100+(fy-48+100)*rk*rk:(fy-48)+(-fy-52)*rl;ctx.fillStyle='#6b7280';ctx.beginPath();[[-52,30],[-40,-26],[-6,-46],[34,-34],[54,6],[40,38],[-20,46]].forEach((q,i)=>i?ctx.lineTo(x+q[0],ry+q[1]):ctx.moveTo(x+q[0],ry+q[1]));ctx.closePath();ctx.fill();ctx.fillStyle='#9ca3af';ctx.beginPath();ctx.moveTo(x-34,ry-18);ctx.lineTo(x-4,ry-38);ctx.lineTo(x+22,ry-26);ctx.lineTo(x-10,ry-6);ctx.fill();if(rk>=1&&t<.9)txt('CRUSH!',x,fy-112,26,'#ffd84a')}
+                if(t>1.6&&t<2.9)txt('FOLD!',x,fy-112,24,'#e2e8f0');
+                if(t>=2.95&&t<3.5)[-1,1].forEach(s=>{const base=pcx+s*210,tip=pcx+s*(60-100*sn),yy=pcy+s*12*(1-sn);ctx.fillStyle='#cbd5e1';ctx.beginPath();ctx.moveTo(base,yy-8);ctx.lineTo(tip,yy);ctx.lineTo(base,yy+8);ctx.fill();dot(base,yy,14,'#f97316');dot(base,yy,6,'#17121f')});
+                if(t>3.4){for(let j=0;j<16;j++){const u=t-3.4,px=pcx+(((j*37)%90)-45)*u*1.3,py=Math.min(fy-3,pcy-(20+((j*53)%60))*u+260*u*u);ctx.save();ctx.translate(px,py);ctx.rotate(j+u*4*(j%3));R('#f1f5f9',-4,-3,8,6);R('#c0262d',-4,2,8,1);ctx.restore()}spray(3.4);if(t<3.9)txt('SNIP!',pcx,fy-112,26,'#ffd84a')}}
 
-            else if(type=='claw'){ // RIDDLE: the Sphinx's great paw rakes him three times, then slams down on what is left
-                const sw=[.3,.85,1.4],cur=sw.findIndex(q=>t>=q&&t<q+.3),sl=cl((t-1.72)/.18,0,1),paw=(px,py,r)=>{dot(px,py,r,'#c8922e');dot(px,py,r*.78,'#e0ad4a');for(let k=-1;k<=1;k++){dot(px+k*r*.5,py-r*1.05,r*.28,'#e0ad4a');ctx.fillStyle='#f5f5f4';ctx.beginPath();ctx.moveTo(px+k*r*.4-5,py+r*.6);ctx.lineTo(px+k*r*.4+5,py+r*.6);ctx.lineTo(px+k*r*.4+1,py+r*1.35);ctx.fill()}};
-                if(sl>=1)sp({idle:1,n:0,mx:1.4,my:.12});else sp({idle:1,dx:sw.some(q=>t>q+.1&&t<q+.5)?Math.sin(now/25)*3:0});
-                sw.forEach((q,i)=>{if(t<q+.1)return;const ox=(i-1)*26;ctx.save();ctx.lineCap='round';ctx.strokeStyle='#e11d1d';ctx.lineWidth=3;[0,1,2].forEach(k=>{ctx.beginPath();ctx.moveTo(x-34+ox+k*11,fy-92+k*2);ctx.lineTo(x+14+ox+k*11,fy-12+k*2);ctx.stroke()});ctx.restore()});
-                if(cur>=0&&sl==0){const p=(t-sw[cur])/.3,ox=(cur-1)*26;paw(x-23+ox+48*p,fy-92+80*p,30)}
-                if(sl>0)paw(x,-80+(fy-60+80)*sl*sl,62);if(t>.4)spray(.4)}
+            else if(type=='sand'){ // RIDDLE: the Sphinx's tomb floods with sand from the ceiling - his waist, his chest, his chin - and he is buried alive with one hand clawing out of the dune
+                const h=cl((t-.25)/2.6,0,1)*118,hu=h/118,top=fy-h,sink=hu>.6?(hu-.6)*40:0;
+                sp({idle:1,dy:sink,dx:t>.5&&hu<1?Math.sin(now/30)*(2+hu*3):0});
+                if(t>.15&&t<3.3)for(let j=0;j<44;j++){const q=((now/8+j*37)%320)/320,py=q*(top-2);R(j%2?'#e8c77a':'#c9a24f',x+Math.sin(j*12.9)*13,py,3,3)}
+                ctx.save();ctx.beginPath();ctx.moveTo(x-190,fy+14);ctx.bezierCurveTo(x-120,fy,x-70,fy-h,x,fy-h);ctx.bezierCurveTo(x+70,fy-h,x+120,fy,x+190,fy+14);ctx.closePath();ctx.fillStyle='#d9b45f';ctx.fill();ctx.clip();
+                ctx.fillStyle='rgba(120,80,20,.14)';for(let k=0;k<12;k++)ctx.fillRect(x-200,top+k*11,400,3);ctx.restore();
+                ctx.strokeStyle='#b8913f';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-190,fy+14);ctx.bezierCurveTo(x-120,fy,x-70,fy-h,x,fy-h);ctx.bezierCurveTo(x+70,fy-h,x+120,fy,x+190,fy+14);ctx.stroke();
+                if(hu>=1&&t<5.5){const w=t<4.2?Math.sin(now/90)*.35:.55+Math.min(.4,(t-4.2)*.3),ax=x,ay=top+4;ctx.save();ctx.translate(ax,ay);ctx.rotate(w);R('#7d8590',-4,-28,8,30);R('#cfd4da',-8,-40,16,14);for(let k=0;k<3;k++)R('#cfd4da',-8+k*6,-46,4,8);ctx.restore()}
+                if(t>1.0&&t<3.2){ctx.save();ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.fillStyle='#e6dcc0';ctx.fillText('*cough*',x+40,fy-100-((now/25)%18));ctx.restore()}}
 
             else if(type=='squash'){ // WORDLE: two spiked tile-walls slam shut from both sides and impale him
                 const u=cl((t-.1)/.7,0,1),d=320-u*u*302,k=d<70?cl((70-d)/52,0,1):0,LT='WORDLE';
@@ -2772,13 +2785,12 @@ ${G}
                     ctx.fillStyle='#d1d5db';for(let y=fy-168;y<fy+14;y+=22){ctx.beginPath();ctx.moveTo(wx,y);ctx.lineTo(wx-q*44,y+10);ctx.lineTo(wx,y+20);ctx.fill()}});
                 if(k>.3){for(let j=0;j<10;j++)R('#b3121c',x+(j%2?1:-1)*(8+j*2),fy-150+j*14,3,6+((now/15+j*7)%10));spray(.9)}}
 
-            else if(type=='punch'){ // MINESWEEPER: a giant demon fist gripping a mine punches him clean across the room into the wall
-                const hit=.3,v=Math.max(0,t-hit),p=cl(v/.35,0,1),tx=70-x,fx=x+34+Math.max(0,t-.45)*1400+(1-cl(t/hit,0,1))*420;
-                if(t<hit)sp({idle:1});else sp({idle:1,n:0,pv:55,dx:tx*p,dy:-Math.sin(p*Math.PI)*70,rot:p<1?-F*p*6.3:-F*1.55,f:p>=1?'brightness(.8)':''});
-                ctx.fillStyle='#8b1a1a';ctx.fillRect(fx,fy-92,420,44);dot(fx,fy-70,38,'#a31f1f');for(let j=0;j<4;j++)dot(fx-30,fy-90+j*18,9,'#c42b2b');txt('💣',fx-60,fy-56,34,'#fff');
-                if(t>hit&&t<hit+.3){txt('WHAM!',x-20,fy-130,44,'#ffd84a');ctx.save();ctx.globalAlpha=1-(t-hit)/.3;dot(x,fy-70,60,'#fff');ctx.restore()}
-                if(p>=1){ctx.strokeStyle='#07050a';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(30,fy-100);ctx.lineTo(48,fy-70);ctx.lineTo(34,fy-40);ctx.moveTo(48,fy-70);ctx.lineTo(70,fy-82);ctx.stroke();for(let j=0;j<3;j++)txt('★',70+Math.cos(now/200+j*2.1)*26,fy-110+Math.sin(now/200+j*2.1)*6,16,'#ffd84a')}}
-
+            else if(type=='flag'){ // MINESWEEPER: the mine you clicked marks you in turn - a giant flagpole is driven down through him and plants him in the floor, a red flag unfurling over his body
+                const u=cl((t-.3)/.14,0,1),py=-110+(fy-6+110)*u*u,hit=t>=.44,pe=cl((t-.5)/.6,0,1),top=py-226,w=Math.sin(now/110)*5*pe;
+                if(!hit)sp({idle:1,dx:t>.15?Math.sin(now/28)*2:0});else sp({idle:1,n:0,rot:F*.22*pe,my:1-.1*pe,dx:Math.sin(now/40)*(t<.9?2:0)});
+                ctx.fillStyle='#d1d5db';ctx.fillRect(x-4,top,8,226);ctx.fillStyle='#9ca3af';ctx.fillRect(x+1,top,3,226);ctx.beginPath();ctx.moveTo(x-4,py);ctx.lineTo(x+4,py);ctx.lineTo(x,py+14);ctx.fill();dot(x,top-2,5,'#f3f4f6');
+                if(pe>0){const fw=62*pe;ctx.fillStyle='#e11d1d';ctx.beginPath();ctx.moveTo(x+4,top+4);ctx.lineTo(x+4+fw,top+16+w);ctx.lineTo(x+4,top+34);ctx.fill();ctx.fillStyle='#9f1212';ctx.beginPath();ctx.moveTo(x+4,top+24);ctx.lineTo(x+4+fw*.8,top+22+w);ctx.lineTo(x+4,top+34);ctx.fill()}
+                if(hit){ctx.fillStyle='#8a141c';for(let j=0;j<5;j++)ctx.fillRect(x-3+(j%2)*4,fy-110+j*16,2,10+((now/20+j*13)%16));spray(.5)}}
         }
 
         // a portcullis hanging out of a stone housing that is built INTO the back wall, so it reads as a real gate that slides up into the wall
@@ -2977,7 +2989,7 @@ ${G}
                 if(Math.random()<.3)return rnd(em);   // the demon slips up now and then, so he can be beaten
                 let m=f('O');if(m==null)m=f('X');if(m!=null)return m;if(!b[4])return 4;const cs=[0,2,6,8].filter(i=>!b[i]);return cs.length?rnd(cs):rnd(em)}
             function tn(g,w){const l=L3.find(l=>l.every(i=>g.b[i]==w));if(l){g.wl=l;g.res=w=='X'?'win':'lose'}else if(g.b.every(v=>v))g.rs=1.4;else{g.turn=w=='X'?'O':'X';g.dl=.6+Math.random()*.5}}
-            const ttt=game('Tic-Tac-Toe','You are X and you move first. Get three in a row before the demon does - if he wins, you die!','crush',()=>({b:Array(9).fill(0),turn:'X',dl:0,rs:0}),{
+            const ttt=game('Tic-Tac-Toe','You are X and you move first. Get three in a row before the demon does - if he wins, you die!','quarter',()=>({b:Array(9).fill(0),turn:'X',dl:0,rs:0}),{
                 down(g,x,y){if(g.turn!='X'||g.rs)return;const cx=Math.floor((x-TX)/100),cy=Math.floor((y-TY)/100);if(cx<0||cx>2||cy<0||cy>2||g.b[cy*3+cx])return;g.b[cy*3+cx]='X';tn(g,'X')},
                 tick(g,dt){if(g.rs){g.rs-=dt;if(g.rs<=0){g.b=Array(9).fill(0);g.turn='X';g.rs=0}return}
                     if(g.turn=='O'&&(g.dl-=dt)<=0){g.b[tai(g.b)]='O';tn(g,'O')}},
@@ -3056,26 +3068,18 @@ ${G}
                     const mo=.12+.28*Math.abs(Math.sin(now/70))*(g.mv?1:.3);ctx.fillStyle='#fde047';ctx.beginPath();ctx.moveTo(g.px,g.py);ctx.arc(g.px,g.py,8.5,g.dir+mo,g.dir+2*Math.PI-mo);ctx.closePath();ctx.fill()}});
             // ---------- 7. ROCK PAPER SCISSORS: best of 5 against the demon, both hands revealed at the same instant (lose = punched into orbit) ----------
             const RP=['✊','✋','✌️'],RN=['ROCK','PAPER','SCISSORS'];
-            function demon(cx,cy,now,g){const sh=g.ph=='count'?Math.sin(g.rt*14)*6:0,win=g.ph=='show'&&g.rr==2,hurt=g.ph=='show'&&g.rr==1,by=cy+Math.sin(now/260)*3;
-                R('#4a0d18',cx-40,by+30,80,110);R('#6e1424',cx-40,by+30,80,8);   // torso
-                ctx.save();ctx.lineCap='round';ctx.strokeStyle='#a31f2f';ctx.lineWidth=14;ctx.beginPath();ctx.moveTo(cx-34,by+52);ctx.lineTo(cx-86,by+80+sh);ctx.stroke();ctx.restore();   // arm reaching out to the throw
-                ctx.fillStyle='#2b0a0a';[-1,1].forEach(q=>{ctx.beginPath();ctx.moveTo(cx+q*14,by-22);ctx.lineTo(cx+q*30,by-62);ctx.lineTo(cx+q*34,by-18);ctx.fill()});   // horns
-                dot(cx,by,34,'#c62828');dot(cx-4,by-6,28,'#d63a35');
-                [-1,1].forEach(q=>{ctx.fillStyle='#ffe34d';ctx.beginPath();ctx.moveTo(cx+q*6,by-6);ctx.lineTo(cx+q*22,by-(hurt?20:14));ctx.lineTo(cx+q*20,by-2);ctx.fill();dot(cx+q*16,by-8,2,'#111')});
-                ctx.fillStyle='#2a0508';ctx.beginPath();ctx.ellipse(cx,by+16,win?16:11,win?11:5,0,0,7);ctx.fill();ctx.fillStyle='#fff';for(let k=-2;k<=2;k++)ctx.fillRect(cx+k*6-2,by+(win?7:11),4,4);
-                ctx.fillStyle='#2b0a0a';ctx.beginPath();ctx.moveTo(cx-6,by+28);ctx.lineTo(cx+6,by+28);ctx.lineTo(cx,by+42);ctx.fill();if(win)txt('HA HA!',cx+6,by-76,16,'#ff6b6b')}
-            const rps=game('Rock Paper Scissors','First to 3 round wins takes the match. Pick your throw - you and the demon reveal at the very same moment. If he wins, his rock, paper and scissors all come down on you!','rps',()=>({sc:[0,0],ph:'pick',pl:0,de:0,rt:0,msg:''}),{
+            const rps=game('Rock Paper Scissors','First to 3 round wins takes the match. Pick your throw - you and the demon reveal at the very same moment. If he wins, he crushes you with rock, folds you like paper and cuts you with scissors!','rps',()=>({sc:[0,0],ph:'pick',pl:0,de:0,rt:0,msg:''}),{
                 down(g,x,y){if(g.ph!='pick')return;for(let i=0;i<3;i++)if(hit(x,y,200+i*140,340,120,80)){g.pl=i;g.de=Math.floor(Math.random()*3);g.ph='count';g.rt=0}},
                 tick(g,dt){g.rt+=dt;if(g.ph=='count'&&g.rt>=1.9){const r=(g.pl-g.de+3)%3;if(r==1)g.sc[0]++;if(r==2)g.sc[1]++;g.rr=r;g.msg=r==1?'You win the round!':r==2?'The demon wins the round!':'Tie! Throw again';g.ph='show';g.rt=0;if(g.sc[0]>=3)g.res='win';else if(g.sc[1]>=3)g.res='lose'}
                     else if(g.ph=='show'&&g.rt>1.4)g.ph='pick'},
-                draw(g,now){say('KNIGHT  '+g.sc[0]+'  -  '+g.sc[1]+'  DEMON      (first to 3)');const c=g.ph=='count',sh2=c?Math.sin(g.rt*14)*14:0;demon(585,150,now,g);
+                draw(g,now){say('KNIGHT  '+g.sc[0]+'  -  '+g.sc[1]+'  DEMON      (first to 3)');const c=g.ph=='count',sh2=c?Math.sin(g.rt*14)*14:0;{const dw=g.ph=='show'&&g.rr==2,dh=g.ph=='show'&&g.rr==1;drawMon(612+(c?Math.sin(g.rt*14)*3:0),300,dw?40+Math.min(14,Math.floor(g.rt/.09)):Math.floor(now/150)%6,.95,0,false,1,dh&&Math.floor(g.rt*10)%2?'brightness(2.2) saturate(.2)':'')}
                     ctx.font='84px sans-serif';ctx.textAlign='center';ctx.fillText(c?'✊':RP[g.pl],290,230+sh2);ctx.save();ctx.translate(500,0);ctx.scale(-1,1);ctx.fillText(c?'✊':g.ph=='show'?RP[g.de]:'✊',0,230+sh2);ctx.restore();
                     txt('YOU',290,262,15,'#9fd8ff');txt('DEMON',500,262,15,'#ff6b6b');
                     txt(c?(['ROCK...','PAPER...','SCISSORS...','SHOOT!'][Math.min(3,Math.floor(g.rt/.45))]):g.ph=='show'?g.msg:'Choose your throw!',395,315,26,g.ph=='show'?(g.rr==1?'#6ee7a0':g.rr==0?'#ffd84a':'#ef4444'):'#e6dcc0');
                     for(let i=0;i<3;i++){R(g.ph!='pick'&&g.pl==i?'#5b4a86':hov(200+i*140,340,120,80)&&g.ph=='pick'?'#5b4a86':'#2a2236',200+i*140,340,120,80);ctx.font='38px sans-serif';ctx.textAlign='center';ctx.fillText(RP[i],260+i*140,385);txt(RN[i],260+i*140,410,13,'#fff')}}});
             // ---------- 8. RIDDLE SPHINX: 5 riddles, 2 lives (lose = turned to stone) ----------
             const RD=[["I speak without a mouth and hear without ears. What am I?","An echo",["A shadow","The wind","A ghost"]],["The more you take, the more you leave behind. What am I?","Footsteps",["Time","Gold","Memory"]],["What has keys but cannot open locks?","A piano",["A map","A prison","A clock"]],["What gets wetter the more it dries?","A towel",["A sponge","The rain","A sword"]],["I have cities but no houses, mountains but no trees, and water but no fish.","A map",["A dream","A painting","An island"]],["What has a heart that does not beat?","An artichoke",["A statue","A clock","A stone"]],["What can you catch but never throw?","A cold",["A ball","A fish","A shadow"]],["I am tall when I am young and short when I am old.","A candle",["A tree","A wizard","A tower"]],["What has hands but cannot clap?","A clock",["A ghost","A statue","A skeleton"]],["What goes up but never comes down?","Your age",["Smoke","An arrow","A balloon"]]];
-            const rid=game('Riddle Sphinx','Answer all 5 riddles. You only have 2 lives - a second wrong answer and the Sphinx rakes you to ribbons!','claw',()=>({q:sh(RD).slice(0,5).map(q=>{const o=sh([q[1],...q[2]]);return{t:q[0],o,a:o.indexOf(q[1]),x:[]}}),i:0,lv:2,fl:0}),{
+            const rid=game('Riddle Sphinx','Answer all 5 riddles. You only have 2 lives - a second wrong answer and the Sphinx buries you alive!','sand',()=>({q:sh(RD).slice(0,5).map(q=>{const o=sh([q[1],...q[2]]);return{t:q[0],o,a:o.indexOf(q[1]),x:[]}}),i:0,lv:2,fl:0}),{
                 down(g,x,y){const q=g.q[g.i];for(let k=0;k<4;k++)if(hit(x,y,137+(k%2)*271,290+Math.floor(k/2)*68,255,56)&&!q.x.includes(k)){if(k==q.a){if(++g.i>=5)g.res='win'}else{q.x.push(k);g.fl=.5;if(--g.lv<=0)g.res='lose'}}},
                 tick(g,dt){g.fl=Math.max(0,g.fl-dt)},
                 draw(g){const q=g.q[Math.min(g.i,4)];say('Riddle '+Math.min(g.i+1,5)+' of 5');txt('♥ '.repeat(g.lv).trim()||'',620,92,18,'#ef4444','right');
@@ -3099,7 +3103,7 @@ ${G}
             const MC=9,MR=7,MNX=190,MNY=116,MNN=10,NC=['','#4aa8ff','#4ade80','#ff6b6b','#c084fc','#fb923c','#22d3ee','#fff','#999'];
             const mnb=i=>{const x=i%MC,y=Math.floor(i/MC),r=[];for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const nx=x+a,ny=y+b;if((a||b)&&nx>=0&&ny>=0&&nx<MC&&ny<MR)r.push(ny*MC+nx)}return r};
             function mrev(g,i){if(g.rv[i]||g.fl[i])return;g.rv[i]=1;if(!g.mn[i]&&!mnb(i).some(j=>g.mn[j]))mnb(i).forEach(j=>mrev(g,j))}
-            const mine=game('Minesweeper','Reveal every safe square without clicking a mine. Numbers show how many mines touch a square. Right-click (or the FLAG button) marks a mine. Hit one and you get punched into a wall!','punch',()=>({mn:null,rv:Array(MC*MR).fill(0),fl:Array(MC*MR).fill(0),fm:0}),{
+            const mine=game('Minesweeper','Reveal every safe square without clicking a mine. Numbers show how many mines touch a square. Right-click (or the FLAG button) marks a mine. Hit one and a giant flagpole skewers you!','flag',()=>({mn:null,rv:Array(MC*MR).fill(0),fl:Array(MC*MR).fill(0),fm:0}),{
                 down(g,x,y,e){if(hit(x,y,580,150,84,44)){g.fm=!g.fm;return}const cx=Math.floor((x-MNX)/40),cy=Math.floor((y-MNY)/40);if(cx<0||cx>=MC||cy<0||cy>=MR)return;const i=cy*MC+cx;if(g.rv[i])return;
                     if(e&&(e.button==2||e.shiftKey)||g.fm){g.fl[i]=g.fl[i]?0:1;return}if(g.fl[i])return;
                     if(!g.mn){const ban=[i,...mnb(i)],pool=sh([...Array(MC*MR).keys()].filter(j=>!ban.includes(j)));g.mn=Array(MC*MR).fill(0);pool.slice(0,MNN).forEach(j=>g.mn[j]=1)}
@@ -3107,7 +3111,7 @@ ${G}
                     mrev(g,i);if(g.rv.filter(v=>v).length==MC*MR-MNN)g.res='win'},
                 draw(g,now){say('Mines left: '+(MNN-g.fl.filter(v=>v).length),'#ffd84a');R(g.fm?'#9a3b3b':hov(580,150,84,44)?'#5b4a86':'#2a2236',580,150,84,44);txt('🚩 FLAG',622,178,16,'#fff');txt(g.fm?'ON':'off',622,204,12,'#9ca3af');txt('or right-click',622,236,11,'#9ca3af');
                     for(let i=0;i<MC*MR;i++){const[x,y]=grid(i,MNX,MNY,40,MC),v=g.rv[i];R(v?'#0f0b16':hov(x,y,40,40)?'#5b4a86':'#3b2f5c',x+1,y+1,38,38);if(!v)R('rgba(255,255,255,.12)',x+1,y+1,38,5);
-                        if(v&&g.mn&&g.mn[i]){dot(x+20,y+20,10,i==g.hit?'#ef4444':'#333');txt('✹',x+20,y+27,20,'#ffb020')}
+                        if(v&&g.mn&&g.mn[i]){if(i==g.hit)R('#7a1a24',x+1,y+1,38,38);ctx.strokeStyle='#9ca3af';ctx.lineWidth=2;for(let a=0;a<8;a++){ctx.beginPath();ctx.moveTo(x+20+Math.cos(a*.785)*8,y+20+Math.sin(a*.785)*8);ctx.lineTo(x+20+Math.cos(a*.785)*15,y+20+Math.sin(a*.785)*15);ctx.stroke()}dot(x+20,y+20,9,'#222');dot(x+17,y+17,2.5,'#aab')}
                         else if(v){let n=mnb(i).filter(j=>g.mn&&g.mn[j]).length;if(n)txt(n,x+20,y+28,22,NC[n])}
                         else if(g.fl[i])txt('🚩',x+20,y+27,20,'#fff')}}});
             SRM.push(conn,ttt,hang,mem,slide,maze,rps,rid,wordle,mine);
