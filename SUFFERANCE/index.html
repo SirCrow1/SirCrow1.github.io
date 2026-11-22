@@ -2511,7 +2511,7 @@ ${G}
         const SRP={stone:{a:'#231c2e',b:'#2a2236',f:'#1d1627',g:'#241c30'},moss:{a:'#1b2a24',b:'#223329',f:'#142019',g:'#1a2b22'},lava:{a:'#2e1c1c',b:'#3a2222',f:'#241313',g:'#301919'},ice:{a:'#1d2a3a',b:'#243649',f:'#16212f',g:'#1c2b3d'}};
         let lastSR=-1;
         const srNear=(ax,ay,r)=>Math.hypot(G.hx-ax,(G.hy-8)-ay)<r;
-        const SDN={spike:['IMPALED ON SPIKES','#ff4a4a'],axe:['CHOPPED IN HALF','#ff8c1a'],boulder:['SQUISHED BY A BOULDER','#d2b48c'],lava:['SWALLOWED BY LAVA','#ff6a1a'],ghost:['LIFE DRAINED BY A GHOST','#9fd8ff'],fire:['TORN APART BY THE CHAOS MELODY','#ff7bd5'],dart:['RIDDLED WITH DARTS','#ffb347'],gas:['GASSED','#a8ff3c'],ice:['PIERCED BY ICE SPIKES','#8fe8ff'],fall:['FELL INTO THE PIT','#c9b8ff'],quarter:['PULLED APART BY CHAINS','#9ca3af'],stack:['DROPPED INTO THE BOARD AS A PIECE','#f87171'],hang:['HANGED','#d2b48c'],card:['SHREDDED BY HISOKA\'S RAZOR CARDS','#ff7bd5'],slab:['GROUND INTO THE WALL BY A TILE','#9ca3af'],chomp:['CAUGHT BY A GHOST - WAKA WAKA...','#fde047'],rps:['CUT AND SMASHED BY HIS THROWS','#e5e7eb'],sand:['BURIED ALIVE IN A GIANT HOURGLASS','#e0ad4a'],squash:['GROUND INTO LETTERS','#6ee7a0'],flag:['SKEWERED BY A FLAGPOLE','#ff6b6b']};
+        const SDN={spike:['IMPALED ON SPIKES','#ff4a4a'],axe:['CHOPPED IN HALF','#ff8c1a'],boulder:['SQUISHED BY A BOULDER','#d2b48c'],lava:['SWALLOWED BY LAVA','#ff6a1a'],ghost:['LIFE DRAINED BY A GHOST','#9fd8ff'],fire:['TORN APART BY THE CHAOS MELODY','#ff7bd5'],dart:['RIDDLED WITH DARTS','#ffb347'],gas:['GASSED','#a8ff3c'],ice:['PIERCED BY ICE SPIKES','#8fe8ff'],fall:['FELL INTO THE PIT','#c9b8ff'],quarter:['PULLED APART BY CHAINS','#9ca3af'],stack:['DROPPED INTO THE BOARD AS A PIECE','#f87171'],hang:['HANGED','#d2b48c'],card:['SHREDDED BY HISOKA\'S RAZOR CARDS','#ff7bd5'],slab:['GROUND INTO THE WALL BY A TILE','#9ca3af'],chomp:['EATEN BY PAC-MAN','#fde047'],rps:['CUT AND SMASHED BY HIS THROWS','#e5e7eb'],sand:['BURIED ALIVE IN A GIANT HOURGLASS','#e0ad4a'],squash:['GROUND INTO LETTERS','#6ee7a0'],flag:['SKEWERED BY A FLAGPOLE','#ff6b6b']};
         const SRC={stone:'#ffd84a',moss:'#86efac',lava:'#ff8c1a',ice:'#8fe8ff'};
         // ICE SLIDE layout: 7 spike clusters spread over the WHOLE floor. A layout is only used if (1) no straight lane gets through (so walking straight always kills you)
         // and (2) a weaving path still exists (checked with a flood-fill, keeping a safety margin), so it is hard but never impossible.
@@ -2715,8 +2715,7 @@ ${G}
 
             else if(type=='stack'){ // CONNECT 4: the demon wins the game - the winning four light up, and the knight is shrunk into a RED PIECE and dropped into the board
                 const cx=395,hx=c=>cx-150+c*50,hy=r=>130+r*50,sc4=4;
-                R('#0b0714',0,0,W,H);ctx.fillStyle='#1a1230';ctx.fillRect(0,fy+8,W,H);
-                R('#05030a',cx-180,96,360,312);
+                                R('#05030a',cx-180,96,360,312);
                 const Y=[[0,5],[1,4],[2,3],[3,2]],Rd=[[1,5],[2,5],[3,5],[2,4],[3,4],[3,3],[5,5],[6,5]],Yl=[[4,5,1],[5,4,0]];   // pieces already in the board
                 Y.forEach(p=>dot(hx(p[0]),hy(p[1]),21,'#facc15'));Rd.forEach(p=>dot(hx(p[0]),hy(p[1]),21,'#dc2626'));
                 const slot=4,landY=hy(5)-0,fa=cl((t-1.55)/.7,0,1),py=70+(landY-70)*fa*fa;
@@ -2732,14 +2731,10 @@ ${G}
                 if(u>=1&&t<1.55){const gl=cl((t-1.5)/.05,0,1);dot(tx,72,21*(1-gl*.0),'#dc2626')}}
 
             else if(type=='hang'){ // HANGMAN: the trapdoor drops open under him, the rope snaps tight exactly at his neck and he swings
-                const g0=ctx.createLinearGradient(0,0,0,fy+20);g0.addColorStop(0,'#150c22');g0.addColorStop(1,'#4a2236');ctx.fillStyle=g0;ctx.fillRect(0,0,W,H);
-                dot(x-190,90,30,'#f1e7c4');dot(x-180,84,26,'#150c22');
-                ctx.fillStyle='#0d0814';ctx.fillRect(0,fy+14,W,H);
-                for(let k=-6;k<=6;k++){R('#2a1a10',x+k*60-4,fy+14,8,H-fy)}
-                const open=cl((t-.4)/.15,0,1),D=56,dr=t<.45?0:t<.62?D*cl((t-.45)/.17,0,1)**2:D+(t<.8?-7*Math.sin((t-.62)/.18*Math.PI):0),sw=Math.sin(now/310)*.06*(t<1.8?1:Math.max(0,1-(t-1.8)/1.4)),jx=(t>.6&&t<1.6)?Math.sin(now/45)*1.6:0;
+                                const open=cl((t-.4)/.15,0,1),D=56,dr=t<.45?0:t<.62?D*cl((t-.45)/.17,0,1)**2:D+(t<.8?-7*Math.sin((t-.62)/.18*Math.PI):0),sw=Math.sin(now/310)*.06*(t<1.8?1:Math.max(0,1-(t-1.8)/1.4)),jx=(t>.6&&t<1.6)?Math.sin(now/45)*1.6:0;
                 const NX=x-6.6*F+jx,NY=fy-59+dr;
-                R('#5a3b22',0,fy,x-34,14);R('#5a3b22',x+34,fy,W-x-34,14);R('#3d2814',0,fy+10,x-34,4);R('#3d2814',x+34,fy+10,W-x-34,4);
-                if(open<=0)R('#6b4829',x-34,fy,68,14);
+                R('#0a0710',x-34,fy,68,H-fy);
+                if(open<=0){R('#6b4829',x-34,fy,68,14);R('#3d2814',x-34,fy+10,68,4)}
                 else{ctx.fillStyle='#6b4829';[-1,1].forEach(q=>{ctx.save();ctx.translate(x+q*34,fy);ctx.rotate(q*open*1.35);ctx.fillRect(q<0?0:-34,0,34,10);ctx.restore()})}
                 R('#3b2a18',x+86,20,12,fy-6);R('#3b2a18',x-40,20,138,12);R('#2a1d10',x-40,32,138,3);ctx.strokeStyle='#3b2a18';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(x+86,70);ctx.lineTo(x+52,32);ctx.stroke();
                 const ax=NX,ay=34,kx=NX,ky=NY-16,slack=cl(1-(dr/D),0,1)*(t<.6?1:0);
@@ -2753,27 +2748,24 @@ ${G}
                 ctx.beginPath();ctx.moveTo(NX-9,NY-3);ctx.lineTo(kx,ky);ctx.lineTo(NX+9,NY-3);ctx.stroke();R('#a98a52',kx-4,ky-4,8,7);
                 if(t>.6&&t<1.7){ctx.save();ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.fillStyle='#e6dcc0';ctx.fillText('*gk*',x+34,NY-6-((now/20)%20));ctx.restore()}}
 
-            else if(type=='card'){ // MEMORY: a Hisoka-styled demon (the game's own demon model) throws razor cards at him from across a card table
-                const g0=ctx.createLinearGradient(0,0,0,H);g0.addColorStop(0,'#1a0a2a');g0.addColorStop(1,'#3a0f33');ctx.fillStyle=g0;ctx.fillRect(0,0,W,H);
-                ctx.save();ctx.globalCompositeOperation='lighter';const sg=ctx.createRadialGradient(x+200,60,10,x+200,fy,260);sg.addColorStop(0,'rgba(255,90,200,.35)');sg.addColorStop(1,'rgba(255,90,200,0)');ctx.fillStyle=sg;ctx.fillRect(0,0,W,H);ctx.restore();
-                ctx.fillStyle='#0f5a3a';ctx.fillRect(0,fy+8,W,H);ctx.fillStyle='#0b4a2f';for(let k=0;k<W;k+=40)ctx.fillRect(k,fy+8,2,H);
-                [['♠',60],['♥',230],['♦',560],['♣',720]].forEach(([s2,px],i)=>txt(s2,px,150+(i%2)*40,70,'rgba(255,120,200,.13)'));
-                const mx0=x+230,my0=fy+14,cyc=.45,ph=t<1.8?(t%cyc)/cyc:0,mf=t<1.8?40+Math.min(14,Math.floor(ph*15)):Math.floor(now/150)%6;
-                ctx.save();ctx.filter='hue-rotate(305deg) saturate(1.7) brightness(1.05)';drawMon(mx0,my0,mf,1.25,0,false,true);ctx.restore();
-                {const E=DANCH[mf]||[52,66],sc=1.25,P=(dx,dy)=>[mx0+(-65+E[0]+dx)*sc,my0+(-126+E[1]+dy)*sc];   // Hisoka's face and hair, painted on the demon's head
-                    ctx.fillStyle='#ff3d8b';ctx.beginPath();[[-11,-4],[-12,-15],[-6,-9],[-4,-21],[0,-10],[5,-19],[8,-9],[10,-3]].forEach((p,i)=>{const z=P(p[0],p[1]);i?ctx.lineTo(z[0],z[1]):ctx.moveTo(z[0],z[1])});ctx.closePath();ctx.fill();
-                    const st=P(-7,5);ctx.fillStyle='#ff2d55';ctx.beginPath();for(let k=0;k<8;k++){const a=k*Math.PI/4,r=k%2?1.6:4.2;ctx.lineTo(st[0]+Math.cos(a)*r*sc,st[1]+Math.sin(a)*r*sc)}ctx.closePath();ctx.fill();   // star
-                    const td=P(2,5);ctx.fillStyle='#a855f7';ctx.beginPath();ctx.moveTo(td[0],td[1]-4*sc);ctx.quadraticCurveTo(td[0]+3.4*sc,td[1]+1*sc,td[0],td[1]+3.6*sc);ctx.quadraticCurveTo(td[0]-3.4*sc,td[1]+1*sc,td[0],td[1]-4*sc);ctx.fill();   // teardrop
-                    const sm=P(-3,10);ctx.strokeStyle='#ff2d55';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(sm[0],sm[1]-1,4*sc,.15,Math.PI-.15);ctx.stroke()}
+            else if(type=='card'){ // MEMORY: the game's own demon, restyled as Hisoka (white skin, pink hair, cloth outfit), throws razor cards at him
+                const mx0=x+230,my0=fy+14,sc=1.25,cyc=.45,ph=t<1.8?(t%cyc)/cyc:0,mf=t<1.8?40+Math.min(14,Math.floor(ph*15)):Math.floor(now/150)%6;
+                drawMon(mx0,my0,mf,sc,0,false,true,'grayscale(1) brightness(2.4) contrast(.6)');   // white skin
+                if(!window._hsC){const c=document.createElement('canvas');c.width=c.height=12;const g=c.getContext('2d');g.fillStyle='#8b2f9e';g.fillRect(0,0,12,12);g.fillStyle='#b24bc6';g.beginPath();g.moveTo(6,0);g.lineTo(12,6);g.lineTo(6,12);g.lineTo(0,6);g.fill();g.strokeStyle='rgba(0,0,0,.28)';g.lineWidth=1;for(let i=0;i<12;i+=3){g.beginPath();g.moveTo(0,i+.5);g.lineTo(12,i+.5);g.stroke();g.beginPath();g.moveTo(i+.5,0);g.lineTo(i+.5,12);g.stroke()}window._hsC=ctx.createPattern(c,'repeat')}
+                {const E=DANCH[mf]||[52,66],P=(dx,dy)=>[mx0+(-65+E[0]+dx)*sc,my0+(-126+E[1]+dy)*sc],poly=(c2,pts)=>{ctx.fillStyle=c2;ctx.beginPath();pts.forEach((p,i)=>{const z=P(p[0],p[1]);i?ctx.lineTo(z[0],z[1]):ctx.moveTo(z[0],z[1])});ctx.closePath();ctx.fill()};
+                    poly(window._hsC,[[-13,7],[36,10],[39,32],[3,35],[-15,31]]);ctx.strokeStyle='#4a1458';ctx.lineWidth=1.4;ctx.setLineDash([3,2]);ctx.beginPath();[[-13,7],[36,10],[39,32],[3,35],[-15,31],[-13,7]].forEach((p,i)=>{const z=P(p[0],p[1]);i?ctx.lineTo(z[0],z[1]):ctx.moveTo(z[0],z[1])});ctx.stroke();ctx.setLineDash([]);   // stitched cloth tunic
+                    poly('#ff6fb5',[[-11,6],[30,8],[27,13],[-8,12]]);   // pink ruffle collar
+                    poly('#ff4fa3',[[-11,-5],[-13,-16],[-7,-11],[-8,-25],[-2,-15],[2,-28],[6,-15],[11,-24],[10,-9],[13,-13],[14,8],[10,3],[9,-4],[-9,-4],[-10,3],[-14,9]]);   // pink hair
+                    const st=P(-5,5);ctx.fillStyle='#ff2d55';ctx.beginPath();for(let k=0;k<8;k++){const a=k*Math.PI/4,r=k%2?1.4:3.8;ctx.lineTo(st[0]+Math.cos(a)*r*sc,st[1]+Math.sin(a)*r*sc)}ctx.closePath();ctx.fill();
+                    const td=P(4,5);ctx.fillStyle='#a855f7';ctx.beginPath();ctx.moveTo(td[0],td[1]-3.6*sc);ctx.quadraticCurveTo(td[0]+3*sc,td[1]+1*sc,td[0],td[1]+3.2*sc);ctx.quadraticCurveTo(td[0]-3*sc,td[1]+1*sc,td[0],td[1]-3.6*sc);ctx.fill()}
                 const pe=cl((t-1.7)/.5,0,1);
                 if(t<1.7)sp({idle:1,dx:t>.3?Math.sin(now/28)*3:0});else sp({idle:1,n:0,rot:F*pe*1.5,my:1-.15*pe});
                 const hx0=mx0-46,hy0=my0-70;
-                for(let j=0;j<10;j++){const t0=.1+j*.17,fl=.3,p=(t-t0)/fl;if(p<0||p>3)continue;const yy=fy-26-((j*29)%50),a=Math.min(p,1),px=hx0+(x+4-hx0)*a,py=hy0+(yy-hy0)*a;
+                for(let j=0;j<10;j++){const t0=.1+j*.17,p=(t-t0)/.3;if(p<0||p>3)continue;const yy=fy-26-((j*29)%50),a=Math.min(p,1),px=hx0+(x+4-hx0)*a,py=hy0+(yy-hy0)*a;
                     if(p<=1){ctx.save();ctx.translate(px,py);ctx.rotate(now/40+j);R('#f4ecd4',-8,-12,16,24);ctx.strokeStyle='#d02a4a';ctx.lineWidth=2;ctx.strokeRect(-8,-12,16,24);txt(['♠','♥','♦','♣'][j%4],0,5,13,j%4==1||j%4==2?'#c0262d':'#111');ctx.restore()}
                     else if(p<1.6){ctx.save();ctx.globalAlpha=1-(p-1)/.6;ctx.lineCap='round';[['#ff2d55',6],['#fff',2]].forEach(([c2,w])=>{ctx.strokeStyle=c2;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x-30,yy+8);ctx.lineTo(x+34,yy-8);ctx.stroke()});ctx.restore()}
-                    if(p>1){ctx.save();ctx.translate(x+((j*13)%24)-12,yy);ctx.rotate(j*1.3);R('#f4ecd4',-6,-9,12,18);ctx.strokeStyle='#d02a4a';ctx.lineWidth=1.5;ctx.strokeRect(-6,-9,12,18);ctx.restore()}}   // cards stay stuck in him
-                if(t>.4)spray(.4);
-                if(t>.2&&t<1.9)txt('♥ ♦  ~ How fun! ~  ♣ ♠',mx0,fy-150,16,'#ff7bd5')}
+                    if(p>1){ctx.save();ctx.translate(x+((j*13)%24)-12,yy);ctx.rotate(j*1.3);R('#f4ecd4',-6,-9,12,18);ctx.strokeStyle='#d02a4a';ctx.lineWidth=1.5;ctx.strokeRect(-6,-9,12,18);ctx.restore()}}
+                if(t>.4)spray(.4)}
 
             else if(type=='slab'){ // SLIDING TILES: a giant numbered stone tile slides in and grinds him into the far wall
                 const xw=x+64,e0=x-330,u=cl((t-.25)/.85,0,1),e=e0+(xw-4-e0)*u*u,gap=xw-e,k=cl((46-gap)/40,0,1),kx=k>0?(e+xw)/2:x;
@@ -2783,23 +2775,11 @@ ${G}
                 ctx.strokeStyle='rgba(40,44,52,.55)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(e-80,fy-96);ctx.lineTo(e-70,fy-70);ctx.lineTo(e-84,fy-50);ctx.stroke();
                 if(k>.2){for(let j=0;j<6;j++)R('#8a141c',xw+3,fy-90+j*14,3,8+((now/20+j*11)%12));spray(1.0)}}
 
-            else if(type=='chomp'){ // MAZE: a ghost catches him, everything freezes, then the classic Pac-Man death: he turns yellow and the pie closes up until he pops
-                R('#000',0,0,W,H);ctx.strokeStyle='#2121de';ctx.lineWidth=4;ctx.lineJoin='round';
-                ctx.strokeRect(26,74,W-52,H-100);
-                [[60,104,150],[250,104,170],[470,104,170],[690,104,50]].forEach(b=>{if(fy-90>b[1]+20){ctx.strokeRect(b[0],b[1],b[2],fy-90-b[1])}});
-                [[60,150],[250,170],[470,170]].forEach(b=>ctx.strokeRect(b[0],fy+34,b[1],Math.max(10,H-fy-60)));
-                for(let px=48;px<W-40;px+=30){const dx2=px-x;if(t>.9&&Math.abs(dx2)<40)continue;if(px>x&&(t<.9||px<x+30))dot(px,fy-40,3,'#ffcfa0');else if(px<x&&t<.9)dot(px,fy-40,3,'#ffcfa0');else if(px>x+40)dot(px,fy-40,3,'#ffcfa0')}
-                dot(60,fy-40,8,'#ffcfa0');dot(W-60,fy-40,8,'#ffcfa0');
-                const gh=(gx,col,eo)=>{ctx.fillStyle=col;ctx.beginPath();ctx.arc(gx,fy-44,22,Math.PI,0);ctx.lineTo(gx+22,fy-12);for(let k=0;k<4;k++){ctx.lineTo(gx+22-k*11-5.5,fy-20+(k%2?0:0));ctx.lineTo(gx+22-(k+1)*11,fy-12)}ctx.closePath();ctx.fill();
-                    dot(gx-8,fy-44,6,'#fff');dot(gx+8,fy-44,6,'#fff');dot(gx-10+eo,fy-43,3,'#1d4ed8');dot(gx+6+eo,fy-43,3,'#1d4ed8')};
-                const gp=Math.max(0,1-cl(t,0,.9)/.9),mv=t<.9;
-                if(mv){gh(x+34+gp*330,'#ef4444',-2);gh(x+34+gp*330+70,'#f9a8d4',-2);gh(x+34+gp*330+140,'#22d3ee',-2);gh(x+34+gp*330+210,'#fb923c',-2)}
-                const a=cl((t-1.05)/1.2,0,1)*Math.PI,cc=[x,fy-42];
-                if(t<.9)sp({idle:1,dx:t>.6?Math.sin(now/30)*2:0});
-                else if(t<1.05)sp({idle:1,n:0,f:'sepia(1) saturate(9) hue-rotate(-18deg) brightness(1.25)'});
-                else if(a<Math.PI-.02){ctx.save();ctx.beginPath();ctx.moveTo(cc[0],cc[1]);ctx.arc(cc[0],cc[1],110,-Math.PI/2+a,1.5*Math.PI-a);ctx.closePath();ctx.clip();sp({idle:1,n:0,f:'sepia(1) saturate(9) hue-rotate(-18deg) brightness(1.25)'});ctx.restore()}
-                if(t>2.25){const u=cl((t-2.25)/.5,0,1);ctx.save();ctx.globalAlpha=1-u;for(let k=0;k<8;k++){const an=k*Math.PI/4,r=10+u*60;dot(cc[0]+Math.cos(an)*r,cc[1]+Math.sin(an)*r,4-u*2,'#fde047')}ctx.restore()}
-                if(t>2.8)txt('READY!',x,fy-110,22,'#fde047')}
+            else if(type=='chomp'){ // MAZE: a giant Pac-Man bursts into the room from the right, chomping the dots along the floor, and EATS him in a couple of bites
+                const r0=66,cy=fy-44,cx=x+400-300*Math.max(0,t-.1),mo=.08+.5*Math.abs(Math.sin(now/55));
+                for(let px=x-330;px<x+420;px+=30){if(px<cx-r0-8)dot(px,fy-8,3,'#ffe9b0')}
+                if(cx-r0*.5>x-60){ctx.save();ctx.beginPath();ctx.rect(0,0,Math.max(0,cx-r0*.5),H);ctx.clip();sp({idle:1,dx:t>.45?Math.sin(now/30)*2:0});ctx.restore()}
+                if(cx>-200){ctx.fillStyle='#fde047';ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r0,Math.PI+mo,Math.PI-mo);ctx.closePath();ctx.fill();ctx.strokeStyle='#ca8a04';ctx.lineWidth=3;ctx.stroke();dot(cx+r0*.12,cy-r0*.55,7,'#111')}}
 
             else if(type=='rps'){ // ROCK PAPER SCISSORS: the demon throws all three at him: the ROCK crushes him flat, he is turned to PAPER and folded up, then SCISSORS cut the packet to shreds
                 const ph=(a,b)=>cl((t-a)/(b-a),0,1),rk=ph(.2,.45),rl=ph(1.0,1.25),inf=ph(1.25,1.55),f1=ph(1.7,2.2),f2=ph(2.3,2.8),sn=ph(3.05,3.4),pcx=x+16,pcy=fy-66,Tn=(a)=>t>=a&&t<a+.7?40+Math.min(14,Math.floor((t-a)/.7*15)):-1;
@@ -2817,9 +2797,7 @@ ${G}
             else if(type=='sand'){ // RIDDLE: the Sphinx's tomb turns out to be a GIANT HOURGLASS - he stands in the bottom bulb while the sand pours through the neck and buries him alive
                 const cx=x,top0=64,neck=156,bot=fy+34,hw=(yy)=>yy<neck?8+138*Math.sqrt(Math.max(0,(neck-yy)/(neck-top0))):8+142*Math.sqrt(Math.max(0,(yy-neck)/(bot-neck)));
                 const gl=()=>{ctx.beginPath();for(let yy=top0;yy<=bot;yy+=4)ctx.lineTo(cx-hw(yy),yy);for(let yy=bot;yy>=top0;yy-=4)ctx.lineTo(cx+hw(yy),yy);ctx.closePath()};
-                const g0=ctx.createLinearGradient(0,0,0,H);g0.addColorStop(0,'#2a1d10');g0.addColorStop(1,'#120c06');ctx.fillStyle=g0;ctx.fillRect(0,0,W,H);
-                ctx.fillStyle='#3a2a14';for(let k=0;k<W;k+=70)ctx.fillRect(k,0,3,H);
-                const h=cl((t-.25)/2.6,0,1)*118,hu=h/118,lvl=bot-h;
+                                const h=cl((t-.25)/2.6,0,1)*118,hu=h/118,lvl=bot-h;
                 ctx.save();gl();ctx.fillStyle='rgba(150,190,210,.13)';ctx.fill();ctx.clip();
                 // sand left in the top bulb, draining
                 const tl=top0+(neck-top0)*(1-cl((t-.2)/2.8,0,1))*.0+ (neck-top0-6)*cl((t-.2)/2.8,0,1);ctx.fillStyle='#e0b95c';ctx.fillRect(cx-160,tl,320,neck-tl);
@@ -2830,7 +2808,6 @@ ${G}
                 ctx.save();gl();ctx.clip();const peak=(1-hu)*34*(t<3?1:0);
                 ctx.beginPath();ctx.moveTo(cx-200,bot+10);ctx.lineTo(cx-200,lvl+8);ctx.quadraticCurveTo(cx-80,lvl+6,cx,lvl-peak);ctx.quadraticCurveTo(cx+80,lvl+6,cx+200,lvl+8);ctx.lineTo(cx+200,bot+10);ctx.closePath();ctx.fillStyle='#d9b45f';ctx.fill();
                 ctx.fillStyle='rgba(120,80,20,.16)';for(let q=0;q<14;q++)ctx.fillRect(cx-200,lvl+q*9,400,2);ctx.restore();
-                if(hu>=1&&t<5.5){const w=t<4.2?Math.sin(now/90)*.35:.55+Math.min(.4,(t-4.2)*.3),ax=x,ay=lvl-6;ctx.save();ctx.translate(ax,ay);ctx.rotate(w);R('#7d8590',-4,-28,8,30);R('#cfd4da',-8,-40,16,14);for(let q=0;q<3;q++)R('#cfd4da',-8+q*6,-46,4,8);ctx.restore()}
                 // glass shine and wooden frame
                 ctx.save();gl();ctx.strokeStyle='rgba(200,235,255,.75)';ctx.lineWidth=4;ctx.stroke();ctx.restore();
                 ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=3;ctx.beginPath();for(let yy=bot-10;yy>=neck+20;yy-=4)ctx[yy==bot-10?'moveTo':'lineTo'](cx-hw(yy)+10,yy);ctx.stroke();
@@ -2838,22 +2815,22 @@ ${G}
                 [-1,1].forEach(q=>R('#5a3b1c',cx+q*166-5,top0,10,bot-top0));
                 if(t>1.0&&t<3.2){ctx.save();ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.fillStyle='#e6dcc0';ctx.fillText('*cough*',x+40,fy-100-((now/25)%18));ctx.restore()}}
 
-            else if(type=='squash'){ // WORDLE: two tile-walls close on him and grind him into LETTER TILES, which spill out and spell DEAD
-                R('#0c0914',0,0,W,H);for(let r=0;r<6;r++)for(let i=0;i<5;i++)R('#171221',250+i*58,80+r*52,50,46);ctx.fillStyle='#0a0710';ctx.fillRect(0,fy+10,W,H);
-                const u=cl((t-.1)/.7,0,1),d0=320-u*u*302,d=t<1.2?d0:18+302*cl((t-1.2)/.6,0,1),k=d<70?cl((70-d)/52,0,1):0,LT='WORDLE',m=cl((t-.75)/.35,0,1);
-                if(t<.1)sp({idle:1});else if(m<1)sp({idle:1,n:0,mx:Math.max(.05,1-.25*k-.75*m),dx:k>.5?Math.sin(now/25)*2:0});
+            else if(type=='squash'){ // WORDLE: two tile-walls close on him and grind him into letters: head = BONES, armour = ARMOR, legs = FLESH
+                const u=cl((t-.1)/.7,0,1),d0=320-u*u*302,d=t<1.5?d0:18+302*cl((t-1.5)/.6,0,1),k=d<70?cl((70-d)/52,0,1):0,LT='WORDLE';
+                if(t<.1)sp({idle:1});
+                else if(t<1.2){ctx.save();ctx.beginPath();if(t<.9)ctx.rect(x-90,fy-100,180,38);if(t<1.05)ctx.rect(x-90,fy-62,180,32);ctx.rect(x-90,fy-30,180,44);ctx.clip();sp({idle:1,n:0,mx:Math.max(.4,1-.5*k),dx:k>.5?Math.sin(now/25)*2:0});ctx.restore()}
                 [-1,1].forEach(q=>{const wx=x+q*d,x0=q<0?wx-90:wx;R('#4b4358',x0,fy-175,90,195);R('#2a2236',x0,fy-175,90,6);
                     for(let j=0;j<3;j++){const c2=(j+(q<0?0:3));R(['#2f9e44','#d9a60a','#3a3a44'][c2%3],x0+(q<0?50:6),fy-160+j*52,34,34);txt(LT[c2],x0+(q<0?67:23),fy-135+j*52,22,'#fff')}});
-                const FW='DEAD',AL='KNIGHTSLOWE';
-                for(let j=0;j<18;j++){const t0=.95+(j%9)*.03,w=cl((t-t0)/.9,0,1);if(w<=0)continue;const fin=j<4,tx=fin?x-48+j*32:x+(((j*53)%200)-100),ty=fy-(fin?30:12)-((j*7)%3)*4,sz=fin?30:20,px=x+(tx-x)*w,py=fy-50+(ty-(fy-50))*w-110*Math.sin(Math.PI*w),
-                        col=fin?'#2f9e44':(['#d9a60a','#3a3a44','#2f9e44'][j%3]);ctx.save();ctx.translate(px,py);ctx.rotate(fin?(1-w)*3:(1-w)*4+((j*37)%10-5)*.05*w);R(col,-sz/2,-sz/2,sz,sz);ctx.strokeStyle='rgba(255,255,255,.25)';ctx.lineWidth=2;ctx.strokeRect(-sz/2+1,-sz/2+1,sz-2,sz-2);txt(fin?FW[j]:AL[j%AL.length],0,sz*.35,sz*.8,'#fff');ctx.restore()}}
+                const G3=[['BONES','#e8e0cc','#3b3326',.9,fy-72,x-222],['ARMOR','#8a929c','#161a22',1.05,fy-46,x-222+155],['FLESH','#c0262d','#fff',1.2,fy-18,x-222+310]];
+                G3.forEach(g=>{for(let i=0;i<5;i++){const w=cl((t-g[3]-i*.04)/.9,0,1);if(w<=0)continue;const tx=g[5]+i*27+13,ty=fy-14,px=x+(tx-x)*w,py=g[4]+(ty-g[4])*w-100*Math.sin(Math.PI*w),sz=26;
+                    ctx.save();ctx.translate(px,py);ctx.rotate((1-w)*(i%2?4:-4));R(g[1],-sz/2,-sz/2,sz,sz);ctx.strokeStyle='rgba(255,255,255,.3)';ctx.lineWidth=2;ctx.strokeRect(-sz/2+1,-sz/2+1,sz-2,sz-2);txt(g[0][i],0,8,22,g[2]);ctx.restore()}})}
 
-            else if(type=='flag'){ // MINESWEEPER: the mine you clicked marks you in turn - a giant flagpole is driven down through him and plants him in the floor, a red flag unfurling over his body
-                const u=cl((t-.3)/.14,0,1),py=-110+(fy-6+110)*u*u,hit=t>=.44,pe=cl((t-.5)/.6,0,1),top=py-226,w=Math.sin(now/110)*5*pe;
-                if(!hit)sp({idle:1,dx:t>.15?Math.sin(now/28)*2:0});else sp({idle:1,n:0,rot:F*.22*pe,my:1-.1*pe,dx:Math.sin(now/40)*(t<.9?2:0)});
-                ctx.fillStyle='#d1d5db';ctx.fillRect(x-4,top,8,226);ctx.fillStyle='#9ca3af';ctx.fillRect(x+1,top,3,226);ctx.beginPath();ctx.moveTo(x-4,py);ctx.lineTo(x+4,py);ctx.lineTo(x,py+14);ctx.fill();dot(x,top-2,5,'#f3f4f6');
-                if(pe>0){const fw=62*pe;ctx.fillStyle='#e11d1d';ctx.beginPath();ctx.moveTo(x+4,top+4);ctx.lineTo(x+4+fw,top+16+w);ctx.lineTo(x+4,top+34);ctx.fill();ctx.fillStyle='#9f1212';ctx.beginPath();ctx.moveTo(x+4,top+24);ctx.lineTo(x+4+fw*.8,top+22+w);ctx.lineTo(x+4,top+34);ctx.fill()}
-                if(hit){ctx.fillStyle='#8a141c';for(let j=0;j<5;j++)ctx.fillRect(x-3+(j%2)*4,fy-110+j*16,2,10+((now/20+j*13)%16));spray(.5)}}
+            else if(type=='flag'){ // MINESWEEPER: a giant flagpole is driven straight down through the middle of his body (head to feet) and plants him in the floor, a red flag unfurling on top
+                const px=x-6.6*F,u=cl((t-.3)/.14,0,1),ty=-110+(fy+8+110)*u*u,hit=ty>=fy-82,pe=cl((t-.5)/.6,0,1),top=ty-226,w=Math.sin(now/110)*5*pe;
+                if(!hit)sp({idle:1,dx:t>.15?Math.sin(now/28)*2:0});else sp({idle:1,n:0,dy:pe*5,my:1-.05*pe,dx:Math.sin(now/40)*(t<.9?2:0)});
+                ctx.fillStyle='#d1d5db';ctx.fillRect(px-4,top,8,226);ctx.fillStyle='#9ca3af';ctx.fillRect(px+1,top,3,226);ctx.beginPath();ctx.moveTo(px-4,ty);ctx.lineTo(px+4,ty);ctx.lineTo(px,ty+14);ctx.fill();dot(px,top-2,5,'#f3f4f6');
+                if(pe>0){const fw=62*pe;ctx.fillStyle='#e11d1d';ctx.beginPath();ctx.moveTo(px+4,top+4);ctx.lineTo(px+4+fw,top+16+w);ctx.lineTo(px+4,top+34);ctx.fill();ctx.fillStyle='#9f1212';ctx.beginPath();ctx.moveTo(px+4,top+24);ctx.lineTo(px+4+fw*.8,top+22+w);ctx.lineTo(px+4,top+34);ctx.fill()}
+                if(hit){ctx.fillStyle='#8a141c';ctx.beginPath();ctx.ellipse(px,fy-80,9,3,0,0,7);ctx.fill();for(let j=0;j<6;j++)ctx.fillRect(px-5+(j%2)*8,fy-76+j*12,2,8+((now/20+j*13)%10));ctx.beginPath();ctx.ellipse(px,fy+4,13,4,0,0,7);ctx.fill();spray(.5)}}
         }
 
         // a portcullis hanging out of a stone housing that is built INTO the back wall, so it reads as a real gate that slides up into the wall
