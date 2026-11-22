@@ -1461,8 +1461,8 @@ ${G}
                             <div>
                                 <div class="font-bold text-sm text-zinc-200 flex items-center gap-2">
                                     <span>📖 ${d.name}</span>
-                                    ${d.isDefault ? `<span class="bg-zinc-800 text-emerald-400 text-[10px] px-2 py-0.5 rounded border border-emerald-900">🔒 Protected Starter Deck</span>` : ''}
-                                    ${d.bonusReward && !S.completedBonus.includes(d.id) ? `<span class="bg-emerald-500/20 text-emerald-300 text-[10px] px-2 py-0.5 rounded border border-emerald-500/40 animate-pulse">+${d.bonusReward} 🪙 Bonus!</span>` : ''}
+                                    ${d.isDefault ? `<span class="bg-zinc-800 text-emerald-400 text-[12px] px-2 py-0.5 rounded border border-emerald-900">🔒 Protected Starter Deck</span>` : ''}
+                                    ${d.bonusReward && !S.completedBonus.includes(d.id) ? `<span class="bg-emerald-500/20 text-emerald-300 text-[12px] px-2 py-0.5 rounded border border-emerald-500/40 animate-pulse">+${d.bonusReward} 🪙 Bonus!</span>` : ''}
                                 </div>
                                 <div class="text-xs text-zinc-500">❓ ${d.qs.length} questions &bull; 🏆 Best rank: ${S.best[d.name]||'None'}</div>
                             </div>
@@ -2241,8 +2241,8 @@ ${G}
             if(!n){SND.sfx('ding');const nm=sec?galTitle(SDN[key.slice(2)][0]):galNName(key);toast('🔓 '+(sec?'Secret death':'Death')+' unlocked: '+nm)}
         }
         function galCard(open,icon,name,col,cnt,args,lockTxt){
-            if(!open)return `<div class="bg-zinc-950 border border-zinc-800 rounded-lg p-3 flex flex-col items-center justify-center text-center min-h-[118px] opacity-80"><div class="text-2xl text-zinc-600">🔒</div><div class="title-font text-xl font-black text-zinc-600 tracking-widest">???</div><div class="text-[10px] text-zinc-600 mt-1">${lockTxt}</div></div>`;
-            return `<div class="bg-zinc-950 border rounded-lg p-3 flex flex-col items-center text-center min-h-[118px]" style="border-color:${col}66;box-shadow:inset 0 0 14px ${col}18"><div class="text-2xl">${icon}</div><div class="title-font text-[11px] font-bold leading-tight mt-1 flex-1 flex items-center" style="color:${col}">${name}</div><div class="text-[10px] text-zinc-500 mt-1">Suffered ${cnt}×</div><button onclick="galPlay(${args})" class="mt-2 w-full bg-emerald-700/80 hover:bg-emerald-600 text-zinc-950 text-[11px] font-bold py-1 rounded title-font">▶ Replay</button></div>`;
+            if(!open)return `<div class="bg-zinc-950 border border-zinc-800 rounded-lg p-3 flex flex-col items-center justify-center text-center min-h-[118px] opacity-80"><div class="text-2xl text-zinc-600">🔒</div><div class="title-font text-xl font-black text-zinc-600 tracking-widest">???</div><div class="text-[12px] text-zinc-600 mt-1">${lockTxt}</div></div>`;
+            return `<div class="bg-zinc-950 border rounded-lg p-3 flex flex-col items-center text-center min-h-[118px]" style="border-color:${col}66;box-shadow:inset 0 0 14px ${col}18"><div class="text-2xl">${icon}</div><div class="title-font text-[11px] font-bold leading-tight mt-1 flex-1 flex items-center" style="color:${col}">${name}</div><div class="text-[12px] text-zinc-500 mt-1">Suffered ${cnt}×</div><button onclick="galPlay(${args})" class="mt-2 w-full bg-emerald-700/80 hover:bg-emerald-600 text-zinc-950 text-[11px] font-bold py-1 rounded title-font">▶ Replay</button></div>`;
         }
         function galRender(){
             const el=$('#t-h');if(!el)return;
@@ -3273,14 +3273,14 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             const weakTxt=w.flawless?'You were flawless! He picks 1 random question.':`The ${w.qs.length} question${w.qs.length>1?'s':''} that beat you most (${w.deaths} death${w.deaths>1?'s':''}).`;
             el.innerHTML=`<div class="w-[72%] max-w-xl space-y-1.5 md:space-y-3">
                 <div class="title-font text-red-400 text-[11px] md:text-xl font-black tracking-wider drop-shadow-[0_0_8px_rgba(255,60,60,.6)]">👹 THE DEMON LORD BARS THE GATE</div>
-                <p class="text-zinc-300 text-[9px] md:text-sm italic leading-snug">"${rnd(BOSS_GREET)}"</p>
+                <p class="text-zinc-300 text-[12px] md:text-sm italic leading-snug">"${rnd(BOSS_GREET)}"</p>
                 <button id="bc1" class="block w-full text-left bg-zinc-950/90 hover:bg-red-950/80 border border-red-800/70 hover:border-red-400 rounded-lg px-2 py-1.5 md:px-4 md:py-3 transition">
-                    <div class="title-font font-bold text-red-300 text-[10px] md:text-base">🩸 1. Face Your Weakness</div>
-                    <div class="text-[9px] md:text-xs text-zinc-400">${weakTxt}</div></button>
+                    <div class="title-font font-bold text-red-300 text-[12px] md:text-base">🩸 1. Face Your Weakness</div>
+                    <div class="text-[12px] md:text-sm text-zinc-400">${weakTxt}</div></button>
                 <button id="bc2" class="block w-full text-left bg-zinc-950/90 hover:bg-emerald-950/80 border border-emerald-700/70 hover:border-emerald-400 rounded-lg px-2 py-1.5 md:px-4 md:py-3 transition">
-                    <div class="title-font font-bold text-emerald-300 text-[10px] md:text-base">💎 2. Five Bonus Questions</div>
-                    <div class="text-[9px] md:text-xs text-zinc-400">Fresh questions on your topic. <span class="text-yellow-300 font-bold">+${BONUS_GOLD*BONUS_N} bonus gold!</span></div></button>
-                <p class="text-[8px] md:text-[11px] text-zinc-500">Press 1 or 2, or click. If you die you just respawn.</p></div>`;
+                    <div class="title-font font-bold text-emerald-300 text-[12px] md:text-base">💎 2. Five Bonus Questions</div>
+                    <div class="text-[12px] md:text-sm text-zinc-400">Fresh questions on your topic. <span class="text-yellow-300 font-bold">+${BONUS_GOLD*BONUS_N} bonus gold!</span></div></button>
+                <p class="text-[11px] md:text-[13px] text-zinc-500">Press 1 or 2, or click. If you die you just respawn.</p></div>`;
             $('#bc1').onclick=()=>pickTrial('weak');$('#bc2').onclick=()=>pickTrial('bonus');
         }
         function pickTrial(m){
@@ -3298,14 +3298,14 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             const el=$('#bc');el.style.display='flex';
             el.innerHTML=`<div class="w-[72%] max-w-xl space-y-1.5 md:space-y-3">
                 <div class="title-font text-yellow-300 text-[11px] md:text-xl font-black tracking-wider drop-shadow-[0_0_8px_rgba(255,200,60,.6)]">👑 THE DEMON LORD HAS FALLEN</div>
-                <p class="text-zinc-300 text-[9px] md:text-sm italic leading-snug">"Free the princess... or claim my power for yourself."</p>
+                <p class="text-zinc-300 text-[12px] md:text-sm italic leading-snug">"Free the princess... or claim my power for yourself."</p>
                 <button id="ec1" class="block w-full text-left bg-zinc-950/90 hover:bg-pink-950/80 border border-pink-700/70 hover:border-pink-400 rounded-lg px-2 py-1.5 md:px-4 md:py-3 transition">
-                    <div class="title-font font-bold text-pink-300 text-[10px] md:text-base">💖 1. Free the Princess</div>
-                    <div class="text-[9px] md:text-xs text-zinc-400">Open the gate and go to her.</div></button>
+                    <div class="title-font font-bold text-pink-300 text-[12px] md:text-base">💖 1. Free the Princess</div>
+                    <div class="text-[12px] md:text-sm text-zinc-400">Open the gate and go to her.</div></button>
                 <button id="ec2" class="block w-full text-left bg-zinc-950/90 hover:bg-red-950/80 border border-red-800/70 hover:border-red-400 rounded-lg px-2 py-1.5 md:px-4 md:py-3 transition">
-                    <div class="title-font font-bold text-red-300 text-[10px] md:text-base">🩸 2. Take His Power</div>
-                    <div class="text-[9px] md:text-xs text-zinc-400">Seize the crown. See what it makes of you.</div></button>
-                <p class="text-[8px] md:text-[11px] text-zinc-500">Press 1 or 2, or click.</p></div>`;
+                    <div class="title-font font-bold text-red-300 text-[12px] md:text-base">🩸 2. Take His Power</div>
+                    <div class="text-[12px] md:text-sm text-zinc-400">Seize the crown. See what it makes of you.</div></button>
+                <p class="text-[11px] md:text-[13px] text-zinc-500">Press 1 or 2, or click.</p></div>`;
             $('#ec1').onclick=()=>pickEnding('good');$('#ec2').onclick=()=>pickEnding('bad');
         }
         function pickEnding(k){if(!G||G.state!='endchoice')return;$('#bc').style.display='none';G.end=k;winStart()}
@@ -3782,7 +3782,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 <div class="text-xs text-zinc-400 mt-1 mb-3">Subject: <b class="text-zinc-200">${esc(n)}</b> · ${rvl.length} answered · <span class="text-emerald-400">${clean.length} right first try</span> · <span class="text-red-400">${missed.length} missed</span></div>
                 ${missed.length?`<div class="max-h-72 overflow-y-auto pr-1 space-y-2">${missed.map(e=>`
                     <div class="border border-red-900/50 bg-red-950/20 rounded p-2.5">
-                        <div class="flex justify-between gap-2 items-start"><div class="text-zinc-100 text-xs font-bold">${e.bonus?'💎 ':e.boss?'🩸 ':''}${esc(e.q)}</div><span class="shrink-0 text-[10px] font-bold bg-red-600 text-white rounded px-1.5 py-0.5">Wrong ×${e.wrong}</span></div>
+                        <div class="flex justify-between gap-2 items-start"><div class="text-zinc-100 text-xs font-bold">${e.bonus?'💎 ':e.boss?'🩸 ':''}${esc(e.q)}</div><span class="shrink-0 text-[12px] font-bold bg-red-600 text-white rounded px-1.5 py-0.5">Wrong ×${e.wrong}</span></div>
                         <div class="text-[11px] mt-1.5 text-zinc-400">First click: <span class="text-red-300 font-bold">${esc(e.first)} ✗</span></div>
                         <div class="text-[11px] text-zinc-400">Wrong picks: <span class="text-red-200">${cnt(e.picks)}</span></div>
                         <div class="text-[11px] text-zinc-400">Correct answer: <span class="text-emerald-300 font-bold">${esc(e.a)}</span></div>
@@ -5751,7 +5751,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 if(q.t=='mt')return `<div class="bg-zinc-950 border border-emerald-950 rounded p-3 text-xs text-zinc-400 flex justify-between items-center"><span>Matching question (not editable): ${esc(q.q||'')}</span><button onclick="edDel(${i})" class="text-zinc-500 hover:text-red-400 px-2">🗑️</button></div>`;
                 let body;
                 if(q.t=='tf')body=`<div class="flex gap-5 text-xs text-zinc-300"><label class="flex items-center gap-2"><input type="radio" name="a${i}" ${q.a===true?'checked':''} onchange="edA(${i},true)" class="accent-emerald-600"> TRUE is correct</label><label class="flex items-center gap-2"><input type="radio" name="a${i}" ${q.a===false?'checked':''} onchange="edA(${i},false)" class="accent-emerald-600"> FALSE is correct</label></div>`;
-                else body=q.o.map((o,k)=>`<div class="flex items-center gap-2"><input type="radio" name="a${i}" ${q.a===k?'checked':''} onchange="edA(${i},${k})" title="Mark as the correct answer" class="accent-emerald-600"><input type="text" value="${esc(o)}" placeholder="Answer ${k+1}" oninput="edO(${i},${k},this.value)" class="${INP}">${q.o.length>2?`<button onclick="edRm(${i},${k})" class="text-zinc-500 hover:text-red-400 px-1" title="Remove answer">✕</button>`:''}</div>`).join('')+(q.o.length<4?`<button onclick="edAddO(${i})" class="text-xs text-emerald-400 hover:text-emerald-300">+ Add answer</button>`:'')+`<div class="text-[10px] text-zinc-500">Tick the circle next to the correct answer.</div>`;
+                else body=q.o.map((o,k)=>`<div class="flex items-center gap-2"><input type="radio" name="a${i}" ${q.a===k?'checked':''} onchange="edA(${i},${k})" title="Mark as the correct answer" class="accent-emerald-600"><input type="text" value="${esc(o)}" placeholder="Answer ${k+1}" oninput="edO(${i},${k},this.value)" class="${INP}">${q.o.length>2?`<button onclick="edRm(${i},${k})" class="text-zinc-500 hover:text-red-400 px-1" title="Remove answer">✕</button>`:''}</div>`).join('')+(q.o.length<4?`<button onclick="edAddO(${i})" class="text-xs text-emerald-400 hover:text-emerald-300">+ Add answer</button>`:'')+`<div class="text-[12px] text-zinc-500">Tick the circle next to the correct answer.</div>`;
                 return `<div class="bg-zinc-950 border border-emerald-950 rounded p-3 space-y-2">
                     <div class="flex items-center justify-between gap-2"><span class="title-font text-xs font-bold text-emerald-400">Question ${i+1}</span>
                     <div class="flex items-center gap-2"><select onchange="edType(${i},this.value)" class="bg-zinc-900 border border-emerald-950 text-xs text-zinc-300 rounded p-1"><option value="mc" ${q.t=='mc'?'selected':''}>Multiple choice</option><option value="tf" ${q.t=='tf'?'selected':''}>True / False</option></select>
@@ -5934,23 +5934,23 @@ const WPNS={flame:{n:'🔥 Flame Blade',p:350,d:'A roaring fire aura with embers
  tidal:{n:'🌊 Tidal Edge',p:450,d:'A deep-blue wavy blade with rolling water arcs.',c:'#4a7bff',rgb:'74,123,255'},
  holy:{n:'✨ Holy Lightbringer',p:550,d:'A white-gold blade crowned with a pulsing halo.',c:'#fff6d0',rgb:'255,246,208'},
  obsidian:{n:'🖤 Obsidian Fang',p:500,d:'A jagged black blade wreathed in grey mist.',c:'#8b8b9e',rgb:'139,139,158'}};
-const PETS={crow:{n:'🐦‍⬛ Crow',p:0,e:'🐦‍⬛',d:'A black crow. +1 gold from every chest, barrel and crate.'},cat:{n:'🐈‍⬛ Cat',p:500,e:'🐈‍⬛',d:'A fluffy tabby cat. +3 gold every room you clear.'},dragon:{n:'🐉 Azure Dragon (Mount)',p:1200,e:'🐉',d:'A big blue dragon you can ride. +5 gold every room you clear.'},
- cerb:{n:'🐕 Cerberus (Mount)',p:1000,e:'🐕',d:'A three-headed fire dog you can ride. +6 gold every room you clear.'},
- fox:{n:'🦊 Nine-Tailed Fox (Mount)',p:800,e:'🦊',d:'A golden nine-tailed fox you can ride. +5 gold every room you clear.'},
- tiger:{n:'🐅 White Tiger (Mount)',p:900,e:'🐅',d:'A white tiger you can ride. +5 gold every room you clear.'},
- turtle:{n:'🐢 Treasure Turtle (Mount)',p:600,e:'🐢',d:'A treasure turtle you can ride. +2 gold from every chest, barrel and crate.'},
- horse:{n:'🐴 Flaming Black Horse (Mount)',p:900,e:'🐴',d:'A flaming black horse you can ride. +4 gold every room you clear.'},
- phoenix:{n:'🔥 Phoenix (Mount)',p:1100,e:'🔥',d:'A fire bird you can ride. +4 gold every room you clear.'},
- frog:{n:'🐸 Ninja Frog (Mount)',p:700,e:'🐸',d:'A ninja frog you can ride. +3 gold every room you clear.'},
- raccoon:{n:'🦝 Sand Raccoon (Mount)',p:850,e:'🦝',d:'A sand raccoon you can ride. +4 gold every room you clear.'},
- dodo:{n:'🦤 Giant Dodo (Mount)',p:650,e:'🦤',d:'A big golden dodo you can ride. +3 gold every room you clear.'},
- trex:{n:'🦖 T-Rex (Mount)',p:1300,e:'🦖',d:'A T-Rex you can ride. +6 gold every room you clear.'},
- bison:{n:'🦬 Sky Bison (Mount)',p:1400,e:'🦬',d:'A flying white bison you can ride. +5 gold every room you clear.'}};
+const PETS={crow:{n:'🐦‍⬛ Crow',p:0,e:'🐦‍⬛',d:'+1 gold from every chest, barrel and crate.'},cat:{n:'🐈‍⬛ Cat',p:500,e:'🐈‍⬛',d:'+3 gold every room you clear.'},dragon:{n:'🐉 Azure Dragon (Mount)',p:1200,e:'🐉',d:'Mount. +5 gold every room you clear.'},
+ cerb:{n:'🐕 Cerberus (Mount)',p:1000,e:'🐕',d:'Mount. +6 gold every room you clear.'},
+ fox:{n:'🦊 Nine-Tailed Fox (Mount)',p:800,e:'🦊',d:'Mount. +5 gold every room you clear.'},
+ tiger:{n:'🐅 White Tiger (Mount)',p:900,e:'🐅',d:'Mount. +5 gold every room you clear.'},
+ turtle:{n:'🐢 Treasure Turtle (Mount)',p:600,e:'🐢',d:'Mount. +2 gold from every chest, barrel and crate.'},
+ horse:{n:'🐴 Flaming Black Horse (Mount)',p:900,e:'🐴',d:'Mount. +4 gold every room you clear.'},
+ phoenix:{n:'🔥 Phoenix (Mount)',p:1100,e:'🔥',d:'Mount. +4 gold every room you clear.'},
+ frog:{n:'🐸 Ninja Frog (Mount)',p:700,e:'🐸',d:'Mount. +3 gold every room you clear.'},
+ raccoon:{n:'🦝 Sand Raccoon (Mount)',p:850,e:'🦝',d:'Mount. +4 gold every room you clear.'},
+ dodo:{n:'🦤 Giant Dodo (Mount)',p:650,e:'🦤',d:'Mount. +3 gold every room you clear.'},
+ trex:{n:'🦖 T-Rex (Mount)',p:1300,e:'🦖',d:'Mount. +6 gold every room you clear.'},
+ bison:{n:'🦬 Sky Bison (Mount)',p:1400,e:'🦬',d:'Mount. +5 gold every room you clear.'}};
 function petGold(){const p=shopS().eq.pet;return p=='crow'?1:p=='turtle'?2:0}
 function shopS(){if(!S.shop)S.shop={};const h=S.shop;h.inv=h.inv||{};h.own=h.own||{};h.eq=h.eq||{};if(h.own.petrfrog){delete h.own.petrfrog;h.own.petraccoon=1}if(h.eq.pet=='rfrog')h.eq.pet='raccoon';return h}
 let shopTab='items',shopPaused=0;
 function shopGold(){const g=document.querySelector('#gold');if(g)g.textContent='🪙 '+S.gold}
-function shopHTML(){const h=shopS(),row=(n,d,r)=>`<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid #3a3a2a;border-radius:6px;margin:6px 0"><div><b>${n}</b><div style="font-size:11px;color:#a1a1aa">${d||''}</div></div>${r}</div>`,btn=(a,t,ok)=>`<button data-a="${a}" style="padding:4px 10px;border-radius:5px;background:${ok?'#14532d':'#27272a'};color:${ok?'#bbf7d0':'#71717a'};white-space:nowrap">${t}</button>`;let o='';
+function shopHTML(){const h=shopS(),row=(n,d,r)=>`<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid #3a3a2a;border-radius:6px;margin:6px 0"><div style="font-size:15px"><b>${n}</b><div style="font-size:14px;line-height:1.35;color:#d4d4d8;margin-top:2px">${d||''}</div></div>${r}</div>`,btn=(a,t,ok)=>`<button data-a="${a}" style="padding:4px 10px;border-radius:5px;background:${ok?'#14532d':'#27272a'};color:${ok?'#bbf7d0':'#71717a'};white-space:nowrap">${t}</button>`;let o='';
 if(shopTab=='items')for(const k of Object.keys(SHOP_ITEMS).sort((a,b)=>SHOP_ITEMS[a].p-SHOP_ITEMS[b].p)){const i=SHOP_ITEMS[k];o+=row(i.n+' <span style="color:#facc15">x'+(h.inv[k]||0)+'</span>',i.d,btn('i:'+k,'Buy 🪙'+i.p,S.gold>=i.p))}
 else{const secs=shopTab=='armory'?[['⚔️ Armor Skins',SKINS,'skin'],['🗡️ Blades',WPNS,'wpn']]:[['🐾 Pets',PETS,'pet']];for(const [ti,L,sl] of secs){o+=`<div style="margin-top:10px;color:#facc15;font-weight:bold">${ti}</div>`;o+=row({skin:'🛡️ Default Armor',wpn:'⚔️ Default Weapon',pet:'🚫 No Pet'}[sl],'Your original look. Always yours, free.',!h.eq[sl]?btn('e:'+sl+':none','Equipped ✓',0):btn('e:'+sl+':none','Equip',1));for(const k of Object.keys(L).sort((a,b)=>L[a].p-L[b].p)){const i=L[k],own=h.own[sl+k],eq=h.eq[sl]==k;const pb=sl=='pet'&&own&&window.PBOND;o+=row(i.n+(pb?window.PBOND.tag(k):''),(i.d||'')+(pb?window.PBOND.bar(k):''),own?(pb?'<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;max-width:260px">'+window.PBOND.btns(k,btn)+btn('e:'+sl+':'+k,eq?'Equipped ✓ (unequip)':'Equip',1)+'</div>':btn('e:'+sl+':'+k,eq?'Equipped ✓ (unequip)':'Equip',1)):btn('b:'+sl+':'+k,'Buy 🪙'+i.p,S.gold>=i.p))}}}
 return `<div style="background:#14110c;border:1px solid #a16207;border-radius:10px;text-align:left;padding:14px;color:#e4e4e7;font-family:monospace"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px;color:#facc15">🛒 Dungeon Shop</b><span>🪙 ${S.gold}</span></div><div style="display:flex;gap:6px;margin:10px 0">${['items','armory','pets'].map(t=>`<button data-a="t:${t}" style="padding:4px 10px;border-radius:5px;background:${t==shopTab?'#a16207':'#27272a'}">${{items:'🎒 Items',armory:'🛡️ Armory',pets:'🐾 Pets'}[t]}</button>`).join('')}</div>${o}</div>`}
@@ -6888,7 +6888,7 @@ if(hud){chip=document.createElement('span');chip.id='pbond';chip.style.cssText='
  hud.style.flexWrap='wrap';hud.style.justifyContent='center';hud.style.gap='6px 18px';
  {const rmE=document.getElementById('rm'),tmE=document.getElementById('tm');if(rmE&&tmE){const left=document.createElement('span');left.style.cssText='display:contents';hud.insertBefore(left,rmE);left.appendChild(rmE);left.appendChild(tmE)}}
  const wrap=document.createElement('span');wrap.style.cssText='display:contents';hud.insertBefore(wrap,dc);wrap.appendChild(dc);wrap.appendChild(chip);const bg=document.createElement('span');bg.style.cssText='display:flex;align-items:center;gap:8px';wrap.appendChild(bg);
- const mk=(id,title,fn)=>{const b=document.createElement('button');b.type='button';b.id=id;b.title=title;b.style.cssText='display:none;padding:1px 8px;line-height:1.35;font-size:11px;border-radius:6px;border:1px solid rgba(245,158,11,.6);background:rgba(48,22,6,.6);color:#fde68a;font:inherit;cursor:pointer;touch-action:manipulation;white-space:nowrap';b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();b.blur();try{const k=shopS().eq.pet;if(!k||!PETS[k]||!G||G.gal||G.state!='play')return;const m=fn(k);if(m)toast(m)}catch(_){}});bg.appendChild(b);return b};
+ const mk=(id,title,fn)=>{const b=document.createElement('button');b.type='button';b.id=id;b.title=title;b.style.cssText='display:none;padding:1px 8px;line-height:1.35;font-size:13px;border-radius:6px;border:1px solid rgba(245,158,11,.6);background:rgba(48,22,6,.6);color:#fde68a;font:inherit;cursor:pointer;touch-action:manipulation;white-space:nowrap';b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();b.blur();try{const k=shopS().eq.pet;if(!k||!PETS[k]||!G||G.gal||G.state!='play')return;const m=fn(k);if(m)toast(m)}catch(_){}});bg.appendChild(b);return b};
  bFeed=mk('pfeed','Feed your pet with the food you bought (key F)',k=>feed(k));
  bPet=mk('ppet','Pet your pet (key P)',k=>petIt(k));
 }
@@ -6992,7 +6992,7 @@ const AB={
  dodo:{n:'Egg Bomb Barrage',ic:'🦤',c:'255,225,90',d:'Throws exploding eggs at each wrong demon, one at a time.'}
 };
 // show the ability in the Armory's pet list
-ALL.forEach(k=>{const a=AB[k];if(a&&PETS[k].d.indexOf('✨')<0)PETS[k].d+=' ✨ Ability (once per run, shared by all your pets): '+a.n+' - '+a.d+' Only the right answer survives.'});
+ALL.forEach(k=>{const a=AB[k];if(a&&PETS[k].d.indexOf('✨')<0)PETS[k].d+=' ✨ '+a.n+' (1x/run): '+a.d});
 
 /* ---------------- effects layer (own canvas, only runs while something plays) ---------------- */
 const AFX=(()=>{
@@ -7253,7 +7253,7 @@ const _tsAb=trackStat;trackStat=function(k){const r=_tsAb.apply(this,arguments);
 /* ---------------- the ability button + hotkey Q ---------------- */
 let btn=null;
 function mkBtn(){const f=q('#pfeed');if(!f||!f.parentNode)return null;const b=document.createElement('button');b.type='button';b.id='pabil';
- b.style.cssText='display:none;padding:1px 8px;line-height:1.35;font-size:11px;border-radius:6px;border:1px solid rgba(167,139,250,.75);background:rgba(36,20,64,.7);color:#e9d5ff;font:inherit;cursor:pointer;touch-action:manipulation;white-space:nowrap';
+ b.style.cssText='display:none;padding:1px 8px;line-height:1.35;font-size:13px;border-radius:6px;border:1px solid rgba(167,139,250,.75);background:rgba(36,20,64,.7);color:#e9d5ff;font:inherit;cursor:pointer;touch-action:manipulation;white-space:nowrap';
  b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();b.blur();try{useAbility()}catch(_){}});f.parentNode.appendChild(b);return b}
 let _bt=null;
 function sync(){try{if(!btn){btn=mkBtn();if(!btn)return}
@@ -7318,7 +7318,7 @@ function untilMidnight(){const n=new Date(),ms=new Date(n.getFullYear(),n.getMon
 function render(){const box=q('#daily');if(!box)return;const d=D(),s=dstate(),cur=(s.next-1)%7;
  const cells=WEEK.map((w,i)=>{const done=s.claimed?i<=cur:i<cur,today=!s.claimed&&i==cur,r=reward((Math.floor((s.next-1)/7))*7+i+1);
   const icon=done?'✅':Object.keys(w.i||{}).length?ITEM[Object.keys(w.i)[0]].split(' ')[0]:'🪙';
-  return '<div class="rounded-md border p-1 text-center '+(today?'border-amber-400 bg-amber-500/15 shadow-[0_0_12px_rgba(251,191,36,.45)] animate-pulse':done?'border-emerald-700/60 bg-emerald-900/20':'border-zinc-800 bg-zinc-900/60 opacity-80')+'"><div class="text-[10px] text-zinc-400">Day '+(i+1)+'</div><div class="text-lg leading-6">'+icon+'</div><div class="text-[10px] '+(done?'text-emerald-400':'text-amber-300')+'">+'+r.g+'</div></div>'}).join('');
+  return '<div class="rounded-md border p-1 text-center '+(today?'border-amber-400 bg-amber-500/15 shadow-[0_0_12px_rgba(251,191,36,.45)] animate-pulse':done?'border-emerald-700/60 bg-emerald-900/20':'border-zinc-800 bg-zinc-900/60 opacity-80')+'"><div class="text-[12px] text-zinc-400">Day '+(i+1)+'</div><div class="text-lg leading-6">'+icon+'</div><div class="text-[12px] '+(done?'text-emerald-400':'text-amber-300')+'">+'+r.g+'</div></div>'}).join('');
  const live=s.live,txt=live+' day'+(live==1?'':'s');
  let foot;if(s.claimed)foot='✅ Claimed today. Come back in <b class="text-zinc-300">'+untilMidnight()+'</b> to keep your streak alive.';
  else if(s.broken)foot='💔 Your '+s.broken+'-day streak ended. Claim today to start a new one.';
