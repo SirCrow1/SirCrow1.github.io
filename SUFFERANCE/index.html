@@ -2511,7 +2511,7 @@ ${G}
         const SRP={stone:{a:'#231c2e',b:'#2a2236',f:'#1d1627',g:'#241c30'},moss:{a:'#1b2a24',b:'#223329',f:'#142019',g:'#1a2b22'},lava:{a:'#2e1c1c',b:'#3a2222',f:'#241313',g:'#301919'},ice:{a:'#1d2a3a',b:'#243649',f:'#16212f',g:'#1c2b3d'}};
         let lastSR=-1;
         const srNear=(ax,ay,r)=>Math.hypot(G.hx-ax,(G.hy-8)-ay)<r;
-        const SDN={spike:['IMPALED ON SPIKES','#ff4a4a'],axe:['CHOPPED IN HALF','#ff8c1a'],boulder:['SQUISHED BY A BOULDER','#d2b48c'],lava:['SWALLOWED BY LAVA','#ff6a1a'],ghost:['LIFE DRAINED BY A GHOST','#9fd8ff'],fire:['TORN APART BY THE CHAOS MELODY','#ff7bd5'],dart:['RIDDLED WITH DARTS','#ffb347'],gas:['GASSED','#a8ff3c'],ice:['PIERCED BY ICE SPIKES','#8fe8ff'],fall:['FELL INTO THE PIT','#c9b8ff'],quarter:['PULLED APART BY CHAINS','#9ca3af'],stack:['DROPPED INTO THE BOARD AS A PIECE','#f87171'],hang:['HANGED','#d2b48c'],card:['SHREDDED BY THE JESTER\'S RAZOR CARDS','#ff7bd5'],slab:['GROUND INTO THE WALL BY A TILE','#9ca3af'],chomp:['EATEN BY PAC-MAN','#fde047'],rps:['CUT AND SMASHED BY HIS THROWS','#e5e7eb'],sand:['BURIED ALIVE IN A GIANT HOURGLASS','#e0ad4a'],squash:['GROUND INTO LETTERS','#6ee7a0'],flag:['SKEWERED BY A FLAGPOLE','#ff6b6b']};
+        const SDN={spike:['IMPALED ON SPIKES','#ff4a4a'],axe:['CHOPPED IN HALF','#ff8c1a'],boulder:['SQUISHED BY A BOULDER','#d2b48c'],lava:['SWALLOWED BY LAVA','#ff6a1a'],ghost:['LIFE DRAINED BY A GHOST','#9fd8ff'],fire:['TORN APART BY THE CHAOS MELODY','#ff7bd5'],dart:['RIDDLED WITH DARTS','#ffb347'],gas:['GASSED','#a8ff3c'],ice:['PIERCED BY ICE SPIKES','#8fe8ff'],fall:['FELL INTO THE PIT','#c9b8ff'],quarter:['PULLED APART BY CHAINS','#9ca3af'],stack:['DROPPED INTO THE BOARD AS A PIECE','#f87171'],hang:['HANGED','#d2b48c'],card:['SHREDDED BY THE JESTER\'S RAZOR CARDS','#ff7bd5'],slab:['GROUND INTO THE WALL BY A TILE','#9ca3af'],chomp:['EATEN BY PAC-MAN','#fde047'],rps:['CUT AND SMASHED BY HIS THROWS','#e5e7eb'],sand:['BURIED ALIVE IN A GIANT HOURGLASS','#e0ad4a'],squash:['IMPALED BETWEEN THE SPIKE WALLS','#6ee7a0'],flag:['SKEWERED BY A FLAGPOLE','#ff6b6b']};
         const SRC={stone:'#ffd84a',moss:'#86efac',lava:'#ff8c1a',ice:'#8fe8ff'};
         // ICE SLIDE layout: 7 spike clusters spread over the WHOLE floor. A layout is only used if (1) no straight lane gets through (so walking straight always kills you)
         // and (2) a weaving path still exists (checked with a flood-fill, keeping a safety margin), so it is hard but never impossible.
@@ -2571,7 +2571,7 @@ ${G}
                 ctx.save();ctx.globalAlpha=o.a??1;if(o.f)ctx.filter=o.f;if(o.clip){ctx.beginPath();ctx.rect(o.clip[0],o.clip[1],o.clip[2],o.clip[3]);ctx.clip()}
                 const pv=o.pv||0;ctx.translate(x+(o.dx||0),fy+(o.dy||0)-pv);ctx.rotate(o.rot||0);ctx.scale(F*(o.mx||1),o.my??1);if(o.lc){ctx.beginPath();o.lc.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.clip()}ctx.drawImage(im.img,n*120,0,120,80,-132,-176+pv,264,176);ctx.restore()};
             const spray=(t0)=>{if(t<t0)return;const u=Math.min(1,(t-t0)/.7),old=G.sp;G.sp=D.sp;for(let j=0;j<3;j++)sprayAt(j,x+(j-1)*18,fy-50-j*6,.7+u*.8,1-u*.9,j==1?-1:1);G.sp=old};
-            const PT={spike:[0,32],axe:[.2,46],dart:[.9,34],gas:[1.4,30],ice:[.35,38],quarter:[1.3,44],slab:[1.1,46],rps:[.5,52],card:[1.3,40],flag:[.5,40]};   // blood pool: [starts at, size]
+            const PT={spike:[0,32],axe:[.2,46],dart:[.9,34],gas:[1.4,30],ice:[.35,38],quarter:[1.3,44],slab:[1.1,46],squash:[1.4,42],rps:[.5,52],card:[1.3,40],flag:[.5,40]};   // blood pool: [starts at, size]
             if(PT[type]){const pt=PT[type],pu=cl((t-pt[0])/.9,0,1),pcx=type=='fire'?bx:x;if(pu>0){ctx.fillStyle='rgba(110,15,23,.9)';ctx.beginPath();ctx.ellipse(pcx,fy-2,pu*pt[1],pu*pt[1]*.28,0,0,7);ctx.fill()}}
 
             if(type=='spike'){ // impaled on the pit's own spikes (they stay raised, the pit is drawn by the room)
@@ -2832,17 +2832,17 @@ ${G}
                 [-1,1].forEach(q=>R('#5a3b1c',cx+q*166-5,top0,10,bot-top0));
                 if(t>1.0&&t<3.2){ctx.save();ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.fillStyle='#e6dcc0';ctx.fillText('*cough*',x+40,fy-100-((now/25)%18));ctx.restore()}}
 
-            else if(type=='squash'){ // WORDLE: two tile-walls close on him; his own head (bones), armour and flesh are torn off his body and turned into letter tiles made of the sprite's actual pixels
-                const u=cl((t-.1)/.7,0,1),d0=320-u*u*302,d=t<1.5?d0:18+302*cl((t-1.5)/.6,0,1),k=d<70?cl((70-d)/52,0,1):0,LT='WORDLE';
+            else if(type=='squash'){ // WORDLE (lose): two stone walls studded with long iron spikes close in on him, slowly. The spikes drive through him from both sides and hold him up while he bleeds out
+                const u1=cl((t-.1)/.6,0,1),u2=cl((t-.7)/.8,0,1),d=t<.7?320-u1*u1*220:100-u2*78,LT='WORDLE',SL=66,SP=cl((t-1.5)/.4,0,1);
                 if(t<.1)sp({idle:1});
-                else if(t<1.2){ctx.save();ctx.beginPath();if(t<.9)ctx.rect(x-90,fy-100,180,38);if(t<1.05)ctx.rect(x-90,fy-62,180,32);ctx.rect(x-90,fy-30,180,44);ctx.clip();sp({idle:1,n:0,mx:Math.max(.4,1-.5*k),dx:k>.5?Math.sin(now/25)*2:0});ctx.restore()}
+                else sp({idle:1,n:0,pv:40,dx:d<85&&t<1.5?Math.sin(now/22)*2.2:0,rot:F*.1*SP,dy:5*SP});   // he thrashes while the spikes go in, then hangs
                 [-1,1].forEach(q=>{const wx=x+q*d,x0=q<0?wx-90:wx;R('#4b4358',x0,fy-175,90,195);R('#2a2236',x0,fy-175,90,6);
-                    for(let j=0;j<3;j++){const c2=(j+(q<0?0:3));R(['#2f9e44','#d9a60a','#3a3a44'][c2%3],x0+(q<0?50:6),fy-160+j*52,34,34);txt(LT[c2],x0+(q<0?67:23),fy-135+j*52,22,'#fff')}});
-                const G3=[['BONES',[47,43,16,10],'#e8e0cc',.9,fy-72,x-222,0],['ARMOR',[46,53,18,13],'#8a929c',1.05,fy-46,x-222+155,0],['FLESH',[44,56,10,12],'#c0262d',1.2,fy-18,x-222+310,.28]];
-                G3.forEach(g=>{for(let i=0;i<5;i++){const w=cl((t-g[3]-i*.04)/.9,0,1);if(w<=0)continue;const tx=g[5]+i*27+13,ty=fy-14,px=x+(tx-x)*w,py=g[4]+(ty-g[4])*w-100*Math.sin(Math.PI*w),sz=26;
-                    ctx.save();ctx.translate(px,py);ctx.rotate((1-w)*(i%2?4:-4));
-                    if(sprites.idle.loaded){ctx.imageSmoothingEnabled=false;const r=g[1],o=(i%3)-1;ctx.drawImage(sprites.idle.img,r[0]+(r[2]>12?o:0),r[1],r[2],r[3],-sz/2,-sz/2,sz,sz);ctx.fillStyle='rgba(0,0,0,.30)';ctx.fillRect(-sz/2,-sz/2,sz,sz);if(g[6]){ctx.fillStyle='rgba(200,20,30,'+g[6]+')';ctx.fillRect(-sz/2,-sz/2,sz,sz)}}else R(g[2],-sz/2,-sz/2,sz,sz);   // the tile IS a patch of his body
-                    ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=2;ctx.strokeRect(-sz/2+1,-sz/2+1,sz-2,sz-2);ctx.lineWidth=3;ctx.strokeStyle='#000';ctx.font='bold 20px sans-serif';ctx.textAlign='center';ctx.strokeText(g[0][i],0,7);ctx.fillStyle='#fff';ctx.fillText(g[0][i],0,7);ctx.restore()}})}
+                    for(let j=0;j<3;j++){const c2=(j+(q<0?0:3));R(['#2f9e44','#d9a60a','#3a3a44'][c2%3],x0+(q<0?50:6),fy-160+j*52,34,34);txt(LT[c2],x0+(q<0?67:23),fy-135+j*52,22,'#fff')}
+                    const spikes=(fill,edge)=>{for(let k2=0;k2<7;k2++){const y=fy-160+k2*26+(q>0?13:0),tp=wx-q*SL;ctx.fillStyle=fill;ctx.beginPath();ctx.moveTo(wx,y-5);ctx.lineTo(tp,y);ctx.lineTo(wx,y+5);ctx.closePath();ctx.fill();ctx.strokeStyle=edge;ctx.lineWidth=1;ctx.stroke()}};
+                    spikes('#aab2bd','#4a4f5c');   // long iron spikes, the left ones and the right ones are staggered so they pass between each other
+                    ctx.save();ctx.beginPath();ctx.rect(x-24,fy-95,48,110);ctx.clip();spikes('#8a141c','#5a0d12');ctx.restore()});   // the part of every spike that is inside his body is red
+                if(d<85){for(let j=0;j<7;j++)R('#8a141c',x-15+j*5,fy-88+((now/16+j*23)%80),2,6+(j%3)*2)}   // blood pours down his body and off the spikes
+                if(t>1.0)spray(1.0)}
 
             else if(type=='flag'){ // MINESWEEPER: a giant flagpole is driven straight down through the middle of his body (head to feet) and plants him in the floor, a red flag unfurling on top
                 const px=x-6.6*F,u=cl((t-.3)/.14,0,1),ty=-110+(fy+8+110)*u*u,hit=ty>=fy-82,pe=cl((t-.5)/.6,0,1),top=ty-226,w=Math.sin(now/110)*5*pe;
