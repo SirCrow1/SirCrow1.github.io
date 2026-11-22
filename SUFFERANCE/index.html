@@ -798,6 +798,62 @@ Object.assign(BA,{'s:spike':1.2,'s:axe':1.6,'s:boulder':1.5,'s:lava':2.8,'s:ghos
 KN[30]='Lava Bath';ONES[30]=ONES['s:lava'];BEDS[30]=BEDS['s:lava'];BA[30]=2.8;LD[30]=3.4;
 // puzzle-room deaths: each gets its own entry and reuses the sound of a death that fits it
 [['quarter','s:axe','Quartered',2.0],['stack','s:boulder','Disc Stack',2.2],['hang','s:gas','Hanged',1.8],['card','s:axe','Razor Cards',2.0],['slab','s:boulder','Tile Crush',1.8],['chomp','s:ghost','Pac Chomp',2.4],['rps','s:axe','Throw Down',2.2],['sand','s:boulder','Buried Alive',2.6],['squash','s:ghost','Blended',8.5],['flag','s:dart','Flagpole',1.6]].forEach(([n,s,nm,d])=>{const k='s:'+n;ONES[k]=t=>ONES[s](t);BEDS[k]=()=>{BEDS[s]&&BEDS[s]()};BA[k]=d;LD[k]=d+.2;KN[k]=nm});
+
+// ---- puzzle-room deaths: each gets its OWN sound, timed to its animation (they used to borrow the axe / boulder / ghost sounds) ----
+const PZ=(k,d,one,bed)=>{const key='s:'+k;ONES[key]=one;BEDS[key]=bed||(()=>{DRIPS(.8)});BA[key]=d;LD[key]=d+.2};
+SFX.lose=t=>{[392,330,262,196].forEach((f,i)=>note('s','triangle',f,t+i*.16,.5,.18,1,0,1));sweep('s','sine',120,40,t+.5,.5,.2)};
+PZ('quarter',2.7,t=>{   // TIC-TAC-TOE: four chains whip in, hooks bite, the knight is torn in four
+  [0,.03,.06,.09].forEach(d=>swl(t+.1+d,.3,.35,'bandpass',900,3500,.5,1.5));[.38,.4,.42,.44].forEach(d=>{metal(t+d,.3,rnd(500,900),.3);crk(t+d,.5)});
+  creak(t+.55,.8,420,.09);for(let i=0;i<8;i++)metal(t+.6+i*.07,.06,rnd(1200,2200),.12);pain(t+.9,.5,.16,520);
+  tear(t+1.3,.9);bone(t+1.3,.8);bone(t+1.33,.7);wet(t+1.32,.8);scream(t+1.3,.35,900,300,.14);
+  [1.55,1.65,1.8,1.95].forEach(d=>{wet(t+d,.5);thud(t+d,.4,110)});blood(t+2.2,.2)});
+PZ('stack',3.2,t=>{   // CONNECT 4: the winning four ding, he shrinks into a red disc and drops into the board
+  [.2,.35,.5,.65].forEach((d,i)=>ping(t+d,[523,659,784,1047][i],.14,.35,0,'triangle'));swl(t+1.0,.55,.35,'bandpass',4500,300,.2,2);
+  pain(t+1.1,.6,.08,1300);ping(t+1.55,1400,.1,.7,180,'sine');
+  tk(t+2.25,.6,1800);thud(t+2.25,.5,160);ping(t+2.25,300,.15,.2,0,'square');[2.34,2.4,2.44].forEach(d=>tk(t+d,.3,rnd(1500,2200)))});
+PZ('hang',2.4,t=>{   // HANGMAN: gallows creak, the noose whips tight and snaps, then he chokes
+  creak(t+.1,.5,200,.08);swl(t+.55,.3,.5,'bandpass',500,3000,.2,1.5);gasp(t+.6,.25);
+  thud(t+.85,.7,95);bone(t+.86,.8);nz(t+.85,.12,.5,'bandpass',1500,400,2);retch(t+1.0,.3);
+  [1.1,1.5,1.9].forEach(d=>moan(t+d,.35,200,110,.07,'e'));creak(t+1.0,1.4,260,.07)},
+  ()=>{ev(.7,t=>creak(t,.9,rnd(220,320),.05));DRIPS(.3)});
+PZ('card',2.6,t=>{   // MEMORY: the jester demon flings razor cards, then a cheeky little fanfare
+  for(let i=0;i<4;i++){const s=t+i*.45;swl(s,.2,.4,'bandpass',2500,6500,.4,1.5);growl(s,.2,.1,95);shing(s+.18,.4);stab(s+.2,.5);ping(s+.05,rnd(1500,2200),.06,.3,0,'triangle')}
+  pain(t+.5,1.0,.15,540);[1.9,2.0,2.1,2.2].forEach((d,i)=>ping(t+d,[784,988,1175,1568][i],.1,.5,0,'triangle'))});
+PZ('slab',2.2,t=>{   // SLIDING TILES: stone grinds across the floor and crushes him against the next tile
+  swl(t+.3,.8,.5,'lowpass',500,150,.2,1.5,1);nz(t+.3,.8,.45,'bandpass',300,150,1.5,1);creak(t+.3,.8,140,.1);for(let i=0;i<10;i++)crk(t+.35+i*.07,.35);
+  const c=t+1.1;pain(t+1.05,.45,.14,600);thud(c,.95,70);crunch(c,.8);bone(c+.02,.7);bone(c+.05,.7);wet(c+.04,.5);nz(c,.5,.5,'lowpass',2200,150,1,1);
+  swl(c+.2,1.2,.15,'highpass',3000,5000,.3);for(let i=0;i<6;i++)crk(c+.3+rnd(0,.9),.2)},
+  ()=>{PEBBLES(3);DRIPS(.6)});
+PZ('chomp',2.9,t=>{   // MAZE: wakka-wakka as Pac-Man rushes in, two bites, then the arcade death jingle
+  for(let i=0;i<9;i++)ping(t+.1+i*.15,i%2?260:520,.13,.12,i%2?520:260,'square');
+  [1.15,1.4].forEach(d=>{crunch(t+d,.8);bone(t+d,.7);wet(t+d+.02,.5);ping(t+d,180,.2,.12,90,'square')});pain(t+1.1,.5,.14,650);
+  for(let i=0;i<8;i++)ping(t+1.75+i*.1,900-i*95,.12,.12,780-i*95,'square');ping(t+2.6,80,.15,.3,40,'square')},
+  ()=>{ev(.5,t=>ping(t,rnd(300,500),.03,.08,0,'square'))});
+PZ('rps',4.2,t=>{   // ROCK PAPER SCISSORS: rock crush, paper folds, scissors snip, confetti
+  growl(t,.3,.12,100);const c=t+.45;boom(c,.9,1);thud(c,.95,55);for(let i=0;i<6;i++)bone(c+i*.02,.6);wet(c+.03,.5);pain(c-.1,.4,.12,600);
+  growl(t+1.0,.25,.1,100);[1.7,1.95,2.3,2.55].forEach(d=>swl(t+d,.15,.25,'bandpass',1500,4000,.3,1));growl(t+2.4,.25,.1,100);
+  [2.55,2.85,3.05].forEach(d=>shing(t+d,.5));nz(t+3.05,.05,.8,'highpass',3000,0);
+  for(let i=0;i<12;i++)tk(t+3.4+rnd(0,.6),.12,rnd(3000,7000));swl(t+3.4,.7,.2,'bandpass',2000,5000,.3,1)});
+PZ('sand',4.0,t=>{   // RIDDLE: sand pours into the giant hourglass, he coughs less and less until the dune covers him
+  swl(t+.25,2.8,.3,'highpass',2500,4500,.4,.8);nz(t+.25,2.8,.3,'bandpass',1800,3000,1,1);swl(t+.2,3,.25,'lowpass',200,60,.4,1,1);
+  [1.0,1.5,2.0,2.5,3.0].forEach((d,i)=>cough(t+d,.3-i*.04));gasp(t+1.3,.2);moan(t+1.2,1.2,260,120,.06,'e');thud(t+3.1,.4,70)},
+  ()=>{cn('highpass',4000,.5,.03);ev(2,t=>sz(t,.08))});
+PZ('squash',8.6,t=>{   // WORDLE: the demons drop a blender over him, throw in the word, blend him, slurp the juice and burp
+  swl(t+.05,.25,.4,'bandpass',300,2500,.5,1.2);metal(t+.3,.4,rnd(500,600),.6);thud(t+.3,.8,80);glass(t+.3,.2,6);   // the jar whistles down and clanks over him
+  [0,1,2,3,4].forEach(i=>{const d=.8+i*.18;tk(t+d,.5,rnd(1400,2200));ping(t+d,rnd(650,900),.1,.12,0,'triangle');thud(t+d,.18,150)});   // the letter tiles clack in
+  metal(t+1.7,.5,300,.7);thud(t+1.7,.6,100);tk(t+1.76,.5,1200);ping(t+1.76,1000,.1,.05,0,'square');   // lid slam, button click
+  const m=t+1.8;ping(m,60,.18,.75,320,'sawtooth');ping(m+.75,320,.15,1.8,300,'sawtooth');ping(m+.75,323,.05,1.8,303,'square');   // the motor winds up and screams
+  swl(m,.8,.4,'bandpass',500,2800,.5,1.2);nz(m+.7,1.8,.28,'bandpass',1800,2600,1.2);for(let i=0;i<42;i++)tk(m+.1+i*.058,.18,rnd(2000,5500));   // wind and blades rattling on the glass
+  vox(m+.3,1.9,750,230,.17,'a',{path:[[.2,900],[.6,520],[1,240]],end:.03,vr:7,vd:.03,jit:1,breath:.4});   // his muffled scream
+  for(let i=0;i<10;i++){crunch(m+.4+i*.2,.35);bone(m+.45+i*.2,.2)}for(let i=0;i<14;i++)gloop(m+1+i*.15,rnd(80,160),.14);   // chunks, then juice slapping the glass
+  const e=t+4.3;ping(e,300,.15,.6,50,'sawtooth');swl(e,.6,.2,'bandpass',1800,300,.2,1.2);for(let i=0;i<5;i++)drip(e+.5+i*.2,.15);   // the motor winds down
+  swl(t+4.4,.5,.2,'bandpass',1500,3500,.4,1);for(let i=0;i<6;i++){const s=t+4.9+i*.4;slurp(s,.25);swl(s,.3,.3,'bandpass',500,1800,.4,1.5);bub(s+.05,rnd(250,400),.1)}   // the straw goes in, the demon slurps
+  const b=t+7.2;vox(b,.5,120,65,.3,'a',{am:30,vd:.05,breath:.6,rev:0});nz(b,.4,.25,'bandpass',400,150,2)},   // BURP
+  ()=>{DRIPS(.6);ev(1,t=>bub(t,rnd(250,450),.08))});
+PZ('flag',2.2,t=>{   // MINESWEEPER: the pole whistles down, skewers him, the red flag snaps open
+  swl(t+.2,.2,.7,'highpass',2000,7000,.3,1);const c=t+.44;stab(c,1);thud(c,1,70);metal(c,.45,330,.8);bone(c+.02,.9);bone(c+.05,.7);wet(c+.03,.6);pain(c+.03,.6,.15,520);nz(c,.3,.7,'lowpass',2500,150,1,1);
+  for(let i=0;i<7;i++)swl(t+.55+i*.1,.1,.35*(1-i*.09),'bandpass',700,1800,.3,1.2);thud(c+.5,.3,100)},
+  ()=>{ev(.5,t=>swl(t,.2,.06,'bandpass',600,1400,.3,1));DRIPS(.5);ev(.2,t=>metal(t,.03,rnd(300,450),.4))});
 const KO=Object.keys(ONES).map(k=>/^\d+$/.test(k)?+k:k);let tc=0,lastFit='';
 function newSession(){const P={};P.d=ac.createGain();P.d.gain.value=DG;P.d.connect(B.s.d);const cv=ac.createConvolver();cv.buffer=rvb;const rgn=ac.createGain();rgn.gain.value=.45;cv.connect(rgn);rgn.connect(P.d);P.r=cv;P.srcs=[];P.em=[];P.tm=0;P.t0=0;return P}
 function runSession(S){S.nt=S.t0;S.tm=setInterval(safe(()=>{const now=ac.currentTime;if(S.nt<now-.05)S.nt=now;
@@ -3045,10 +3101,10 @@ ${G}
                 init(c){fresh(c);c.gate={x:690,open:false,o:0}},
                 reset(c){fresh(c)},
                 upd(c,dt){const g=c.g;if(c.gate.open)return false;G.hx=70;G.hy=320;g.t+=dt;
-                    if(g.res){g.end+=dt;if(g.end>1.4){if(g.res=='win')c.gate.open=true;else{G.hx=o.hx||300;G.hy=335;return death}}return false}
+                    if(g.res){if(!g.sn){g.sn=1;try{SND.sfx(g.res=='win'?'win':'lose')}catch(_){}}g.end+=dt;if(g.end>1.4){if(g.res=='win')c.gate.open=true;else{G.hx=o.hx||300;G.hy=335;return death}}return false}
                     o.tick&&o.tick(g,dt);return false},
-                down(c,x,y,e){if(live(c)&&o.down)o.down(c.g,x,y,e)},move(c,x,y){if(live(c)&&o.move)o.move(c.g,x,y)},up(c,x,y){if(live(c)&&o.up)o.up(c.g,x,y)},
-                key:o.key&&((c,e)=>live(c)&&o.key(c.g,e)),
+                down(c,x,y,e){if(live(c)&&o.down){try{SND.sfx('click')}catch(_){}o.down(c.g,x,y,e)}},move(c,x,y){if(live(c)&&o.move)o.move(c.g,x,y)},up(c,x,y){if(live(c)&&o.up)o.up(c.g,x,y)},
+                key:o.key&&((c,e)=>{const r=live(c)&&o.key(c.g,e);if(r)try{SND.sfx('click')}catch(_){}return r}),
                 draw(c,now){const g=c.g;
                     if(G.state=='secretDie'){srGateDraw(c.gate);return}
                     if(c.gate.open){txt('VICTORY! The gate is open - run to the chest!',395,150,20,'#6ee7a0');srGateDraw(c.gate);return}
