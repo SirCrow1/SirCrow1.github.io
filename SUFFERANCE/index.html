@@ -1525,6 +1525,7 @@ ${G}
                             </div>
                         </label>
                         <div class="flex items-center gap-1 ml-2">
+                            <button onclick="deckStats(event, ${i})" class="text-xs bg-zinc-900 hover:bg-emerald-950 text-zinc-400 hover:text-emerald-400 border border-zinc-800 hover:border-emerald-800 px-2 py-1.5 rounded transition" title="Accuracy by topic">📊 Stats</button>
                             ${!d.isDefault ? `<button onclick="editDeck(event, ${i})" class="text-xs bg-zinc-900 hover:bg-emerald-950 text-zinc-400 hover:text-emerald-400 border border-zinc-800 hover:border-emerald-800 px-2 py-1.5 rounded transition" title="Edit this deck">✏️ Edit</button>` : ''}
                             ${!d.isDefault ? `<button onclick="deleteDeck(event, ${i})" class="text-xs bg-zinc-900 hover:bg-emerald-950 text-zinc-500 hover:text-emerald-400 border border-zinc-800 hover:border-emerald-800 p-1.5 rounded transition" title="Delete Question Deck">🗑️</button>` : ''}
                         </div>
@@ -1542,6 +1543,7 @@ ${G}
                 alert("The starter quest deck cannot be deleted!");
                 return;
             }
+            try { if (S.ds && S.decks[i]) delete S.ds[dsDeckKey(S.decks[i])]; } catch (_) {}
             S.decks.splice(i, 1);
             if (S.deck >= S.decks.length) S.deck = Math.max(0, S.decks.length - 1);
             save(); hub();
@@ -1587,16 +1589,19 @@ ${G}
                 let l = line.trim(), correct = false;
                 const ld = l.match(/^[\s\-•*]*(\u2705|\u2714\uFE0F?|\u2713|\u2611\uFE0F?|\[x\]|\[\u2713\])\s*/i);
                 if (ld && /\S/.test(l.slice(ld[0].length))) { correct = true; l = l.slice(ld[0].length); }
+                const xd = l.match(/^[\s\-\u2022*]*[\u2717\u2718\u2716\u2715\u274C\u274E]\uFE0F?\s*/u); if (xd && /\S/.test(l.slice(xd[0].length))) l = l.slice(xd[0].length);      // a leading cross just marks a wrong option
                 let label = null, body = null, m;
                 if ((m = l.match(LBL))) { label = m[1] || m[2]; body = l.slice(m[0].length); }
                 else if ((m = l.match(LBLD))) { label = m[1]; body = l.slice(m[0].length); }
                 if (label !== null) {
                     const isNum = /\d/.test(label), n = letterIdx(label), q = cur.q || '';
                     if (!cur.q) return null;
+                    if (QLEAD.test(body)) return null;                                   // "1. Question: ..." is a question, not an option of the line above it
                     if (n !== cur.opts.length) return null;                              // labels must run A,B,C.. / 1,2,3.. in order
                     if (isNum && (/\?\s*$/.test(body.trim()) || (blankBefore && !QP_SPREAD.v && cur.opts.length >= 2))) return null;   // "2. Next question?" is a new question
                     if (!isNum && cur.opts.length === 0 && n !== 0) return null;
                 } else if (BUL.test(l) && cur.q) { body = l.replace(BUL, ''); }
+                else if (cur.q && cur.opts.length < 2 && tfOnly(l, true) !== null) { body = l; }      // a bare True / False line is an option
                 else return null;
                 if (!body.trim()) return null;
                 // bold over the option text = marker ("**B) text**", "B) **text**"); bold over the label only is not
@@ -1610,7 +1615,7 @@ ${G}
                 }
                 body = body.trim();
                 if (!body) return null;
-                return { text: body, correct };
+                return { text: body, correct, labeled: label !== null };
             }
             function resolveAns(txt, opts) {
                 let t = strip(String(txt)).replace(/[.!]+$/, '').trim(); if (!t) return -2;
@@ -1624,10 +1629,70 @@ ${G}
                 const k2 = opts.findIndex(o => nzTxt(o) && nzTxt(t).startsWith(nzTxt(o)) && nzTxt(o).length >= 3);   // "Kyoka Suigetsu - his sword"
                 return k2 >= 0 ? k2 : -2;
             }
-            const tfVal = s => { const t = strip(String(s)).replace(/[.!]+$/, '').trim().toLowerCase(); return /^(true|t|yes|correct)$/.test(t) ? true : /^(false|f|no|incorrect|wrong)$/.test(t) ? false : null; };
-
-            // answer key at the end of the paste: "Answer Key" + "1. B" lines, or bare "1.B 2.A 3.D" lines
+            // ---- True / False in every written form ----
+            // true: true t yes y yeah correct right 1 ✓ ✔ ✅ ☑ 🟢 verdadero vrai wahr   false: false f no n nope incorrect wrong 0 x ✗ ✘ ✖ ❌ 🔴 falso faux falsch
+            const TF_T = /^(?:true|t|yes|y|yeah|yep|yup|correct|right|verdadero|vrai|wahr|1|[\u2713\u2714\u2705\u2611\u{1F7E2}]\uFE0F?)(?![a-z0-9])/iu;
+            const TF_F = /^(?:false|f|no|n|nope|nah|incorrect|wrong|falso|faux|falsch|0|x|[\u2717\u2718\u2716\u2715\u274C\u274E\u{1F534}]\uFE0F?)(?![a-z0-9])/iu;
+            const TF_PRE = /^(?:the\s+)?(?:correct\s+)?(?:answer|ans|statement|claim|verdict|result|response|it|this|that)\s*(?:is|=|:|'s|\u2019s|-|\u2013|\u2014)\s*|^correct\s*[:=]\s*/i;
+            const tfVal = s => {
+                let t = strip(String(s == null ? '' : s)).replace(/^[\s"'\u201c\u201d\u2018\u2019`(\[]+/, '').trim();
+                for (let g = 0; g < 3; g++) { const m = t.match(TF_PRE); if (!m || m[0].length >= t.length) break; t = t.slice(m[0].length).replace(/^[\s"'\u201c\u201d\u2018\u2019`(\[]+/, ''); }
+                if (TF_T.test(t)) return true;      // "False (He is a Quincy)", "True - because...", "T.", "✅" all work: only the first word counts
+                if (TF_F.test(t)) return false;
+                return null;
+            };
+            // a line/option that is NOTHING but a true/false token. strict = only true/false/t/f/ticks (so a Yes/No multiple choice stays multiple choice)
+            const tfOnly = (s, strict) => {
+                let t = strip(String(s == null ? '' : s)).replace(/[\s"'\u201c\u201d\u2018\u2019`()\[\]{}.!?:;,*_]+$/g, '').replace(/^[\s"'\u201c\u201d\u2018\u2019`()\[\]{}*_]+/, '').trim();
+                let t2 = t.replace(/\s*(?:[\u2713\u2714\u2705\u2611]\uFE0F?|[(\[]\s*(?:correct|answer|right|x)\s*[)\]])\s*$/iu, '').trim(); if (t2) t = t2;   // "True ✓" / "False (correct)" are still just a token
+                if (!t || t.length > 12) return null;
+                const re = strict
+                    ? /^(?:true|false|t|f|verdadero|falso|vrai|faux|wahr|falsch|[\u2713\u2714\u2705\u2611\u2717\u2718\u2716\u2715\u274C\u274E]\uFE0F?)$/iu
+                    : /^(?:true|false|t|f|yes|no|y|n|correct|incorrect|right|wrong|verdadero|falso|vrai|faux|wahr|falsch|[\u2713\u2714\u2705\u2611\u2717\u2718\u2716\u2715\u274C\u274E]\uFE0F?)$/iu;
+                return re.test(t) ? tfVal(t) : null;
+            };
+            const QLEAD = /^\s*[*_]*\s*(?:question|ques|q|statement|claim)\s*#?\s*\d*\s*[:.\-\u2013\u2014]\s*/i;      // "Question: ..." after a number is the question itself, never an option
+            const QPFX3 = /^\s*(?:#+\s*)?[*_]*\s*(?:question|ques|q|statement|claim)\s*[:.\-\u2013\u2014]\s*[*_]*\s*/i;
+            const EXPL = /^[*_#>\-\u2022\s]*(?:explanation|explain|reason(?:ing)?|why|rationale|note|hint|fun\s*fact|source|details?|context)\s*[:\-\u2013\u2014]/i;   // explanation lines are never new questions
+            const TOPICL = /^[*_#>\s]*(?:topic|category|subject|unit|theme|arc|saga|section|chapter|part|round|level|deck)\s*#?\s*\d*\s*[:\-\u2013\u2014.]\s*(.+?)[*_\s]*$/i;
+            const PAIR_SRC = '(?:[\\(\\[]\\s*(?:t|true)\\s*[\\)\\]][\\s,\\/|]*[\\(\\[]\\s*(?:f|false)\\s*[\\)\\]]|[\\(\\[]\\s*(?:f|false)\\s*[\\)\\]][\\s,\\/|]*[\\(\\[]\\s*(?:t|true)\\s*[\\)\\]]|true\\s*(?:\\/|\\||,|or|-|\\u2013)\\s*false|false\\s*(?:\\/|\\||,|or|-|\\u2013)\\s*true|t\\s*(?:\\/|or)\\s*f|f\\s*(?:\\/|or)\\s*t)';
+            const TFPAIR = new RegExp('^[\\(\\[]?\\s*' + PAIR_SRC + '\\s*[\\)\\]]?\\s*[?:.]?$', 'i');
+            // chatter an AI adds around a quiz ("Here are the 10 questions:", "let me know if...") is not part of the quiz
+            const CHAT = /^(?:(?:sure|certainly|of course|absolutely)\s*[!,.:\u2014-]|here(?:'|\u2019)s\b|here is\b|here are\b|below (?:is|are)\b|i(?:'|\u2019)ve (?:made|created|written|put|rewritten|updated|added)\b|i have (?:made|created|written)\b|hope (?:this|that|these)\b|if you(?:'|\u2019)?d like\b|if you would like\b|if you want\b|let me know\b|feel free to\b|want me to\b|would you like\b|do you want\b|happy to help\b)|\bjust let me know\b|\blet me know if\b|\bfeel free to (?:ask|let|reach)\b/i;
+            const isChatter = t => { const b = strip(t).replace(/^[>\s]+/, ''); return !/\?\s*$/.test(b) && CHAT.test(b); };
+            const cleanTopic = s => String(s || '').replace(/(\*\*|__)/g, '').replace(/^[^\p{L}\p{N}]+/u, '').replace(/[\s:\-\u2013\u2014]+$/, '').trim().slice(0, 40);
+            // pull a written-in answer / "True or False?" marker out of the question text itself
+            function splitTf(tq) {
+                let v = null, was = false, m;
+                const strips = [
+                    new RegExp('^[\\(\\[]?\\s*' + PAIR_SRC + '\\s*[\\)\\]]?\\s*[:\\-.\\u2013\\u2014]?\\s*', 'i'),             // "True or False: ..." / "(T/F) ..." at the start
+                    new RegExp('[\\s,.:\\-\\u2013\\u2014]*[\\(\\[]?\\s*' + PAIR_SRC + '\\s*[\\)\\]]?\\s*\\??\\s*$', 'i'),    // "... True or false?" / "... (True/False)" / "[T] [F]" at the end
+                    new RegExp('\\s*[\\(\\[]\\s*' + PAIR_SRC + '\\s*[\\)\\]]\\s*', 'i')                                    // "(true/false)" in the middle
+                ];
+                strips.forEach(re => { const before = tq; tq = tq.replace(re, ' ').trim(); if (tq !== before) was = true; });
+                if ((m = tq.match(/\s*[\(\[]\s*(true|false|t|f|yes|no)\s*[\)\]]\s*[.!]?\s*$/i))) { v = tfVal(m[1]); tq = tq.slice(0, m.index).trim(); }
+                else if ((m = tq.match(/\s*(?:[-\u2013\u2014:=\u2192]+|=>|->)\s*(?:answer\s*[:=\-]?\s*)?(true|false|t|f)\s*[.!]?\s*$/i))) { v = tfVal(m[1]); tq = tq.slice(0, m.index).trim(); }
+                else if ((m = tq.match(/\s+(?:answer|ans)\s*[:=\-\u2013\u2014]\s*(true|false|t|f|yes|no)\s*[.!]?\s*$/i))) { v = tfVal(m[1]); tq = tq.slice(0, m.index).trim(); }
+                return { q: tq.trim(), v, was };
+            }
+            // answer key made of True/False words: "1. True" / "2. F" lines at the end (or under an "Answer Key" header)
             function pullKey(lines) {
+                const re1 = /^(?:q(?:uestion)?\.?\s*)?(\d{1,3})\s*[.)\-\u2013\u2014:=]\s*(true|false|t|f|yes|no|y|n)(?![a-z0-9])\s*(?:[.!]|[(\-\u2013\u2014:,].*)?$/i;
+                const HDr = /^[*_#\s]*(?:answer\s*key|answers?|key|solutions?)\s*[:\-]?\s*[*_]*$/i;
+                const map = new Map();
+                let hi = -1; for (let i = lines.length - 1; i >= 0; i--) if (HDr.test(lines[i])) { hi = i; break; }
+                if (hi >= 0 && hi >= lines.length * 0.3) {
+                    for (let i = hi + 1; i < lines.length; i++) { const m = strip(lines[i]).match(re1); if (m && !map.has(+m[1])) map.set(+m[1], m[2]); }
+                    if (map.size) return { map, lines: lines.slice(0, hi) };
+                } else {
+                    let j = lines.length; const tmp = [];
+                    while (j > 0) { const m = strip(lines[j - 1]).match(re1); if (m) { tmp.push(m); j--; } else break; }
+                    if (tmp.length >= 2) { tmp.forEach(m => { if (!map.has(+m[1])) map.set(+m[1], m[2]); }); return { map, lines: lines.slice(0, j) }; }
+                }
+                return pullKeyMc(lines);
+            }
+
+            function pullKeyMc(lines) {
                 const KL = /^(?:q(?:uestion)?\.?\s*)?(\d{1,3})\s*[\.\)\-\u2013\u2014:=]?\s*[\(\[]?([a-hA-H])[\)\]]?\.?$/i;
                 const KM = /^(?:\s*(?:q\s*)?\d{1,3}\s*[\.\)\-\u2013\u2014:=]?\s*[\(\[]?[a-hA-H][\)\]]?\s*[.,;]?)+$/i;
                 const HD = /^[*_#\s]*(?:answer\s*key|answers?|key|solutions?)\s*[:\-]?\s*[*_]*$/i;
@@ -1655,15 +1720,43 @@ ${G}
                 let raw = clean(text).replace(/\r/g, '').split('\n');
                 const L = [];            // {t, blank}
                 let blank = false;
-                raw.forEach(r => { const t = r.trim(); if (!t) { blank = true; return; } if (/^[-=_*~#]{3,}$/.test(t)) { blank = true; return; } expandInline(t).forEach((x, i) => { L.push({ t: x, blank: i === 0 ? blank : false }); blank = false; }); });
+                raw.forEach(r => {
+                    const t = r.trim();
+                    if (!t) { blank = true; return; }
+                    if (/^[-=_*~#]{3,}$/.test(t)) { blank = true; return; }
+                    if (isChatter(t)) { blank = true; return; }     // "Here are the 10 questions:" / "let me know if you want more!"
+                    expandInline(t).forEach((x, i) => { L.push({ t: x, blank: i === 0 ? blank : false }); blank = false; });
+                });
                 QP_SPREAD.v = L.length > 3 && L.filter(x => x.blank).length / L.length > 0.8;   // a blank line between EVERY line says nothing about where questions start
                 const kk = pullKey(L.map(x => x.t)); const key = kk.map; L.length = kk.lines.length;
-                const items = []; let cur = null, ord = 0;
-                const fresh = () => ({ q: null, num: null, opts: [], marks: [], ans: null, tf: null });
+                const items = []; let cur = null, ord = 0, topic = '';
+                const setTopic = s => { const t = cleanTopic(s); if (t) topic = t; };
+                const withTopic = o => { if (topic) o.topic = topic; return o; };
+                const fresh = () => ({ q: null, num: null, opts: [], marks: [], ans: null, tf: null, lab: false });
                 const done = () => {
                     const c = cur; cur = null; if (!c || !c.q) return;
                     const qt = c.q.trim();
-                    if (c.opts.length >= 2) {
+                    // "Statement" followed by a lone "True"/"False" line: that line is the answer, not an option
+                    if (c.opts.length === 1 && tfOnly(c.opts[0], true) !== null && c.ans === null && !c.marks[0]) { c.ans = c.opts[0]; c.opts = []; c.marks = []; }
+                    const tfo = c.opts.map(o => tfOnly(o, true));
+                    if (c.opts.length === 2 && tfo.every(v => v !== null) && tfo[0] !== tfo[1]) {
+                        // options are True / False (any order, any spelling): a real true/false question
+                        ord++;
+                        const mk = c.marks.map((m, i) => m ? i : -1).filter(i => i >= 0);
+                        let tv = null;
+                        if (mk.length === 1) tv = tfo[mk[0]];
+                        else if (mk.length === 0) {
+                            const src = c.ans !== null ? c.ans : key.get(c.num != null ? c.num : ord);
+                            if (src !== undefined && src !== null) {
+                                const s = strip(String(src)).replace(/[.!]+$/, '').trim();
+                                if (c.lab && /^[\(\[]?[abAB12][\)\]]?$/.test(s)) { const k = letterIdx(s.replace(/[\(\)\[\]]/g, '')); tv = k >= 0 && k < 2 ? tfo[k] : null; }
+                                if (tv === null) tv = tfVal(src);
+                                if (tv === null) { const k = resolveAns(src, c.opts); if (k >= 0) tv = tfo[k]; }
+                            }
+                        }
+                        if (tv === null) items.push({ pending: withTopic({ t: 'tf', q: qt, o: ['True', 'False'] }) });
+                        else items.push({ q: withTopic({ t: 'tf', q: qt, o: ['True', 'False'], a: tv }) });
+                    } else if (c.opts.length >= 2) {
                         ord++;
                         let a = -1, bad = false; const mk = c.marks.map((m, i) => m ? i : -1).filter(i => i >= 0);
                         let an = c.ans !== null ? resolveAns(c.ans, c.opts) : -1;
@@ -1672,34 +1765,41 @@ ${G}
                         else if (mk.length === 1) { a = mk[0]; if (an >= 0 && an !== a) bad = true; }
                         else if (an >= 0) a = an;
                         let o = c.opts.slice();
-                        if (bad || a < 0) { items.push({ pending: { t: 'mc', q: qt, o: o.slice(0, 4) } }); return; }
+                        if (bad || a < 0) { items.push({ pending: withTopic({ t: 'mc', q: qt, o: o.slice(0, 4) }) }); return; }
                         if (o.length > 4 && a >= 4) { [o[3], o[a]] = [o[a], o[3]]; a = 3; }
-                        items.push({ q: { t: 'mc', q: qt, o: o.slice(0, 4), a } });
+                        items.push({ q: withTopic({ t: 'mc', q: qt, o: o.slice(0, 4), a }) });
                     } else if (c.opts.length === 0) {
-                        let tq = qt, tv = c.ans !== null ? tfVal(c.ans) : null;
-                        const tm = tq.match(/\s*[\(\[]\s*(true|false|t|f)\s*[\)\]]\s*[.!]?\s*$/i);
-                        if (tm) { tv = tfVal(tm[1]); tq = tq.replace(tm[0], '').trim(); }
-                        const hasTf = /^(?:true\s*(?:or|\/)\s*false|t\s*\/\s*f)\s*[:\-.]?\s*/i;
-                        const wasTf = hasTf.test(tq); tq = tq.replace(hasTf, '').trim();
+                        const sp = splitTf(qt); let tq = sp.q, tv = c.ans !== null ? tfVal(c.ans) : null;
+                        if (sp.v !== null && tv === null) tv = sp.v;
+                        const wasTf = sp.was || sp.v !== null;
                         if (tv === null) { const kv = key.get(c.num != null ? c.num : ord + 1); if (kv !== undefined) tv = tfVal(kv); }
                         if (tq.length <= 3) return;
-                        if (tv !== null) { ord++; items.push({ q: { t: 'tf', q: tq, o: ['True', 'False'], a: tv } }); }
-                        else items.push({ pending: { t: 'tf', q: tq, o: ['True', 'False'] }, loose: !wasTf });
+                        if (tv !== null) { ord++; items.push({ q: withTopic({ t: 'tf', q: tq, o: ['True', 'False'], a: tv }) }); }
+                        else items.push({ pending: withTopic({ t: 'tf', q: tq, o: ['True', 'False'] }), loose: !wasTf });
                     }
                 };
                 L.forEach(({ t, blank }) => {
+                    const isHead = /^#{1,6}\s+/.test(t);
                     let line = t.replace(/^#+\s+/, '');
                     // junk: "Question 3" alone, section banners, short emoji banners
                     const bare = strip(line);
                     if (/^(?:question|ques|q)\s*#?\s*\d+\s*[:.)\-]?\s*$/i.test(bare)) { done(); cur = fresh(); cur.num = +(bare.match(/\d+/)[0]); cur.hdr = true; return; }
-                    if (bare.length < 50 && !/\?\s*$/.test(bare) && !(cur && cur.q && asOption(line, cur, blank)) && (/\b(?:section|part|round|level|chapter)\s*\d+/i.test(bare) || (/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(bare) && !ANSL.test(bare) && !/^[\u2705\u2714\u2713\u2611]/.test(bare)))) { done(); return; }
+                    // "Topic: Soul Society" / "Part 2: Hueco Mundo" / "## Bankai" -> the questions after it belong to that topic (per-topic stats)
+                    { const tm = TOPICL.exec(bare);
+                      if (tm && !/\?\s*$/.test(bare) && bare.length < 90 && !tfOnly(tm[1]) && !(cur && cur.q && asOption(line, cur, blank))) { done(); setTopic(tm[1]); return; } }
+                    if (isHead && bare.length < 70 && !/\?\s*$/.test(bare) && !QPFX.test(line) && tfOnly(bare) === null && !(cur && cur.q && asOption(line, cur, blank))) { done(); setTopic(bare); return; }
+                    if (bare.length < 50 && !/\?\s*$/.test(bare) && !(cur && cur.q && asOption(line, cur, blank)) && (/\b(?:section|part|round|level|chapter)\s*\d+/i.test(bare) || (/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(bare) && !ANSL.test(bare) && !/^[\u2705\u2714\u2713\u2611\u2717\u2718\u2716\u2715\u274C\u274E]/.test(bare)))) { done(); setTopic(bare); return; }
+                    if (cur && cur.q && (EXPL.test(bare) || (cur.ans !== null && /^[\(\[].*[\)\]]$/.test(bare)))) return;     // "Explanation: ..." / "(He is a Quincy)" under an answer
+                    if (TFPAIR.test(bare)) { if (cur && cur.q) return; if (!cur) return; }                                      // a lone "True / False" label line
                     const am = ANSL.exec(bare);
                     if (am && cur && cur.q) { cur.ans = cur.ans === null ? am[1] : cur.ans; return; }
-                    if (cur && cur.q) { const o = asOption(line, cur, blank); if (o) { if (cur.ans !== null) { done(); cur = null; } else { cur.opts.push(o.text); cur.marks.push(o.correct); return; } } }
+                    // a bare "True" / "False" under True/False options is the answer
+                    if (cur && cur.q && cur.ans === null && cur.opts.length >= 2 && cur.opts.every(o => tfOnly(o, true) !== null) && tfOnly(bare.replace(LEAD, ''), true) !== null) { cur.ans = bare; return; }
+                    if (cur && cur.q) { const o = asOption(line, cur, blank); if (o) { if (cur.ans !== null) { done(); cur = null; } else { cur.opts.push(o.text); cur.marks.push(o.correct); if (o.labeled) cur.lab = true; return; } } }
                     // a question line
                     const pm = line.match(QPFX); let num = null, qtxt = line;
-                    if (pm) { num = +(pm[1] || pm[2] || pm[3]); qtxt = line.slice(pm[0].length); } else if (QPFX2.test(line)) qtxt = line.replace(QPFX2, '');
-                    qtxt = strip(qtxt);
+                    if (pm) { num = +(pm[1] || pm[2] || pm[3]); qtxt = line.slice(pm[0].length); }
+                    qtxt = strip(qtxt.replace(QPFX3, ''));      // "1. Question: ..." -> just the question
                     if (cur && cur.q && cur.opts.length === 0 && cur.ans === null && !pm && !blank) { cur.q += ' ' + qtxt; return; }      // multi-line question
                     if (cur && cur.hdr && !cur.q) { cur.q = qtxt; if (num != null) cur.num = num; return; }
                     done(); cur = fresh(); cur.q = qtxt; cur.num = num;
@@ -1743,7 +1843,7 @@ ${G}
         // two independent passes (second one with the options shuffled); a question is kept only if both give the same answer
         async function aiFill(pending) {
             const A = await askAnswers(pending, false), B = await askAnswers(pending, true);
-            return pending.map((p, i) => (A[i] !== null && A[i] === B[i]) ? { t: p.t, q: p.q, o: p.o, a: A[i] } : null);
+            return pending.map((p, i) => (A[i] !== null && A[i] === B[i]) ? { t: p.t, q: p.q, o: p.o, a: A[i], topic: p.topic } : null);
         }
         // study notes (no questions in the text at all): let Gemini write the questions, with the answer as TEXT, then double-check them
         async function aiWrite(notes) {
@@ -1779,13 +1879,14 @@ ${G}
                 let k = 0;
                 items.forEach(i => { if (i.q) qs.push(i.q); else { const f = filled[k++]; if (f) qs.push(f); else skipped++; } });
             }
-            if (!qs.length) { st(`Nothing added${why ? ': ' + why : ''}. Add an "Answer: B" line under each question.`); return; }
+            if (!qs.length) { st(`Nothing added${why ? ': ' + why : ''}. Add an "Answer: B" or "Answer: True" line under each question.`); return; }
             const name = $('#dn').value.trim() || 'Deck ' + (S.decks.length + 1);
             S.decks.push({ name, qs });
             S.deck = S.decks.length - 1;
             save(); hub();
             $('#notes').value = ''; $('#dn').value = '';
-            st(`${qs.length} questions loaded` + (skipped ? `, ${skipped} skipped (no answer written and the AI could not confirm one). Add "Answer: B" lines.` : '.'));
+            { const tps = new Set(qs.map(q => q.topic).filter(Boolean)), nt = qs.filter(q => q.t == 'tf').length;
+            st(`${qs.length} questions loaded` + (nt ? ` (${nt} True/False)` : '') + (tps.size ? `, ${tps.size} topic${tps.size > 1 ? 's' : ''}` : '') + (skipped ? `, ${skipped} skipped (no answer written and the AI could not confirm one). Add "Answer: B" lines.` : '.'));}
         };
 
         const cv=$('#c'),ctx=cv.getContext('2d'),W=800,H=450;
@@ -3447,6 +3548,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 first:null,wrong:0,picks:[],bonus:!!(r.boss&&r.mode=='bonus'),boss:!!r.boss};G.rv.set(q,e);G.rvo.push(e)}
             if(e.first==null)e.first=lab;
             if(!ok){e.wrong++;e.picks.push(lab)}
+            try{recStat(q,ok)}catch(_){}     // per-deck stats
         }
         function hit(t){
             if(G.state!='play')return;
@@ -5856,10 +5958,11 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                     <div class="flex items-center justify-between gap-2"><span class="title-font text-xs font-bold text-emerald-400">Question ${i+1}</span>
                     <div class="flex items-center gap-2"><select onchange="edType(${i},this.value)" class="bg-zinc-900 border border-emerald-950 text-xs text-zinc-300 rounded p-1"><option value="mc" ${q.t=='mc'?'selected':''}>Multiple choice</option><option value="tf" ${q.t=='tf'?'selected':''}>True / False</option></select>
                     <button onclick="edDel(${i})" class="text-zinc-500 hover:text-red-400 px-1" title="Delete question">🗑️</button></div></div>
-                    <textarea rows="2" oninput="edQ(${i},this.value)" placeholder="Question text" class="${INP}">${esc(q.q)}</textarea>${body}</div>`;
+                    <textarea rows="2" oninput="edQ(${i},this.value)" placeholder="Question text" class="${INP}">${esc(q.q)}</textarea><input type="text" value="${esc(q.topic||'')}" placeholder="Topic (optional, e.g. Soul Society)" oninput="edT(${i},this.value)" class="${INP}">${body}</div>`;
             }).join('')||'<div class="text-xs text-zinc-500 text-center py-4 border border-dashed border-emerald-950 rounded">No questions yet. Add one below!</div>';
         }
         window.edQ=(i,v)=>{ED.qs[i].q=v};
+        window.edT=(i,v)=>{ED.qs[i].topic=v};
         window.edO=(i,k,v)=>{ED.qs[i].o[k]=v};
         window.edA=(i,v)=>{ED.qs[i].a=v};
         window.edDel=i=>{ED.qs.splice(i,1);edRender()};
@@ -5879,12 +5982,13 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 const q=ED.qs[i];
                 if(q.t=='mt'){out.push(q);continue}
                 const text=(q.q||'').trim();if(!text)return err('Question '+(i+1)+' has no text.');
-                if(q.t=='tf'){out.push({t:'tf',q:text,o:['True','False'],a:q.a===true});continue}
+                const tpc=(q.topic||'').trim(),TP=tpc?{topic:tpc}:{};
+                if(q.t=='tf'){out.push(Object.assign({t:'tf',q:text,o:['True','False'],a:q.a===true},TP));continue}
                 const o=[];let a=-1;
                 q.o.forEach((v,k)=>{const t=(v||'').trim();if(t){if(k===q.a)a=o.length;o.push(t)}});
                 if(o.length<2)return err('Question '+(i+1)+' needs at least 2 answers.');
                 if(a<0)return err('Question '+(i+1)+': the correct answer is empty. Tick a filled-in answer.');
-                out.push({t:'mc',q:text,o,a});
+                out.push(Object.assign({t:'mc',q:text,o,a},TP));
             }
             const d=S.decks[ED.i],old=d.name;
             if(old!==name&&S.best[old]){S.best[name]=S.best[old];delete S.best[old]}
@@ -5896,6 +6000,62 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             $('#dn').value='';editDeck(null,S.decks.length-1);
         };
 
+
+
+        // ================= PER-DECK STATS: accuracy by topic, so you can see what to study =================
+        // Every answer you click in a run is logged against its deck, its topic and its question. Topics come from "Topic: X" / "Part 2: X" / "## X" lines when a deck is imported, or from the Topic box in the deck editor.
+        const dsDeckKey = (d, make) => d.isDefault ? d.id : (d.sid || (make ? (d.sid = 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)) : ''));
+        const dsQKey = q => (q.t == 'mt' ? 'Matching: ' + (q.pairs || []).map(p => p[0]).join(', ') : String(q.q || '')).slice(0, 140);
+        function recStat(q, ok) {
+            if (!G || G.gal || !q) return;                       // Death Gallery replays don't count
+            const d = S.decks[S.deck]; if (!d) return;
+            if (!S.ds) S.ds = {};
+            const k = dsDeckKey(d, true), D = S.ds[k] || (S.ds[k] = { n: 0, ok: 0, top: {}, qs: {} });
+            const tp = (q.topic && String(q.topic).trim()) || 'General', qk = dsQKey(q);
+            D.n++; if (ok) D.ok++;
+            const T = D.top[tp] || (D.top[tp] = { n: 0, ok: 0 }); T.n++; if (ok) T.ok++;
+            const Q = D.qs[qk] || (D.qs[qk] = { n: 0, ok: 0, tp }); Q.n++; if (ok) Q.ok++; Q.tp = tp;
+            save();
+        }
+        function dsClose() { const ov = $('#dstats'); if (ov) ov.style.display = 'none'; if (!ED) document.body.style.overflow = ''; }
+        window.deckStats = function (e, i) {
+            if (e) e.stopPropagation();
+            const d = S.decks[i]; if (!d) return;
+            const D = (S.ds || {})[dsDeckKey(d)] || null;
+            const pct = (o, n) => n ? Math.round(o * 100 / n) : 0;
+            const col = p => p >= 85 ? '#34d399' : p >= 60 ? '#fbbf24' : '#f87171';
+            const qs = (d.qs || []).filter(q => q.t != 'mt' || q.pairs);
+            // every topic in the deck (even ones not played yet) + the stats for it
+            const tops = new Map();
+            qs.forEach(q => { const t = (q.topic && String(q.topic).trim()) || 'General'; tops.set(t, (tops.get(t) || 0) + 1); });
+            const rows = [...tops].map(([name, cnt]) => { const s = D && D.top[name] || { n: 0, ok: 0 }; return { name, cnt, n: s.n, ok: s.ok, p: pct(s.ok, s.n) }; });
+            rows.sort((a, b) => (a.n ? 0 : 1) - (b.n ? 0 : 1) || a.p - b.p || b.n - a.n);   // weakest first, unplayed last
+            const live = new Set(qs.map(dsQKey));
+            const weak = D ? Object.entries(D.qs).filter(([k, v]) => live.has(k) && v.n > v.ok).map(([k, v]) => ({ k, tp: v.tp, n: v.n, miss: v.n - v.ok, r: (v.n - v.ok) / v.n })).sort((a, b) => b.r - a.r || b.miss - a.miss).slice(0, 6) : [];
+            const seen = D ? Object.keys(D.qs).filter(k => live.has(k)).length : 0;
+            const tot = D ? D.n : 0, okT = D ? D.ok : 0;
+            const label = r => !r.n ? ['Not played yet', '#71717a'] : r.p < 60 ? ['Needs study', '#f87171'] : r.p < 85 ? ['Getting there', '#fbbf24'] : ['Solid', '#34d399'];
+            const topicHtml = rows.map(r => { const [lb, lc] = label(r); return `<div class="bg-zinc-950 border border-emerald-950 rounded p-2.5">
+                <div class="flex justify-between items-baseline gap-2"><div class="text-xs font-bold text-zinc-200 truncate">${esc(r.name)} <span class="text-zinc-500 font-normal">· ${r.cnt} question${r.cnt == 1 ? '' : 's'}</span></div><div class="text-[12px] font-bold shrink-0" style="color:${lc}">${lb}${r.n && r.n < 3 ? ' <span class="text-zinc-500 font-normal">(few tries)</span>' : ''}</div></div>
+                <div class="flex items-center gap-2 mt-1.5"><div class="flex-1 h-2 rounded bg-zinc-800 overflow-hidden"><div style="width:${r.n ? Math.max(3, r.p) : 0}%;height:100%;background:${col(r.p)}"></div></div><div class="text-xs w-24 text-right text-zinc-300">${r.n ? r.p + '% <span class="text-zinc-500">(' + r.ok + '/' + r.n + ')</span>' : '—'}</div></div></div>`; }).join('');
+            const weakHtml = weak.length ? weak.map(w => `<div class="border border-red-900/50 bg-red-950/20 rounded p-2.5 flex justify-between gap-2 items-start"><div class="min-w-0"><div class="text-zinc-100 text-xs font-bold">${esc(w.k)}</div>${w.tp && w.tp != 'General' ? `<div class="text-[12px] text-zinc-500 mt-0.5">${esc(w.tp)}</div>` : ''}</div><span class="shrink-0 text-[12px] font-bold bg-red-600 text-white rounded px-1.5 py-0.5">missed ${w.miss} of ${w.n}</span></div>`).join('')
+                : `<div class="text-xs text-zinc-500 text-center py-3 border border-dashed border-emerald-950 rounded">${tot ? 'No missed questions yet. Nice.' : 'Play this deck to find your weak spots.'}</div>`;
+            const onlyGeneral = rows.length == 1 && rows[0].name == 'General';
+            let ov = $('#dstats');
+            if (!ov) { ov = document.createElement('div'); ov.id = 'dstats'; ov.className = 'fixed inset-0 z-50 bg-black/85 items-start justify-center overflow-y-auto p-3'; document.body.appendChild(ov); ov.addEventListener('click', ev => { if (ev.target === ov) dsClose(); }); }
+            ov.innerHTML = `<div class="w-full max-w-2xl bg-zinc-900 border border-emerald-900/50 rounded-xl p-5 my-4 text-left space-y-4">
+                <div class="flex items-start justify-between gap-3"><div><h3 class="title-font text-lg font-bold text-emerald-400">📊 Stats: ${esc(d.name)}</h3>
+                    <div class="text-xs text-zinc-400 mt-1">${tot ? `<b class="text-zinc-200">${pct(okT, tot)}%</b> accuracy · ${okT} right of ${tot} answers · ${seen}/${qs.length} questions seen` : 'No answers yet. Play this deck and your accuracy shows up here.'}</div></div>
+                    <button id="ds-x" class="text-zinc-400 hover:text-white text-lg px-2" title="Close">✕</button></div>
+                <div><div class="title-font text-sm font-bold text-emerald-400 mb-2">Accuracy by topic <span class="text-zinc-500 font-normal text-xs">(weakest first)</span></div><div class="space-y-2">${topicHtml || '<div class="text-xs text-zinc-500">This deck has no questions.</div>'}</div>
+                    ${onlyGeneral && !d.isDefault ? '<div class="text-[12px] text-zinc-500 mt-2 leading-relaxed">💡 This deck has no topics yet, so everything is under “General”. Put a <b>Topic: Name</b> line (or a <b>## Name</b> heading) above each group of questions when you paste a deck, or fill in the Topic box for each question in ✏️ Edit.</div>' : ''}</div>
+                <div><div class="title-font text-sm font-bold text-emerald-400 mb-2">Questions to study</div><div class="space-y-2">${weakHtml}</div></div>
+                <div class="flex justify-between items-center pt-1"><button id="ds-reset" class="text-xs text-zinc-500 hover:text-red-400 border border-zinc-800 hover:border-red-900 rounded px-2 py-1.5 transition">Reset this deck's stats</button><button id="ds-close" class="text-xs bg-emerald-600 hover:bg-emerald-500 text-zinc-950 font-bold rounded px-4 py-1.5 title-font">Close</button></div></div>`;
+            ov.style.display = 'flex'; ov.scrollTop = 0; document.body.style.overflow = 'hidden';
+            $('#ds-x').onclick = $('#ds-close').onclick = dsClose;
+            $('#ds-reset').onclick = () => { if (!tot) return; if (!confirm('Reset the stats for "' + d.name + '"?')) return; delete S.ds[dsDeckKey(d)]; save(); window.deckStats(null, i); };
+        };
+        addEventListener('keydown', e => { if (e.code == 'Escape') { const ov = $('#dstats'); if (ov && ov.style.display == 'flex') dsClose(); } });
 
         // ===== THE PRINCESS: a purple orb follows the knight; she reacts to every death =====
         (function(){
