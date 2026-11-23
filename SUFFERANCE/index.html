@@ -1249,6 +1249,8 @@ sync();
             <div class="flex flex-wrap gap-2 mt-4">
                 <button id="ed-add-mc" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold py-2 px-3 rounded title-font">➕ Multiple choice</button>
                 <button id="ed-add-tf" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold py-2 px-3 rounded title-font">➕ True / False</button>
+                <button id="ed-add-fb" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold py-2 px-3 rounded title-font">➕ Fill in the blank</button>
+                <button id="ed-add-mt" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold py-2 px-3 rounded title-font">➕ Matching</button>
             </div>
             <p id="ed-err" class="text-xs text-red-400 mt-3 min-h-[1rem]"></p>
             <div class="flex gap-3 mt-2">
@@ -1503,8 +1505,22 @@ ${G}
             badgeData().forEach((b,i)=>{if(b.done&&!before[i]){toast('🏅 Badge unlocked: '+b.name+'!');(G.newB||(G.newB=[])).push(b.name)}});
             save();
         }
+        // ---- optional question types: tick which kinds show up in the dungeon ----
+        if(!S.types)S.types={mc:true,tf:true,fb:true,mt:true};
+        const QT=[['mc','Multiple choice'],['tf','True / False'],['fb','Fill in the blank'],['mt','Matching']];
+        const typeOn=q=>S.types[q.t==='mt'?'mt':q.t==='tf'?'tf':q.t==='fb'?'fb':'mc']!==false;
+        const onlyTypes=(qs,fb)=>{const f=(qs||[]).filter(typeOn);return f.length?f:(fb||qs||[])};
+        function typeBar(){
+            let b=$('#qtypes');
+            if(!b){b=document.createElement('div');b.id='qtypes';b.className='bg-zinc-950 border border-emerald-950 rounded p-3 mb-3';$('#decks').parentNode.insertBefore(b,$('#decks'))}
+            b.innerHTML='<div class="title-font text-xs font-bold text-emerald-400 mb-2">🎲 Question types to use</div><div class="flex flex-wrap gap-x-5 gap-y-1">'+QT.map(([k,n])=>`<label class="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer"><input type="checkbox" ${S.types[k]!==false?'checked':''} data-qt="${k}" class="accent-emerald-600">${n}</label>`).join('')+'</div>';
+            b.querySelectorAll('input').forEach(c=>c.onchange=()=>{
+                const k=c.dataset.qt;S.types[k]=c.checked;
+                if(!QT.some(t=>S.types[t[0]]!==false)){S.types[k]=true;c.checked=true}   // keep at least one type on
+                save()})
+        }
         function hub(){
-            renderBadges();
+            renderBadges();typeBar();
             $('#gold').textContent='🪙 '+S.gold;
             {const nb=$('#newrun');if(nb)nb.style.display=(()=>{try{return SAVED||(G&&!G.gal)}catch(e){return 0}})()?'':'none'}   // a run is in progress (or parked): offer a fresh one
             {const pb=$('#play');if(pb){const sp=pb.querySelectorAll('span');if(sp.length>1)sp[1].textContent=(()=>{try{return SAVED&&SAVED.G}catch(e){return 0}})()?'Resume your run':'Descend into Sufference'}}
@@ -2409,7 +2425,7 @@ ${G}
         function startRun(gq){   // gq = a question: this is a Death Gallery replay (one plain room, nothing counts)
             const d=S.decks[S.deck];
             if(!gq&&(!d||!d.qs.length))return;
-            let rooms=gq?[{q:gq}]:sh(d.qs).map(q=>({q}));   // every question in the deck gets a room
+            let rooms=gq?[{q:gq}]:sh(onlyTypes(d.qs)).map(q=>({q}));   // every question in the deck gets a room
             // one boss room at the very end: the question list is chosen at the gate
             if(!gq)rooms.push({q:null,boss:1,qs:null,qi:0,mode:null});
             G={gal:gq?1:0,rooms,mq:new Map(),rv:new Map(),rvo:[],stains:[],bl:[],rem:[],i:0,deaths:0,tries:0,right:0,t0:performance.now(),pr:rnd(PR),hx:150,hy:320,face:1,cd:0,sw:0,pj:[],bn:[],hearts:[],xg:0,bar:[],fl:[],cn:[],deb:[],ka:1,fin:0,ct:0,maxX:470};
@@ -3500,14 +3516,14 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             const arr=G.rooms.filter(r=>!r.boss&&r.q&&r.q.t!='mt').map(r=>({q:r.q,n:G.mq.get(r.q)||0})).sort((a,b)=>b.n-a.n);
             const hurt=arr.filter(o=>o.n>0).slice(0,3);
             if(hurt.length)return{qs:hurt.map(o=>o.q),deaths:hurt.reduce((a,o)=>a+o.n,0),flawless:0};
-            const pool=(d.qs||[]).filter(q=>q.t!='mt');
+            const pool=onlyTypes((d.qs||[]).filter(q=>q.t!='mt'),(d.qs||[]).filter(q=>q.t!='mt'));
             return{qs:[pool.length?rnd(pool):FALLBACK_Q],deaths:0,flawless:1};
         }
         // 5 bonus questions on the deck's topic (starter deck has its own extras, other decks reuse their questions)
         function bonusQs(){
             const d=S.decks[S.deck];
             const extra=(d.bonus&&d.bonus.length)?d.bonus:(d.id==='default_starter_pool'?DEFAULT_DECK.bonus:[]);
-            const own=(d.qs||[]).filter(q=>q.t!='mt');
+            const own=onlyTypes((d.qs||[]).filter(q=>q.t!='mt'),(d.qs||[]).filter(q=>q.t!='mt'));
             let pool=sh(extra).concat(sh(own));if(!pool.length)pool=[FALLBACK_Q];
             const out=[];for(let i=0;i<BONUS_N;i++)out.push(cloneQ(pool[i%pool.length]));
             return out;
@@ -3572,7 +3588,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             const tag=r.boss?(r.mode=='bonus'?'💎 Bonus ':'🩸 Weakness ')+(r.qi+1)+'/'+r.qs.length+': ':'';
             $('#q').textContent=tag+(q.t=='mt'?'Strike a term, then its matching gate.':q.q);
             const X=r.boss?STONE_X:575,PXX=r.boss?STONE_X:700;
-            if(q.t=='mc') {
+            if(q.t=='mc'||q.t=='fb') {
                 let choices = q.o.map((o,i)=>[o,i]);
                 if (choices.length > 5) { const okc = choices.find(c => c[1] == q.a), rest = sh(choices.filter(c => c !== okc)); choices = okc ? [okc, ...rest.slice(0, 3)] : rest.slice(0, 4); }   // never more than 4-5 doors
                 if(r.boss)sh(choices).forEach((p,k)=>G.tg.push({x:bsx(k),y:bsy(k),l:p[0],ok:p[1]==q.a,k:'g',c:k}));
@@ -3581,7 +3597,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 ['TRUE','FALSE'].forEach((l,k)=>G.tg.push(r.boss?{x:bsx(k),y:270,l,ok:(k==0)==q.a,k:'s'}:{x:250+k*300,px:250+k*300,ply:190,y:122,l,ok:(k==0)==q.a,k:'s'}));
             } else {
                 q.pairs.forEach((p,i)=>G.tg.push({x:95+i*170,px:95+i*170,ply:190,y:122,l:p[0],id:i,k:'m'}));
-                sh(q.pairs.map((p,i)=>[p[1],i])).forEach((p,i)=>G.tg.push({x:585,px:705,y:185+i*90,l:p[0],id:p[1],k:'d'}))
+                sh(q.pairs.map((p,i)=>[p[1],i])).forEach((p,i)=>G.tg.push({x:585,px:705,y:185+i*(q.pairs.length>3?70:90),l:p[0],id:p[1],k:'d'}))
             }
             {const cs=sh(Array.from({length:NV},(_,k)=>k));G.tg.forEach((t,i)=>{t.z=i;t.v=cs[i%NV]+dSeed()})}
         }
@@ -5992,24 +6008,34 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(e)e.stopPropagation();
             const d=S.decks[i];if(!d||d.isDefault)return;   // the starter quiz can't be edited
             ED={i,qs:JSON.parse(JSON.stringify(d.qs))};
-            ED.qs.forEach(q=>{if(q.t=='mc'&&(typeof q.a!='number'||q.a<0||q.a>=q.o.length))q.a=0;if(q.t=='tf')q.a=q.a===true});
+            ED.qs.forEach(q=>{if((q.t=='mc'||q.t=='fb')&&(typeof q.a!='number'||q.a<0||q.a>=q.o.length))q.a=0;if(q.t=='tf')q.a=q.a===true});
             $('#ed-name').value=d.name;$('#ed-err').textContent='';edRender();
             $('#ed').style.display='flex';document.body.style.overflow='hidden';
         };
         function edClose(){$('#ed').style.display='none';document.body.style.overflow='';ED=null}
         function edRender(){
             $('#ed-qs').innerHTML=ED.qs.map((q,i)=>{
-                if(q.t=='mt')return `<div class="bg-zinc-950 border border-emerald-950 rounded p-3 text-xs text-zinc-400 flex justify-between items-center"><span>Matching question (not editable): ${esc(q.q||'')}</span><button onclick="edDel(${i})" class="text-zinc-500 hover:text-red-400 px-2">🗑️</button></div>`;
+                if(q.t=='mt'){const pr=q.pairs||[];return `<div class="bg-zinc-950 border border-emerald-950 rounded p-3 space-y-2">
+                    <div class="flex items-center justify-between gap-2"><span class="title-font text-xs font-bold text-emerald-400">Question ${i+1} · Matching</span>
+                    <div class="flex items-center gap-2">${edSel(i,'mt')}<button onclick="edDel(${i})" class="text-zinc-500 hover:text-red-400 px-1" title="Delete question">🗑️</button></div></div>
+                    <input type="text" value="${esc(q.topic||'')}" placeholder="Topic (optional)" oninput="edT(${i},this.value)" class="${INP}">
+                    ${pr.map((p,k)=>`<div class="flex items-center gap-2"><input type="text" value="${esc(p[0])}" placeholder="Term ${k+1}" oninput="edP(${i},${k},0,this.value)" class="${INP}"><span class="text-emerald-500">→</span><input type="text" value="${esc(p[1])}" placeholder="Match ${k+1}" oninput="edP(${i},${k},1,this.value)" class="${INP}">${pr.length>2?`<button onclick="edPRm(${i},${k})" class="text-zinc-500 hover:text-red-400 px-1">✕</button>`:''}</div>`).join('')}
+                    ${pr.length<4?`<button onclick="edPAdd(${i})" class="text-xs text-emerald-400 hover:text-emerald-300">+ Add pair</button>`:''}
+                    <div class="text-[12px] text-zinc-500">2 to 4 term → match pairs.</div></div>`}
                 let body;
                 if(q.t=='tf')body=`<div class="flex gap-5 text-xs text-zinc-300"><label class="flex items-center gap-2"><input type="radio" name="a${i}" ${q.a===true?'checked':''} onchange="edA(${i},true)" class="accent-emerald-600"> TRUE is correct</label><label class="flex items-center gap-2"><input type="radio" name="a${i}" ${q.a===false?'checked':''} onchange="edA(${i},false)" class="accent-emerald-600"> FALSE is correct</label></div>`;
-                else body=q.o.map((o,k)=>`<div class="flex items-center gap-2"><input type="radio" name="a${i}" ${q.a===k?'checked':''} onchange="edA(${i},${k})" title="Mark as the correct answer" class="accent-emerald-600"><input type="text" value="${esc(o)}" placeholder="Answer ${k+1}" oninput="edO(${i},${k},this.value)" class="${INP}">${q.o.length>2?`<button onclick="edRm(${i},${k})" class="text-zinc-500 hover:text-red-400 px-1" title="Remove answer">✕</button>`:''}</div>`).join('')+(q.o.length<4?`<button onclick="edAddO(${i})" class="text-xs text-emerald-400 hover:text-emerald-300">+ Add answer</button>`:'')+`<div class="text-[12px] text-zinc-500">Tick the circle next to the correct answer.</div>`;
+                else body=q.o.map((o,k)=>`<div class="flex items-center gap-2"><input type="radio" name="a${i}" ${q.a===k?'checked':''} onchange="edA(${i},${k})" title="Mark as the correct answer" class="accent-emerald-600"><input type="text" value="${esc(o)}" placeholder="Answer ${k+1}" oninput="edO(${i},${k},this.value)" class="${INP}">${q.o.length>2?`<button onclick="edRm(${i},${k})" class="text-zinc-500 hover:text-red-400 px-1" title="Remove answer">✕</button>`:''}</div>`).join('')+(q.o.length<4?`<button onclick="edAddO(${i})" class="text-xs text-emerald-400 hover:text-emerald-300">+ Add answer</button>`:'')+`<div class="text-[12px] text-zinc-500">${q.t=='fb'?'Type ____ where the blank goes. Tick the circle next to the word that fills it.':'Tick the circle next to the correct answer.'}</div>`;
                 return `<div class="bg-zinc-950 border border-emerald-950 rounded p-3 space-y-2">
                     <div class="flex items-center justify-between gap-2"><span class="title-font text-xs font-bold text-emerald-400">Question ${i+1}</span>
-                    <div class="flex items-center gap-2"><select onchange="edType(${i},this.value)" class="bg-zinc-900 border border-emerald-950 text-xs text-zinc-300 rounded p-1"><option value="mc" ${q.t=='mc'?'selected':''}>Multiple choice</option><option value="tf" ${q.t=='tf'?'selected':''}>True / False</option></select>
+                    <div class="flex items-center gap-2">${edSel(i,q.t)}
                     <button onclick="edDel(${i})" class="text-zinc-500 hover:text-red-400 px-1" title="Delete question">🗑️</button></div></div>
-                    <textarea rows="2" oninput="edQ(${i},this.value)" placeholder="Question text" class="${INP}">${esc(q.q)}</textarea><input type="text" value="${esc(q.topic||'')}" placeholder="Topic (optional, e.g. Soul Society)" oninput="edT(${i},this.value)" class="${INP}">${body}</div>`;
+                    <textarea rows="2" oninput="edQ(${i},this.value)" placeholder="${q.t=='fb'?'Sentence with a blank, e.g. The ____ is the powerhouse of the cell':'Question text'}" class="${INP}">${esc(q.q)}</textarea><input type="text" value="${esc(q.topic||'')}" placeholder="Topic (optional, e.g. Soul Society)" oninput="edT(${i},this.value)" class="${INP}">${body}</div>`;
             }).join('')||'<div class="text-xs text-zinc-500 text-center py-4 border border-dashed border-emerald-950 rounded">No questions yet. Add one below!</div>';
         }
+        const edSel=(i,t)=>`<select onchange="edType(${i},this.value)" class="bg-zinc-900 border border-emerald-950 text-xs text-zinc-300 rounded p-1"><option value="mc" ${t=='mc'?'selected':''}>Multiple choice</option><option value="tf" ${t=='tf'?'selected':''}>True / False</option><option value="fb" ${t=='fb'?'selected':''}>Fill in the blank</option><option value="mt" ${t=='mt'?'selected':''}>Matching</option></select>`;
+        window.edP=(i,k,n,v)=>{ED.qs[i].pairs[k][n]=v};
+        window.edPAdd=i=>{ED.qs[i].pairs.push(['','']);edRender()};
+        window.edPRm=(i,k)=>{ED.qs[i].pairs.splice(k,1);edRender()};
         window.edQ=(i,v)=>{ED.qs[i].q=v};
         window.edT=(i,v)=>{ED.qs[i].topic=v};
         window.edO=(i,k,v)=>{ED.qs[i].o[k]=v};
@@ -6017,9 +6043,11 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         window.edDel=i=>{ED.qs.splice(i,1);edRender()};
         window.edRm=(i,k)=>{const q=ED.qs[i];q.o.splice(k,1);if(q.a===k)q.a=0;else if(q.a>k)q.a--;edRender()};
         window.edAddO=i=>{ED.qs[i].o.push('');edRender()};
-        window.edType=(i,t)=>{const q=ED.qs[i];if(t=='tf'){q.t='tf';q.o=['True','False'];q.a=true}else{q.t='mc';q.o=['','','',''];q.a=0}edRender()};
+        window.edType=(i,t)=>{const q=ED.qs[i];if(t=='tf'){q.t='tf';q.o=['True','False'];q.a=true}else if(t=='mt'){q.t='mt';q.pairs=[['',''],['','']];q.q=q.q||'Matching'}else{q.t=t;q.o=['','','',''];q.a=0}edRender()};
         $('#ed-add-mc').onclick=()=>{ED.qs.push({t:'mc',q:'',o:['','','',''],a:0});edRender();const l=$('#ed-qs').lastElementChild;if(l)l.scrollIntoView({block:'center'})};
         $('#ed-add-tf').onclick=()=>{ED.qs.push({t:'tf',q:'',o:['True','False'],a:true});edRender();const l=$('#ed-qs').lastElementChild;if(l)l.scrollIntoView({block:'center'})};
+        $('#ed-add-fb').onclick=()=>{ED.qs.push({t:'fb',q:'',o:['','','',''],a:0});edRender();const l=$('#ed-qs').lastElementChild;if(l)l.scrollIntoView({block:'center'})};
+        $('#ed-add-mt').onclick=()=>{ED.qs.push({t:'mt',q:'Matching',pairs:[['',''],['','']]});edRender();const l=$('#ed-qs').lastElementChild;if(l)l.scrollIntoView({block:'center'})};
         $('#ed-x').onclick=$('#ed-cancel').onclick=edClose;
         addEventListener('keydown',e=>{if(e.code=='Escape'&&ED)edClose()});
         $('#ed-save').onclick=()=>{
@@ -6029,7 +6057,9 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             const out=[];
             for(let i=0;i<ED.qs.length;i++){
                 const q=ED.qs[i];
-                if(q.t=='mt'){out.push(q);continue}
+                if(q.t=='mt'){const pr=(q.pairs||[]).map(p=>[(p[0]||'').trim(),(p[1]||'').trim()]).filter(p=>p[0]||p[1]);
+                    if(pr.length<2||pr.some(p=>!p[0]||!p[1]))return err('Question '+(i+1)+': matching needs at least 2 complete pairs.');
+                    const tp=(q.topic||'').trim();out.push(Object.assign({t:'mt',q:'Matching: '+pr.map(p=>p[0]).join(', '),pairs:pr.slice(0,4)},tp?{topic:tp}:{}));continue}
                 const text=(q.q||'').trim();if(!text)return err('Question '+(i+1)+' has no text.');
                 const tpc=(q.topic||'').trim(),TP=tpc?{topic:tpc}:{};
                 if(q.t=='tf'){out.push(Object.assign({t:'tf',q:text,o:['True','False'],a:q.a===true},TP));continue}
@@ -6037,7 +6067,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 q.o.forEach((v,k)=>{const t=(v||'').trim();if(t){if(k===q.a)a=o.length;o.push(t)}});
                 if(o.length<2)return err('Question '+(i+1)+' needs at least 2 answers.');
                 if(a<0)return err('Question '+(i+1)+': the correct answer is empty. Tick a filled-in answer.');
-                out.push(Object.assign({t:'mc',q:text,o,a},TP));
+                out.push(Object.assign({t:q.t=='fb'?'fb':'mc',q:(q.t=='fb'&&!/_{2,}/.test(text))?text+' ____':text,o,a},TP));
             }
             const d=S.decks[ED.i],old=d.name;
             if(old!==name&&S.best[old]){S.best[name]=S.best[old];delete S.best[old]}
