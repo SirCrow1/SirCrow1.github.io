@@ -1558,7 +1558,7 @@ ${G}
         let QP_SPREAD = { v: false };
         const QP = (() => {
             const DASH = '\\-\\u2013\\u2014';
-            const MARKW = '(?:correct(?:\\s+(?:answer|option|choice))?|right(?:\\s+answer)?|answer|ans|key|solution)';
+            const MARKW = '(?:correct(?:\\s+(?:answer|option|choice))?|right(?:\\s+answer)?|answer|ans|key|solution|verdict|respuesta|resp|r\u00e9ponse|reponse|antwort|l\u00f6sung|losung|soluci\u00f3n|solucion)';
             // trailing marker(s) on an option: (Answer) [correct] <-- answer, ← correct, - correct, ✓ ✔ ✅ ☑ [x] (x) *
             const TRAIL = new RegExp('\\s*(?:[\\(\\[\\{]\\s*(?:' + MARKW + '|x|\\u2713|\\u2714)\\s*[\\)\\]\\}]|(?:<?[-=]{1,3}>|\\u2190|\\u21D0|=>|<-+)\\s*' + MARKW + '?|[' + DASH + ']\\s*' + MARKW + '|\\u2705|\\u2714\\uFE0F?|\\u2713|\\u2611\\uFE0F?|\\*+)\\s*[.!]?\\s*$', 'i');
             const LEAD = new RegExp('^(?:[\\(\\[]\\s*' + MARKW + '\\s*[\\)\\]]|\\u2705|\\u2714\\uFE0F?|\\u2713|\\u2611\\uFE0F?|\\[x\\]|\\[\\u2713\\])\\s*', 'i');
@@ -1601,7 +1601,7 @@ ${G}
                     if (isNum && (/\?\s*$/.test(body.trim()) || (blankBefore && !QP_SPREAD.v && cur.opts.length >= 2))) return null;   // "2. Next question?" is a new question
                     if (!isNum && cur.opts.length === 0 && n !== 0) return null;
                 } else if (BUL.test(l) && cur.q) { body = l.replace(BUL, ''); }
-                else if (cur.q && cur.opts.length < 2 && tfOnly(l, true) !== null) { body = l; }      // a bare True / False line is an option
+                else if (cur.q && cur.opts.length < 2 && tfOnly(l, cur.opts.length === 0 ? false : true) !== null) { body = l; }      // a bare True / False line is an option
                 else return null;
                 if (!body.trim()) return null;
                 // bold over the option text = marker ("**B) text**", "B) **text**"); bold over the label only is not
@@ -1670,9 +1670,30 @@ ${G}
                     new RegExp('\\s*[\\(\\[]\\s*' + PAIR_SRC + '\\s*[\\)\\]]\\s*', 'i')                                    // "(true/false)" in the middle
                 ];
                 strips.forEach(re => { const before = tq; tq = tq.replace(re, ' ').trim(); if (tq !== before) was = true; });
-                if ((m = tq.match(/\s*[\(\[]\s*(true|false|t|f|yes|no)\s*[\)\]]\s*[.!]?\s*$/i))) { v = tfVal(m[1]); tq = tq.slice(0, m.index).trim(); }
-                else if ((m = tq.match(/\s*(?:[-\u2013\u2014:=\u2192]+|=>|->)\s*(?:answer\s*[:=\-]?\s*)?(true|false|t|f)\s*[.!]?\s*$/i))) { v = tfVal(m[1]); tq = tq.slice(0, m.index).trim(); }
-                else if ((m = tq.match(/\s+(?:answer|ans)\s*[:=\-\u2013\u2014]\s*(true|false|t|f|yes|no)\s*[.!]?\s*$/i))) { v = tfVal(m[1]); tq = tq.slice(0, m.index).trim(); }
+                // ANY spelling of an answer written at the end of the question line, with any separator
+                const TOKS = '(true|false|t|f|yes|no|y|n|correct|incorrect|right|wrong|verdadero|falso|vrai|faux|wahr|falsch|[\\u2713\\u2714\\u2705\\u2611\\u2717\\u2718\\u2716\\u2715\\u274C\\u274E]\\uFE0F?)';
+                const MK = '(?:the\\s+)?(?:correct\\s+)?(?:answer|ans|respuesta|r\\u00e9ponse|antwort|verdict|solution|key)';
+                const endRes = [
+                    new RegExp('\\s*[\\(\\[\\{]\\s*[*_"\']*(?:' + MK + '\\s*[:=\\-\\u2013\\u2014]?\\s*)?[*_"\']*' + TOKS + '[*_"\'.!]*\\s*[\\)\\]\\}]\\s*[.!]?\\s*$', 'iu'),      // (True) [F] {Yes} (answer: T)
+                    new RegExp('\\s+' + MK + '\\s*[:=\\-\\u2013\\u2014]+\\s*[*_"\']*' + TOKS + '(?![a-z0-9])[*_"\'.!]*(?:\\s*[-\\u2013\\u2014:,(].*)?$', 'iu'),     // Answer: True [- because ...]
+                    new RegExp('\\s*(?:[-\\u2013\\u2014=|\\u2192]+|=>|->)\\s*[*_"\']*(?:' + MK + '\\s*[:=\\-\\u2013\\u2014]?\\s*)?[*_"\']*' + TOKS + '[*_"\'.!]*\\s*$', 'iu'),   // - True  | True  -> True  => True  = True
+                    new RegExp('[.?!:)]\\s*[*_"\']*' + TOKS + '[*_"\'.!]*\\s*$', 'iu')                        // "... blue. True"  "...?: Yes"
+                ];
+                for (let ei = 0; ei < endRes.length && v === null; ei++) {
+                    const mm = tq.match(endRes[ei]); if (!mm) continue;
+                    let cutAt = mm.index; if (ei === 3) cutAt = mm.index + 1;      // keep the sentence punctuation
+                    const tok = mm[1]; const isLetter = /^(?:t|f|y|n)$/i.test(tok);
+                    if (ei === 3 && isLetter && !/[?:]/.test(mm[0].charAt(0))) continue;          // a lone trailing letter right after a "." is too risky ("... vitamin F"); after "?" or ":" it is an answer
+                    const tv0 = tfVal(tok); if (tv0 === null) continue;
+                    v = tv0; tq = tq.slice(0, cutAt).trim();
+                }
+                if (v === null) {
+                    const lm = tq.match(/^[*_"'\s]*(?:(true|false|verdadero|falso|vrai|faux|wahr|falsch)\s*[:)\-–—.=]\s+|(t|f)\s*[:)=]\s+|([✓✔✅☑✗✘✖✕❌❎]️?)\s*)(?=\S{2})/iu);
+                    if (lm && tq.length - lm[0].length > 8) { const t0 = lm[1] || lm[2] || lm[3]; const tv1 = tfVal(t0); if (tv1 !== null) { v = tv1; tq = tq.slice(lm[0].length).trim(); } }
+                }
+                // "True or False?" left behind after the answer was removed
+                strips.forEach(re => { const before = tq; tq = tq.replace(re, ' ').trim(); if (tq !== before) was = true; });
+                if (v !== null) was = true;
                 return { q: tq.trim(), v, was };
             }
             // answer key made of True/False words: "1. True" / "2. F" lines at the end (or under an "Answer Key" header)
@@ -1716,8 +1737,35 @@ ${G}
                 return { map, lines };
             }
 
+            // markdown tables / tab- or comma-separated "statement, True" rows / one-line answer keys ("1-T 2-F 3-T") -> plain lines the parser already understands
+            function prep(text) {
+                const TK = '(?:true|false|t|f|yes|no|verdadero|falso|vrai|faux|wahr|falsch|[\\u2713\\u2714\\u2705\\u2611\\u2717\\u2718\\u2716\\u2715\\u274C\\u274E]\\uFE0F?)';
+                const ENT = '(?:q(?:uestion)?\\.?\\s*)?(\\d{1,3})\\s*[.)\\-\\u2013\\u2014:=]?\\s*(' + TK + ')(?![a-z0-9])';
+                const KEYLINE = new RegExp('^\\s*(?:(answers?|answer\\s*key|key)\\s*[:\\-]?\\s*)?(?:' + ENT.replace(/\((\\d\{1,3\})\)/, '\\d{1,3}').replace('(' + TK + ')', TK) + '[\\s,;|]*){2,}$', 'iu');
+                const out = [];
+                String(text).replace(/\r/g, '').split('\n').forEach(line => {
+                    let l = line;
+                    if (/^\s*\|.*\|\s*$/.test(l)) {
+                        const cells = l.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+                        if (cells.every(c => /^:?-{2,}:?$|^$/.test(c))) return;            // |---|---|
+                        const last = cells[cells.length - 1];
+                        const lastOk = new RegExp('^[*_]*' + TK + '[*_.]*$', 'iu').test(last);
+                        if (!lastOk) { if (cells.length >= 2 && /^(?:#|no\.?|statement|question|claim)$/i.test(cells[0]) || /statement|question|answer/i.test(cells.join(' '))) return; out.push(cells.join(' ')); return; }
+                        const body = cells.slice(0, -1).filter(Boolean);
+                        let num = ''; if (body.length > 1 && /^\d{1,3}$/.test(body[0])) num = body.shift() + '. ';
+                        l = num + body.join(' ') + ' - ' + last;
+                    } else {
+                        const m = l.match(new RegExp('^(.{8,}?)\\s*(?:\\t+|\\s*,\\s*|\\s*;\\s*)"?[*_]*(' + TK + ')[*_]*"?\\s*[.!]?\\s*$', 'iu'));
+                        if (m && (/\t/.test(l) || /^(?:true|false|t|f)$/i.test(m[2]) || /["✓✔✅✗❌]/.test(l))) l = m[1] + ' - ' + m[2];
+                    }
+                    const km = l.match(KEYLINE);
+                    if (km) { if (km[1]) out.push('Answer Key'); const re = new RegExp(ENT, 'giu'); let x; while ((x = re.exec(l))) out.push(x[1] + '. ' + x[2]); return; }
+                    out.push(l);
+                });
+                return out.join('\n');
+            }
             function parse(text) {
-                let raw = clean(text).replace(/\r/g, '').split('\n');
+                let raw = clean(prep(text)).replace(/\r/g, '').split('\n');
                 const L = [];            // {t, blank}
                 let blank = false;
                 raw.forEach(r => {
@@ -1737,7 +1785,7 @@ ${G}
                     const c = cur; cur = null; if (!c || !c.q) return;
                     const qt = c.q.trim();
                     // "Statement" followed by a lone "True"/"False" line: that line is the answer, not an option
-                    if (c.opts.length === 1 && tfOnly(c.opts[0], true) !== null && c.ans === null && !c.marks[0]) { c.ans = c.opts[0]; c.opts = []; c.marks = []; }
+                    if (c.opts.length === 1 && tfOnly(c.opts[0], false) !== null && c.ans === null) { c.ans = c.opts[0]; c.opts = []; c.marks = []; }
                     const tfo = c.opts.map(o => tfOnly(o, true));
                     if (c.opts.length === 2 && tfo.every(v => v !== null) && tfo[0] !== tfo[1]) {
                         // options are True / False (any order, any spelling): a real true/false question
@@ -1795,14 +1843,15 @@ ${G}
                     if (am && cur && cur.q) { cur.ans = cur.ans === null ? am[1] : cur.ans; return; }
                     // a bare "True" / "False" under True/False options is the answer
                     if (cur && cur.q && cur.ans === null && cur.opts.length >= 2 && cur.opts.every(o => tfOnly(o, true) !== null) && tfOnly(bare.replace(LEAD, ''), true) !== null) { cur.ans = bare; return; }
+                    { const qa = bare.match(/^[*_]*a[*_]*\s*[:.\-\u2013\u2014]\s*[*_]*(.+?)[*_]*$/i); if (qa && cur && cur.q && cur.qa && cur.opts.length === 0 && cur.ans === null && tfOnly(qa[1], false) !== null) { cur.ans = qa[1]; return; } }
                     if (cur && cur.q) { const o = asOption(line, cur, blank); if (o) { if (cur.ans !== null) { done(); cur = null; } else { cur.opts.push(o.text); cur.marks.push(o.correct); if (o.labeled) cur.lab = true; return; } } }
                     // a question line
                     const pm = line.match(QPFX); let num = null, qtxt = line;
                     if (pm) { num = +(pm[1] || pm[2] || pm[3]); qtxt = line.slice(pm[0].length); }
                     qtxt = strip(qtxt.replace(QPFX3, ''));      // "1. Question: ..." -> just the question
-                    if (cur && cur.q && cur.opts.length === 0 && cur.ans === null && !pm && !blank) { cur.q += ' ' + qtxt; return; }      // multi-line question
+                    if (cur && cur.q && cur.opts.length === 0 && cur.ans === null && !pm && !blank && splitTf(cur.q).v === null) { cur.q += ' ' + qtxt; return; }      // multi-line question
                     if (cur && cur.hdr && !cur.q) { cur.q = qtxt; if (num != null) cur.num = num; return; }
-                    done(); cur = fresh(); cur.q = qtxt; cur.num = num;
+                    done(); cur = fresh(); cur.q = qtxt; cur.num = num; cur.qa = /^\s*(?:#+\s*)?[*_]*\s*(?:q|question|ques|statement|claim)\b/i.test(line);
                 });
                 done();
                 const hasMc = items.some(i => i.q ? i.q.t === 'mc' : i.pending.t === 'mc');
