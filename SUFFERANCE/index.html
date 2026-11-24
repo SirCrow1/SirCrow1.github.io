@@ -938,7 +938,7 @@ document.addEventListener('visibilitychange',()=>{if(ac)document.hidden?ac.suspe
 
 // ---------- v6: EVERY SWORD ART HAS ITS OWN ANIME SOUND ----------
 const R=Math.random;   // (pick() already exists above)
-const SKN=['CRESCENT MOON SLASH',"DRAGON EMPEROR'S WRATH","THUNDER GOD'S CRUCIFIXION","COSMIC NEBULA",'PHOENIX WHIRLWIND','STARFALL JUDGEMENT','AZURE COMET BARRAGE',"SOLAR HALO","CRIMSON REAPER'S JUDGEMENT",'GALE OF A THOUSAND CUTS',"INFINITE TITANIC QUAKE","ETERNAL FLOWER PETAL","PRIMORDIAL BANE","ECLIPSE NIGHTFALL","PARTICLE FLASH CUTTER","ABYSSAL SHADOW REQUIEM","SAKURA TEMPEST","PRISM SHOT","ETERNAL ROSE CANON","WORLD END STORM","SUSANOO: RASENSHURIKEN","GETSUGA TENSHO","WATER BREATHING: SURGE","FIRE BREATHING: 13TH FORM","STAR PLATINUM: ORA ORA","MALEVOLENT SHRINE","DIVINE DEPARTURE","BLACK DIVIDER","KAMEHAMEHA","EXCALIBUR"];
+const SKN=['CRESCENT MOON SLASH',"DRAGON EMPEROR'S WRATH","THUNDER GOD'S CRUCIFIXION","COSMIC NEBULA",'PHOENIX WHIRLWIND','STARFALL JUDGEMENT','AZURE COMET BARRAGE',"SOLAR HALO","CRIMSON REAPER'S JUDGEMENT",'GALE OF A THOUSAND CUTS',"INFINITE TITANIC QUAKE","ETERNAL FLOWER PETAL","PRIMORDIAL BANE","ECLIPSE NIGHTFALL","PARTICLE FLASH CUTTER","ABYSSAL SHADOW REQUIEM","SAKURA TEMPEST","PRISM SHOT","ETERNAL ROSE CANON","WORLD END STORM","SUSANOO: RASENSHURIKEN","GETSUGA TENSHO","WATER BREATHING: SURGE","FIRE BREATHING: 13TH FORM","STAR PLATINUM: ORA ORA","UNLIMITED VOID: HOLLOW PURPLE","DIVINE DEPARTURE","BLACK DIVIDER","KAMEHAMEHA","EXCALIBUR"];
 // a held tone with optional vibrato (vib Hz / vd depth), a filter sweep (lp -> lp1) and a slow attack
 function V(type,f0,f1,t,dur,v,o){o=o||{};
   const os=ac.createOscillator(),g=ac.createGain();os.type=type;os.frequency.setValueAtTime(f0,t);if(f1&&f1!=f0)os.frequency.exponentialRampToValueAtTime(f1,t+dur);
@@ -1090,7 +1090,7 @@ const SK=[
   V('sawtooth',130,110,at(0),.18*k,.1,{lp:900,lp1:700,vib:20,vd:10,rev:1});
   for(let j=0;j<22;j++){const d=.26+j*.014;sweep('s','sine',180,60,at(d),.05,.5,1);noise('s',at(d),.05,.4,'lowpass',1800,300,1,1);if(j%4==0)V('sawtooth',150+R()*40,120,at(d),.07,.06,{lp:900,vib:25,vd:15})}
   noise('s',at(.58),.5*k,.9,'lowpass',3500,100,1,1);sweep('s','sine',110,24,at(.58),.8*k,1,1);bell(880,at(.6),1.2,.08)},
- // 25 MALEVOLENT SHRINE: a dread drone, ritual drum hits, a funeral gong, then a storm of invisible cuts
+ // 25 UNLIMITED VOID + HOLLOW PURPLE: a dread drone, ritual drum hits, a funeral gong, then a storm of invisible cuts
  (at,k)=>{
   V('sawtooth',48,41,at(0),.9*k,.14,{att:.2*k,lp:260,vib:4,vd:3,rev:1});V('triangle',mf(46),mf(46),at(0),.9*k,.08,{att:.3*k,lp:600,rev:1});V('triangle',mf(52),mf(52),at(.05),.85*k,.06,{att:.3*k,lp:600,rev:1});
   [0,.12,.22].forEach(d=>{sweep('s','sine',120,38,at(d),.22,.7,1);noise('s',at(d),.12,.3,'lowpass',500,100,1,1)});
@@ -3937,7 +3937,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             {n:"WATER BREATHING: SURGE",ty:'anime',x:'water',c:'60,165,255'},         // Demon Slayer: water dragon
             {n:"FIRE BREATHING: 13TH FORM",ty:'anime',x:'flame',c:'255,115,25'},         // Demon Slayer: Rengoku's fire tiger
             {n:"STAR PLATINUM: ORA ORA",ty:'anime',x:'ora',c:'150,110,255'},           // JoJo: Star Platinum's barrage
-            {n:"MALEVOLENT SHRINE",ty:'anime',x:'shrine',c:'235,25,50'},              // Jujutsu Kaisen: domain expansion
+            {n:"UNLIMITED VOID: HOLLOW PURPLE",ty:'anime',x:'void',c:'170,70,255'},              // Jujutsu Kaisen: Gojo's Unlimited Void into Hollow Purple
             {n:"DIVINE DEPARTURE",ty:'anime',x:'divine',c:'255,45,75'},        // One Piece: Roger/Shanks' Conqueror's Haki slash
             {n:"BLACK DIVIDER",ty:'anime',x:'divider',c:'170,100,255'},            // anti-magic black sword
             {n:"KAMEHAMEHA",ty:'anime',x:'kame',c:'80,190,255'},       // Dragon Ball: Goku's Kamehameha
@@ -4062,20 +4062,13 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
 
                 // 5) STAR PLATINUM (JoJo): the stand rises behind you and unleashes the ORA ORA barrage, then one huge punch
                 ora(a){const{p,now,F,oy,tx,ty,c}=a,X=kx(a),al=clp(p/.14)*(1-clp((p-.86)/.14)),fl=Math.floor(now/45);if(al<=0)return;
-                    const bx=X-F*38,by=oy-34,pu='rgba(105,80,215,',pe='rgba(205,185,255,';
+                    const fy=30+Math.sin(now/230)*7,bx=X-F*44,by=oy-fy-52,pu='rgba(105,80,215,',pe='rgba(205,185,255,';
                     const txt=(s,x,y,sz,rot,a2,fill,stroke)=>{SO();ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.font='900 '+sz+'px Impact,Arial Black,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineWidth=Math.max(3,sz/6);ctx.lineJoin='round';ctx.strokeStyle=stroke+a2+')';ctx.strokeText(s,0,0);ctx.fillStyle=fill+a2+')';ctx.fillText(s,0,0);ctx.restore()};
                     LT();glow(bx,by,190,c,.34*al);for(let j=0;j<9;j++){const u=(now/600+hz(j,1))%1;ctx.fillStyle='rgba(190,160,255,'+.8*al*(1-u)+')';ctx.fillRect(bx+(hz(j,2)-.5)*130,by+60-u*150,3,3)}
-                    // the stand: broad purple torso, shoulders, black spiky hair, white eyes
-                    SO();ctx.save();ctx.translate(bx,by);ctx.scale(F,1);
-                    poly([[-34,-24],[34,-24],[24,44],[-24,44]],pu+.85*al+')',pe+al+')',2.5);
-                    poly([[-34,-24],[-60,-8],[-52,12],[-30,-2]],pu+.9*al+')',pe+al+')',2);poly([[34,-24],[60,-8],[52,12],[30,-2]],pu+.9*al+')',pe+al+')',2);
-                    ctx.strokeStyle=pe+.7*al+')';ctx.lineWidth=2;for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(-18,-8+i*14);ctx.quadraticCurveTo(0,-2+i*14,18,-8+i*14);ctx.stroke()}
-                    ctx.beginPath();ctx.moveTo(0,-22);ctx.lineTo(0,40);ctx.stroke();
-                    ctx.fillStyle=pu+.9*al+')';ctx.beginPath();ctx.ellipse(0,-46,19,21,0,0,7);ctx.fill();ctx.strokeStyle=pe+al+')';ctx.lineWidth=2.2;ctx.stroke();
-                    poly([[-21,-52],[-27,-86],[-12,-68],[-4,-94],[5,-70],[16,-92],[21,-64],[24,-50]],'rgba(15,10,40,'+al+')');
-                    poly([[-22,-58],[22,-58],[22,-53],[-22,-53]],'rgba(240,235,255,'+.9*al+')');   // headband
-                    for(const d of[-1,1])poly([[d*5,-46],[d*14,-50],[d*13,-43]],'rgba(255,255,255,'+al+')');
-                    ctx.restore();
+                    // the stand: the KNIGHT himself, tinted purple, floating behind you with a shadow on the ground
+                    SO();ctx.fillStyle='rgba(30,10,70,'+.35*al*(1-fy/90)+')';ctx.beginPath();ctx.ellipse(bx,oy+2,46-fy*.3,9,0,0,7);ctx.fill();
+                    if(sprites.idle.loaded){ctx.save();ctx.globalAlpha=.9*al;ctx.shadowColor='rgba(175,125,255,.95)';ctx.shadowBlur=22;ctx.filter='grayscale(1) brightness(.85) sepia(1) hue-rotate(232deg) saturate(5)';
+                        ctx.translate(bx,oy-fy);ctx.scale(F,1);ctx.drawImage(sprites.idle.img,(Math.floor(now/100)%10)*120,0,120,80,-132,-161,264,176);ctx.restore()}
                     // the ORA ORA barrage: many fists hammering the target every frame
                     const b=clp((p-.22)/.05)*(1-clp((p-.54)/.04));
                     if(b>0){for(let j=0;j<12;j++){const sd=fl*1.7+j,fx=tx+(hz(j,sd)-.5)*110-F*8,fy=ty+(hz(j,sd+5)-.5)*120,shx=bx+(j%2?54:-54),shy=by-10,vis=hz(j,fl+2*j)>.2?1:.5;
@@ -4093,20 +4086,29 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                             for(let r=0;r<2;r++){ctx.strokeStyle='rgba(215,195,255,'+f2+')';ctx.lineWidth=7*f2+1.5;ctx.beginPath();ctx.ellipse(tx,ty+10,Math.max(1,40+q*(220+r*70)),Math.max(1,28+q*(150+r*50)),0,0,7);ctx.stroke()}
                             glow(tx,ty,170*(1-q)+30,'255,255,255',.7*f2);txt('ORAAAA!!',tx,ty-110-q*30,44+q*22,-.12,f2,'rgba(255,255,255,','rgba(70,40,170,')}}},
 
-                // 6) MALEVOLENT SHRINE (Jujutsu Kaisen): the domain opens, a bone shrine rises, invisible blades cut everything
-                shrine(a){const{p,now,F,tx,ty}=a,al=clp((p-.08)/.14)*(1-clp((p-.86)/.4));if(al<=0)return;SO();
-                    ctx.fillStyle='rgba(14,0,8,'+.64*al+')';ctx.fillRect(0,0,W,H);
-                    const gr=ctx.createRadialGradient(tx,ty,10,tx,ty,440);gr.addColorStop(0,'rgba(170,0,25,'+.5*al+')');gr.addColorStop(1,'rgba(170,0,25,0)');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);
-                    const rise=ezs(clp((p-.1)/.28)),bx=tx,by=ty+150+(1-rise)*260,edge='rgba(255,50,70,'+.9*al+')',fill='rgba(6,0,4,'+.96*al+')';
-                    const roof=(y,w,h)=>{ctx.beginPath();ctx.moveTo(bx-w,y);ctx.quadraticCurveTo(bx-w*.55,y-h*.05,bx-w*.3,y-h*.8);ctx.lineTo(bx,y-h);ctx.lineTo(bx+w*.3,y-h*.8);ctx.quadraticCurveTo(bx+w*.55,y-h*.05,bx+w,y);ctx.quadraticCurveTo(bx+w*.5,y+h*.14,bx,y+h*.14);ctx.quadraticCurveTo(bx-w*.5,y+h*.14,bx-w,y);ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=edge;ctx.lineWidth=3;ctx.stroke()};
-                    ctx.fillStyle=fill;ctx.fillRect(bx-95,by-118,190,118);ctx.strokeStyle=edge;ctx.lineWidth=3;ctx.strokeRect(bx-95,by-118,190,118);
-                    for(let i=-1;i<=1;i++){ctx.fillStyle='rgba(120,0,15,'+.7*al+')';ctx.fillRect(bx+i*58-5,by-110,10,110)}
-                    roof(by-118,200,64);ctx.fillStyle=fill;ctx.fillRect(bx-70,by-190,140,72);ctx.strokeStyle=edge;ctx.lineWidth=3;ctx.strokeRect(bx-70,by-190,140,72);roof(by-190,150,56);roof(by-258,100,48);
-                    for(let j=0;j<15;j++){const x=bx-150+j*21,y=by-6+Math.sin(j*2.1)*5;ctx.fillStyle='rgba(225,215,190,'+.85*al+')';ctx.beginPath();ctx.arc(x,y,9,0,7);ctx.fill();ctx.fillStyle='rgba(20,0,6,'+al+')';ctx.fillRect(x-5,y-3,3,4);ctx.fillRect(x+2,y-3,3,4)}
-                    ctx.strokeStyle='rgba(255,40,60,'+.55*al+')';ctx.lineWidth=3;for(let r=0;r<3;r++){ctx.beginPath();ctx.ellipse(tx,ty+70,Math.max(1,(260+r*50)*(.6+rise*.4)),Math.max(1,(70+r*14)*(.6+rise*.4)),0,0,7);ctx.stroke()}
-                    if(p>.4){LT();const fl=Math.floor(now/55),sa=clp((p-.4)/.08)*al;
-                        for(let j=0;j<14;j++){const x=tx+(hz(j,fl)-.5)*280,y=ty+(hz(j,fl+9)-.5)*210,an=(hz(j,fl+3)-.5)*3.2,L2=60+hz(j,fl+5)*70;GL(x-Math.cos(an)*L2,y-Math.sin(an)*L2,x+Math.cos(an)*L2,y+Math.sin(an)*L2,4,'255,60,90',.9*sa)}
-                        if(p>.5){const q=clp((p-.5)/.12)*al;GL(tx-F*120,ty-130,tx+F*120,ty+130,14,'255,40,70',q);GL(tx+F*120,ty-120,tx-F*120,ty+120,9,'255,40,70',q*.7)}}},
+                // 6) UNLIMITED VOID + HOLLOW PURPLE (Jujutsu Kaisen, Gojo): the domain swallows the room in a galaxy, red and blue orbs collide into a purple sphere, then it erases everything in a beam
+                void(a){const{p,now,F,oy,tx,ty}=a,X=kx(a),fl=Math.floor(now/55),al=clp((p-.04)/.12)*(1-clp((p-.9)/.1));if(al<=0)return;
+                    const txt=(t,x,y,sz,a2)=>{SO();ctx.save();ctx.font='900 '+sz+'px Impact,Arial Black,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineWidth=Math.max(3,sz/6);ctx.lineJoin='round';ctx.strokeStyle='rgba(30,0,70,'+a2+')';ctx.strokeText(t,x,y);ctx.fillStyle='rgba(238,228,255,'+a2+')';ctx.fillText(t,x,y);ctx.restore()};
+                    const dp=ezs(clp((p-.06)/.24));
+                    // the domain: the whole screen goes dark and fills with a galaxy
+                    SO();ctx.fillStyle='rgba(4,0,16,'+.8*al+')';ctx.fillRect(0,0,W,H);
+                    const gr=ctx.createRadialGradient(tx,ty,10,tx,ty,60+520*dp);gr.addColorStop(0,'rgba(95,45,210,'+.55*al+')');gr.addColorStop(.6,'rgba(45,15,120,'+.25*al+')');gr.addColorStop(1,'rgba(20,0,60,0)');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);
+                    LT();for(let j=0;j<80;j++){const x=hz(j,1)*W,y=hz(j,2)*H,tw=.35+.65*hz(j,(fl+j)%6);ctx.fillStyle='rgba(235,230,255,'+tw*al*dp+')';ctx.fillRect(x,y,j%7==0?3:2,j%7==0?3:2);if(j%9==0)glow(x,y,14,'190,170,255',.5*tw*al*dp)}
+                    for(let r=0;r<3;r++){ctx.strokeStyle='rgba(175,140,255,'+.35*al*dp+')';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(tx,ty,Math.max(1,dp*(170+r*95)),Math.max(1,dp*(60+r*34)),now/2400*(r%2?-1:1)+r,0,7);ctx.stroke()}
+                    txt('UNLIMITED VOID',tx,ty-140,46,clp((p-.1)/.1)*(1-clp((p-.46)/.08))*al);
+                    // red (Reversal) and blue (Lapse) orbs fly in from both sides and collide in front of the knight
+                    const sx0=X+F*72,sy0=oy-78,o=ezs(clp((p-.38)/.22)),sep=(1-o)*150;
+                    if(p>.38&&p<.62){for(const [d,col] of [[-1,'60,140,255'],[1,'255,45,70']]){const ox2=sx0+d*sep,oy2=sy0-Math.sin(o*3.14)*26*d;LT();glow(ox2,oy2,60,col,.7*al);ctx.fillStyle='rgba('+col+','+.95*al+')';ctx.beginPath();ctx.arc(ox2,oy2,17,0,7);ctx.fill();
+                            for(let k=0;k<8;k++){const an=now/160*d+k*.785,rr=24+hz(k,fl)*10;ctx.fillStyle='rgba(255,255,255,'+.6*al+')';ctx.fillRect(ox2+Math.cos(an)*rr,oy2+Math.sin(an)*rr*.6,3,3)}}}
+                    // the purple: they merge, grow, hold, then fire
+                    if(p>=.6){const h=ezs(clp((p-.6)/.12)),r=8+38*h,pul=1+Math.sin(now/45)*.06;LT();glow(sx0,sy0,r*3.2,'185,70,255',.85*al);glow(sx0,sy0,r*1.6,'255,235,255',.5*al);
+                        SO();ctx.fillStyle='rgba(18,0,36,'+.95*al+')';ctx.beginPath();ctx.arc(sx0,sy0,r*.8*pul,0,7);ctx.fill();ctx.strokeStyle='rgba(215,120,255,'+al+')';ctx.lineWidth=4;ctx.beginPath();ctx.arc(sx0,sy0,r*pul,0,7);ctx.stroke();
+                        if(p<.72)txt('HOLLOW PURPLE',sx0,sy0-r-34,34,clp((p-.62)/.06)*al);
+                        const b=clp((p-.7)/.05)*(1-clp((p-.9)/.1));
+                        if(b>0){const ang=Math.atan2(ty-sy0,tx-sx0),L=W*2,ex=sx0+Math.cos(ang)*L,ey=sy0+Math.sin(ang)*L;LT();
+                            GL(sx0,sy0,ex,ey,86*b,'175,60,255',.55*b);GL(sx0,sy0,ex,ey,46*b,'215,120,255',.8*b);GL(sx0,sy0,ex,ey,16*b,'255,235,255',b);
+                            glow(tx,ty,60+240*b,'255,255,255',.6*b);for(let r=0;r<2;r++){ctx.strokeStyle='rgba(230,170,255,'+.8*b+')';ctx.lineWidth=6*b+1;ctx.beginPath();ctx.ellipse(tx,ty,Math.max(1,40+(1-b)*260+r*60),Math.max(1,28+(1-b)*170+r*40),0,0,7);ctx.stroke()}
+                            for(let j=0;j<18;j++){const u=hz(j,fl)*(L*.5),yy=(hz(j,fl+4)-.5)*70*b;ctx.fillStyle='rgba(255,240,255,'+.8*b+')';ctx.fillRect(sx0+Math.cos(ang)*u-Math.sin(ang)*yy,sy0+Math.sin(ang)*u+Math.cos(ang)*yy,3,3)}}}},
 
                 // 7) DIVINE DEPARTURE (One Piece, Roger/Shanks): Conqueror's Haki crackles black-red around the blade, then one slash that shakes the world
                 divine(a){const{p,now,F,oy,tx,ty,sx,sy}=a,fl=Math.floor(now/50);
@@ -6526,7 +6528,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             ctx.restore()
         }
         // ---------- KILL REPLAY: after the knight finishes killing, the sword art plays again in slow motion ----------
-        const KSLOW=.62;    // the fight itself now runs at 62% speed
+        const KSLOW=.45;    // the fight (and every sword art) runs at 45% speed: lower = slower
         const KRSP=.5;      // the replay runs at half speed
         const RPW=512,RPH=288,RPN=84,RPPRE=14;   // 84 recorded frames (30/s), a little run-up before the kill is included
         const rpPool=[];let rpAcc=0;
