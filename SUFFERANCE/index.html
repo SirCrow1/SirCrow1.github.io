@@ -6506,9 +6506,9 @@ function petGold(){const p=shopS().eq.pet;return p=='crow'?1:p=='turtle'?2:0}
 function shopS(){if(!S.shop)S.shop={};const h=S.shop;h.inv=h.inv||{};h.own=h.own||{};h.eq=h.eq||{};if(h.own.petrfrog){delete h.own.petrfrog;h.own.petraccoon=1}if(h.eq.pet=='rfrog')h.eq.pet='raccoon';return h}
 let shopTab='items',shopPaused=0;
 function shopGold(){const g=document.querySelector('#gold');if(g)g.textContent='🪙 '+S.gold}
-function shopHTML(){const h=shopS(),row=(n,d,r)=>`<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid #3a3a2a;border-radius:6px;margin:6px 0"><div style="font-size:15px"><b>${n}</b><div style="font-size:14px;line-height:1.35;color:#d4d4d8;margin-top:2px">${d||''}</div></div>${r}</div>`,btn=(a,t,ok)=>`<button data-a="${a}" style="padding:4px 10px;border-radius:5px;background:${ok?'#14532d':'#27272a'};color:${ok?'#bbf7d0':'#71717a'};white-space:nowrap">${t}</button>`;let o='';
-if(shopTab=='items')for(const k of Object.keys(SHOP_ITEMS).sort((a,b)=>SHOP_ITEMS[a].p-SHOP_ITEMS[b].p)){const i=SHOP_ITEMS[k];o+=row(i.n+' <span style="color:#facc15">x'+(h.inv[k]||0)+'</span>',i.d,btn('i:'+k,'Buy 🪙'+i.p,S.gold>=i.p))}
-else{const secs=shopTab=='armory'?[['⚔️ Armor Skins',SKINS,'skin'],['🗡️ Blades',WPNS,'wpn']]:[['🐾 Pets',PETS,'pet']];for(const [ti,L,sl] of secs){o+=`<div style="margin-top:10px;color:#facc15;font-weight:bold">${ti}</div>`;o+=row({skin:'🛡️ Default Armor',wpn:'⚔️ Default Weapon',pet:'🚫 No Pet'}[sl],'Your original look. Always yours, free.',!h.eq[sl]?btn('e:'+sl+':none','Equipped ✓',0):btn('e:'+sl+':none','Equip',1));for(const k of Object.keys(L).sort((a,b)=>L[a].p-L[b].p)){const i=L[k],own=h.own[sl+k],eq=h.eq[sl]==k;const pb=sl=='pet'&&own&&window.PBOND;o+=row(i.n+(pb?window.PBOND.tag(k):''),(i.d||'')+(pb?window.PBOND.bar(k):''),own?(pb?'<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;max-width:260px">'+window.PBOND.btns(k,btn)+btn('e:'+sl+':'+k,eq?'Equipped ✓ (unequip)':'Equip',1)+'</div>':btn('e:'+sl+':'+k,eq?'Equipped ✓ (unequip)':'Equip',1)):btn('b:'+sl+':'+k,'Buy 🪙'+i.p,S.gold>=i.p))}}}
+function shopHTML(){const h=shopS(),row=(n,d,r,pv)=>`<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid #3a3a2a;border-radius:6px;margin:6px 0${pv&&pv[0]=='p'?';flex-wrap:wrap':''}"><div style="display:flex;gap:10px;align-items:center;min-width:0${pv&&pv[0]=='p'?';flex:1 1 230px':''}">${pv?`<canvas class="pv" data-pv="${pv}" title="Preview"></canvas>`:''}<div style="font-size:15px"><b>${n}</b><div style="font-size:14px;line-height:1.35;color:#d4d4d8;margin-top:2px">${d||''}</div></div></div>${r}</div>`,btn=(a,t,ok)=>`<button data-a="${a}" style="padding:4px 10px;border-radius:5px;background:${ok?'#14532d':'#27272a'};color:${ok?'#bbf7d0':'#71717a'};white-space:nowrap">${t}</button>`;let o='';
+if(shopTab=='items')for(const k of Object.keys(SHOP_ITEMS).sort((a,b)=>SHOP_ITEMS[a].p-SHOP_ITEMS[b].p)){const i=SHOP_ITEMS[k];o+=row(i.n+' <span style="color:#facc15">x'+(h.inv[k]||0)+'</span>',i.d,btn('i:'+k,'Buy 🪙'+i.p,S.gold>=i.p),'item:'+k)}
+else{const secs=shopTab=='armory'?[['⚔️ Armor Skins',SKINS,'skin'],['🗡️ Blades',WPNS,'wpn']]:[['🐾 Pets',PETS,'pet']];for(const [ti,L,sl] of secs){o+=`<div style="margin-top:10px;color:#facc15;font-weight:bold">${ti}</div>`+(sl=='pet'&&typeof petIntro=='function'?petIntro():'');o+=row({skin:'🛡️ Default Armor',wpn:'⚔️ Default Weapon',pet:'🚫 No Pet'}[sl],'Your original look. Always yours, free.',!h.eq[sl]?btn('e:'+sl+':none','Equipped ✓',0):btn('e:'+sl+':none','Equip',1),sl=='pet'?'':sl+':none');for(const k of Object.keys(L).sort((a,b)=>L[a].p-L[b].p)){const i=L[k],own=h.own[sl+k],eq=h.eq[sl]==k;const pb=sl=='pet'&&own&&window.PBOND;if(sl=='pet'&&typeof petCard=='function'){o+=petCard(k,i,own,eq,pb);continue}o+=row(i.n+(pb?window.PBOND.tag(k):''),(i.d||'')+(pb?window.PBOND.bar(k):''),own?(pb?'<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;max-width:260px">'+window.PBOND.btns(k,btn)+btn('e:'+sl+':'+k,eq?'Equipped ✓ (unequip)':'Equip',1)+'</div>':btn('e:'+sl+':'+k,eq?'Equipped ✓ (unequip)':'Equip',1)):btn('b:'+sl+':'+k,'Buy 🪙'+i.p,S.gold>=i.p),sl+':'+k)}}}
 return `<div style="background:#14110c;border:1px solid #a16207;border-radius:10px;text-align:left;padding:14px;color:#e4e4e7;font-family:monospace"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px;color:#facc15">🛒 Dungeon Shop</b><span>🪙 ${S.gold}</span></div><div style="display:flex;gap:6px;margin:10px 0">${['items','armory','pets'].map(t=>`<button data-a="t:${t}" style="padding:4px 10px;border-radius:5px;background:${t==shopTab?'#a16207':'#27272a'}">${{items:'🎒 Items',armory:'🛡️ Armory',pets:'🐾 Pets'}[t]}</button>`).join('')}</div>${o}</div>`}
 function shopRender(){const m=document.querySelector('#armory-shop');if(m)m.innerHTML=shopHTML()}
 (function(){const m=document.querySelector('#armory-shop');if(!m)return;m.addEventListener('click',e=>{const a=e.target.dataset&&e.target.dataset.a;if(!a)return;const p=a.split(':'),h=shopS();
@@ -7911,6 +7911,111 @@ setTimeout(()=>{try{if(!dstate().claimed)toast('🎁 Your daily streak reward is
 try{shopRender()}catch(e){}
 })();
 </script>
+<script>
+/* ===== SHOP PREVIEWS: every skin, blade and run item shows what it looks like before you buy it =====
+   Small live canvases drawn with the game's own sprites, colour filters and blade art, so what you see here is what you get in a run. */
+(function(){
+const PW=104,PH=110,FY=104,SC=2.2,RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const st=document.createElement('style');
+st.textContent='.pvskull{position:relative;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:radial-gradient(circle at 50% 60%,#06402a,#02140c);border:1.5px solid #34d399;box-shadow:0 0 9px #10b981aa,inset 0 0 6px #05966988;animation:pvfl 1.1s ease-in-out infinite}.pvskull b{font-size:13px;line-height:1;position:relative}.pvskull i{position:absolute;top:-9px;left:50%;margin-left:-8px;font-style:normal;font-size:15px;line-height:1;filter:hue-rotate(95deg) saturate(1.6) drop-shadow(0 0 4px #34d399);animation:pvfl2 .7s ease-in-out infinite alternate;transform-origin:50% 90%}@keyframes pvfl{0%,100%{box-shadow:0 0 7px #10b981aa,inset 0 0 5px #05966988}50%{box-shadow:0 0 14px #34d399,inset 0 0 8px #10b981}}@keyframes pvfl2{from{transform:scale(.9,1) rotate(-6deg)}to{transform:scale(1.1,1.15) rotate(6deg)}}@media(prefers-reduced-motion:reduce){.pvskull,.pvskull i{animation:none}}canvas.pv{flex:none;width:104px;height:110px;border-radius:8px;border:1px solid #4a3a1a;background:#0a0c0b;cursor:default}@media(max-width:480px){canvas.pv{width:80px;height:85px}}';
+document.head.appendChild(st);
+const cl=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)),ez=v=>v*v*(3-2*v);
+function ctxOf(cv){if(cv._g)return cv._g;const d=Math.min(2,devicePixelRatio||1);cv.width=PW*d;cv.height=PH*d;const g=cv.getContext('2d');g.setTransform(d,0,0,d,0,0);return cv._g=g}
+function glow(g,x,y,r,c,a){const q=g.createRadialGradient(x,y,0,x,y,r);q.addColorStop(0,'rgba('+c+','+a+')');q.addColorStop(1,'rgba('+c+',0)');g.fillStyle=q;g.beginPath();g.arc(x,y,r,0,6.3);g.fill()}
+function bg(g,cx,tint){const q=g.createRadialGradient(PW/2,PH*.7,4,PW/2,PH*.7,PW*.85);q.addColorStop(0,tint||'#1c2a22');q.addColorStop(1,'#08090a');g.fillStyle=q;g.fillRect(0,0,PW,PH);
+ if(cx!=null){g.fillStyle='rgba(0,0,0,.45)';g.beginPath();g.ellipse(cx,FY+1,17,3.4,0,0,6.3);g.fill()}}
+/* the knight, in any armour colour (same recolouring the game uses; SKOFF stops the game's own patch from stacking the equipped skin on top) */
+function knight(g,cx,skinKey,t){
+ const im=sprites.idle;if(!im.loaded)return 0;const sk=SKINS[skinKey],dx=cx-54.5*SC,dy=FY-80*SC;g.imageSmoothingEnabled=false;
+ let sheet=im.img;const sx=(Math.floor(t*10)%10)*120;
+ if(sk&&sk.pal)sheet=palBake(im.img,1);   // Shadow Knight is a pixel-by-pixel recolour
+ SKOFF=1;try{if(sk&&sk.f&&!sk.pal)g.filter=sk.f;g.drawImage(sheet,sx,0,120,80,dx,dy,120*SC,80*SC)}finally{SKOFF=0;g.filter='none'}
+ return dx+60*SC}   // x of the frame centre = where the game hangs the blade
+function wdFor(cv,g){if(cv._wd)return cv._wd;try{cv._wd=new Function('ctx','return '+weaponDraw.toString())(g)}catch(e){cv._wd=function(){}}return cv._wd}
+/* ---- armour ---- */
+function pvSkin(cv,g,k,t){const cx=52;bg(g,cx);const sk=SKINS[k];
+ if(k=='gold')glow(g,cx,FY-38,46+Math.sin(t*3)*3,'255,215,90',.32);
+ const fcx=knight(g,cx,k,t);
+ if(k=='royal'){const w=Math.sin(t*3)*2;g.save();g.translate(fcx-10,FY-81);g.fillStyle='#d4a017';g.fillRect(-6,2,12,3);g.fillRect(-1.5,-3,3,6);g.fillStyle='#b91c1c';g.beginPath();g.moveTo(-2,-2);g.quadraticCurveTo(-6+w,-16,-16+w*2,-14);g.quadraticCurveTo(-8,-10,-1,-1);g.fill();g.fillStyle='#ef4444';g.beginPath();g.moveTo(-1,-2);g.quadraticCurveTo(-3+w,-12,-10+w*2,-11);g.quadraticCurveTo(-4,-7,0,-1);g.fill();g.fillStyle='#fde68a';g.fillRect(-1,-4,2,2);g.restore()}
+ const fx={gold:['#ffe27a','star',-1],frost:['#dff4ff','flake',1],crimson:['#ff7a2a','dot',-1]}[k];
+ if(fx)for(let i=0;i<8;i++){const u=(t*.55+i/8)%1,x=cx+Math.sin(i*7.3)*15+Math.sin(t*2+i)*2,y=fx[2]<0?FY-8-u*74:FY-84+u*74;g.globalAlpha=Math.sin(u*Math.PI);g.fillStyle=fx[0];
+  if(fx[1]=='star'){g.fillRect(x-2,y-.5,4,1);g.fillRect(x-.5,y-2,1,4)}else if(fx[1]=='flake')g.fillRect(x-1,y-1,2.5,2.5);else{g.beginPath();g.arc(x,y,1.5,0,6.3);g.fill()}}
+ g.globalAlpha=1}
+/* ---- blades: drawn with the game's own blade art (weaponDraw), on the knight in the armour you have equipped ---- */
+function pvWpn(cv,g,k,t){const cx=44,skin=shopS().eq.skin;bg(g,cx);
+ const fcx=knight(g,cx,skin,t);if(!k||!WPNS[k])return;
+ g.save();g.translate(fcx+5,FY-41);g.rotate(.55+Math.sin(t*2)*.03);wdFor(cv,g)(k,t);g.restore()}
+/* ---- pets: the game's own creature art (petCreature / horseDraw) re-bound to the preview canvas, auto-fitted so a T-Rex and a crow both fit ---- */
+let _pmk=null;const PFIT={},PFLY={crow:1,dragon:1,phoenix:1,bison:1};
+function petMk(){if(!_pmk)_pmk=new Function('ctx',[petCreature,horseDraw0,horseDraw,hfTexture,hfTint].map(f=>f.toString()).join('\n')+'\nreturn{pc:petCreature,hd:horseDraw}');return _pmk}
+function petScale(k){const M=MOUNT[k];return k=='horse'?HORSE_K:M?M.K:k=='cat'?1.2:1}
+function petFit(k){if(PFIT[k])return PFIT[k];const o=document.createElement('canvas');o.width=900;o.height=700;const g=o.getContext('2d',{willReadFrequently:true}),f=petMk()(g),ps=petScale(k);let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+ for(const t of [0,.4,.8,1.2]){g.clearRect(0,0,900,700);g.save();g.translate(450,520);g.scale(ps,ps);g.lineCap='round';if(k=='horse')f.hd(t,1,0,'bh');else f.pc(k,t,.045,true);g.restore();
+  const d=g.getImageData(0,0,900,700).data;for(let y=0;y<700;y++)for(let x=0;x<900;x++)if(d[(y*900+x)*4+3]>40){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}}
+ if(x1<x0){x0=y0=-20;x1=y1=20}else{x0-=450;x1-=450;y0-=520;y1-=520}
+ const w=x1-x0,h=y1-y0;return PFIT[k]={cx:(x0+x1)/2,by:y1,f:Math.min((PW-14)/w,(PH-24)/h,3)}}
+function pvPet(cv,g,k,t){bg(g,null,'#1a2218');const ft=petFit(k),fn=cv._pf||(cv._pf=petMk()(g)),ps=petScale(k),mv=(t%5)>2.5,fly=!!PFLY[k],bob=fly?Math.sin(t*5)*3:0;
+ g.fillStyle='rgba(0,0,0,.4)';g.beginPath();g.ellipse(PW/2,PH-9,Math.min(40,(ft.f*(MOUNT[k]?MOUNT[k].sh:18)*ps)||18),4,0,0,6.3);g.fill();
+ g.save();g.translate(PW/2,PH-10-(fly?8:0)+bob);g.scale(ft.f,ft.f);g.translate(-ft.cx,-ft.by);g.scale(ps,ps);g.lineCap='round';
+ if(k=='horse')fn.hd(t,mv,0,'bh');else fn.pc(k,t,.045,mv);g.restore()}
+
+/* ===== PET CARDS: champion-card layout (art, type, passive perk, framed special ability) ===== */
+const PACC={crow:'#a5a5ff',cat:'#f0b866',dragon:'#4fc3ff',cerb:'#ff6a4a',fox:'#ffa24d',tiger:'#9fe0ff',turtle:'#5fe3a1',horse:'#ff8a3d',phoenix:'#ffb13b',frog:'#5b8cff',raccoon:'#e6c36e',dodo:'#ffc65a',trex:'#f07a3a',bison:'#cfe8ff'};
+function petIntro(){return '<div style="margin:8px 0 4px;padding:9px 12px;border-radius:8px;border:1px dashed #6d4fb0;background:rgba(109,79,176,.12);font-size:13px;line-height:1.5;color:#e9d5ff"><b style="color:#f5d0fe">✨ How special abilities work</b><br>Every animal has one big move. During a run, press <b>Q</b> (or tap the ✨ button): it <b>destroys every wrong answer and spares the right one</b>. You only get <b>one ability per run</b>, no matter how many pets you swap between.</div>'}
+function petCard(k,i,own,eq,pb){
+ const acc=PACC[k]||'#facc15',mount=/\(Mount\)/.test(i.n),name=i.n.slice((i.e||'').length).replace(/\s*\(Mount\)\s*$/,'').trim(),parts=String(i.d||'').split(' ✨ ');
+ const raw=parts[0].replace(/^Mount\.\s*/,'').replace(/\.$/,''),am=parts[1]&&/^(.+?) \((\d+)x\/run\): (.+)$/.exec(parts[1]);
+ let pk,m;if(m=/^\+(\d+) gold every room you clear$/.exec(raw))pk=['+'+m[1]+' gold','every room you clear'];else if(m=/^\+(\d+) gold from every chest, barrel and crate$/.exec(raw))pk=['+'+m[1]+' gold','from every chest, barrel &amp; crate'];else pk=[raw,''];
+ const bt=(a,t,st)=>{const c={buy:['linear-gradient(#22c55e,#166534)','#ecfdf5','#4ade80'],no:['#27272a','#71717a','#3f3f46'],eq:['linear-gradient(#f59e0b,#92400e)','#fffbeb','#fcd34d'],on:['linear-gradient(#a16207,#713f12)','#fef3c7','#facc15'],sm:['#1f2a24','#a7f3d0','#2f6f55']}[st];return `<button data-a="${a}" style="padding:7px 14px;border-radius:7px;font:700 13px monospace;background:${c[0]};color:${c[1]};border:1px solid ${c[2]};white-space:nowrap">${t}</button>`};
+ const small=(a,t)=>bt(a,t,'sm');
+ const act=own?(pb?window.PBOND.btns(k,(a,t)=>small(a,t)):'')+bt('e:pet:'+k,eq?'Equipped ✓':'Equip',eq?'on':'eq'):bt('b:pet:'+k,i.p?'Buy 🪙'+i.p:'Get for free',S.gold>=i.p?'buy':'no');
+ const chip=mount?['🐴 MOUNT','#fde68a','#78350f','Ride it into rooms (key V)']:['🐾 COMPANION','#99f6e4','#134e4a','Follows you around'];
+ const ab=am?`<div style="margin-top:9px;padding:9px 11px;border-radius:9px;background:linear-gradient(160deg,rgba(0,0,0,.5),${acc}14);border:1px solid ${acc}77;box-shadow:inset 0 0 16px ${acc}1f"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font-size:10px;letter-spacing:.16em;color:#a1a1aa">SPECIAL ABILITY</span><span title="One use per run" style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#a7f3d0"><span class="pvskull"><i>🔥</i><b>💀</b></span>${am[2]}× per run</span></div><div style="margin-top:3px;font:900 16px Cinzel,Georgia,serif;color:${acc};text-shadow:0 0 10px ${acc}66">⚡ ${am[1]}</div><div style="margin-top:2px;font-size:13px;line-height:1.4;color:#d4d4d8">${am[3]}</div></div>`:'';
+ return `<div style="margin:10px 0;border:1px solid ${acc}55;border-radius:12px;background:linear-gradient(165deg,#1c1913,#0e0c08);overflow:hidden;box-shadow:0 0 0 1px #000,0 4px 14px rgba(0,0,0,.4)"><div style="height:3px;background:linear-gradient(90deg,transparent,${acc},transparent)"></div>
+ <div style="display:flex;gap:12px;padding:11px 12px;flex-wrap:wrap"><canvas class="pv" data-pv="pet:${k}" title="Preview"></canvas>
+ <div style="flex:1 1 200px;min-width:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font:900 18px Cinzel,Georgia,serif;color:#fafafa">${name}</span>${pb?window.PBOND.tag(k):''}<span title="${chip[3]}" style="font:700 10px monospace;letter-spacing:.08em;padding:2px 7px;border-radius:99px;background:${chip[2]};color:${chip[1]};border:1px solid ${chip[1]}55">${chip[0]}</span></div>
+ <div style="margin-top:7px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;padding:4px 10px;width:fit-content;max-width:100%;border-radius:7px;background:rgba(250,204,21,.09);border:1px solid #a1620766"><span style="font-size:10px;letter-spacing:.14em;color:#a1a1aa">PASSIVE</span><span style="font-weight:800;color:#facc15;white-space:nowrap">🪙 ${pk[0]}</span>${pk[1]?`<span style="font-size:12px;color:#d4d4d8">${pk[1]}</span>`:''}</div>${ab}</div></div>
+ ${pb?`<div style="padding:0 12px 9px;font-size:12px;line-height:1.45">${window.PBOND.bar(k)}</div>`:''}
+ <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;padding:9px 12px;border-top:1px solid #2a2418;background:rgba(0,0,0,.25)">${act}</div></div>`}
+/* ---- run items ---- */
+function plates(g,idx,t,mark){const L=['A','B','C'];for(let i=0;i<3;i++){const y=12+i*27,x=60,w=38,h=20,gone=mark[i]||0;g.fillStyle=gone==2?'rgba(255,214,90,'+(.25)+')':'rgba(40,52,48,.9)';g.strokeStyle=gone==2?'#ffd65a':'#3d5a4c';g.lineWidth=1.2;g.beginPath();g.roundRect(x,y,w,h,4);g.fill();g.stroke();
+  g.globalAlpha=gone==1?.35:1;g.fillStyle='#bfe9d4';g.font='bold 11px Cinzel,Georgia,serif';g.textAlign='center';g.textBaseline='middle';g.fillText(L[i],x+w/2,y+h/2+1);g.globalAlpha=1;
+  if(gone==1){g.strokeStyle='#ff5a6a';g.lineWidth=2;g.beginPath();g.moveTo(x+4,y+h-4);g.lineTo(x+w-4,y+4);g.stroke()}}}
+const pc=i=>({x:79,y:22+i*27});
+function feather(g,x,y,L,rot,c1,c2,a){g.save();g.translate(x,y);g.rotate(rot);const q=g.createLinearGradient(0,0,L,0);q.addColorStop(0,c1);q.addColorStop(1,c2);g.globalAlpha*=a;g.fillStyle=q;g.beginPath();g.moveTo(0,0);g.quadraticCurveTo(L*.45,-L*.2,L,0);g.quadraticCurveTo(L*.45,L*.2,0,0);g.fill();g.restore()}
+function lbl(g,x,y,txt,col,a){g.save();g.globalAlpha=a;g.font='italic bold 12px Cinzel,Georgia,serif';g.textAlign='center';g.lineJoin='round';g.lineWidth=4;g.strokeStyle='rgba(0,0,0,.85)';g.strokeText(txt,x,y);g.fillStyle=col;g.fillText(txt,x,y);g.restore()}
+function pvItem(cv,g,k,t){const T=3.4,p=t%T;g.globalCompositeOperation='source-over';
+ if(k=='orb'){bg(g,null,'#17233a');const tp=pc(1),u=ez(cl((p-.5)/.7)),rx=24,ry=48,x=rx+(tp.x-8-rx)*u,y=ry+(tp.y-ry)*u-Math.sin(u*Math.PI)*16,hit=p>1.2,fade=p>2.9?cl((p-2.9)/.4):hit?1-cl((p-1.2)/.5):1;
+  plates(g,1,t,[0,hit&&p<3.1?1:0,0]);g.globalCompositeOperation='lighter';
+  if(fade>0){glow(g,x,y,22,'150,200,255',.5*fade);glow(g,x,y,11,'235,245,255',.95*fade)}
+  if(hit&&p<2.2){const q=(p-1.2)/1;g.strokeStyle='rgba(170,215,255,'+(1-q)+')';g.lineWidth=2;g.beginPath();g.arc(tp.x,tp.y,6+q*30,0,6.3);g.stroke()}
+  g.globalCompositeOperation='source-over';if(hit&&p<2.4)lbl(g,52,PH-8,'not that one...','#c8e1ff',cl(1-(p-1.3)/1.1))}
+ else if(k=='fav'){bg(g,null,'#2a0e14');const a=ez(cl(p/.5)),al=(1-cl((p-2.4)/.8))*a,r=20+a*6;g.save();g.translate(30,50);g.rotate(t*2.2);g.globalCompositeOperation='lighter';g.strokeStyle='rgba(255,50,80,'+al+')';g.lineWidth=2;g.beginPath();g.arc(0,0,r,0,6.3);g.stroke();g.beginPath();for(let i=0;i<5;i++){const an=-Math.PI/2+i*Math.PI*4/5;g.lineTo(Math.cos(an)*r,Math.sin(an)*r)}g.closePath();g.stroke();glow(g,0,0,r*1.3,'255,30,60',.35*al);g.restore();
+  for(let i=0;i<7;i++){const u=(t*.9+i/7)%1;glow(g,16+i*7,66-u*40,5*(1-u*.5),'255,'+(80+i*20)+',40',.75*(1-u)*al)}
+  g.globalCompositeOperation='source-over';plates(g,0,t,[p>.9?1:0,0,p>1.3?1:0]);if(p>.9&&p<2.6)lbl(g,52,PH-8,'Pathetic.','#ff6a7e',cl(1-(p-1.1)/1.5))}
+ else if(k=='key'){bg(g,null,'#2a2410');const tp=pc(0),u=ez(cl((p-.4)/.6)),x=22+(tp.x-8-22)*u,y=60+(tp.y-60)*u-Math.sin(u*Math.PI)*16,done=p>1.05;
+  plates(g,0,t,[done&&p<3?2:0,0,0]);g.globalCompositeOperation='lighter';glow(g,x,y,18,'255,210,70',.5);g.globalCompositeOperation='source-over';
+  g.font='24px serif';g.textAlign='center';g.textBaseline='middle';g.save();g.translate(x,y);g.rotate(done?0:u*9);g.fillText('🗝️',0,0);g.restore();
+  if(done&&p<2.6){g.globalCompositeOperation='lighter';const q=(p-1.05)/1;for(let i=0;i<10;i++){const an=i*.63;glow(g,tp.x+Math.cos(an)*q*26,tp.y+Math.sin(an)*q*18,4,'255,225,110',cl(1-q))}g.globalCompositeOperation='source-over';lbl(g,52,PH-8,'UNLOCKED!','#ffdc64',cl(1-(p-1.2)/1.2))}}
+ else if(k=='shield'){bg(g,52,'#142238');knight(g,52,null,t);const e=ez(cl((p-.4)/.25)),al=e*(1-cl((p-1.5)/.8)),w=15*e,h=20*e,cy=FY-34;
+  g.globalCompositeOperation='lighter';glow(g,52,cy,44,'110,170,255',.5*al);g.globalCompositeOperation='source-over';
+  if(al>0){g.save();g.globalAlpha=al;g.translate(58,cy);g.fillStyle='rgba(130,190,255,.45)';g.strokeStyle='#e6f4ff';g.lineWidth=2;g.beginPath();g.moveTo(-w,-h*.8);g.lineTo(w,-h*.8);g.lineTo(w,h*.15);g.quadraticCurveTo(w,h*.8,0,h);g.quadraticCurveTo(-w,h*.8,-w,h*.15);g.closePath();g.fill();g.stroke();g.beginPath();g.moveTo(0,-h*.7);g.lineTo(0,h*.85);g.moveTo(-w*.8,-h*.1);g.lineTo(w*.8,-h*.1);g.stroke();g.restore();
+   const q=cl((p-.6)/.9);g.strokeStyle='rgba(150,200,255,'+(1-q)+')';g.lineWidth=2.5;g.beginPath();g.arc(58,cy,8+q*44,0,6.3);g.stroke();lbl(g,52,12,'BLOCKED!','#aad2ff',al)}}
+ else if(k=='phx'){bg(g,52,'#2a1608');knight(g,52,null,t);const ex=ez(cl((p-.4)/.55)),al=cl((p-.4)*9)*(1-cl((p-1.7)/.9)),cy=FY-36;
+  g.globalCompositeOperation='lighter';glow(g,52,cy,(34+ex*30),'255,170,50',.55*al);
+  if(al>0)for(const sd of [-1,1])for(let j=0;j<8;j++){const an=(-1.45+j*.2)*ex+.2,L=(18+j*5)*ex,rot=sd>0?an:Math.PI-an;feather(g,52+sd*5,cy,L,rot,'rgba(255,245,170,'+al+')','rgba(255,70,20,'+al*.7+')',1)}
+  for(let i=0;i<8;i++){const u=cl((p-.5-i*.04)/1.4);if(u>0&&u<1)glow(g,52+Math.sin(i*5)*34*u,cy-u*38,4,'255,'+(150+i*12)+',60',1-u)}
+  g.globalCompositeOperation='source-over';if(al>0)lbl(g,52,12,'SAVED!','#ffc846',al)}
+}
+function draw(cv,t){const g=ctxOf(cv),a=(cv.dataset.pv||'').split(':'),kind=a[0],k=a[1];g.save();g.clearRect(0,0,PW,PH);
+ try{if(kind=='skin')pvSkin(cv,g,k,t);else if(kind=='wpn')pvWpn(cv,g,k,t);else if(kind=='item')pvItem(cv,g,k,t);else if(kind=='pet')pvPet(cv,g,k,t)}finally{g.restore()}}
+function all(now){const m=document.getElementById('armory-shop');if(!m||!m.offsetParent)return;const vh=innerHeight;
+ m.querySelectorAll('canvas.pv').forEach(cv=>{const r=cv.getBoundingClientRect();if(r.bottom<-20||r.top>vh+20)return;try{draw(cv,RM?1.2:now/1000)}catch(e){}})}
+let last=0;(function tick(now){requestAnimationFrame(tick);if(document.hidden||now-last<(RM?500:45))return;last=now;all(now)})(0);
+const _sr=shopRender;shopRender=function(){const r=_sr.apply(this,arguments);try{all(performance.now())}catch(e){}return r};window.petCard=petCard;window.petIntro=petIntro;try{shopRender()}catch(e){}
+})();
+</script>
+
 <script src="account-v13.js?v=14"></script>
 </body>
 </html>
