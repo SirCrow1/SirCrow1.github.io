@@ -938,7 +938,7 @@ document.addEventListener('visibilitychange',()=>{if(ac)document.hidden?ac.suspe
 
 // ---------- v6: EVERY SWORD ART HAS ITS OWN ANIME SOUND ----------
 const R=Math.random;   // (pick() already exists above)
-const SKN=['CRESCENT MOON SLASH',"DRAGON EMPEROR'S WRATH","THUNDER GOD'S CRUCIFIXION","COSMIC NEBULA",'PHOENIX WHIRLWIND','STARFALL JUDGEMENT','AZURE COMET BARRAGE',"SOLAR HALO","CRIMSON REAPER'S JUDGEMENT",'GALE OF A THOUSAND CUTS',"INFINITE TITANIC QUAKE","ETERNAL FLOWER PETAL","PRIMORDIAL BANE","ECLIPSE NIGHTFALL","PARTICLE FLASH CUTTER","ZEPHYR SKYSPLITTER","SAKURA TEMPEST","PRISM SHOT","ETERNAL ROSE CANON","WORLD END STORM"];
+const SKN=['CRESCENT MOON SLASH',"DRAGON EMPEROR'S WRATH","THUNDER GOD'S CRUCIFIXION","COSMIC NEBULA",'PHOENIX WHIRLWIND','STARFALL JUDGEMENT','AZURE COMET BARRAGE',"SOLAR HALO","CRIMSON REAPER'S JUDGEMENT",'GALE OF A THOUSAND CUTS',"INFINITE TITANIC QUAKE","ETERNAL FLOWER PETAL","PRIMORDIAL BANE","ECLIPSE NIGHTFALL","PARTICLE FLASH CUTTER","ABYSSAL SHADOW REQUIEM","SAKURA TEMPEST","PRISM SHOT","ETERNAL ROSE CANON","WORLD END STORM"];
 // a held tone with optional vibrato (vib Hz / vd depth), a filter sweep (lp -> lp1) and a slow attack
 function V(type,f0,f1,t,dur,v,o){o=o||{};
   const os=ac.createOscillator(),g=ac.createGain();os.type=type;os.frequency.setValueAtTime(f0,t);if(f1&&f1!=f0)os.frequency.exponentialRampToValueAtTime(f1,t+dur);
@@ -1042,7 +1042,7 @@ const SK=[
  (at,k)=>{[72,76,79,84,88].forEach((n,j)=>{note('s','sine',n,at(j*.04),.6,.07,1);note('s','triangle',n+12,at(j*.04),.5,.03,1)});
   sweep('s','sine',500,3000,at(.02),.26*k,.06,1);bell(1318,at(.5),1.8,.12);bell(1976,at(.52),1.5,.08);sweep('s','sine',150,45,at(.5),.3*k,.5,1);
   for(let j=0;j<8;j++)note('s','sine',3500+R()*3000,at(.52+j*.05),.4,.03,1,0,1)},
- // 15 ZEPHYR SKYSPLITTER: a rising whistle, tearing gusts, a sharp air crack
+ // 15 ABYSSAL SHADOW REQUIEM: a rising whistle, tearing gusts, a sharp air crack
  (at,k)=>{noise('s',at(0),.3*k,.25,'bandpass',500,3500,3,1);sweep('s','sine',500,2400,at(.03),.25*k,.07,1);
   for(let j=0;j<8;j++)noise('s',at(.28+j*.02),.09,.3,'bandpass',2000+R()*3000,1000,4,1);sweep('s','sine',2600,700,at(.3),.3*k,.07,1);
   noise('s',at(.5),.15,.7,'highpass',3000,9000);sweep('s','sine',180,40,at(.5),.35*k,.7,1);noise('s',at(.52),.5*k,.2,'bandpass',900,300,2,1)},
@@ -3865,14 +3865,14 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             {n:"PRIMORDIAL BANE",ty:'whirl',c:'130,175,40',fx:'bubbles'},   // poison olive
             {n:"ECLIPSE NIGHTFALL",ty:'crescent',c:'120,120,165',fx:'swirl'},   // shadow slate
             {n:"PARTICLE FLASH CUTTER",ty:'cross',c:'255,255,255',fx:'stars'},   // holy white
-            {n:"ZEPHYR SKYSPLITTER",ty:'whirl',c:'150,105,215',dk:'28,12,45',fx:'shadow'},   // wind mint
+            {n:"ABYSSAL SHADOW REQUIEM",ty:'whirl',c:'150,105,215',dk:'28,12,45',fx:'shadow'},   // wind mint
             {n:"SAKURA TEMPEST",ty:'crescent',c:'255,165,200',fx:'petals'},   // sakura peach
             {n:"PRISM SHOT",ty:'cross',c:'195,165,255',fx:'prism'},   // crystal lavender
             {n:"ETERNAL ROSE CANON",ty:'thrust',c:'255,40,150',fx:'roses'},   // rose magenta
             {n:"WORLD END STORM",ty:'rising',c:'255,248,170',fx:'bolts'}];   // storm butter
         const ezs=v=>v*v*(3-2*v),clp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
         function startSkill(tx,ty){
-            let i;do{i=Math.random()*SKILLS.length|0}while(i===G.lsk&&SKILLS.length>1);G.lsk=i;
+            const i=Math.floor(Math.random()*SKILLS.length);G.lsk=i;   // every move has an equal 1/SKILLS.length chance (repeats allowed)
             if(!G.gal){const kk='mv:'+i,n0=S.seen[kk]||0;S.seen[kk]=n0+1;save();if(!n0){try{SND.sfx('ding')}catch(_){}toast('🔓 Move unlocked: '+galTitle(SKILLS[i].n))}}
             G.sk={t:0,k:SKILLS[i],tx,ty};SND.skill(SKILLS[i].ty,i,1/KSLOW,G.rooms[G.i].boss);   // adv() puts the fight into slow-motion right after this, so stretch the sound to matchG.face=tx>=G.hx?1:-1;
         }
