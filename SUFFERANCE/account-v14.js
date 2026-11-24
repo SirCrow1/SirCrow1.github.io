@@ -663,6 +663,14 @@ async function itemsDo(d){
 // ================= v13: cloud save (progress follows the Google account, not the browser) =================
 let cloudPause=false,cloudBusy=false,cloudWarned=false;
 const CLOUD_MAX=1800000;   // matches the limit in save_game()
+// Every upload carries a random tag (S.cloudSent) and this browser remembers the tags it sent.
+// If the cloud copy has one of OUR tags, this browser wrote it, so it can never be "newer progress from elsewhere".
+// (This is what used to trigger the popup: the upload landed, but the page closed before the reply came back,
+//  so S.cloudAt stayed old, later saves were rejected as conflicts, and "OK" rolled you back to a stale cloud copy.)
+const SENT_KEY='suff_cloud_sent';
+function sentTags(){try{return JSON.parse(localStorage[SENT_KEY]||'[]')}catch(e){return []}}
+function rememberTag(t){try{const l=sentTags();l.push(t);localStorage[SENT_KEY]=JSON.stringify(l.slice(-40))}catch(e){}}
+function isOurs(remote){try{const t=remote&&remote.save&&remote.save.cloudSent;return !!t&&sentTags().indexOf(t)>-1}catch(e){return false}}
 function saveIsBlank(){
   try{return !S.shop&&!(S.mem&&S.mem.runs)&&!Object.keys(S.seen||{}).length&&!(S.st&&S.st.tot)&&(!S.decks||S.decks.length<=1)}catch(e){return true}
 }
@@ -689,22 +697,33 @@ async function cloudSync(){
     const rAt=Date.parse(remote.saved_at),lAt=S.cloudAt?Date.parse(S.cloudAt):0;
     if(saveIsBlank())return adoptCloud(remote.save,remote.saved_at);   // new browser / cleared browser: bring the progress back
     if(lAt&&rAt<=lAt+1)return false;               // this browser is already up to date
+    if(isOurs(remote)){                            // the cloud copy was uploaded by this very browser: keep local, just sync the timestamp
+      S.cloudAt=remote.saved_at;save();return false;
+    }
     const keep=confirm('Your account has a saved game in the cloud'+(lAt?' that is newer than this browser\'s copy':'')+'.\n\nOK = load the cloud save (this browser\'s copy is kept as a backup)\nCancel = keep THIS browser\'s save and overwrite the cloud');
     if(keep)return adoptCloud(remote.save,remote.saved_at);
     await cloudSave(true,true);
     return false;
   }catch(e){console.error(e);return false}
 }
-async function cloudSave(quiet,force){
+async function cloudSave(quiet,force,retry){
   if(cloudBusy||cloudPause||!sb||!myId)return;
   try{
     if(!S||S.owner!==myId||saveIsBlank())return;   // never upload another account's save or an empty one
+    const tag=Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+    S.cloudSent=tag;rememberTag(tag);
     const blob=JSON.stringify(S);
     if(blob.length>CLOUD_MAX){if(!cloudWarned){cloudWarned=true;say('Your save is too large for cloud backup')}return}
     cloudBusy=true;
     const {data,error}=await sb.rpc('save_game',{p_save:S,p_base:S.cloudAt||null,p_force:!!force});
     if(error){console.error('cloud save',error);return}
     if(data&&data.status==='ok'){S.cloudAt=data.at;save()}
+    else if(data&&data.status==='conflict'&&!force&&!retry){
+      // maybe a previous upload of ours landed but its reply was lost: if so, just catch the timestamp up and retry once
+      const r=await sb.rpc('load_game');
+      if(r&&r.data&&r.data.save&&isOurs(r.data)){S.cloudAt=r.data.saved_at;save();cloudBusy=false;return await cloudSave(quiet,false,true)}
+      if(!cloudWarned){cloudWarned=true;say('Another device saved newer progress. Reload the page to choose which save to keep.')}
+    }
     else if(data&&data.status==='conflict'&&!cloudWarned){
       cloudWarned=true;
       say('Another device saved newer progress. Reload the page to choose which save to keep.');
