@@ -90,7 +90,7 @@
             <h1 class="title-font text-xl md:text-2xl font-bold tracking-wider text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]">SUFFERENCE</h1>
         </div>
         <div class="flex items-center space-x-4 pixel-font text-sm">
-            <button id="galink" type="button" title="Death Gallery (your run stays paused and safe)" class="bg-zinc-900 px-3 py-1.5 rounded border border-emerald-900/50 text-emerald-300 hover:bg-emerald-950 transition whitespace-nowrap">💀<span class="hidden sm:inline"> Gallery</span></button>
+            <button id="galink" type="button" title="Gallery: deaths and sword-art moves (your run stays paused and safe)" class="bg-zinc-900 px-3 py-1.5 rounded border border-emerald-900/50 text-emerald-300 hover:bg-emerald-950 transition whitespace-nowrap">💀<span class="hidden sm:inline"> Gallery</span></button>
             <button id="sndbtn" type="button" title="Sound & music settings (M = mute)" class="bg-zinc-900 px-3 py-1.5 rounded border border-emerald-900/50 text-emerald-300 hover:bg-emerald-950 transition">🔊</button>
             <div id="gold" class="bg-zinc-900 px-3 py-1.5 rounded border border-emerald-900/50 text-emerald-400 shadow-[inset_0_0_6px_rgba(16,185,129,0.2)]">🪙 150</div>
         </div>
@@ -1152,7 +1152,7 @@ sync();
                     <button data-t="d" class="tab-btn on bg-emerald-600 hover:bg-emerald-500 text-zinc-950 shadow-[0_0_10px_rgba(16,185,129,0.4)] font-bold px-2 py-2 rounded transition title-font text-xs sm:text-sm w-full text-center">🏰 Dungeon</button>
                     <button data-t="g" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-2 py-2 rounded transition title-font text-xs sm:text-sm w-full text-center">📚 Question Pool</button>
                     <button data-t="s" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-2 py-2 rounded transition title-font text-xs sm:text-sm w-full text-center">🛡️ Armory</button>
-                    <button data-t="h" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-2 py-2 rounded transition title-font text-xs sm:text-sm w-full text-center">💀 Death Gallery</button>
+                    <button data-t="h" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-2 py-2 rounded transition title-font text-xs sm:text-sm w-full text-center">🖼️ Gallery</button>
                     <button data-t="a" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-2 py-2 rounded transition title-font text-xs sm:text-sm w-full text-center">🏅 Achievements</button>
                 </nav>
 
@@ -1198,7 +1198,7 @@ sync();
                         <input type="hidden" id="model" value="gemini-3-flash-preview">
                     </div>
                     <input type="text" id="dn" placeholder="📖 Subject (e.g. Math)" class="w-full bg-zinc-950 border border-emerald-950/80 p-2.5 rounded text-xs text-zinc-200 focus:outline-none focus:border-emerald-500">
-                    <textarea id="notes" rows="6" placeholder="Paste your study notes, or type questions like this (this grey text disappears when you type):&#10;&#10;What is 2 + 2?&#10;1. 3&#10;2. 4&#10;3. 5&#10;4. 6&#10;Answer: 2" class="w-full bg-zinc-950 border border-emerald-950/80 rounded p-3 text-xs text-zinc-300 focus:outline-none focus:border-emerald-500 transition"></textarea>
+                    <textarea id="notes" rows="9" placeholder="Paste your study notes, or type questions like these (this grey text disappears when you type):&#10;&#10;MULTIPLE CHOICE (mark the right one with Answer:)&#10;What is 2 + 2?&#10;1. 3&#10;2. 4&#10;3. 5&#10;4. 6&#10;Answer: 2&#10;&#10;TRUE / FALSE&#10;The sun is a star. True&#10;&#10;FILL IN THE BLANK (the player types the word. Use ____ and an Answer line; extra answers after a /)&#10;The ____ is the powerhouse of the cell.&#10;Answer: mitochondria / mitochondrion&#10;&#10;MATCHING (2 to 4 pairs, one per line, term = match)&#10;Match:&#10;Mitochondria = Powerhouse of the cell&#10;Nucleus = Holds the DNA&#10;Ribosome = Builds proteins&#10;&#10;QUESTION POOL: just keep adding questions one after another. Put a blank line between them." class="w-full bg-zinc-950 border border-emerald-950/80 rounded p-3 text-xs text-zinc-300 focus:outline-none focus:border-emerald-500 transition"></textarea>
                     <div class="flex items-center justify-between pt-2">
                         <button id="sum" class="bg-emerald-600 hover:bg-emerald-500 text-zinc-950 text-xs font-bold py-2.5 px-5 rounded transition title-font shadow-[0_0_10px_rgba(16,185,129,0.3)]">Summon Questions 🪄</button>
                         <button id="manual" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold py-2.5 px-4 rounded transition title-font">✍️ Write Manually</button>
@@ -1218,6 +1218,10 @@ sync();
             <div id="q" class="q-banner title-font"></div>
             <div class="relative w-full aspect-[16/9] bg-zinc-950 rounded-xl overflow-hidden border-2 border-emerald-900/60 shadow-[0_0_30px_rgba(16,185,129,0.15)] flex items-center justify-center">
                 <canvas id="c" width="800" height="450" class="w-full h-full block"></canvas>
+                <div id="fbbox" style="display:none;position:absolute;left:50%;bottom:3.6rem;transform:translateX(-50%);width:min(88%,540px);gap:8px;z-index:25">
+                    <input id="fbin" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="80" placeholder="Type the missing word, then press Enter" style="flex:1;min-width:0;background:rgba(0,0,0,.85);border:2px solid #10b981;border-radius:8px;padding:8px 12px;font-size:15px;color:#d1fae5;outline:none">
+                    <button id="fbgo" type="button" style="background:#10b981;color:#052e1c;font-weight:800;border-radius:8px;padding:8px 14px;font-size:14px;white-space:nowrap;border:0;cursor:pointer">⚔️ Strike</button>
+                </div>
                 <div id="bc" style="display:none" class="absolute inset-0 z-10 flex items-center justify-center p-2 md:p-6 bg-black/55"></div>
                 <button id="rp" type="button" style="display:none;right:.5rem;top:2.75rem" class="absolute z-20 px-3 py-1 rounded-md bg-black/70 border border-emerald-700/70 text-emerald-300 text-xs font-mono hover:bg-emerald-900/60">↺ Replay (R)</button>
                 
@@ -1341,16 +1345,86 @@ sync();
             ]
         };
 
-        let S={gold:150,decks:[DEFAULT_DECK],completedBonus:[],deck:0,best:{},seen:{}};
+        const DEFAULT_DECK_MATCH = {
+            id: 'default_starter_match',
+            name: '🔗 Starter Quest: Match It Up',
+            isDefault: true,
+            bonusReward: 200,
+            bonus: [
+                { t: 'mc', q: 'Which study habit locks knowledge in the fastest?', o: ['Testing yourself from memory', 'Licking the textbook', 'Throwing your notes in the air', 'Hoping it soaks in overnight'], a: 0 },
+                { t: 'mc', q: 'Does sleep help your brain lock in what you studied?', o: ['Yes, sleep helps your memory', 'No, sleep deletes everything', 'Only if you sleep upside down', 'Sleep summons monsters'], a: 0 },
+                { t: 'mc', q: 'You got a question wrong. What is the smartest next move?', o: ['Find out why, then try again', 'Never look at it again', 'Blame the dungeon', 'Throw the notes in the fire'], a: 0 },
+                { t: 'mc', q: 'What is the best way to handle a topic that feels hard?', o: ['Break it into small steps', 'Skip it forever', 'Cry at the textbook', 'Ask a rock for help'], a: 0 },
+                { t: 'mc', q: 'What do short breaks do for your focus?', o: ['Help you stay sharp longer', 'Erase your memory', 'Summon monsters', 'Turn you into a frog'], a: 0 },
+                { t: 'mc', q: 'Which beats one giant cram session?', o: ['Short sessions spread over several days', 'One 12-hour panic', 'Studying only in your dreams', 'Never studying'], a: 0 }
+            ],
+            qs: [
+                { t: 'mt', q: 'Matching: '+'Testing yourself, Sleep, Short breaks, Spaced sessions', pairs: [['Testing yourself', 'Locks memory in'], ['Sleep', 'Saves what you learned'], ['Short breaks', 'Keeps focus sharp'], ['Spaced sessions', 'Beats cramming']] },
+                { t: 'mt', q: 'Matching: '+'Got it wrong, Topic is hard, Feeling tired, Distracted', pairs: [['Got it wrong', 'Find out why'], ['Topic is hard', 'Break it into steps'], ['Feeling tired', 'Rest, then come back'], ['Distracted', 'Put the phone away']] },
+                { t: 'mt', q: 'Matching: '+'Flashcards, Notes, Timer, Practice test', pairs: [['Flashcards', 'Quick self-testing'], ['Notes', 'Review the key ideas'], ['Timer', 'Focused sprints'], ['Practice test', 'Spot weak spots']] },
+                { t: 'mt', q: 'Matching: '+'Consistency, Focus, Review, Practice', pairs: [['Consistency', 'Showing up every day'], ['Focus', 'One task at a time'], ['Review', 'Look at it again'], ['Practice', 'Doing, not just reading']] },
+                { t: 'mt', q: 'Matching: '+'Cramming, Procrastinating, Skipping sleep, Only rereading', pairs: [['Cramming', 'Spread it out'], ['Procrastinating', 'Start with 5 minutes'], ['Skipping sleep', 'Sleep before the test'], ['Only rereading', 'Test yourself instead']] },
+                { t: 'mt', q: 'Matching: '+'Boss fight, Loot, Level up, Respawn', pairs: [['Boss fight', 'The big test'], ['Loot', 'Knowledge you keep'], ['Level up', 'Getting better each day'], ['Respawn', 'Try again after failing']] }
+            ]
+        };
+
+        const DEFAULT_DECK_FILL = {
+            id: 'default_starter_fill',
+            name: '✏️ Starter Quest: Fill the Blank',
+            isDefault: true,
+            bonusReward: 200,
+            bonus: [
+                { t: 'fb', q: 'The most powerful spell in your study arsenal is consistency and ____.', o: ['focus'], a: 0, alt: ['concentration', 'focusing'] },
+                { t: 'fb', q: 'Practice a little every ____ to get ready for a test.', o: ['day'], a: 0, alt: ['daily', 'single day'] },
+                { t: 'fb', q: 'When you fall down in the dungeon or in study, rise back ____!', o: ['stronger'], a: 0, alt: ['strong', 'harder', 'better'] },
+                { t: 'fb', q: 'You should read a book and ____ what you learn.', o: ['practice'], a: 0, alt: ['practise', 'apply', 'use', 'review', 'remember'] },
+                { t: 'fb', q: 'Sleep and ____ help your brain the most.', o: ['breaks'], a: 0, alt: ['break', 'rest', 'rests', 'naps'] },
+                { t: 'fb', q: 'You will conquer this dungeon one ____ at a time.', o: ['question'], a: 0, alt: ['questions', 'puzzle', 'step', 'room'] }
+            ],
+            qs: [
+                { t: 'fb', q: 'Testing yourself from ____ is the fastest way to lock knowledge in.', o: ['memory'], a: 0, alt: ['recall', 'your memory'] },
+                { t: 'fb', q: 'Your brain locks in what you studied while you ____.', o: ['sleep'], a: 0, alt: ['sleeping', 'asleep', 'rest', 'resting'] },
+                { t: 'fb', q: 'When you get a question wrong, find out ____ and then try again.', o: ['why'], a: 0, alt: ['reason', 'the reason', 'how', 'what went wrong'] },
+                { t: 'fb', q: 'Break a hard topic into small ____.', o: ['steps'], a: 0, alt: ['step', 'parts', 'pieces', 'chunks', 'bits'] },
+                { t: 'fb', q: 'Short ____ help you stay sharp longer.', o: ['breaks'], a: 0, alt: ['break', 'rests', 'rest', 'naps', 'pauses'] },
+                { t: 'fb', q: 'Short sessions spread over several days beat one giant ____ session.', o: ['cram'], a: 0, alt: ['cramming', 'crammed', 'panic'] }
+            ]
+        };
+
+        const DEFAULT_DECK_TF = {
+            id: 'default_starter_tf',
+            name: '⚖️ Starter Quest: True or False',
+            isDefault: true,
+            bonusReward: 200,
+            bonus: [
+                { t: 'tf', q: 'Short breaks help you stay sharp longer.', o: ['True', 'False'], a: true },
+                { t: 'tf', q: 'Studying only after the test is the best way to get ready for it.', o: ['True', 'False'], a: false },
+                { t: 'tf', q: 'Practicing a little every day is a great way to prepare.', o: ['True', 'False'], a: true },
+                { t: 'tf', q: 'Eating the textbook helps your brain the most.', o: ['True', 'False'], a: false },
+                { t: 'tf', q: 'Falling down in the dungeon means you should give up.', o: ['True', 'False'], a: false },
+                { t: 'tf', q: 'You can conquer this dungeon one question at a time.', o: ['True', 'False'], a: true }
+            ],
+            qs: [
+                { t: 'tf', q: 'Testing yourself from memory is a great way to learn.', o: ['True', 'False'], a: true },
+                { t: 'tf', q: 'Sleep deletes everything you studied.', o: ['True', 'False'], a: false },
+                { t: 'tf', q: 'If you get a question wrong, you should never look at it again.', o: ['True', 'False'], a: false },
+                { t: 'tf', q: 'Breaking a hard topic into small steps helps.', o: ['True', 'False'], a: true },
+                { t: 'tf', q: 'One 12-hour cram session beats short sessions spread over several days.', o: ['True', 'False'], a: false },
+                { t: 'tf', q: 'Consistency and focus are powerful study spells.', o: ['True', 'False'], a: true }
+            ]
+        };
+
+        const STARTER_DECKS = [DEFAULT_DECK, DEFAULT_DECK_MATCH, DEFAULT_DECK_FILL, DEFAULT_DECK_TF];
+
+        let S={gold:150,decks:STARTER_DECKS.slice(),completedBonus:[],deck:0,best:{},seen:{}};
         try{
             const loaded = JSON.parse(localStorage.sufference_save_v14||'{}');
             Object.assign(S, loaded);
-            if (!S.decks || S.decks.length === 0) {
-                S.decks = [DEFAULT_DECK];
-            } else if (!S.decks.some(d => d.id === 'default_starter_pool')) {
-                S.decks.unshift(DEFAULT_DECK);
-            }
-            S.decks = S.decks.map(d => d.id === 'default_starter_pool' ? DEFAULT_DECK : d);
+            if (!S.decks || S.decks.length === 0) S.decks = [];
+            const missingStarters = STARTER_DECKS.filter(sd => !S.decks.some(d => d.id === sd.id));
+            if (missingStarters.length) S.decks.splice(0, 0, ...missingStarters.filter(sd => sd === DEFAULT_DECK), ...[]);
+            for (const sd of missingStarters) if (sd !== DEFAULT_DECK) { const at = S.decks.reduce((n, d, i) => d.isDefault ? i + 1 : n, 0); S.decks.splice(at, 0, sd); }
+            S.decks = S.decks.map(d => { const sd = STARTER_DECKS.find(x => x.id === d.id); return sd || d; });
             if (!S.completedBonus) S.completedBonus = [];
             if (!S.seen) S.seen = {};
             if (!S.badges) S.badges = {good:0,bad:0};
@@ -1464,6 +1538,7 @@ ${G}
             const solved=[...all].filter(k=>st.sol&&st.sol[k]).length;
             return [
                 {id:'dall',pal:['#c5ffd6','#22c765','#0a5a2c'],name:'Collector',glyph:'skull',desc:`Find every way to die. All ${GN.length} deaths and ${GSK.length} secret deaths in the Death Gallery.`,cur:seenD,tot:nD,done:seenD>=nD,unit:'deaths found'},
+                {id:'mall',pal:['#d4f0ff','#38b6ff','#0a4a7a'],name:'Swordmaster',glyph:'star',desc:`Unlock every sword-art move in the Moves Gallery. All ${SKILLS.length} moves.`,cur:SKILLS.filter((k,i)=>mvOpen(i)).length,tot:SKILLS.length,done:SKILLS.every((k,i)=>mvOpen(i)),unit:'moves found'},
                 {id:'pall',pal:['#d8e0ff','#5470ff','#1a2a9a'],name:'Scholar',glyph:'rune',desc:'Answer every puzzle in every deck correctly at least once.',cur:solved,tot:all.size,done:all.size>0&&solved>=all.size,unit:'puzzles solved'},
                 {id:'drun',pal:['#f6d2ff','#b25cf2','#511a8a'],name:'Doomed',glyph:'bones',desc:`Die every possible way in one single run: all ${nD} deaths.`,cur:Math.min(st.bdk||0,nD),tot:nD,done:!!st.adr,unit:'different deaths in your best run'},
                 {id:'nd',pal:['#c3fff2','#35cdbd','#0d5f66'],name:'Untouchable',glyph:'shield',desc:'Finish a run without dying even once.',cur:st.nd?1:0,tot:1,done:!!st.nd,unit:'deathless run'},
@@ -1780,7 +1855,41 @@ ${G}
                 });
                 return out.join('\n');
             }
+            // "Match:" blocks: lines like  Term = Definition   (also -> , => , → , a tab or  " :: ")
+            function pullMatch(text) {
+                const lines = String(text).replace(/\r/g, '').split('\n'), keep = [], out = [];
+                const HDR = /^[\s#*_>\-\d.)(]*(?:match(?:ing)?(?:\s+(?:the|each|these)\b[^:]*)?|matching\s+pairs?|pairs)\s*[:\-–—]?\s*[*_]*\s*$/i;
+                const SEP = /\s*(?:=>|->|→|=|::|\t+)\s*/;
+                let i = 0;
+                while (i < lines.length) {
+                    if (HDR.test(lines[i].trim()) && lines[i].trim()) {
+                        let j = i + 1; const pr = [];
+                        while (j < lines.length && lines[j].trim()) {
+                            const l = lines[j].trim().replace(/^[-•*\d.)\s]+(?=\S)/, '').replace(/[*_]+/g, '');
+                            const m = l.split(SEP); if (m.length < 2 || !m[0].trim() || !m.slice(1).join(' ').trim()) break;
+                            pr.push([m[0].trim(), m.slice(1).join(' ').trim()]); j++;
+                        }
+                        if (pr.length >= 2) {
+                            const ng = Math.ceil(pr.length / 4); let at = 0;
+                            for (let k = 0; k < ng; k++) {          // split evenly: 5 pairs -> 3 + 2, never one lonely pair
+                                const sz = Math.floor((pr.length - at) / (ng - k)) + ((pr.length - at) % (ng - k) ? 1 : 0), g = pr.slice(at, at + sz); at += sz;
+                                out.push({ q: { t: 'mt', q: 'Matching: ' + g.map(p => p[0]).join(', '), pairs: g } });
+                            }
+                            i = j; continue;
+                        }
+                    }
+                    keep.push(lines[i]); i++;
+                }
+                return { text: keep.join('\n'), items: out };
+            }
             function parse(text) {
+                const MT = pullMatch(text); text = MT.text;
+                const items0 = parse0(text.replace(/_{2,}/g, 'ZZBLANKZZ'));
+                const back = v => typeof v === 'string' ? v.replace(/ZZBLANKZZ/g, '____') : v;   // keep the blank of fill-in-the-blank questions
+                items0.forEach(i => { const q = i.q || i.pending; if (q) { q.q = back(q.q); if (q.o) q.o = q.o.map(back); } });
+                return items0.concat(MT.items);
+            }
+            function parse0(text) {
                 let raw = clean(prep(text)).replace(/\r/g, '').split('\n');
                 const L = [];            // {t, blank}
                 let blank = false;
@@ -1833,6 +1942,10 @@ ${G}
                         if (o.length > 4 && a >= 4) { [o[3], o[a]] = [o[a], o[3]]; a = 3; }
                         items.push({ q: withTopic({ t: 'mc', q: qt, o: o.slice(0, 4), a }) });
                     } else if (c.opts.length === 0) {
+                        if (/ZZBLANKZZ/.test(qt) && c.ans !== null) {   // a sentence with a blank and a written answer: the player types it
+                            const al = String(c.ans).split(/\s*(?:\/|;|\bor\b)\s*/i).map(x => strip(x).replace(/[.!]+$/, '').trim()).filter(Boolean);
+                            if (al.length) { ord++; items.push({ q: withTopic(Object.assign({ t: 'fb', q: qt, o: [al[0]], a: 0 }, al.length > 1 ? { alt: al.slice(1) } : {})) }); return; }
+                        }
                         const sp = splitTf(qt); let tq = sp.q, tv = c.ans !== null ? tfVal(c.ans) : null;
                         if (sp.v !== null && tv === null) tv = sp.v;
                         const wasTf = sp.was || sp.v !== null;
@@ -2467,26 +2580,47 @@ ${G}
             if(!open)return `<div class="bg-zinc-950 border border-zinc-800 rounded-lg p-3 flex flex-col items-center justify-center text-center min-h-[118px] opacity-80"><div class="text-2xl text-zinc-600">🔒</div><div class="title-font text-xl font-black text-zinc-600 tracking-widest">???</div><div class="text-[12px] text-zinc-600 mt-1">${lockTxt}</div></div>`;
             return `<div class="bg-zinc-950 border rounded-lg p-3 flex flex-col items-center text-center min-h-[118px]" style="border-color:${col}66;box-shadow:inset 0 0 14px ${col}18"><div class="text-2xl">${icon}</div><div class="title-font text-[11px] font-bold leading-tight mt-1 flex-1 flex items-center" style="color:${col}">${name}</div><div class="text-[12px] text-zinc-500 mt-1">Suffered ${cnt}×</div><button onclick="galPlay(${args})" class="mt-2 w-full bg-emerald-700/80 hover:bg-emerald-600 text-zinc-950 text-[11px] font-bold py-1 rounded title-font">▶ Replay</button></div>`;
         }
+        // ---- the Gallery has two pages you flip between with the arrows: Deaths and Sword-Art Moves ----
+        let GALV='d';
+        const MVI=['🌙','🐉','⚡','🕳️','🔥','🌠','☄️','☀️','🩸','🌪️'];
+        const mvOpen=i=>!!S.seen['mv:'+i];
+        window.galView=function(d){GALV=GALV=='d'?'m':'d';galRender()};
+        function galHead(){
+            const tab=(v,t)=>`<button type="button" onclick="${GALV==v?'':'galView()'}" class="title-font text-xs sm:text-sm font-bold px-3 py-1.5 rounded ${GALV==v?'bg-emerald-600 text-zinc-950':'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}">${t}</button>`;
+            return `<div class="flex items-center justify-center gap-2 pb-1"><button type="button" onclick="galView(-1)" title="Previous page" class="bg-zinc-800 hover:bg-zinc-700 text-emerald-300 font-bold px-3 py-1.5 rounded text-sm">◀</button>${tab('d','💀 Deaths')}${tab('m','⚔️ Moves')}<button type="button" onclick="galView(1)" title="Next page" class="bg-zinc-800 hover:bg-zinc-700 text-emerald-300 font-bold px-3 py-1.5 rounded text-sm">▶</button></div>`}
+        function galMoves(){
+            const nm=SKILLS.filter((k,i)=>mvOpen(i)).length;
+            const cards=SKILLS.map((k,i)=>{const col='rgb('+k.c+')';
+                if(!mvOpen(i))return `<div class="bg-zinc-950 border border-zinc-800 rounded-lg p-3 flex flex-col items-center justify-center text-center min-h-[118px] opacity-80"><div class="text-2xl text-zinc-600">🔒</div><div class="title-font text-xl font-black text-zinc-600 tracking-widest">???</div><div class="text-[12px] text-zinc-600 mt-1">Answer right to unlock</div></div>`;
+                return `<div class="bg-zinc-950 border rounded-lg p-3 flex flex-col items-center text-center min-h-[118px]" style="border-color:${col};box-shadow:inset 0 0 14px rgba(${k.c},.12)"><div class="text-2xl">${MVI[i]}</div><div class="title-font text-[11px] font-bold leading-tight mt-1 flex-1 flex items-center" style="color:${col}">${galTitle(k.n)}</div><div class="text-[12px] text-zinc-500 mt-1">Used ${S.seen['mv:'+i]}×</div><button onclick="galPlay('m','${i}')" class="mt-2 w-full bg-emerald-700/80 hover:bg-emerald-600 text-zinc-950 text-[11px] font-bold py-1 rounded title-font">▶ Replay</button></div>`}).join('');
+            return `<h3 class="title-font text-lg font-bold text-sky-300 border-b border-sky-950 pb-2 flex justify-between items-end"><span>⚔️ Sword-Art Moves</span><span class="text-xs text-zinc-400 font-mono">${nm}/${SKILLS.length} found</span></h3>
+                <p class="text-xs text-zinc-500">Every right answer makes the knight use a sword art. Each new one unlocks here. Tap Replay to watch it again.</p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${cards}</div>`}
         function galRender(){
             const el=$('#t-h');if(!el)return;
             const ns=GN.filter(k=>S.seen[k]).length,ss=GSK.filter(k=>S.seen['s:'+k]).length;
             const nc=GN.map((k,i)=>galCard(!!S.seen[k],GNI[i],galNName(k),DC[+k],S.seen[k],`'n','${k}'`,'Die to unlock')).join('');
             const sc=GSK.map(k=>galCard(!!S.seen['s:'+k],GSI[k],galTitle(SDN[k][0]),SDN[k][1],S.seen['s:'+k],`'s','${k}'`,'Not discovered yet')).join('');
-            el.innerHTML=(SAVED?`<button type="button" onclick="galResume()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-zinc-950 font-bold py-2.5 rounded title-font text-sm shadow-[0_0_10px_rgba(16,185,129,0.4)]">▶ Back to ${SAVED.G?'your run':'where you were'}</button><p class="text-xs text-emerald-400/80 text-center">${SAVED.G?'Your run is paused and safe. ':''}Nothing here counts.</p>`:'')+`<h3 class="title-font text-lg font-bold text-emerald-400 border-b border-emerald-950 pb-2 flex justify-between items-end"><span>💀 Death Gallery</span><span class="text-xs text-zinc-400 font-mono">${ns}/${GN.length} found</span></h3>
+            el.innerHTML=(SAVED?`<button type="button" onclick="galResume()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-zinc-950 font-bold py-2.5 rounded title-font text-sm shadow-[0_0_10px_rgba(16,185,129,0.4)]">▶ Back to ${SAVED.G?'your run':'where you were'}</button><p class="text-xs text-emerald-400/80 text-center">${SAVED.G?'Your run is paused and safe. ':''}Nothing here counts.</p>`:'')+galHead()+(GALV=='m'?galMoves():`<h3 class="title-font text-lg font-bold text-emerald-400 border-b border-emerald-950 pb-2 flex justify-between items-end"><span>💀 Death Gallery</span><span class="text-xs text-zinc-400 font-mono">${ns}/${GN.length} found</span></h3>
                 <p class="text-xs text-zinc-500">Every new way to die unlocks here. Tap Replay to watch it again.</p>
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${nc}</div>
                 <h3 class="title-font text-lg font-bold text-fuchsia-300 border-b border-fuchsia-950 pb-2 pt-3 flex justify-between items-end"><span>🗝️ Secret Deaths</span><span class="text-xs text-zinc-400 font-mono">${ss}/${GSK.length} found</span></h3>
                 <p class="text-xs text-zinc-500">Can you find them all?</p>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${sc}</div>`;
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${sc}</div>`);
         }
         window.galPlay=function(kind,id){
             if(G&&G.gal){G=null;keys={};setTimeout(()=>galPlay(kind,id),80);return}   // a replay is already running: stop it cleanly, then play the new one straight away
             if(G&&!G.gal&&!SAVED)galOpen();   // safety: never let a replay overwrite a live run
-            const d=S.decks.find(x=>x.qs&&x.qs.some(q=>q.t!='mt'))||DEFAULT_DECK,q=rnd(d.qs.filter(q=>q.t!='mt'));
+            const d=S.decks.find(x=>x.qs&&x.qs.some(q=>q.t!='mt'))||DEFAULT_DECK,q=rnd(((d.qs||[]).filter(q=>q.t!='mt')))||{t:'mc',q:'What is 2 + 2?',o:['3','4','5','6'],a:1};   // a deck of only matching questions still gets a plain replay room
             startRun(q);if(!G)return;
             $('#galx').style.display=$('#galprev').style.display=$('#galnext').style.display='block';G.galK=[kind,id];G.hx=200;G.hy=330;G.face=1;
             let label;
-            if(kind=='n'){
+            if(kind=='m'){
+                label=galTitle(SKILLS[+id].n);
+                const ok=G.tg.find(t=>t.ok)||G.tg[0],n=performance.now();
+                G.state='clear';G.last=1;G.ct=0;G.dr=null;G.sel=null;G.kq=0;G.kd=0;G.kf=0;G.lsk=+id;G.face=1;
+                G.sk={t:0,k:SKILLS[+id],tx:ok.x,ty:ok.y};ok.dyAt=n;try{SND.skill(SKILLS[+id].ty,+id,1/KSLOW,false)}catch(_){}
+            }else if(kind=='n'){
                 label=galNName(id);
                 if(id=='16'){const b={x:350,y:WB+9,st:1,t0:performance.now(),kind:'mimic',gone:1,g:0};G.chs.push(b);
                     die(null,16);G.ch=b}
@@ -2501,14 +2635,14 @@ ${G}
                 if(type=='boulder')c.hit={i:1,x:300,ly:SRL[1],v:c.sp[1]};
                 srHurt(c,type);
             }
-            $('#q').textContent='💀 Death Gallery: '+label;
-            const h=$('#respawn-hint');h.textContent='Click anywhere to return to the Death Gallery, or use Prev / Next (← →) to jump to another death...';h.style.display='block';
+            $('#q').textContent=(kind=='m'?'⚔️ Gallery: ':'💀 Gallery: ')+label;
+            const h=$('#respawn-hint');h.textContent=kind=='m'?'Click anywhere to return to the Gallery, or use Prev / Next (← →) to jump to another move...':'Click anywhere to return to the Gallery, or use Prev / Next (← →) to jump to another death...';h.style.display='block';
         };
         function galExit(){if(G)G.galX=1}
         // Jump straight to the previous / next unlocked death while a replay is on screen (one click, no trip back to the list)
         window.galStep=function(dir){
             if(!G||!G.gal||!G.galK)return;
-            const L=GN.filter(k=>S.seen[k]).map(k=>['n',k]).concat(GSK.filter(k=>S.seen['s:'+k]).map(k=>['s',k]));
+            const L=G.galK[0]=='m'?SKILLS.map((k,i)=>String(i)).filter(i=>mvOpen(+i)).map(i=>['m',i]):GN.filter(k=>S.seen[k]).map(k=>['n',k]).concat(GSK.filter(k=>S.seen['s:'+k]).map(k=>['s',k]));
             if(L.length<2)return;
             let i=L.findIndex(x=>x[0]==G.galK[0]&&x[1]==G.galK[1]);i=((i<0?0:i)+dir+L.length)%L.length;
             const nx=L[i];
@@ -2517,6 +2651,7 @@ ${G}
             setTimeout(()=>galPlay(nx[0],nx[1]),80);
         };
         function galDone(){
+            if(G&&G.galK)GALV=G.galK[0]=='m'?'m':'d';   // come back to the page you left
             G=null;$('#run').classList.remove('on');$('#galx').style.display=$('#galprev').style.display=$('#galnext').style.display='none';$('#respawn-hint').style.display='none';$('#respawn-hint').textContent='💀 Click anywhere on screen to respawn...';$('#bc').style.display='none';
             $('#hub').classList.add('on');hub();
             const tb=document.querySelector('.tab-btn[data-t="h"]');if(tb)tb.click();scrollTo(0,0);
@@ -2695,7 +2830,7 @@ ${G}
             chestRaw(c.x,c.y,1,op,0,'gold',now,c.st&&now-c.t0>700);
         }
         // x positions halfway between two neighbouring doors: the free wall space where chests / the secret seam can go
-        function gapXs(){const xs=G.tg.map(t=>t.x).sort((a,b)=>a-b),m=[];for(let i=0;i<xs.length-1;i++)m.push(Math.round((xs[i]+xs[i+1])/2));return m.length?m:[400]}
+        function gapXs(){const xs=[...new Set(G.tg.filter(t=>!t.fl).map(t=>t.x))].sort((a,b)=>a-b),m=[];for(let i=0;i<xs.length-1;i++)m.push(Math.round((xs[i]+xs[i+1])/2));return m.length?m:[400]}
         function mkChests(){
             if(G.rooms[G.i].boss)return[];
             const slots=G.wide?sh(gapXs()):sh([180,350,520]),n=Math.min(slots.length,1+Math.floor(Math.random()*2)),a=[];
@@ -3584,11 +3719,13 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         }
 
         function mkQ(){
-            const r=G.rooms[G.i],q=r.q;G.wide=!r.boss&&q.t!='mt';G.tg=[];G.sel=null;G.state='play';G.dr=null;G.w0=null;G.last=0;
+            const r=G.rooms[G.i],q=r.q;G.wide=!r.boss;G.lm=null;G.tg=[];G.sel=null;G.state='play';G.dr=null;G.w0=null;G.last=0;
             const tag=r.boss?(r.mode=='bonus'?'💎 Bonus ':'🩸 Weakness ')+(r.qi+1)+'/'+r.qs.length+': ':'';
-            $('#q').textContent=tag+(q.t=='mt'?'Strike a term, then its matching gate.':q.q);
+            $('#q').textContent=tag+(q.t=='mt'?'Strike a term, then its match on the floor. Strike the same term again, or a chained one, to unchain. A wrong match kills you.':q.q);
             const X=r.boss?STONE_X:575,PXX=r.boss?STONE_X:700;
-            if(q.t=='mc'||q.t=='fb') {
+            if(q.t=='fb') {   // FILL IN THE BLANK: no doors. One demon guards the way and you TYPE the answer
+                G.tg.push(r.boss?{x:bsx(0),y:bsy(0),l:'✍️ Type your answer',ok:false,k:'f'}:{x:400,px:400,ply:190,y:122,l:'✍️ Type your answer below',ok:false,k:'f'});
+            } else if(q.t=='mc') {
                 let choices = q.o.map((o,i)=>[o,i]);
                 if (choices.length > 5) { const okc = choices.find(c => c[1] == q.a), rest = sh(choices.filter(c => c !== okc)); choices = okc ? [okc, ...rest.slice(0, 3)] : rest.slice(0, 4); }   // never more than 4-5 doors
                 if(r.boss)sh(choices).forEach((p,k)=>G.tg.push({x:bsx(k),y:bsy(k),l:p[0],ok:p[1]==q.a,k:'g',c:k}));
@@ -3596,11 +3733,41 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             } else if(q.t=='tf') {
                 ['TRUE','FALSE'].forEach((l,k)=>G.tg.push(r.boss?{x:bsx(k),y:270,l,ok:(k==0)==q.a,k:'s'}:{x:250+k*300,px:250+k*300,ply:190,y:122,l,ok:(k==0)==q.a,k:'s'}));
             } else {
-                q.pairs.forEach((p,i)=>G.tg.push({x:95+i*170,px:95+i*170,ply:190,y:122,l:p[0],id:i,k:'m'}));
-                sh(q.pairs.map((p,i)=>[p[1],i])).forEach((p,i)=>G.tg.push({x:585,px:705,y:185+i*(q.pairs.length>3?70:90),l:p[0],id:p[1],k:'d'}))
+                const n=q.pairs.length,cx=k=>Math.round(W/n*(k+.5));
+                q.pairs.forEach((p,i)=>G.tg.push({x:cx(i),px:cx(i),ply:190,y:122,l:p[0],id:i,k:'m'}));
+                {let ord=q.pairs.map((p,i)=>[p[1],i]),a=sh(ord),tr=0;while(tr++<6&&a.every((e,i)=>e[1]==i))a=sh(ord);   // never leave the answers in the same order as the terms
+                a.forEach((p,i)=>G.tg.push({x:cx(i),px:cx(i),ply:392,y:392,l:p[0],id:p[1],k:'d',fl:1}))}
             }
             {const cs=sh(Array.from({length:NV},(_,k)=>k));G.tg.forEach((t,i)=>{t.z=i;t.v=cs[i%NV]+dSeed()})}
         }
+
+        // ---------- FILL IN THE BLANK: typed answers ----------
+        const FBN=s=>String(s==null?'':s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim().replace(/^(?:the|a|an)\s+/,'');
+        function fbLev(a,b){const m=a.length,n=b.length,d=[];for(let i=0;i<=m;i++){d[i]=[i];}for(let j=1;j<=n;j++)d[0][j]=j;
+            for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]==b[j-1]?0:1));return d[m][n]}
+        // right if it matches the answer (or an "also accept"), ignoring capitals, accents, punctuation and "the/a/an". One small typo is forgiven on longer words.
+        function fbOk(q,v){const n=FBN(v);if(!n)return false;
+            const sg=x=>x.length>3&&x.endsWith('s')?x.slice(0,-1):x;   // step = steps
+            return [q.o[q.a]].concat(q.alt||[]).some(a=>{const na=FBN(a);if(!na)return false;if(n===na||sg(n)===sg(na))return true;
+                if(!/\s/.test(na)&&n.split(' ').includes(na))return true;   // the answer appears as a word in what you typed ("small steps" is fine for "steps")
+                if(/\d/.test(na)||na.length<4)return false;
+                return fbLev(n,na)<=(na.length>=11?3:na.length>=7?2:1)})}   // typos forgiven from 4 letters up
+        const fbCur=()=>{const r=G&&G.rooms&&G.rooms[G.i];return(r&&r.q&&r.q.t=='fb'&&G.tg&&G.tg.some(t=>t.k=='f'))?r.q:null};
+        function fbSubmit(){
+            if(!G||G.state!='play'||G.gal)return;const q=fbCur(),t=q&&G.tg.find(o=>o.k=='f'),inp=$('#fbin');if(!t||!inp)return;
+            const v=inp.value.trim();if(!v)return;
+            t.l=v;t.ok=fbOk(q,v);hit(t);
+            if(G&&G.state=='play'){t.ok=false;t.l='✍️ Type your answer below';inp.value=''}   // a shield / armour saved you: try again
+        }
+        {const inp=$('#fbin'),go=$('#fbgo');
+            inp.addEventListener('keydown',e=>{e.stopPropagation();if(e.key=='Enter'){e.preventDefault();fbSubmit()}});
+            inp.addEventListener('input',()=>{const t=G&&G.tg&&G.tg.find(o=>o.k=='f');if(t&&G.state=='play')t.l=inp.value.trim()||'✍️ Type your answer below'});
+            go.addEventListener('mousedown',e=>e.stopPropagation());go.addEventListener('click',e=>{e.stopPropagation();fbSubmit();inp.focus()});
+            let on=0;
+            setInterval(()=>{const q=(G&&!G.gal&&G.state=='play'&&!G.paused)?fbCur():null,box=$('#fbbox');
+                if(q&&!on){on=1;box.style.display='flex';inp.value='';try{const an=String(q.o[q.a]||'').trim();inp.placeholder=an?('Hint: starts with "'+an[0].toUpperCase()+'", '+an.replace(/\s/g,'').length+' letters. Type it, then press Enter'):'Type the missing word, then press Enter'}catch(_){}try{inp.focus({preventScroll:true})}catch(_){}}
+                else if(!q&&on){on=0;box.style.display='none';inp.value='';inp.blur()}},80)}
+        addEventListener('keydown',e=>{if(e.key=='Enter'&&!(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))&&G&&G.state=='play'&&fbCur()){try{$('#fbin').focus()}catch(_){}}});   // clicked away from the box? Enter brings it back
 
         // bonus-trial attempts don't count against your grade accuracy
         const counts=()=>{const r=G.rooms[G.i];return !(r.boss&&r.mode=='bonus')};
@@ -3617,12 +3784,23 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         }
         function hit(t){
             if(G.state!='play')return;
-            if(t.k=='m'){G.sel=t;return}
+            if((t.k=='m'||t.k=='d')&&t.done){   // changed your mind: striking a chained term or plate breaks that chain
+                const pr=G.tg.filter(o=>(o.k=='m'||o.k=='d')&&o.id==t.id);
+                if(counts()){G.tries=Math.max(0,G.tries-1);G.right=Math.max(0,G.right-1)}   // the match is taken back, so it no longer counts
+                pr.forEach(o=>o.done=0);
+                const m=pr.find(o=>o.k=='m');if(m)G.fl.push({x:m.px,y:m.ply+46,t:0,txt:'⛓️ unchained'});
+                G.sel=null;G.lm=null;try{SND.sfx('swing')}catch(_){}return}
+            if(t.k=='m'){
+                if(G.sel===t){G.sel=null;G.fl.push({x:t.px,y:t.ply+46,t:0,txt:'⛓️ unchained'});try{SND.sfx('swing')}catch(_){}return}   // first click can be undone: strike the same term again
+                G.sel=t;try{SND.sfx('swing')}catch(_){}return}
             if(t.k=='d'){
-                if(!G.sel)return;
+                if(!G.sel)return;   // no term picked yet (or already chained): the swing does nothing, it can never kill you
+                const sl=G.sel;
                 if(counts())G.tries++;
-                logPick(G.sel.l+' → '+t.l,G.sel.id==t.id);
-                if(G.sel.id==t.id){if(counts())G.right++;G.tg=G.tg.filter(o=>o!=t&&o!=G.sel);G.sel=null;if(!G.tg.length)adv()}else die(t);
+                logPick(sl.l+' → '+t.l,sl.id==t.id);
+                if(sl.id==t.id){if(counts())G.right++;t.done=sl.done=1;G.lm=sl;t.dn0=sl.dn0=performance.now();G.sel=null;try{SND.sfx('chest')}catch(_){}
+                    if(G.tg.every(o=>o.done))adv()}
+                else die(sl);   // the demon whose term you botched does the deed
                 return;
             }
             if(counts())G.tries++;
@@ -3645,6 +3823,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         const ezs=v=>v*v*(3-2*v),clp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
         function startSkill(tx,ty){
             let i;do{i=Math.random()*SKILLS.length|0}while(i===G.lsk&&SKILLS.length>1);G.lsk=i;
+            if(!G.gal){const kk='mv:'+i,n0=S.seen[kk]||0;S.seen[kk]=n0+1;save();if(!n0){try{SND.sfx('ding')}catch(_){}toast('🔓 Move unlocked: '+galTitle(SKILLS[i].n))}}
             G.sk={t:0,k:SKILLS[i],tx,ty};SND.skill(SKILLS[i].ty,i,1/KSLOW,G.rooms[G.i].boss);   // adv() puts the fight into slow-motion right after this, so stretch the sound to matchG.face=tx>=G.hx?1:-1;
         }
         // mounted sword art: the mount rears up and lunges with its own strike while the knight swings
@@ -3712,7 +3891,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
 
         function adv(){
             trackStat('p');
-            const n=performance.now(),ok=G.tg.find(t=>t.ok),r=G.rooms[G.i];
+            const n=performance.now(),ok=G.tg.find(t=>t.ok)||(G.rooms[G.i].q&&G.rooms[G.i].q.t=='mt'?G.lm:null),r=G.rooms[G.i];
             if(r.boss){
                 // right answer: the stone shatters, the Demon Lord flinches, next question (or he falls)
                 if(ok)ok.dyAt=n;G.tg.forEach(t=>{if(!t.ok)t.fz=n});
@@ -3782,7 +3961,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             G.state='dying';
             G.kt=t||null;G.hv=null;G.zv=null;G.ba=null;G.dn=dname||null;G.ch=null;G.dk=fk!=null?fk:GAL_DK!=null?GAL_DK:(()=>{const q=Math.random()*29|0;return q==28?29:q==27?28:q==26?27:q==25?26:q==24?25:q==23?24:q==16?17:q==17?18:q==18?19:q==19?20:q==20?21:q==21?22:q==22?23:q})();if(G.dk==2&&!G.kt&&!r.boss)G.dk=Math.random()<.5?0:1;
             // ARMOUR RESIST: the equipped armour has a % chance to survive the kinds of death it is built for (wrong-answer deaths only)
-            if(fk==null&&_st0=='play'&&!G.gal&&GAL_DK==null&&typeof armorResist=='function'){const am=armorResist(G.dk);if(am){G.state=_st0;G.deaths--;if(!r.boss&&r.q)G.mq.set(r.q,Math.max(0,(G.mq.get(r.q)||1)-1));G.dk=null;G.kt=null;toast(am);G.sel=null;if(t&&t.k!='m'&&t.k!='d')G.tg=G.tg.filter(o=>o!=t);if(typeof shopBar=='function')shopBar();return}}G.dt=0;G.dx=r.boss?Math.min(G.hx,700):Math.min(G.hx,290);if(fk!=null)G.dx=Math.min(G.hx,470);if(G.dk==17||G.dk==24||G.dk==25||G.dk==26)G.dx=r.boss?400:257;   // the horde needs room on BOTH sides of him
+            if(fk==null&&_st0=='play'&&!G.gal&&GAL_DK==null&&typeof armorResist=='function'){const am=armorResist(G.dk);if(am){G.state=_st0;G.deaths--;if(!r.boss&&r.q)G.mq.set(r.q,Math.max(0,(G.mq.get(r.q)||1)-1));G.dk=null;G.kt=null;toast(am);G.sel=null;if(t&&t.k!='m'&&t.k!='d'&&t.k!='f')G.tg=G.tg.filter(o=>o!=t);if(typeof shopBar=='function')shopBar();return}}G.dt=0;G.dx=r.boss?Math.min(G.hx,700):Math.min(G.hx,290);if(fk!=null)G.dx=Math.min(G.hx,470);if(G.dk==17||G.dk==24||G.dk==25||G.dk==26)G.dx=r.boss?400:257;   // the horde needs room on BOTH sides of him
                 {const sp=openSpot(r,G.dx);G.dx=sp.x;G.dy=sp.y}G.ew=G.kt?Math.max(.4,(G.kt.x-(G.dx+55))/260):1;G.sk=Math.random()*4|0;G.ss=Math.random()*100;G.sp=[0,0,0].map(()=>Math.random()*23|0);
             const DP=DT[G.dk]||TAUNTS;G.sel=null;G.tt=r.boss?(Math.random()<.7?rnd(DP):rnd(bossTaunts(r))):rnd(DP);
             G.lt=(fk!=null&&!r.boss&&G.tg&&G.tg.length)?rnd(G.tg):null;   // died to a chest: one of the demons laughs
@@ -3813,7 +3992,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 b.textContent='▶ Resume (P)';if(h)h.textContent='Paused. Press P or Resume to continue...';
             }else{
                 G.paused=0;G.t0+=performance.now()-G.pz0;   // the run timer does not count the pause
-                b.textContent='⏸ Pause (P)';if(h)h.textContent=G.gal?'Click anywhere to return to the Death Gallery, or use Prev / Next (← →) to jump to another death...':'Click anywhere on screen to respawn...';
+                b.textContent='⏸ Pause (P)';if(h)h.textContent=G.gal?'Click anywhere to return to the Gallery, or use Prev / Next (← →) to jump to another death...':'Click anywhere on screen to respawn...';
             }
         }
         // replay the death: restart the whole cutscene from its first frame (also un-pauses it)
@@ -3872,11 +4051,12 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             $('#respawn-hint').style.display='none';
         }
 
+        // which answer a swing would hit. Matching: floor answers only count once a term is picked, and you must be right on top of them
+        function pickTg(){let b=null,bd=180;G.tg.forEach(t=>{if(t.k=='f')return;if(t.k=='d'&&!t.done&&!G.sel)return;const d=Math.hypot(t.x-G.hx,t.y-G.hy);if(d<bd&&(t.k!='d'||d<125)){bd=d;b=t}});return[b,bd]}
         function atk(){
             if(G.state!='play'||G.cd>0)return;
             G.cd=.4;G.sw=.3;G.face=1;SND.sfx('swing');
-            let b=null,bd=180;
-            G.tg.forEach(t=>{const d=Math.hypot(t.x-G.hx,t.y-G.hy);if(d<bd){bd=d;b=t}});
+            const _pk=pickTg(),b=_pk[0];let bd=_pk[1];
             // a chest only wins if it is clearly the NEAREST thing: under a door you answer that door, by a chest you open it
             let cb=null,cd=95;(G.chs||[]).forEach(c=>{if(c.st||c.gone)return;const d=Math.hypot(c.x-G.hx,c.y-G.hy);if(d<cd){cd=d;cb=c}});
             if(cb&&cd<bd-8){openChest(cb);if(G.state=='play')breakNear();return}
@@ -3888,8 +4068,10 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         }
 
         addEventListener('keydown',e=>{
+            {const tt=e.target;if(tt&&/^(INPUT|TEXTAREA|SELECT)$/.test(tt.tagName)&&!e.isGameKey)return}   // typing in a text box (space, J, WASD, arrows...) is never game input
             keys[e.code]=1;
             if(!G)return;
+            if(e.code=='Escape'&&G.state=='play'&&G.sel&&!G.gal){G.sel=null;G.fl.push({x:G.hx,y:G.hy-90,t:0,txt:'⛓️ unchained'});return}   // Esc drops the term you picked
             if(G.kr&&(e.code=='Escape'||e.code=='Space'||e.code=='Enter'||e.code=='KeyJ')){G.kr=null;return}
             if(G.state=='choose'){if(e.code=='Digit1'||e.code=='Numpad1')pickTrial('weak');if(e.code=='Digit2'||e.code=='Numpad2')pickTrial('bonus');return}
             if(G.state=='endchoice'){if(e.code=='Digit1'||e.code=='Numpad1')pickEnding('good');if(e.code=='Digit2'||e.code=='Numpad2')pickEnding('bad');return}
@@ -3897,7 +4079,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if((G.state=='clear'||G.state=='bclear')&&e.code=='KeyR'){killReplay();return}
             if((G.state=='dying'||G.state=='secretDie')&&e.code=='KeyR'){replayDeath();return}
             if(G.mvrep&&(e.code=='Escape'||e.code=='Space'||e.code=='Enter'||e.code=='KeyJ')){G.mvrep=null;return}
-            if(G.gal&&(G.state=='dying'||G.state=='secretDie')&&!G.paused&&(e.code=='ArrowLeft'||e.code=='ArrowRight')){e.preventDefault();galStep(e.code=='ArrowRight'?1:-1);return}
+            if(G.gal&&(G.state=='dying'||G.state=='secretDie'||(G.galK&&G.galK[0]=='m'))&&!G.paused&&(e.code=='ArrowLeft'||e.code=='ArrowRight')){e.preventDefault();galStep(e.code=='ArrowRight'?1:-1);return}
             if((G.state=='dying'||G.state=='secretDie')&&G.paused)return;
             if(G.state=='dying' && (e.code=='Space'||e.code=='Enter'||e.code=='KeyJ')) { triggerRespawn(); return; }
             if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
@@ -3909,6 +4091,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         addEventListener('mousedown',e=>{if(G&&G.state=='dying'&&!G.paused&&e.target!==cv&&!(e.target.closest&&e.target.closest('#pz,#rp,#galink,#skipbtn'))){if(G.mvrep)G.mvrep=null;else triggerRespawn()}});
         cv.addEventListener('mousedown',e => {
             if(G&&G.kr){G.kr=null;return}
+            if(G&&G.gal&&G.galK&&G.galK[0]=='m'){galExit();return}
             if(G && G.state=='dying') { if(G.mvrep){G.mvrep=null;return}if(!G.paused)triggerRespawn(); return; }
             if(G && G.state=='win' && G.wt>WT.skip) { endRun(); return; }
             if(!G)return;
@@ -3971,7 +4154,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(G.sk&&(G.sk.t+=(s=='clear'||s=='bclear'?dt*KSLOW:dt))>1.3)G.sk=null;
             if(s=='clear'){
                 G.ct+=dt*KSLOW;const c=G.ct,d=G.dr;
-                if(G.last){if(c>1.5)winStart()}
+                if(G.last){if(G.galK&&G.galK[0]=='m'){if(c>2.5){const k=G.galK;G=null;keys={};setTimeout(()=>galPlay(k[0],k[1]),80);return}}else if(c>1.5)winStart()}
                 else{
                     if(c>=1.1&&c<2.6){const p=Math.min(1,(c-1.1)/1.1),e=p*p*(3-2*p);if(!G.w0)G.w0=[G.hx,G.hy];G.hx=G.w0[0]+(d.x-G.w0[0])*e;G.hy=G.w0[1]+(d.y+8-G.w0[1])*e;G.face=1;G.moving=1}else G.moving=0;
                     G.ka=1-Math.max(0,Math.min(1,(c-2.2)/.5));
@@ -5446,14 +5629,40 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
 
         const PLC=[['#be123c','#fb7185'],['#6d28d9','#c4b5fd'],['#b45309','#fcd34d'],['#0369a1','#7dd3fc'],['#047857','#6ee7b7'],['#a21caf','#f0abfc']];
         function plate(t){
-            const x=(t.px??t.x)-85, y=(t.ply??t.y)-25, c=PLC[Math.max(0,G.tg.indexOf(t))%PLC.length];
+            const x=(t.px??t.x)-85, y=(t.ply??t.y)-25, c=(t.k=='m'||t.k=='d')?((t.k=='m'||t.done)?PLC[t.id%PLC.length]:['#1e293b','#94a3b8']):PLC[Math.max(0,G.tg.indexOf(t))%PLC.length];
             const g=ctx.createLinearGradient(0,y,0,y+50);g.addColorStop(0,c[0]);g.addColorStop(1,'rgba(0,0,0,.55)');
             R(c[0],x,y,170,50);ctx.fillStyle=g;ctx.fillRect(x,y,170,50);
             ctx.fillStyle='rgba(255,255,255,.18)';ctx.fillRect(x,y,170,3);
             ctx.strokeStyle=G.sel==t?'#ffffff':c[1];ctx.lineWidth=G.sel==t?4:2.5;ctx.strokeRect(x,y,170,50);
+            if(t.k=='m'||t.k=='d'){const ry=t.k=='m'?y+50:y;ctx.beginPath();ctx.arc(x+85,ry,5,0,7);ctx.fillStyle='#0b0f1a';ctx.fill();ctx.lineWidth=2.5;ctx.strokeStyle=c[1];ctx.stroke()}   // chain anchor
             ctx.textAlign='center';ctx.font='bold 12px sans-serif';ctx.lineJoin='round';
             const ls=wrap(t.l,158);
             ls.forEach((s,i)=>{const tx=x+85,ty=y+20-(ls.length-1)*6+i*13+4;ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.55)';ctx.strokeText(s,tx,ty);ctx.fillStyle='#fff';ctx.fillText(s,tx,ty)});
+        }
+
+        // ---- matching: coloured chains. Each term owns a colour; a correct match chains its term to the answer in that colour ----
+        function mtLink(x1,y1,x2,y2,col,sag,a,now){
+            const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy),n=Math.max(3,Math.round(L/12)),ang=Math.atan2(dy,dx);
+            ctx.save();ctx.globalAlpha*=a;ctx.lineJoin='round';
+            for(let i=0;i<=n;i++){const u=i/n,x=x1+dx*u,y=y1+dy*u+Math.sin(u*Math.PI)*sag,fl=i%2;
+                ctx.save();ctx.translate(x,y);ctx.rotate(ang);
+                ctx.beginPath();ctx.ellipse(0,0,fl?4:8,fl?2.5:4.5,0,0,7);
+                ctx.lineWidth=5;ctx.strokeStyle='rgba(0,0,0,.7)';ctx.stroke();
+                ctx.lineWidth=3;ctx.strokeStyle=col;ctx.stroke();
+                ctx.lineWidth=1;ctx.strokeStyle='rgba(255,255,255,.55)';ctx.stroke();ctx.restore()}
+            ctx.restore()}
+        function mtChains(now){
+            if(!G.tg||G.rooms[G.i].boss)return;
+            const ms=G.tg.filter(t=>t.k=='m');if(!ms.length)return;
+            ms.forEach(m=>{if(!m.done)return;const d=G.tg.find(o=>o.k=='d'&&o.id==m.id&&o.done);if(!d)return;
+                const c=PLC[m.id%PLC.length][1],a=G.state=='clear'?Math.max(0,1-(G.ct||0)*1.2):1;
+                mtLink(m.px,m.ply+25,d.px,d.ply-25,c,10,a,now);
+                const k=Math.min(1,(now-(m.dn0||0))/350);if(k<1){ctx.save();ctx.globalCompositeOperation='lighter';ctx.fillStyle='rgba(255,255,255,'+(.5*(1-k))+')';ctx.beginPath();ctx.arc(d.px,d.ply,20+40*k,0,7);ctx.fill();ctx.restore()}});
+            if(G.state=='play'){
+                const sl=G.sel;
+                if(sl){mtLink(sl.px,sl.ply+25,G.hx,G.hy-38,PLC[sl.id%PLC.length][1],14+4*Math.sin(now/120),.9,now)}   // the chain you are dragging to the answer
+                const b=pickTg()[0];
+                if(b){const pu=.6+.4*Math.sin(now/130),x=(b.px??b.x)-85-5,y=(b.ply??b.y)-25-5;ctx.save();ctx.strokeStyle='rgba(255,255,255,'+pu+')';ctx.lineWidth=3;ctx.shadowColor=(b.done||b===G.sel)?'#ff9a3c':'#22e6ff';ctx.shadowBlur=18;ctx.strokeRect(x,y,180,60);ctx.restore()}}   // glow on the plate your sword will strike
         }
 
         const SZ=[.85,.9,.95,.88];
@@ -5569,6 +5778,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             ctx.restore();
         }
         function mon(t,now,skip){
+            if(t.fl){ctx.save();if(G.state=='clear')ctx.globalAlpha=Math.max(0,1-(G.ct||0)*1.5);plate(t);ctx.restore();return}   // floor answer plate: no demon
             const x=t.x,fy=t.y+24,v=t.v||0,sc=SZ[(t.z||0)%4];
             let n=Math.floor(now/150+v*2)%6,dead=0,u=0;
             if(t.dyAt!=null){u=(now-t.dyAt)/1000;if(u>=0){dead=1;n=6+Math.min(21,Math.floor(u*16))}}
@@ -5942,8 +6152,9 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 // glowing marker on the stone your sword will strike (same pick as atk())
                 if(G.state=='play'){let b=null,bd=180;G.tg.forEach(t=>{const d=Math.hypot(t.x-G.hx,t.y-G.hy);if(d<bd){bd=d;b=t}});
                     if(b){const pu=.6+.4*Math.sin(now/130),x=(b.px??b.x)-85-5,y=b.y-25-5;ctx.save();ctx.strokeStyle='rgba(255,255,255,'+pu+')';ctx.lineWidth=3;ctx.shadowColor='#22e6ff';ctx.shadowBlur=18;ctx.strokeRect(x,y,180,60);ctx.restore()}}}
-            else{ts.forEach(t=>door(t,now));if(G.dr&&G.dr.fake)door(G.dr,now);
-                ts.forEach(t=>mon(t,now,G.state=='dying'&&t===G.kt&&(walkKill()||lifeKill()||(G.cast&&G.dt<G.cast))))}
+            else{ts.forEach(t=>{if(!t.fl)door(t,now)});if(G.dr&&G.dr.fake)door(G.dr,now);
+                ts.forEach(t=>mon(t,now,G.state=='dying'&&t===G.kt&&(walkKill()||lifeKill()||(G.cast&&G.dt<G.cast))));
+                try{mtChains(now)}catch(_){}}
 
             if(G.state=='dying'){
                 if(G.cast&&G.dt<G.cast&&(G.kt||G.bs))castDraw(now);
@@ -6023,7 +6234,9 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                     ${pr.length<4?`<button onclick="edPAdd(${i})" class="text-xs text-emerald-400 hover:text-emerald-300">+ Add pair</button>`:''}
                     <div class="text-[12px] text-zinc-500">2 to 4 term → match pairs.</div></div>`}
                 let body;
-                if(q.t=='tf')body=`<div class="flex gap-5 text-xs text-zinc-300"><label class="flex items-center gap-2"><input type="radio" name="a${i}" ${q.a===true?'checked':''} onchange="edA(${i},true)" class="accent-emerald-600"> TRUE is correct</label><label class="flex items-center gap-2"><input type="radio" name="a${i}" ${q.a===false?'checked':''} onchange="edA(${i},false)" class="accent-emerald-600"> FALSE is correct</label></div>`;
+                if(q.t=='fb'){if(q.o.length!=1){q.o=[String(q.o[q.a]||q.o[0]||'')];q.a=0}
+                    body=`<div class="text-[12px] text-zinc-400">Main answer: ONE answer only, no commas</div><input type="text" value="${esc(q.o[0])}" placeholder="The word the player types, e.g. Paris" oninput="edO(${i},0,this.value)" class="${INP}"><div class="text-[12px] text-zinc-400">Also accept (optional): other answers that count as correct, separated by commas</div><input type="text" value="${esc((q.alt||[]).join(', '))}" placeholder="Other correct answers, e.g. City of Light, Paris France" oninput="edAlt(${i},this.value)" class="${INP}"><div class="text-[12px] text-zinc-500">Put ____ in the sentence where the blank goes. The player types the missing word. Capitals, accents and small typos are forgiven.</div>`}
+                else if(q.t=='tf')body=`<div class="flex gap-5 text-xs text-zinc-300"><label class="flex items-center gap-2"><input type="radio" name="a${i}" ${q.a===true?'checked':''} onchange="edA(${i},true)" class="accent-emerald-600"> TRUE is correct</label><label class="flex items-center gap-2"><input type="radio" name="a${i}" ${q.a===false?'checked':''} onchange="edA(${i},false)" class="accent-emerald-600"> FALSE is correct</label></div>`;
                 else body=q.o.map((o,k)=>`<div class="flex items-center gap-2"><input type="radio" name="a${i}" ${q.a===k?'checked':''} onchange="edA(${i},${k})" title="Mark as the correct answer" class="accent-emerald-600"><input type="text" value="${esc(o)}" placeholder="Answer ${k+1}" oninput="edO(${i},${k},this.value)" class="${INP}">${q.o.length>2?`<button onclick="edRm(${i},${k})" class="text-zinc-500 hover:text-red-400 px-1" title="Remove answer">✕</button>`:''}</div>`).join('')+(q.o.length<4?`<button onclick="edAddO(${i})" class="text-xs text-emerald-400 hover:text-emerald-300">+ Add answer</button>`:'')+`<div class="text-[12px] text-zinc-500">${q.t=='fb'?'Type ____ where the blank goes. Tick the circle next to the word that fills it.':'Tick the circle next to the correct answer.'}</div>`;
                 return `<div class="bg-zinc-950 border border-emerald-950 rounded p-3 space-y-2">
                     <div class="flex items-center justify-between gap-2"><span class="title-font text-xs font-bold text-emerald-400">Question ${i+1}</span>
@@ -6040,13 +6253,14 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         window.edT=(i,v)=>{ED.qs[i].topic=v};
         window.edO=(i,k,v)=>{ED.qs[i].o[k]=v};
         window.edA=(i,v)=>{ED.qs[i].a=v};
+        window.edAlt=(i,v)=>{ED.qs[i].alt=v.split(',').map(x=>x.trim()).filter(Boolean)};
         window.edDel=i=>{ED.qs.splice(i,1);edRender()};
         window.edRm=(i,k)=>{const q=ED.qs[i];q.o.splice(k,1);if(q.a===k)q.a=0;else if(q.a>k)q.a--;edRender()};
         window.edAddO=i=>{ED.qs[i].o.push('');edRender()};
-        window.edType=(i,t)=>{const q=ED.qs[i];if(t=='tf'){q.t='tf';q.o=['True','False'];q.a=true}else if(t=='mt'){q.t='mt';q.pairs=[['',''],['','']];q.q=q.q||'Matching'}else{q.t=t;q.o=['','','',''];q.a=0}edRender()};
+        window.edType=(i,t)=>{const q=ED.qs[i];if(t=='tf'){q.t='tf';q.o=['True','False'];q.a=true}else if(t=='mt'){q.t='mt';q.pairs=[['',''],['','']];q.q=q.q||'Matching'}else if(t=='fb'){const old=(q.t=='mc'&&q.o&&q.o[q.a])||'';q.t='fb';q.o=[old];q.a=0;q.alt=[]}else{q.t=t;q.o=['','','',''];q.a=0}edRender()};
         $('#ed-add-mc').onclick=()=>{ED.qs.push({t:'mc',q:'',o:['','','',''],a:0});edRender();const l=$('#ed-qs').lastElementChild;if(l)l.scrollIntoView({block:'center'})};
         $('#ed-add-tf').onclick=()=>{ED.qs.push({t:'tf',q:'',o:['True','False'],a:true});edRender();const l=$('#ed-qs').lastElementChild;if(l)l.scrollIntoView({block:'center'})};
-        $('#ed-add-fb').onclick=()=>{ED.qs.push({t:'fb',q:'',o:['','','',''],a:0});edRender();const l=$('#ed-qs').lastElementChild;if(l)l.scrollIntoView({block:'center'})};
+        $('#ed-add-fb').onclick=()=>{ED.qs.push({t:'fb',q:'',o:[''],a:0,alt:[]});edRender();const l=$('#ed-qs').lastElementChild;if(l)l.scrollIntoView({block:'center'})};
         $('#ed-add-mt').onclick=()=>{ED.qs.push({t:'mt',q:'Matching',pairs:[['',''],['','']]});edRender();const l=$('#ed-qs').lastElementChild;if(l)l.scrollIntoView({block:'center'})};
         $('#ed-x').onclick=$('#ed-cancel').onclick=edClose;
         addEventListener('keydown',e=>{if(e.code=='Escape'&&ED)edClose()});
@@ -6063,6 +6277,9 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 const text=(q.q||'').trim();if(!text)return err('Question '+(i+1)+' has no text.');
                 const tpc=(q.topic||'').trim(),TP=tpc?{topic:tpc}:{};
                 if(q.t=='tf'){out.push(Object.assign({t:'tf',q:text,o:['True','False'],a:q.a===true},TP));continue}
+                if(q.t=='fb'){const ans=String((q.o&&q.o[0])||'').trim();if(!ans)return err('Question '+(i+1)+': type the correct answer for the blank.');
+                    const alt=(q.alt||[]).map(x=>String(x).trim()).filter(Boolean);
+                    out.push(Object.assign({t:'fb',q:/_{2,}/.test(text)?text:text+' ____',o:[ans],a:0},alt.length?{alt}:{},TP));continue}
                 const o=[];let a=-1;
                 q.o.forEach((v,k)=>{const t=(v||'').trim();if(t){if(k===q.a)a=o.length;o.push(t)}});
                 if(o.length<2)return err('Question '+(i+1)+' needs at least 2 answers.');
@@ -6324,7 +6541,7 @@ setInterval(shopBar,300);
 addEventListener('keydown',e=>{if(e.repeat||e.ctrlKey||e.metaKey||e.altKey)return;const k=BAR_HOT[e.code];if(!k||!G||G.gal||G.state!='play')return;if(shopS().inv[k]>0)useItem(k)});
 function useItem(k){if(!G||G.state!='play'||G.gal)return;const h=shopS(),tg=G.tg||[],plain=tg.length&&tg.every(t=>t.k!='m'&&t.k!='d'&&t.ok!==undefined);
  if(!plain){toast('Can\'t use that on this kind of question.');return}
- if(k=='key'){if(G.keyUsed){toast('Only one Answer Key per run.');return}const t=tg.find(o=>o.ok);if(!t)return;G.keyUsed=1;h.inv.key--;save();toast('🗝️ The forbidden key opens the way!');hit(t);return}
+ if(k=='key'){if(G.keyUsed){toast('Only one Answer Key per run.');return}const t=tg.find(o=>o.ok||o.k=='f');if(!t)return;G.keyUsed=1;h.inv.key--;save();toast('🗝️ The forbidden key opens the way!');if(t.k=='f'){const fq=G.rooms[G.i].q;t.l=String(fq.o[fq.a]);t.ok=1}hit(t);return}
  const n=k=='orb'?1:2,wr=tg.filter(t=>!t.ok);if(wr.length<2){toast('Nothing left to cross out.');return}
  const rm=wr.sort(()=>Math.random()-.5).slice(0,Math.min(n,wr.length-1));G.tg=tg.filter(t=>!rm.includes(t));h.inv[k]--;save();
  toast(k=='orb'?'🔮 The princess whispers: "not that one..."':'😈 "Fine, I\'ll help. Pathetic, knight."');shopBar()}
@@ -6332,7 +6549,7 @@ function useItem(k){if(!G||G.state!='play'||G.gal)return;const h=shopS(),tg=G.tg
 const _die=die;die=function(t,fk,dn){if(G&&!G.gal&&G.state=='play'){const h=shopS();let m=null;
  if(fk==null&&h.inv.phx>0){h.inv.phx--;m='🪽 Phoenix Wing shielded you. You never died!'}
  else if(h.inv.shield>0){h.inv.shield--;m='🛡️ Iron Shield absorbed it!'}
- if(m){save();toast(m);G.sel=null;if(fk==null&&t&&t.k!='m'&&t.k!='d')G.tg=G.tg.filter(o=>o!=t);shopBar();return}}
+ if(m){save();toast(m);G.sel=null;if(fk==null&&t&&t.k!='m'&&t.k!='d'&&t.k!='f')G.tg=G.tg.filter(o=>o!=t);shopBar();return}}
  return _die.apply(this,arguments)};
 
 /* ===== ITEM ANIMATIONS: orb, favour, phoenix, shield, key (drawn on a see-through overlay canvas, only runs while an effect is playing) ===== */
@@ -7560,14 +7777,30 @@ const SPX=(()=>{
 const _spxDraw=draw;draw=function(now){_spxDraw(now);try{SPX.render()}catch(e){}};
 
 /* ---------------- using an ability ---------------- */
-const plainQ=()=>{const tg=G.tg||[];return tg.length&&tg.every(t=>t.k!='m'&&t.k!='d'&&t.ok!==undefined)};
+const plainQ=()=>{const tg=G.tg||[];return tg.length&&tg.every(t=>t.k!='m'&&t.k!='d'&&t.k!='f'&&t.ok!==undefined)};
 const canUse=()=>!!(G&&!G.gal&&G.state=='play'&&q('#run')&&q('#run').classList.contains('on'));
 function useAbility(){
  if(!canUse())return;
  const k=shopS().eq.pet,a=AB[k];
  if(!k||!a){toast('Equip a pet in the Armory to use its special ability.');return}
  if(G.abUsed){const u=AB[G.abUsed];toast('✨ You already used '+(u?u.n:'an ability')+' this run. It is one ability per run, even if you swap pets.');return}
- if(!plainQ()){toast('Can\'t use that on this kind of question.');return}
+ if(!plainQ()){
+  const rq=G.rooms&&G.rooms[G.i]&&G.rooms[G.i].q,tg0=G.tg||[];
+  if(rq&&rq.t=='fb'&&tg0.some(t=>t.k=='f')){   // FILL IN THE BLANK: the pet whispers the answer into the box (you still press Enter / Strike)
+   const inp=q('#fbin'),ans=String(rq.o[rq.a]||'');if(!inp||!ans){toast('Nothing to reveal here.');return}
+   G.abUsed=k;inp.value=ans;try{inp.focus();inp.select()}catch(e){}
+   const f=tg0.find(t=>t.k=='f');G.fl&&f&&G.fl.push({x:f.x,y:f.y+60,t:0,txt:a.ic+' '+a.n+'!'});
+   toast(a.ic+' '+a.n+'! Your pet whispered the answer. Press Enter to strike.');try{SND.sfx('ding')}catch(e){}
+   bump(()=>{ST().ab[k]=1});sync();return}
+  if(rq&&rq.t=='mt'&&tg0.some(t=>t.k=='m')){   // MATCHING: the pet chains every pair except one, which is left for you
+   const open=tg0.filter(t=>t.k=='m'&&!t.done);
+   if(open.length<2){toast('Only one pair is left, finish it yourself.');return}
+   const keep=open[Math.random()*open.length|0],now=performance.now();
+   open.forEach(m=>{if(m===keep)return;const d=tg0.find(o=>o.k=='d'&&o.id==m.id);m.done=1;if(d){d.done=1;d.dn0=now}m.dn0=now;G.fl&&G.fl.push({x:m.px,y:m.ply+46,t:0,txt:a.ic+' chained'})});
+   G.sel=null;G.abUsed=k;
+   toast(a.ic+' '+a.n+'! Your pet matched all the pairs but one. Finish the last one.');try{SND.sfx('chest')}catch(e){}
+   bump(()=>{ST().ab[k]=1});sync();return}
+  toast('Can\'t use that on this kind of question.');return}
  const tg=G.tg||[],wrong=tg.filter(t=>!t.ok),right=tg.find(t=>t.ok);
  if(!wrong.length){toast('No wrong demons left to destroy.');return}
  const g0=G;G.abUsed=k;G.abBusy=1;   // abBusy: wrong demons can't be picked while the show plays
