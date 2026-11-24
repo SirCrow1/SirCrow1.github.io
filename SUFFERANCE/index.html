@@ -6528,7 +6528,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             ctx.restore()
         }
         // ---------- KILL REPLAY: after the knight finishes killing, the sword art plays again in slow motion ----------
-        const KSLOW=.45;    // the fight (and every sword art) runs at 45% speed: lower = slower
+        const KSLOW=.36;    // the fight (and every sword art) runs at 36% speed: lower = slower
         const KRSP=.5;      // the replay runs at half speed
         const RPW=512,RPH=288,RPN=84,RPPRE=14;   // 84 recorded frames (30/s), a little run-up before the kill is included
         const rpPool=[];let rpAcc=0;
