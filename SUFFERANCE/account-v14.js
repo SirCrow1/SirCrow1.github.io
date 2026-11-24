@@ -862,7 +862,7 @@ function buildTele(){
 
 // ---------- start ----------
 function start(){
-  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);window.SUFF_SB=sb;window.SUFF_claimGold=claimGold;   // used by wager-v1.js
   buildUI();buildExtra();buildTele();
   setInterval(()=>{if(roleName!=='unknown'||profile.code)syncStats()},90000);
   setInterval(()=>cloudSave(true),60000);
