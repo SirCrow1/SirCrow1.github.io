@@ -69,7 +69,7 @@ function buildUI(){
           <div style="font-weight:bold;color:#facc15;margin-bottom:6px">🛠️ Admin tools</div>
           <button id="adm-unlock" class="acct-b" style="background:#7c3aed;margin:0 6px 6px 0">Unlock all shop items</button>
           <button id="adm-stock" class="acct-b" style="background:#0e7490;margin:0 6px 6px 0">Stock all run items (x99)</button>
-          <button id="adm-deaths" class="acct-b" style="background:#991b1b;margin:0 6px 6px 0">Unlock all deaths</button>
+          <button id="adm-deaths" class="acct-b" style="background:#991b1b;margin:0 6px 6px 0">Unlock all deaths &amp; moves</button>
           <button id="adm-pets" class="acct-b" style="background:#be185d;margin:0 6px 6px 0">Max pet bonds</button>
           <button id="adm-spam" class="acct-b" style="background:#4338ca;margin:0 6px 6px 0">Unlimited abilities: OFF</button>
           <button id="adm-reset" class="acct-b" style="background:#450a0a;margin:0 6px 6px 0">Reset my save</button>
@@ -107,7 +107,8 @@ function buildUI(){
     const gn=typeof GN!=='undefined'?GN:[...Array(30).keys()].map(String);
     const gs=typeof GSK!=='undefined'?GSK:['spike','axe','boulder','lava','ghost','fire','dart','gas','ice','fall'];
     S.seen=S.seen||{};for(const k of gn)S.seen[k]=S.seen[k]||1;for(const k of gs)S.seen['s:'+k]=S.seen['s:'+k]||1;
-  },'All deaths unlocked in the Death Gallery');
+    const mn=typeof SKILLS!=='undefined'?SKILLS.length:10;for(let i=0;i<mn;i++)S.seen['mv:'+i]=S.seen['mv:'+i]||1;
+  },'All deaths and moves unlocked in the Gallery');
   $('#adm-give').onclick=()=>giveGold(1);
   $('#adm-take').onclick=()=>giveGold(-1);
   for(const id of ['#adm-target','#adm-amt']){$(id).addEventListener('keydown',e=>e.stopPropagation());$(id).addEventListener('keyup',e=>e.stopPropagation())}
@@ -292,16 +293,16 @@ let myId=null,admTab='players',spamT=null;
 
 function badgeCount(){
   const st=S.st||{},b=S.badges||{};
-  const seenN=Object.keys(S.seen||{}).filter(k=>S.seen[k]).length;
+  const seenN=countSeen(deathKeys()),moveN=countSeen(MOVEKEYS());
   const lairN=Object.keys(st.lairs||{}).filter(k=>+k>=6&&+k<=25).length;
   const items=['orb','fav','shield','phx','key'].every(k=>st.items&&st.items[k]);
   let bond=false;try{bond=!!(window.PBOND&&window.PBOND.top()>=10)}catch(e){}
-  return [seenN>=deathKeys().length,!!st.adr,!!st.nd,!!st.sp,(st.bs||0)>=10,!!st.pm,!!st.ng,!!(b.good&&b.bad),lairN>=20,bond,items,!!st.fr].filter(Boolean).length;
+  return [seenN>=deathKeys().length,moveN>=MOVEKEYS().length,!!st.adr,!!st.nd,!!st.sp,(st.bs||0)>=10,!!st.pm,!!st.ng,!!(b.good&&b.bad),lairN>=20,bond,items,!!st.fr].filter(Boolean).length;
 }
 function statsBlob(){
   const h=S.shop||{},own=h.own||{},eq=h.eq||{};
   const cnt=p=>Object.keys(own).filter(k=>k.startsWith(p)&&own[k]).length;
-  return {gold:S.gold|0,deaths:Object.keys(S.seen||{}).filter(k=>S.seen[k]).length,deathsMax:deathKeys().length,badges:badgeCount(),badgesMax:12,
+  return {gold:S.gold|0,deaths:countSeen(deathKeys()),deathsMax:deathKeys().length,badges:badgeCount(),badgesMax:13,
     pets:cnt('pet'),skins:cnt('skin'),blades:cnt('wpn'),daily:(S.dly&&S.dly.b)||0,eq:{pet:eq.pet||null,skin:eq.skin||null,blade:eq.wpn||null}};
 }
 async function syncStats(){
@@ -493,13 +494,17 @@ async function admClick(e){
 }
 
 // ================= v9: give / take items, pets, treats, badges, deaths =================
-const BADGES=[['dall','🏅 Collector (all deaths seen)'],['drun','🏅 Doomed'],['nd','🏅 Untouchable'],['sp','🏅 Blitz'],['bs','🏅 Inferno'],['pm','🏅 Flawless'],['ng','🏅 Relentless'],['two','🏅 Duality (both endings)'],['lair','🏅 Wanderer'],['bond','🏅 Soulbound'],['item','🏅 Alchemist'],['prun','🏅 Conqueror']];
-const CATS=[['item','🛡️ Run items (shield, orb, key…)'],['treat','🍖 Pet treats (food)'],['pet','🐾 Pets & mounts (1 each)'],['skin','🧥 Armor skins'],['blade','🗡️ Blades'],['death','💀 Deaths (gallery)'],['badge','🏅 Badges'],['tool','🧰 Tools (unlock shop, max bonds, unlimited abilities, reset save)']];
+const BADGES=[['dall','🏅 Collector (all deaths seen)'],['mall','🏅 Swordmaster (all moves seen)'],['drun','🏅 Doomed'],['nd','🏅 Untouchable'],['sp','🏅 Blitz'],['bs','🏅 Inferno'],['pm','🏅 Flawless'],['ng','🏅 Relentless'],['two','🏅 Duality (both endings)'],['lair','🏅 Wanderer'],['bond','🏅 Soulbound'],['item','🏅 Alchemist'],['prun','🏅 Conqueror']];
+const CATS=[['item','🛡️ Run items (shield, orb, key…)'],['treat','🍖 Pet treats (food)'],['pet','🐾 Pets & mounts (1 each)'],['skin','🧥 Armor skins'],['blade','🗡️ Blades'],['death','💀 Deaths & moves (gallery)'],['badge','🏅 Badges'],['tool','🧰 Tools (unlock shop, max bonds, unlimited abilities, reset save)']];
 const MAINDEATHS=()=>typeof GN!=='undefined'?GN:[...Array(30).keys()].map(String);
 const SECRETS=()=>typeof GSK!=='undefined'?GSK:['spike','axe','boulder','lava','ghost','fire','dart','gas','ice','fall'];
 const deathKeys=()=>MAINDEATHS().concat(SECRETS().map(k=>'s:'+k));
+const MOVEKEYS=()=>[...Array(typeof SKILLS!=='undefined'?SKILLS.length:10).keys()].map(i=>'mv:'+i);
+const galKeys=()=>deathKeys().concat(MOVEKEYS());
+const countSeen=keys=>keys.filter(k=>(S.seen||{})[k]).length;
 function deathName(k){
   try{
+    if(String(k).startsWith('mv:')){const i=+k.slice(3);return '⚔️ Move: '+((typeof SKILLS!=='undefined'&&SKILLS[i]&&typeof galTitle==='function')?galTitle(SKILLS[i].n):'#'+(i+1))}
     if(String(k).startsWith('s:')){const sk=k.slice(2);return '🔒 Secret: '+((typeof SDN!=='undefined'&&SDN[sk]&&SDN[sk][0])||sk)}
     return typeof galNName==='function'?galNName(k):'Death #'+(+k+1);
   }catch(e){return String(k)}
@@ -510,14 +515,15 @@ function optList(c){
   if(c==='treat'||c==='pet')return Object.entries(PETS).map(([k,v])=>[k,v.n]);
   if(c==='skin')return Object.entries(SKINS).map(([k,v])=>[k,v.n]);
   if(c==='blade')return Object.entries(WPNS).map(([k,v])=>[k,v.n]);
-  if(c==='death')return deathKeys().map(k=>[k,deathName(k)]);
+  if(c==='death')return galKeys().map(k=>[k,deathName(k)]);
   if(c==='badge')return BADGES;
   return [];
 }
 function applyBadge(id,d){
   const on=d>0,st=S.st=S.st||{};
   switch(id){
-    case 'dall':S.seen=S.seen||{};if(on){for(const k of deathKeys())S.seen[k]=S.seen[k]||1}else S.seen={};break;
+    case 'dall':S.seen=S.seen||{};for(const k of deathKeys()){if(on)S.seen[k]=S.seen[k]||1;else delete S.seen[k]}break;
+    case 'mall':S.seen=S.seen||{};for(const k of MOVEKEYS()){if(on)S.seen[k]=S.seen[k]||1;else delete S.seen[k]}break;
     case 'drun':st.adr=on?1:0;st.bdk=on?Math.max(st.bdk||0,deathKeys().length):0;break;
     case 'nd':st.nd=on?1:0;break;
     case 'sp':st.sp=on?1:0;st.bsp=on?Math.min(st.bsp||12,12):0;break;
@@ -572,7 +578,7 @@ async function viewPlayer(name){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">`
     +box('🪙 Gold',has(st.gold)?Number(st.gold).toLocaleString():null)+box('🧩 Puzzles solved',data.solved)
     +box('🔥 Best streak',data.streak)+box('⚔️ Runs',data.runs)
-    +box('🏅 Badges',has(st.badges)?st.badges+' / '+(st.badgesMax||12):null)+box('💀 Deaths seen',has(st.deaths)?st.deaths+' / '+(st.deathsMax||40):null)
+    +box('🏅 Badges',has(st.badges)?st.badges+' / '+(st.badgesMax||13):null)+box('💀 Deaths seen',has(st.deaths)?st.deaths+' / '+(st.deathsMax||40):null)
     +box('🐾 Pets owned',st.pets)+box('🧥 Skins owned',st.skins)+box('🗡️ Blades owned',st.blades)+box('📅 Best daily streak',st.daily)
     +`</div>`+(eqTxt?`<div style="font-size:12px;color:#a1a1aa;margin-top:8px">Equipped: ${esc(eqTxt)}</div>`:'');
   if(isAdmin){
@@ -771,7 +777,7 @@ async function pfSelect(name){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
       ${pfBox('🪙 Gold',num(st.gold))}${pfBox('⚔️ Runs',num(data.runs))}
       ${pfBox('🧩 Puzzles solved',num(data.solved))}${pfBox('🔥 Best streak',num(data.streak))}
-      ${pfBox('🏅 Achievements',has(st.badges)?st.badges+' / '+(st.badgesMax||12):null)}${pfBox('💀 Deaths seen',has(st.deaths)?st.deaths+' / '+(st.deathsMax||40):null)}
+      ${pfBox('🏅 Achievements',has(st.badges)?st.badges+' / '+(st.badgesMax||13):null)}${pfBox('💀 Deaths seen',has(st.deaths)?st.deaths+' / '+(st.deathsMax||40):null)}
     </div>
     ${synced?'':'<div style="margin-top:10px;font-size:12px;color:#fbbf24">⏳ This player has not synced gold, pet, weapon and armor yet. Their numbers appear after they open the game once with the latest version.</div>'}
     <div style="color:#facc15;font-weight:bold;margin:12px 0 6px;font-size:13px">Loadout</div>
