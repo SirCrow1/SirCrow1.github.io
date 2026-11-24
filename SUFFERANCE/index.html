@@ -3974,9 +3974,10 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
  path=pts=>{ctx.beginPath();pts.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]))},
  // solid armour plate: gradient fill, carved hatch texture, glowing rim
  pl=(pts,c0,c1)=>{let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;pts.forEach(q=>{x0=Math.min(x0,q[0]);x1=Math.max(x1,q[0]);y0=Math.min(y0,q[1]);y1=Math.max(y1,q[1])});
-  ctx.save();path(pts);ctx.closePath();ctx.fillStyle=rg(x0,y0,x1,y1+1,c0||'#4e4e52',c1||'#0a0a0e');ctx.fill();ctx.clip();
-  const hh=y1-y0,st=Math.max(4,5*s);ctx.lineWidth=1;ctx.strokeStyle='rgba(2,2,6,.5)';ctx.beginPath();for(let k=x0-hh;k<x1;k+=st){ctx.moveTo(k,y1);ctx.lineTo(k+hh,y0)}ctx.stroke();
-  ctx.strokeStyle='rgba(143,143,147,.26)';ctx.beginPath();for(let k=x0-hh+st/2;k<x1;k+=st*2){ctx.moveTo(k,y1);ctx.lineTo(k+hh,y0)}ctx.stroke();ctx.restore();
+  ctx.save();path(pts);ctx.closePath();ctx.fillStyle=rg(0,y0,0,y1+1,c0||'#4e4e52',c1||'#0a0a0e');ctx.fill();ctx.clip();
+  const hh=y1-y0,st=Math.max(4,5*s),cxm=(x0+x1)/2,dr=Math.abs(cxm-X)<3*s?0:(cxm<X?-1:1),hl=k=>{ctx.moveTo(dr<0?k+hh:k,y1);ctx.lineTo(dr>0?k+hh:dr<0?k:k,y0)};   // hatch leans away from the centre line, so left and right plates mirror each other
+  ctx.lineWidth=1;ctx.strokeStyle='rgba(2,2,6,.5)';ctx.beginPath();for(let k=x0-hh;k<x1;k+=st)hl(k);ctx.stroke();
+  ctx.strokeStyle='rgba(143,143,147,.26)';ctx.beginPath();for(let k=x0-hh+st/2;k<x1;k+=st*2)hl(k);ctx.stroke();ctx.restore();
   path(pts);ctx.closePath();ctx.lineJoin='round';ctx.lineWidth=1.8;ctx.strokeStyle=E;ctx.stroke()},
  // solid round limb / bone: dark outline, body, lit core, specular
  tube=(pts,w,c)=>{c=c||[D,'#26262a','#4f4f53','#89898d'];ctx.lineCap='round';ctx.lineJoin='round';[1,.78,.5,.16].forEach((m,i)=>{ctx.lineWidth=w*m;ctx.strokeStyle=c[i];path(pts);ctx.stroke()})},
@@ -4005,15 +4006,16 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
  // ROBE / skirt, flowing into the flames
  pl(P(-46,24, 46,24, 76,122, 38,138, 0,120, -38,138, -76,122),'#26262a','#050509');
  for(let i=-2;i<=2;i++)tube([...P(i*14,40, i*20,90, i*26,128)],3*s,['#050509','#16161a','#3d3d41','#656569']);
- // CHEST: solid dark cavity, then thick bone ribs over it, spine, sternum
- pl(P(-54,-62, 54,-62, 48,-8, 28,26, -28,26, -48,-8),'#1a1a1e','#040408');
- tube(P(0,-66, 0,74),9*s,BONE);
- for(let i=0;i<7;i++){ctx.fillStyle='#919195';ctx.strokeStyle=D;ctx.lineWidth=1.2;ctx.beginPath();ctx.ellipse(X,cy+(-56+i*14)*s,8*s,3.6*s,0,0,4);ctx.fill();ctx.stroke()}
- for(let i=0;i<5;i++)for(const d of[-1,1]){const y0=-50+i*15,W=48-i*5,pts=[];for(let k=0;k<=6;k++){const t=k/6;pts.push([X+d*W*Math.sin(t*1.5)*s,cy+(y0+22*t*t-7*Math.sin(t*3.14))*s])}tube(pts,7.5*s,BONE)}
- pl(P(-7,-58, 7,-58, 6,-8, 0,6, -6,-8),'#858589','#2b2b2f');
+ // CHEST: a symmetrical plate cuirass - steel breastplate, centre ridge, lamellar chevron bands, rivets, a glowing core and a row of side spikes
+ pl(P(-54,-62, 54,-62, 52,-14, 30,26, -30,26, -52,-14),'#6b7380','#1a1c22');
+ for(let i=0;i<4;i++){const w=50-i*5,y=-52+i*18;pl(P(-w,y, 0,y+10, w,y, w,y+8, 0,y+19, -w,y+8),i%2?'#59606b':'#7b838e','#1d2026');
+  for(const d of[-1,1]){ctx.fillStyle='#d6dce3';ctx.beginPath();ctx.arc(X+d*(w-7)*s,cy+(y+5)*s,1.8*s,0,7);ctx.fill()}}
+ tube(P(0,-62, 0,24),7*s,[D,'#3a3d44','#8a929a','#e6edf3']);
+ for(const d of[-1,1])for(let i=0;i<3;i++){const y=-34+i*20,x=48-i*5;pl(P(d*x,y-7, d*(x+22),y+2, d*x,y+9),'#b4bcc5','#2a2e35')}
+ LT();glow(X,cy-26*s,16*s,'255,40,60',.9);SO();pl(P(-6,-32, 0,-40, 6,-32, 0,-20),'#ff5a64','#5a0a14');
  // sash + tassets
  pl(P(-56,22, 56,22, 54,42, -54,42),'#49494d','#151519');pl(P(-9,24, 9,24, 12,50, 0,58, -12,50),'#757579','#26262a');
- for(const d of[-1,1]){pl(P(d*8,44, d*60,40, d*56,92, d*16,86),'#444448','#09090d');pl(P(d*16,90, d*58,96, d*50,128, d*22,122),'#39393d','#07070b')}
+ for(const d of[-1,1]){pl(P(d*8,44, d*60,40, d*56,92, d*16,86),'#444448','#09090d');pl(P(d*16,90, d*58,96, d*50,128, d*22,122),'#39393d','#07070b');pl(P(d*56,44, d*80,56, d*56,70),'#b4bcc5','#2a2e35');pl(P(d*52,94, d*74,108, d*50,118),'#b4bcc5','#2a2e35')}
  // OFF ARM holding a katana
  tube(P(od*72,-48, od*100,2, od*88,56),14*s);pl(P(od*72,18, od*106,16, od*102,54, od*74,56),'#57575b','#0d0d11');
  ctx.fillStyle='#3d3d41';ctx.strokeStyle=E;ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(X+od*88*s,cy+62*s,12*s,0,7);ctx.fill();ctx.stroke();
@@ -4023,20 +4025,29 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
   pl([ps(26,-6),ps(168,-5),ps(184,-1),ps(164,5),ps(26,6)],'#e9e9ed','#36363a');ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(ps(30,4)[0],ps(30,4)[1]);ctx.lineTo(ps(176,1)[0],ps(176,1)[1]);ctx.stroke()}
  // PAULDRONS: three stacked plates + swept spikes each side, gorget between
  for(const d of[-1,1]){pl(P(d*40,-68, d*98,-82, d*114,-56, d*84,-40, d*44,-46),'#5d5d61','#0d0d11');pl(P(d*44,-46, d*84,-40, d*106,-20, d*76,-8, d*46,-22),'#4e4e52','#0a0a0e');pl(P(d*46,-22, d*76,-8, d*92,12, d*64,20, d*44,4),'#39393d','#07070b');
-  pl(P(d*96,-80, d*124,-126, d*110,-66),'#757579','#151519');pl(P(d*104,-56, d*140,-84, d*116,-40),'#757579','#151519')}
+  pl(P(d*96,-80, d*124,-126, d*110,-66),'#b4bcc5','#2a2e35');pl(P(d*104,-56, d*146,-84, d*116,-40),'#b4bcc5','#2a2e35');pl(P(d*104,-30, d*142,-30, d*106,-10),'#b4bcc5','#2a2e35');pl(P(d*52,-70, d*62,-120, d*80,-72),'#b4bcc5','#2a2e35')}
  pl(P(-32,-66, 32,-66, 22,-44, -22,-44),'#69696d','#151519');
- // HEAD: flame crest, bone skull, brow plate, hollow glowing eyes, third eye, toothy jaw
- for(let k=-3;k<=3;k++)pl(Hp(k*9-7,-12, k*17+Math.sin(now/200+k)*3,-58-(4-Math.abs(k))*8, k*9+7,-12),'#313135','#07070b');
- ctx.beginPath();ctx.ellipse(X,cy-104*s,32*s,36*s,0,0,4);ctx.fillStyle=rg(0,cy-140*s,0,cy-68*s,'#919195','#36363a');ctx.fill();ctx.lineWidth=1.8;ctx.strokeStyle=E;ctx.stroke();
- pl(Hp(-28,-8, 28,-8, 22,4, -22,4),'#1d1d21','#050509');
- poly(Hp(-24,0,-6,2,-12,15),'#010105');poly(Hp(24,0,6,6,6,10),'#010105');poly(Hp(0,12,-10,10,14,23),'#010105');
- pl(Hp(-23,23, 23,23, 15,43, 0,50, -15,43),'#858589','#2b2b2f');
- for(let k=-3;k<=3;k++)poly(Hp(k*6-2.4,23, k*6+2.4,23, k*6,32),'#f6eeff');
- LT();for(const d of[-1,1])glow(X+d*12*s,cy-98*s,12*s,'255,35,55',.95);glow(X,cy-114*s,7*s,'255,60,70',.9);SO();
+ // HEAD: the KNIGHT's steel great-helm, built mirror-symmetrical: red plume, swept horns, domed crown, brow band, T-visor with glowing eyes, riveted cheek guards
+ {const fk=Math.sin(now/170)*4,St=['#b4bcc5','#2a2e35'];
+  for(const d of[-1,1])pl(Hp(d*18,-30, d*34,-40, d*50,-58, d*62,-84, d*46,-62, d*30,-50, d*14,-42),St[0],St[1]);
+  pl(Hp(-18,-30, -14,-56+fk, -6,-76+fk, 0,-98+fk*1.5, 6,-76+fk, 14,-56+fk, 18,-30),'#e0283a','#5a0a14');pl(Hp(-8,-30, -5,-56+fk, 0,-84+fk*1.3, 5,-56+fk, 8,-30),'#ff8a8a','#a3242b');
+  pl(Hp(-28,-8, -27,-26, -16,-38, 0,-43, 16,-38, 27,-26, 28,-8, 27,22, 19,38, 0,47, -19,38, -27,22),'#9aa2ab','#2f343b');
+  tube(Hp(0,-42, 0,-8),5*s,[D,'#3b4048','#8a929a','#e6edf3']);
+  pl(Hp(-29,-9, 29,-9, 29,2, -29,2),'#4a4f59','#1b1e24');
+  for(const k of[-24,-12,12,24]){ctx.fillStyle='#d6dce3';ctx.beginPath();ctx.arc(X+k*s,cy-107.5*s,1.7*s,0,7);ctx.fill()}
+  poly(Hp(-23,-4, 23,-4, 23,6, -23,6),'#020206');poly(Hp(-3,6, 3,6, 3,34, -3,34),'#020206');
+  for(const d of[-1,1]){for(let i=0;i<4;i++)poly(Hp(d*9-2,13+i*7, d*9+2,13+i*7, d*9+2,16+i*7, d*9-2,16+i*7),'#020206');
+   pl(Hp(d*28,2, d*8,8, d*10,38, d*21,31),'#6b7380','#1d2026');
+   for(let i=0;i<3;i++){ctx.fillStyle='#d6dce3';ctx.beginPath();ctx.arc(X+d*(19-i*2)*s,cy+(-94+i*9)*s,1.5*s,0,7);ctx.fill()}}
+  pl(Hp(-12,38, 12,38, 0,52),'#7a828c','#2a2e35');
+  LT();for(const d of[-1,1])glow(X+d*13*s,cy-103*s,12*s,'255,35,55',.95);SO();
+  for(const d of[-1,1])poly(Hp(d*8,-3, d*18,-3, d*18,3, d*8,3),'#ffd6d6')}
  // THROWING ARM: bent upper arm, forearm up, open palm with fingers
  tube([[X+F*66*s,cy-50*s],[X+F*106*s,cy-58*s],[hdx,hdy+6*s]],14*s);pl([[hdx-13*s,hdy+8*s],[hdx+13*s,hdy+8*s],[hdx+11*s,hdy+36*s],[hdx-11*s,hdy+36*s]],'#57575b','#0d0d11');
  pl([[hdx-12*s,hdy+8*s],[hdx+12*s,hdy+8*s],[hdx+13*s,hdy-8*s],[hdx-13*s,hdy-8*s]],'#4e4e52','#151519');
  for(let k=-2;k<=2;k++){if(!k)continue;poly([[hdx+k*6*s-3*s,hdy-8*s],[hdx+k*8*s,hdy-28*s],[hdx+k*6*s+3*s,hdy-8*s]],'#69696d',E,1.4)}
+ for(const[ex,ey,o]of[[X+F*106*s,cy-58*s,F],[X+od*100*s,cy+2*s,od]]){poly([[ex,ey-11*s],[ex+o*34*s,ey-6*s],[ex,ey+9*s]],'#b4bcc5',E,1.4);poly([[ex-o*4*s,ey-9*s],[ex+o*4*s,ey-34*s],[ex+o*10*s,ey-9*s]],'#b4bcc5',E,1.4)}   // elbow cops: the same pair of spikes on both arms
+ {const fx=X+od*88*s,fy=cy+62*s;for(const j of[-1,0,1])poly([[fx+od*10*s,fy+j*8*s-4*s],[fx+od*26*s,fy+j*10*s],[fx+od*10*s,fy+j*8*s+4*s]],'#b4bcc5',E,1.2)}
  ctx.restore();
  LT();glow(X,cy-18*s,34*s,'255,30,50',.5*al);glow(X,cy-104*s,46*s,'255,30,50',.3*al);
  for(let j=0;j<22;j++){const u=(now/900+hz(j,1))%1;ctx.fillStyle='rgba(255,60,70,'+.8*al*(1-u)+')';ctx.fillRect(X+(hz(j,2)-.5)*190*s,cy+80*s-u*230,3,3)}}
