@@ -104,10 +104,9 @@ function buildUI(){
   $('#adm-unlock').onclick=()=>admin(()=>applyTool('shopall',1),'Everything in the shop unlocked');
   $('#adm-stock').onclick=()=>admin(()=>{const h=shopS();for(const k in SHOP_ITEMS)h.inv[k]=99},'All run items stocked');
   $('#adm-deaths').onclick=()=>admin(()=>{
-    const gn=typeof GN!=='undefined'?GN:[...Array(30).keys()].map(String);
-    const gs=typeof GSK!=='undefined'?GSK:['spike','axe','boulder','lava','ghost','fire','dart','gas','ice','fall'];
-    S.seen=S.seen||{};for(const k of gn)S.seen[k]=S.seen[k]||1;for(const k of gs)S.seen['s:'+k]=S.seen['s:'+k]||1;
-    const mn=typeof SKILLS!=='undefined'?SKILLS.length:10;for(let i=0;i<mn;i++)S.seen['mv:'+i]=S.seen['mv:'+i]||1;
+    S.seen=S.seen||{};
+    for(const k of galKeys())S.seen[k]=S.seen[k]||1;   // every death, secret death and move (mv:0..)
+    if(typeof galRender==='function'){try{galRender()}catch(e){}}
   },'All deaths and moves unlocked in the Gallery');
   $('#adm-give').onclick=()=>giveGold(1);
   $('#adm-take').onclick=()=>giveGold(-1);
