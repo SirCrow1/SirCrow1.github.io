@@ -77,6 +77,8 @@ function init(){
   const acct=$('#acctbtn'),b=document.createElement('button');
   b.id='wgbtn';b.type='button';b.textContent='⚔️ Wagers';b.className=acct.className;
   acct.parentNode.insertBefore(b,acct);
+  const w=document.createElement('button');w.id='wgduel';w.type='button';w.textContent='🥊 Wager Duel';w.className=acct.className;
+  acct.parentNode.insertBefore(w,acct);w.addEventListener('click',()=>{tab='duel';open()});
   document.body.insertAdjacentHTML('beforeend',STYLE+MODAL);
   modal=$('#wg-modal');
   b.addEventListener('click',open);
@@ -234,11 +236,11 @@ async function duelHome(){
   if(r.mine){startDuel(r.mine);return}
   D=null;
   const open=(r.open||[]).map(d=>`<div class="wg-card"><b>${esc(d.who)}</b> · ${esc(d.title)} ${d.invited?'<span class="wg-s" style="color:#fcd34d">invited you</span>':''}
-    <div style="font-size:12px;color:#a1a1aa">${d.n} questions · ${d.secs}s each · winner takes 🪙${d.stake*2}</div>
+    <div style="font-size:12px;color:#a1a1aa">${d.n} questions · ${d.secs}s each · winner takes 🪙${d.stake*2}</div>${gearLine(d.gear,d.bonus)}
     <button class="wg-b wg-g" style="margin-top:5px" data-act="djoin" data-id="${d.id}" data-stake="${d.stake}">⚔️ Fight! (🪙${d.stake})</button></div>`).join('')||'<div style="color:#71717a;font-size:13px">No open duels right now. Host one!</div>';
   view(`<div style="display:flex;justify-content:space-between"><b style="color:#fcd34d">Open duels</b><button class="wg-b wg-z" data-act="refresh">↻ Refresh</button></div>${open}
    <b style="color:#fcd34d;display:block;margin-top:14px">Host a duel</b>
-   <div style="font-size:12px;color:#a1a1aa">Both players answer the same questions. Every right answer casts one of 30 moves at the other player (the faster right answer gets +5). 100 HP each, winner takes the whole pot.</div>
+   <div style="font-size:12px;color:#a1a1aa">Both players answer the same questions. Every right answer casts one of 30 moves at the other player (the faster right answer gets +5). 100 HP each, winner takes the whole pot. <b style="color:#c4b5fd">Your own gear counts:</b> blade = extra damage, armour = less damage taken, pet = heals you every round. You are wearing: ${esc([gn('WPNS',gearNow().wpn),gn('SKINS',gearNow().skin),gn('PETS',gearNow().pet)].filter(Boolean).join(', ')||'nothing')}.</div>
    <label class="wg-lb">DECK</label><select id="dd-deck" class="wg-in">${deckOpts()}</select>
    <label class="wg-lb">QUESTION TYPES</label><div>${typeBoxes('dd-t')}</div>
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -258,7 +260,7 @@ async function createDuel(){
   if(stake>(S.gold|0))return say("You don't have 🪙"+stake+'.');
   const qs=shuffle(pool(deck,types)).slice(0,Math.max(3,Math.min(30,n)));
   if(qs.length<3)return say('Need at least 3 usable questions in that deck.');
-  busy=true;
+  busy=true;await syncGear();
   const r=await rpc('duel_create',{p_title:deck.name.slice(0,40),p_questions:qs,p_stake:stake,p_secs:secs,p_invite:inv});
   busy=false;
   if(r==null)return;
@@ -267,7 +269,7 @@ async function createDuel(){
 async function joinDuel(id,stake){
   if(busy)return;
   if(stake>(S.gold|0))return say('You need 🪙'+stake+' to join.');
-  busy=true;const r=await rpc('duel_join',{p_id:id});busy=false;
+  busy=true;await syncGear();const r=await rpc('duel_join',{p_id:id});busy=false;
   if(r==='ok'){setGold(-stake);startDuel(id)}else if(r){say(errMsg(r));duelHome()}
 }
 function startDuel(id){
@@ -291,6 +293,17 @@ function tickDuel(){
   const t=$('#dtm');if(!t||!D||D.over)return;
   t.textContent='⏱ '+Math.max(0,(D.deadline-performance.now())/1000).toFixed(1)+'s';
 }
+// ---------- own gear (pet / armour / blade) ----------
+const gn=(T,k)=>{try{return (k&&window.eval(T)[k]||{}).n||''}catch(e){return ''}};
+const gearNow=()=>{const e=(typeof S!=='undefined'&&S.shop&&S.shop.eq)||{};return e};
+async function syncGear(){const e=gearNow();await rpc('duel_set_gear',{p_pet:e.pet||null,p_skin:e.skin||null,p_blade:e.wpn||null},true)}
+function gearLine(g,b){
+  if(!g||!b)return '';const p=[];
+  if(b[0])p.push((gn('WPNS',g.blade)||'Blade')+' +'+b[0]+' dmg');
+  if(b[1])p.push((gn('SKINS',g.skin)||'Armour')+' -'+b[1]+' taken');
+  if(b[2])p.push((gn('PETS',g.pet)||'Pet')+' +'+b[2]+' HP/round');
+  return p.length?'<div style="font-size:11px;color:#c4b5fd">'+p.map(esc).join(' · ')+'</div>':'<div style="font-size:11px;color:#71717a">no gear equipped</div>';
+}
 const mv=x=>MOVES[x.mv-1]||['???',0];
 function logLine(e,me,opN){
   const a=e['p'+me],b=e['p'+(3-me)];
@@ -313,8 +326,8 @@ function renderDuel(st){
   }
   if(!D.built){
     view(`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div><div style="font-weight:700;color:#86efac">${esc(myN)} (you)</div><div class="wg-bar"><i id="dhb1" style="width:100%;background:#22c55e"></i></div><div id="dht1" style="font-size:12px">100/100</div></div>
-      <div><div style="font-weight:700;color:#fca5a5">${esc(opN)}</div><div class="wg-bar"><i id="dhb2" style="width:100%;background:#ef4444"></i></div><div id="dht2" style="font-size:12px">100/100</div></div></div>
+      <div><div style="font-weight:700;color:#86efac">${esc(myN)} (you)</div><div class="wg-bar"><i id="dhb1" style="width:100%;background:#22c55e"></i></div><div id="dht1" style="font-size:12px">100/100</div>${gearLine(st['g'+me],st['b'+me])}</div>
+      <div><div style="font-weight:700;color:#fca5a5">${esc(opN)}</div><div class="wg-bar"><i id="dhb2" style="width:100%;background:#ef4444"></i></div><div id="dht2" style="font-size:12px">100/100</div>${gearLine(st['g'+opp],st['b'+opp])}</div></div>
       <div style="display:flex;justify-content:space-between;font-size:12px;color:#a1a1aa;margin-top:8px"><span id="dinfo"></span><span id="dtm" style="color:#fcd34d;font-weight:700"></span></div>
       <div id="dq"></div><div id="dst" style="font-size:12px;color:#a1a1aa;min-height:16px;margin-top:6px"></div>
       <div id="df" class="wg-feed" style="margin-top:8px"></div>
