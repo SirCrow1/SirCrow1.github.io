@@ -86,7 +86,6 @@ function init(){
 
   document.body.insertAdjacentHTML('beforeend',STYLE+MODAL);
   modal=$('#wg-modal');
-  b.addEventListener('click',open);
   $('#wg-x').addEventListener('click',close);
   ['mousedown','keydown','keyup','keypress'].forEach(ev=>modal.addEventListener(ev,e=>e.stopPropagation()));
   modal.addEventListener('click',onClick);
@@ -399,9 +398,16 @@ async function onClick(e){
   else if(a==='dback'){D=null;go('duel')}
 }
 
+// the big menu button works even before init has finished (delegated, so it never misses)
+document.addEventListener('click',e=>{
+  const t=e.target&&e.target.closest&&e.target.closest('#wgnav');if(!t)return;
+  e.preventDefault();
+  if(!modal){say(window.SUFF_SB?'⏳ Wagers are still starting up, try again in a second.':'⚠️ Wagers need the account system: make sure account-v14.js loads (Profile tab), then refresh.');return}
+  open();
+});
 // ---------- boot: wait for account-v14.js to create the Supabase client ----------
 const wait=setInterval(()=>{
-  if(window.SUFF_SB&&document.querySelector('#acctbtn')&&typeof S!=='undefined'&&typeof save==='function'){
+  if(window.SUFF_SB&&(document.querySelector('#wgnav')||document.querySelector('#acctbtn'))&&typeof S!=='undefined'&&typeof save==='function'){
     clearInterval(wait);try{init()}catch(e){console.error('wager init',e)}
   }
 },500);
