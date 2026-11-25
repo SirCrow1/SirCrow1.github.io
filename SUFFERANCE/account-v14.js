@@ -299,7 +299,9 @@ function badgeFlags(){
   return [seenN>=deathKeys().length,moveN>=MOVEKEYS().length,!!st.adr,!!st.nd,!!st.sp,(st.bs||0)>=10,!!st.pm,!!st.ng,!!(b.good&&b.bad),lairN>=20,bond,items,!!st.fr];
 }
 function badgeCount(){return badgeFlags().filter(Boolean).length}
-function achKeys(){try{const f=badgeFlags();return ACH.filter((a,i)=>f[i]).map(a=>a[0])}catch(e){return []}}
+function achKeys(){let k=[];try{const f=badgeFlags();k=ACH.filter((a,i)=>f[i]).map(a=>a[0])}catch(e){}
+  try{if(window.myAchList)k=k.concat(window.myAchList().filter(a=>a.done).map(a=>a.id))}catch(e){}   // animal, mount and streak achievements
+  return k}
 function statsBlob(){
   const h=S.shop||{},own=h.own||{},eq=h.eq||{};
   const cnt=p=>Object.keys(own).filter(k=>k.startsWith(p)&&own[k]).length;
@@ -839,7 +841,8 @@ const ACH=[
 ];
 function pfAch(keys){
   const have=Array.isArray(keys)?keys:[];
-  const out=ACH.filter(a=>have.includes(a[0])).map(a=>
+  let extra=[];try{extra=(window.myAchList?window.myAchList():[]).map(a=>[a.id,a.e,a.name])}catch(e){}
+  const out=ACH.concat(extra).filter(a=>have.includes(a[0])).map(a=>
     `<span title="${esc(a[2])} — achievement" aria-label="${esc(a[2])}" style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;font-size:11px;line-height:1;border:1px solid #a16207;background:#facc1526;border-radius:5px;cursor:help">${a[1]}</span>`).join('');
   return out?`<div style="margin:0 0 10px;display:flex;flex-wrap:wrap;gap:4px">${out}</div>`:'';
 }

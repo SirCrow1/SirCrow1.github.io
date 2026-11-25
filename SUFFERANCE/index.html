@@ -8766,6 +8766,9 @@ function bump(fn){try{if(fn)fn()}catch(e){}
  try{const s=ST(),ak=s.ak||(s.ak={});myBadges().forEach(b=>{if(b.done&&!ak[b.id]){ak[b.id]=1;toast('🏅 Achievement unlocked: '+b.name+'!');try{SND.sfx('ding')}catch(e){}if(G&&!G.gal)(G.newB||(G.newB=[])).push(b.name)}})}catch(e){}
  save()}
 {const s=ST();if(!s.ak){s.ak={};myBadges().forEach(b=>{if(b.done)s.ak[b.id]=1});save()}}
+// let the profile (account-v14.js) see the animal / mount / streak achievements, so they show as tiny chips too
+window.myAchList=function(){try{const E={saddle:'🐴',cav:'🏇',long:'🛤️',stab:'🐎',mena:'🦁',pow:'✨',arse:'🌟',s3:'🔥',s7:'🔥',s30:'🔥'};
+ return myBadges().map(b=>({id:b.id,name:b.name,done:!!b.done,e:b.id.startsWith('pa_')?((PETS[b.id.slice(3)].n.match(/^\S+/)||['🐾'])[0]):(E[b.id]||'🏅')}))}catch(e){return[]}};
 {const m=q('#armory-shop');if(m)m.addEventListener('click',()=>{try{bump()}catch(e){}})}   // buying animals can finish a collecting achievement
 
 /* ---------------- DAILY STREAK + REWARDS ---------------- */
@@ -8918,7 +8921,7 @@ const _sr=shopRender;shopRender=function(){const r=_sr.apply(this,arguments);try
 })();
 </script>
 
-<script src="account-v14.js?v=17"></script>
+<script src="account-v14.js?v=18"></script>
 <script src="wager-v1.js?v=4"></script>
 </body>
 </html>
