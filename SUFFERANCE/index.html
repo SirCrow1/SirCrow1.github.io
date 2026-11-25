@@ -1299,7 +1299,8 @@ sync();
                         <input type="hidden" id="model" value="gemini-3-flash-preview">
                     </div>
                     <input type="text" id="dn" placeholder="📖 Subject (e.g. Math)" class="w-full bg-zinc-950 border border-emerald-950/80 p-2.5 rounded text-xs text-zinc-200 focus:outline-none focus:border-emerald-500">
-                    <textarea id="notes" rows="9" placeholder="Paste your study notes, or type questions like these (this grey text disappears when you type):&#10;&#10;MULTIPLE CHOICE (mark the right one with Answer:)&#10;What is 2 + 2?&#10;1. 3&#10;2. 4&#10;3. 5&#10;4. 6&#10;Answer: 2&#10;&#10;TRUE / FALSE&#10;The sun is a star. True&#10;&#10;FILL IN THE BLANK (the player types the word. Use ____ and an Answer line; extra answers after a /)&#10;The ____ is the powerhouse of the cell.&#10;Answer: mitochondria / mitochondrion&#10;&#10;MATCHING (2 to 4 pairs, one per line, term = match)&#10;Match:&#10;Mitochondria = Powerhouse of the cell&#10;Nucleus = Holds the DNA&#10;Ribosome = Builds proteins&#10;&#10;QUESTION POOL: just keep adding questions one after another. Put a blank line between them." class="w-full bg-zinc-950 border border-emerald-950/80 rounded p-3 text-xs text-zinc-300 focus:outline-none focus:border-emerald-500 transition"></textarea>
+                    <textarea id="notes" rows="9" placeholder="Paste your study notes, or type questions like these (this grey text disappears when you type):&#10;&#10;MULTIPLE CHOICE (mark the right one with Answer:)&#10;What is 2 + 2?&#10;1. 3&#10;2. 4&#10;3. 5&#10;4. 6&#10;Answer: 2&#10;Why: Two plus two makes four.&#10;&#10;TRUE / FALSE&#10;The sun is a star. True&#10;Why: The sun is a huge ball of burning gas, and that is what a star is.&#10;&#10;FILL IN THE BLANK (the player types the word. Use ____ and an Answer line; extra answers after a /)&#10;The ____ is the powerhouse of the cell.&#10;Answer: mitochondria / mitochondrion&#10;Why: Mitochondria turn food into the energy the cell runs on.&#10;&#10;MATCHING (2 to 4 pairs, one per line, term = match)&#10;Match:&#10;Mitochondria = Powerhouse of the cell&#10;Nucleus = Holds the DNA&#10;Ribosome = Builds proteins&#10;Why: Every part of the cell has its own job.&#10;&#10;💡 WHY (optional): put a line starting with Why: under any question to explain the answer. One line each. Players get a Why? button that shows it. Leave it out and the AI can write one for you.&#10;&#10;QUESTION POOL: just keep adding questions one after another. Put a blank line between them." class="w-full bg-zinc-950 border border-emerald-950/80 rounded p-3 text-xs text-zinc-300 focus:outline-none focus:border-emerald-500 transition"></textarea>
+                    <label class="flex items-center gap-2 text-[11px] text-zinc-400 cursor-pointer select-none"><input type="checkbox" id="aiwhy" checked class="accent-emerald-600"> 💡 Let the AI write a "Why" for every question that does not have one</label>
                     <div class="flex items-center justify-between pt-2">
                         <button id="sum" class="bg-emerald-600 hover:bg-emerald-500 text-zinc-950 text-xs font-bold py-2.5 px-5 rounded transition title-font shadow-[0_0_10px_rgba(16,185,129,0.3)]">Summon Questions 🪄</button>
                         <button id="manual" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold py-2.5 px-4 rounded transition title-font">✍️ Write Manually</button>
@@ -1332,6 +1333,16 @@ sync();
                 <button id="skipbtn" type="button" style="display:none;right:.5rem;bottom:.5rem" class="absolute z-30 px-3 py-1 rounded-md bg-black/70 border border-emerald-700/70 text-emerald-300 text-xs font-mono hover:bg-emerald-900/60">Skip ⏭ (Esc)</button>
                 <button id="mtb" type="button" style="display:none;left:.5rem;bottom:.5rem" class="absolute z-20 px-3 py-1 rounded-md bg-black/70 border border-amber-600/70 text-amber-300 text-xs font-mono hover:bg-amber-900/60">⬇ Dismount (V)</button>
                 <button id="pz" type="button" style="display:none" class="absolute top-2 right-2 z-20 px-3 py-1 rounded-md bg-black/70 border border-emerald-700/70 text-emerald-300 text-xs font-mono hover:bg-emerald-900/60">⏸ Pause (P)</button>
+                <button id="whybtn" type="button" style="display:none;left:50%;bottom:.5rem;transform:translateX(-50%)" class="absolute z-30 px-3 py-1.5 rounded-md bg-black/80 border border-amber-500/80 text-amber-300 text-xs font-mono font-bold hover:bg-amber-900/50 shadow-[0_0_12px_rgba(251,191,36,0.35)]">💡 Why?</button>
+                <div id="whybox" style="display:none" class="absolute inset-0 z-40 items-center justify-center p-3 md:p-6 bg-black/75">
+                    <div class="w-full max-w-lg max-h-full overflow-y-auto bg-zinc-900 border-2 border-amber-500/70 rounded-xl p-4 text-left shadow-[0_0_30px_rgba(251,191,36,0.25)]">
+                        <div class="title-font text-base font-bold text-amber-300">💡 Why?</div>
+                        <div id="why-q" class="text-xs text-zinc-300 mt-2 font-bold"></div>
+                        <div class="text-xs mt-2 text-zinc-400">Answer: <span id="why-a" class="text-emerald-300 font-bold"></span></div>
+                        <div id="why-t" class="text-sm text-zinc-100 mt-3 leading-relaxed whitespace-pre-wrap"></div>
+                        <button id="why-x" type="button" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 text-zinc-950 text-xs font-bold py-2 rounded title-font">Got it ▶</button>
+                    </div>
+                </div>
             </div>
             <div id="pp" style="display:none" class="w-full flex items-center gap-3 mt-2 px-3 py-2 rounded-lg bg-black/60 border border-violet-900/70"><div id="pporb"></div><div id="pptxt" class="text-sm italic text-violet-200 min-h-[1.25rem]"></div></div>
             <p class="text-[11px] text-emerald-500/80 mt-2 font-mono animate-pulse" id="respawn-hint" style="display:none;">💀 Click anywhere on screen to respawn...</p>
@@ -1356,6 +1367,7 @@ sync();
                 <button id="ed-add-tf" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold py-2 px-3 rounded title-font">➕ True / False</button>
                 <button id="ed-add-fb" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold py-2 px-3 rounded title-font">➕ Fill in the blank</button>
                 <button id="ed-add-mt" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold py-2 px-3 rounded title-font">➕ Matching</button>
+                <button id="ed-ai-all" class="bg-amber-900/40 hover:bg-amber-800/50 border border-amber-700/50 text-amber-200 text-xs font-bold py-2 px-3 rounded title-font" title="The AI writes a Why for every finished question that has none">✨ AI: write missing Whys</button>
             </div>
             <p id="ed-err" class="text-xs text-red-400 mt-3 min-h-[1rem]"></p>
             <div class="flex gap-3 mt-2">
@@ -1846,6 +1858,7 @@ ${G}
             const QLEAD = /^\s*[*_]*\s*(?:question|ques|q|statement|claim)\s*#?\s*\d*\s*[:.\-\u2013\u2014]\s*/i;      // "Question: ..." after a number is the question itself, never an option
             const QPFX3 = /^\s*(?:#+\s*)?[*_]*\s*(?:question|ques|q|statement|claim)\s*[:.\-\u2013\u2014]\s*[*_]*\s*/i;
             const EXPL = /^[*_#>\-\u2022\s]*(?:explanation|explain|reason(?:ing)?|why|rationale|note|hint|fun\s*fact|source|details?|context)\s*[:\-\u2013\u2014]/i;   // explanation lines are never new questions
+            const WHYL = /^[*_#>\-\u2022\s]*(?:\u{1F4A1}\uFE0F?\s*)?[*_]*(?:explanation|explain|reason(?:ing)?|why|rationale)[*_]*\s*[:\-\u2013\u2014]+\s*[*_]*\s*(.+?)[*_]*\s*$/iu;   // "Why: ..." under a question is its reasoning (kept, shown on the Why? button)
             const TOPICL = /^[*_#>\s]*(?:topic|category|subject|unit|theme|arc|saga|section|chapter|part|round|level|deck)\s*#?\s*\d*\s*[:\-\u2013\u2014.]\s*(.+?)[*_\s]*$/i;
             const PAIR_SRC = '(?:[\\(\\[]\\s*(?:t|true)\\s*[\\)\\]][\\s,\\/|]*[\\(\\[]\\s*(?:f|false)\\s*[\\)\\]]|[\\(\\[]\\s*(?:f|false)\\s*[\\)\\]][\\s,\\/|]*[\\(\\[]\\s*(?:t|true)\\s*[\\)\\]]|true\\s*(?:\\/|\\||,|or|-|\\u2013)\\s*false|false\\s*(?:\\/|\\||,|or|-|\\u2013)\\s*true|t\\s*(?:\\/|or)\\s*f|f\\s*(?:\\/|or)\\s*t)';
             const TFPAIR = new RegExp('^[\\(\\[]?\\s*' + PAIR_SRC + '\\s*[\\)\\]]?\\s*[?:.]?$', 'i');
@@ -1966,15 +1979,17 @@ ${G}
                     if (HDR.test(lines[i].trim()) && lines[i].trim()) {
                         let j = i + 1; const pr = [];
                         while (j < lines.length && lines[j].trim()) {
+                            if (WHYL.test(lines[j].trim())) break;
                             const l = lines[j].trim().replace(/^[-•*\d.)\s]+(?=\S)/, '').replace(/[*_]+/g, '');
                             const m = l.split(SEP); if (m.length < 2 || !m[0].trim() || !m.slice(1).join(' ').trim()) break;
                             pr.push([m[0].trim(), m.slice(1).join(' ').trim()]); j++;
                         }
+                        let mwhy = ''; if (pr.length >= 2 && j < lines.length) { const wm = WHYL.exec(lines[j].trim()); if (wm) { mwhy = wm[1].trim(); j++; } }
                         if (pr.length >= 2) {
                             const ng = Math.ceil(pr.length / 4); let at = 0;
                             for (let k = 0; k < ng; k++) {          // split evenly: 5 pairs -> 3 + 2, never one lonely pair
                                 const sz = Math.floor((pr.length - at) / (ng - k)) + ((pr.length - at) % (ng - k) ? 1 : 0), g = pr.slice(at, at + sz); at += sz;
-                                out.push({ q: { t: 'mt', q: 'Matching: ' + g.map(p => p[0]).join(', '), pairs: g } });
+                                out.push({ q: Object.assign({ t: 'mt', q: 'Matching: ' + g.map(p => p[0]).join(', '), pairs: g }, mwhy ? { why: mwhy } : {}) });
                             }
                             i = j; continue;
                         }
@@ -1987,7 +2002,7 @@ ${G}
                 const MT = pullMatch(text); text = MT.text;
                 const items0 = parse0(text.replace(/_{2,}/g, 'ZZBLANKZZ'));
                 const back = v => typeof v === 'string' ? v.replace(/ZZBLANKZZ/g, '____') : v;   // keep the blank of fill-in-the-blank questions
-                items0.forEach(i => { const q = i.q || i.pending; if (q) { q.q = back(q.q); if (q.o) q.o = q.o.map(back); } });
+                items0.forEach(i => { const q = i.q || i.pending; if (q) { q.q = back(q.q); if (q.o) q.o = q.o.map(back); if (q.why) q.why = back(q.why); } });
                 return items0.concat(MT.items);
             }
             function parse0(text) {
@@ -2003,12 +2018,12 @@ ${G}
                 });
                 QP_SPREAD.v = L.length > 3 && L.filter(x => x.blank).length / L.length > 0.8;   // a blank line between EVERY line says nothing about where questions start
                 const kk = pullKey(L.map(x => x.t)); const key = kk.map; L.length = kk.lines.length;
-                const items = []; let cur = null, ord = 0, topic = '';
+                const items = []; let cur = null, ord = 0, topic = '', curWhy = '';
                 const setTopic = s => { const t = cleanTopic(s); if (t) topic = t; };
-                const withTopic = o => { if (topic) o.topic = topic; return o; };
+                const withTopic = o => { if (topic) o.topic = topic; if (curWhy) o.why = curWhy; return o; };
                 const fresh = () => ({ q: null, num: null, opts: [], marks: [], ans: null, tf: null, lab: false });
                 const done = () => {
-                    const c = cur; cur = null; if (!c || !c.q) return;
+                    const c = cur; cur = null; curWhy = c && c.why ? c.why : ''; if (!c || !c.q) return;
                     const qt = c.q.trim();
                     // "Statement" followed by a lone "True"/"False" line: that line is the answer, not an option
                     if (c.opts.length === 1 && tfOnly(c.opts[0], false) !== null && c.ans === null) { c.ans = c.opts[0]; c.opts = []; c.marks = []; }
@@ -2062,12 +2077,13 @@ ${G}
                     // junk: "Question 3" alone, section banners, short emoji banners
                     const bare = strip(line);
                     if (/^(?:question|ques|q)\s*#?\s*\d+\s*[:.)\-]?\s*$/i.test(bare)) { done(); cur = fresh(); cur.num = +(bare.match(/\d+/)[0]); cur.hdr = true; return; }
+                    if (cur && cur.q) { const wm = WHYL.exec(bare); if (wm) { if (!cur.why) cur.why = wm[1].trim(); return; } }     // "Why: ..." / "Explanation: ..." under a question is its reasoning
                     // "Topic: Soul Society" / "Part 2: Hueco Mundo" / "## Bankai" -> the questions after it belong to that topic (per-topic stats)
                     { const tm = TOPICL.exec(bare);
                       if (tm && !/\?\s*$/.test(bare) && bare.length < 90 && !tfOnly(tm[1]) && !(cur && cur.q && asOption(line, cur, blank))) { done(); setTopic(tm[1]); return; } }
                     if (isHead && bare.length < 70 && !/\?\s*$/.test(bare) && !QPFX.test(line) && tfOnly(bare) === null && !(cur && cur.q && asOption(line, cur, blank))) { done(); setTopic(bare); return; }
                     if (bare.length < 50 && !/\?\s*$/.test(bare) && !(cur && cur.q && asOption(line, cur, blank)) && (/\b(?:section|part|round|level|chapter)\s*\d+/i.test(bare) || (/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(bare) && !ANSL.test(bare) && !/^[\u2705\u2714\u2713\u2611\u2717\u2718\u2716\u2715\u274C\u274E]/.test(bare)))) { done(); setTopic(bare); return; }
-                    if (cur && cur.q && (EXPL.test(bare) || (cur.ans !== null && /^[\(\[].*[\)\]]$/.test(bare)))) return;     // "Explanation: ..." / "(He is a Quincy)" under an answer
+                    if (cur && cur.q && (EXPL.test(bare) || (cur.ans !== null && /^[\(\[].*[\)\]]$/.test(bare)))) { if (!cur.why && !EXPL.test(bare)) cur.why = bare.slice(1, -1).trim(); return; }     // "Explanation: ..." / "(He is a Quincy)" under an answer
                     if (TFPAIR.test(bare)) { if (cur && cur.q) return; if (!cur) return; }                                      // a lone "True / False" label line
                     const am = ANSL.exec(bare);
                     if (am && cur && cur.q) { cur.ans = cur.ans === null ? am[1] : cur.ans; return; }
@@ -2106,7 +2122,7 @@ ${G}
             throw last;
         }
         const ANS_SCHEMA = { type: 'ARRAY', items: { type: 'OBJECT', properties: { id: { type: 'NUMBER' }, why: { type: 'STRING' }, ans: { type: 'STRING' } }, propertyOrdering: ['id', 'why', 'ans'] } };
-        const ANS_SYS = "You are a strict quiz answerer. For each numbered question pick the single correct option. 'why' is one short sentence of evidence, written first. 'ans' is the EXACT text of the chosen option (for true/false questions exactly 'True' or 'False'). If you are not sure, set ans to 'unsure'. Return ONLY JSON.";
+        const ANS_SYS = "You are a strict quiz answerer. For each numbered question pick the single correct option. 'why' is one or two short, plain sentences that explain why the correct option is right, written first, for a student. Never mention option letters or numbers in 'why'. 'ans' is the EXACT text of the chosen option (for true/false questions exactly 'True' or 'False'). If you are not sure, set ans to 'unsure'. Return ONLY JSON.";
         async function askAnswers(list, shuffleOpts) {
             const view = list.map(p => ({ p, o: p.t === 'tf' ? ['True', 'False'] : (shuffleOpts ? sh(p.o) : p.o) }));
             const text = view.map((v, i) => `#${i}. ${v.p.q}\n` + (v.p.t === 'tf' ? 'Options: True / False' : v.o.map((o, k) => String.fromCharCode(65 + k) + ') ' + o).join('\n'))).join('\n\n');
@@ -2115,27 +2131,45 @@ ${G}
             return view.map((v, i) => {
                 const r = m.get(i); if (!r || !r.ans || /^unsure$/i.test(String(r.ans).trim())) return null;
                 const a = String(r.ans).trim();
-                if (v.p.t === 'tf') return /^(true|false)$/i.test(a) ? /^t/i.test(a) : null;
-                const k = v.p.o.findIndex(o => nzTxt(o) === nzTxt(a)); return k < 0 ? null : k;
+                const w = String(r.why || '').trim();
+                if (v.p.t === 'tf') return /^(true|false)$/i.test(a) ? { k: /^t/i.test(a), w } : null;
+                const k = v.p.o.findIndex(o => nzTxt(o) === nzTxt(a)); return k < 0 ? null : { k, w };
             });
         }
         // two independent passes (second one with the options shuffled); a question is kept only if both give the same answer
         async function aiFill(pending) {
             const A = await askAnswers(pending, false), B = await askAnswers(pending, true);
-            return pending.map((p, i) => (A[i] !== null && A[i] === B[i]) ? { t: p.t, q: p.q, o: p.o, a: A[i], topic: p.topic } : null);
+            return pending.map((p, i) => { if (!(A[i] && B[i] && A[i].k === B[i].k)) return null; const wy = p.why || A[i].w || B[i].w || ''; return Object.assign({ t: p.t, q: p.q, o: p.o, a: A[i].k, topic: p.topic }, wy ? { why: wy } : {}); });
         }
         // study notes (no questions in the text at all): let Gemini write the questions, with the answer as TEXT, then double-check them
         async function aiWrite(notes) {
-            const sys = "Write quiz questions from the user's study notes. Never contradict the notes. 't' is 'mc' (3-4 options) or 'tf' (o = ['True','False']). 'why' is one short sentence of evidence, written first. 'ans' is the EXACT text of the correct option (or 'True'/'False'). Return ONLY a JSON array.";
+            const sys = "Write quiz questions from the user's study notes. Never contradict the notes. 't' is 'mc' (3-4 options) or 'tf' (o = ['True','False']). 'why' is one or two short, plain sentences that explain why the correct answer is right, written first, for a student. Never mention option letters or numbers in 'why'. 'ans' is the EXACT text of the correct option (or 'True'/'False'). Return ONLY a JSON array.";
             const schema = { type: 'ARRAY', items: { type: 'OBJECT', properties: { t: { type: 'STRING' }, q: { type: 'STRING' }, o: { type: 'ARRAY', items: { type: 'STRING' } }, why: { type: 'STRING' }, ans: { type: 'STRING' } }, propertyOrdering: ['t', 'q', 'o', 'why', 'ans'] } };
             const raw = await gemJSON(sys, notes, schema);
-            const pend = raw.filter(r => r && r.q).map(r => ({ t: (r.t === 'tf' || !r.o || r.o.length < 2) ? 'tf' : 'mc', q: r.q, o: (r.t === 'tf' || !r.o || r.o.length < 2) ? ['True', 'False'] : r.o.map(x => String(x).replace(/^\s*[A-Da-d][\.\)]\s+/, '').trim()), ans: r.ans }));
+            const pend = raw.filter(r => r && r.q).map(r => ({ t: (r.t === 'tf' || !r.o || r.o.length < 2) ? 'tf' : 'mc', q: r.q, o: (r.t === 'tf' || !r.o || r.o.length < 2) ? ['True', 'False'] : r.o.map(x => String(x).replace(/^\s*[A-Da-d][\.\)]\s+/, '').trim()), ans: r.ans, why: String(r.why || '').trim() }));
             const checked = await aiFill(pend);
             return pend.map((p, i) => {
                 const c = checked[i]; if (!c) return null;
                 const w = p.t === 'tf' ? /^t/i.test(String(p.ans)) : p.o.findIndex(o => nzTxt(o) === nzTxt(p.ans));
                 return (p.t === 'tf' ? w === c.a : w === c.a) ? c : null;    // the writer's key must match the blind check
             });
+        }
+
+        // ---- the "Why?" notes: short reasons that explain an answer. The AI writes them for any question that has none.
+        const WHY_SCHEMA = { type: 'ARRAY', items: { type: 'OBJECT', properties: { id: { type: 'NUMBER' }, why: { type: 'STRING' } }, propertyOrdering: ['id', 'why'] } };
+        const WHY_SYS = "You write the 'Why?' note for a study quiz. Each numbered item gives a question and its correct answer. For each one write 'why': one or two short, plain sentences that explain why that answer is correct, so a student learns from it. Stay faithful to the given answer and never contradict it. Never mention option letters or numbers. Return ONLY JSON.";
+        const whyAnsText = q => q.t === 'mt' ? (q.pairs || []).map(p => p[0] + ' = ' + p[1]).join('; ')
+            : q.t === 'tf' ? (q.a ? 'True' : 'False')
+            : String(q.o && q.o[q.a] != null ? q.o[q.a] : '') + (q.t === 'fb' && q.alt && q.alt.length ? ' (also accepted: ' + q.alt.join(', ') + ')' : '');
+        async function aiWhys(list) {      // question objects in, one 'why' string per question out ('' when the AI had none)
+            const out = new Array(list.length).fill('');
+            for (let s = 0; s < list.length; s += 20) {
+                const chunk = list.slice(s, s + 20);
+                const text = chunk.map((q, i) => `#${i}. ${q.t === 'mt' ? 'Matching: ' + (q.pairs || []).map(p => p[0]).join(', ') : q.q}\nCorrect answer: ${whyAnsText(q)}`).join('\n\n');
+                const res = await gemJSON(WHY_SYS, text, WHY_SCHEMA);
+                (Array.isArray(res) ? res : []).forEach(r => { const i = Math.round(r && r.id); if (i >= 0 && i < chunk.length && r.why) out[s + i] = String(r.why).trim(); });
+            }
+            return out;
         }
 
         $('#sum').onclick = async () => {
@@ -2159,13 +2193,20 @@ ${G}
                 items.forEach(i => { if (i.q) qs.push(i.q); else { const f = filled[k++]; if (f) qs.push(f); else skipped++; } });
             }
             if (!qs.length) { st(`Nothing added${why ? ': ' + why : ''}. Add an "Answer: B" or "Answer: True" line under each question.`); return; }
+            let whyFail = false;
+            { const cb = $('#aiwhy'), noWhy = qs.filter(q => !q.why);
+              if (cb && cb.checked && noWhy.length) {      // the AI writes a Why for every question that does not have one
+                st('Writing the Why notes...');
+                try { const w = await aiWhys(noWhy); noWhy.forEach((q, i) => { if (w[i]) q.why = w[i]; }); }
+                catch (e) { console.error('Gemini error (why):', e); whyFail = true; }
+              } }
             const name = $('#dn').value.trim() || 'Deck ' + (S.decks.length + 1);
             S.decks.push({ name, qs });
             S.deck = S.decks.length - 1;
             save(); hub();
             $('#notes').value = ''; $('#dn').value = '';
             { const tps = new Set(qs.map(q => q.topic).filter(Boolean)), nt = qs.filter(q => q.t == 'tf').length;
-            st(`${qs.length} questions loaded` + (nt ? ` (${nt} True/False)` : '') + (tps.size ? `, ${tps.size} topic${tps.size > 1 ? 's' : ''}` : '') + (skipped ? `, ${skipped} skipped (no answer written and the AI could not confirm one). Add "Answer: B" lines.` : '.'));}
+            st(`${qs.length} questions loaded` + (nt ? ` (${nt} True/False)` : '') + (qs.some(q => q.why) ? `, ${qs.filter(q => q.why).length} with a Why` : '') + (whyFail ? ' (the AI could not write the Why notes, you can add them in the editor)' : '') + (tps.size ? `, ${tps.size} topic${tps.size > 1 ? 's' : ''}` : '') + (skipped ? `, ${skipped} skipped (no answer written and the AI could not confirm one). Add "Answer: B" lines.` : '.'));}
         };
 
         const cv=$('#c'),ctx=cv.getContext('2d'),W=800,H=450;
@@ -3879,7 +3920,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             let e=G.rv.get(q);
             if(!e){e={q:q.t=='mt'?'Matching: '+q.pairs.map(p=>p[0]).join(', '):q.q,
                 a:q.t=='mt'?q.pairs.map(p=>p[0]+' → '+p[1]).join('; '):(q.t=='tf'?(q.a?'True':'False'):q.o[q.a]),
-                first:null,wrong:0,picks:[],bonus:!!(r.boss&&r.mode=='bonus'),boss:!!r.boss};G.rv.set(q,e);G.rvo.push(e)}
+                first:null,wrong:0,picks:[],why:q.why||'',bonus:!!(r.boss&&r.mode=='bonus'),boss:!!r.boss};G.rv.set(q,e);G.rvo.push(e)}
             if(e.first==null)e.first=lab;
             if(!ok){e.wrong++;e.picks.push(lab)}
             try{recStat(q,ok)}catch(_){}     // per-deck stats
@@ -4458,7 +4499,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             const r=G.rooms[G.i],_st0=G.state;
             if(fk==null&&!r.boss&&r.q)G.mq.set(r.q,(G.mq.get(r.q)||0)+1);   // remember what is hurting you
             G.deaths++;
-            G.state='dying';
+            G.state='dying';G.whyOk=(fk==null&&!G.gal&&GAL_DK==null);   // the Why? button only opens after a wrong ANSWER (not a trap or lava), so it can never give an unanswered question away
             G.kt=t||null;G.hv=null;G.zv=null;G.ba=null;G.dn=dname||null;G.ch=null;G.dk=fk!=null?fk:GAL_DK!=null?GAL_DK:(()=>{const q=Math.random()*29|0;return q==28?29:q==27?28:q==26?27:q==25?26:q==24?25:q==23?24:q==16?17:q==17?18:q==18?19:q==19?20:q==20?21:q==21?22:q==22?23:q})();if(G.dk==2&&!G.kt&&!r.boss)G.dk=Math.random()<.5?0:1;
             // ARMOUR RESIST: the equipped armour has a % chance to survive the kinds of death it is built for (wrong-answer deaths only)
             if(fk==null&&_st0=='play'&&!G.gal&&GAL_DK==null&&typeof armorResist=='function'){const am=armorResist(G.dk);if(am){G.state=_st0;G.deaths--;if(!r.boss&&r.q)G.mq.set(r.q,Math.max(0,(G.mq.get(r.q)||1)-1));G.dk=null;G.kt=null;toast(am);G.sel=null;if(t&&t.k!='m'&&t.k!='d'&&t.k!='f')G.tg=G.tg.filter(o=>o!=t);if(typeof shopBar=='function')shopBar();return}}G.dt=0;G.dx=r.boss?Math.min(G.hx,700):Math.min(G.hx,290);if(fk!=null)G.dx=Math.min(G.hx,470);if(G.dk==17||G.dk==24||G.dk==25||G.dk==26)G.dx=r.boss?400:257;   // the horde needs room on BOTH sides of him
@@ -4541,6 +4582,23 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         $('#skipbtn').addEventListener('mousedown',e=>e.stopPropagation());
         setInterval(()=>{const b=$('#skipbtn');if(!b)return;const v=skipVisible()?'':'none';if(b.style.display!==v)b.style.display=v},80);
         addEventListener('keydown',e=>{if(e.code=='Escape'&&skipVisible()){e.preventDefault();skipCutscene()}});
+        // ---------- 💡 WHY? BUTTON: once you have answered (right or wrong) you can read why the answer is what it is. The game pauses while you read. ----------
+        const whyQ=()=>{try{if(!G||G.gal||!((G.state=='dying'&&G.whyOk)||G.state=='clear'||G.state=='bclear'))return null;const r=G.rooms&&G.rooms[G.i],q=r&&r.q;return q&&q.why?q:null}catch(e){return null}};
+        let whyOpen=0,whyWas=0;
+        function whyShow(){const q=whyQ();if(!q||whyOpen)return;whyOpen=1;
+            $('#why-q').textContent=q.t=='mt'?'Matching: '+q.pairs.map(p=>p[0]).join(', '):q.q;
+            $('#why-a').textContent=q.t=='mt'?q.pairs.map(p=>p[0]+' → '+p[1]).join('; '):q.t=='tf'?(q.a?'True':'False'):String(q.o[q.a]);
+            $('#why-t').textContent=q.why;$('#whybox').style.display='flex';
+            whyWas=G.paused?1:0;if(!G.paused){G.paused=1;G.pz0=performance.now()}}
+        function whyHide(){if(!whyOpen)return;whyOpen=0;$('#whybox').style.display='none';
+            if(G&&G.paused&&!whyWas){G.paused=0;G.t0+=performance.now()-G.pz0}}   // the run timer does not count the time spent reading
+        $('#whybtn').addEventListener('click',e=>{e.stopPropagation();whyShow()});
+        $('#why-x').addEventListener('click',e=>{e.stopPropagation();whyHide()});
+        $('#whybtn').addEventListener('mousedown',e=>e.stopPropagation());
+        $('#whybox').addEventListener('mousedown',e=>e.stopPropagation());
+        $('#whybox').addEventListener('click',e=>{e.stopPropagation();if(e.target===e.currentTarget)whyHide()});
+        addEventListener('keydown',e=>{if(!whyOpen)return;e.stopImmediatePropagation();if(e.code=='Escape'||e.code=='Space'||e.code=='Enter'||e.code=='KeyJ'){e.preventDefault();whyHide()}},true);   // while reading, no key reaches the game
+        setInterval(()=>{const b=$('#whybtn');if(!b)return;const on=!!whyQ();if(whyOpen&&!on)whyHide();const v=(on&&!whyOpen)?'':'none';if(b.style.display!==v)b.style.display=v},80);
         function triggerRespawn() {
             if(!G || G.state!='dying') return;
             if(G.gal){galExit();return}
@@ -4588,7 +4646,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
         });
         addEventListener('keyup',e=>keys[e.code]=0);
         
-        addEventListener('mousedown',e=>{if(G&&G.state=='dying'&&!G.paused&&e.target!==cv&&!(e.target.closest&&e.target.closest('#pz,#rp,#galink,#skipbtn'))){if(G.mvrep)G.mvrep=null;else triggerRespawn()}});
+        addEventListener('mousedown',e=>{if(G&&G.state=='dying'&&!G.paused&&e.target!==cv&&!(e.target.closest&&e.target.closest('#pz,#rp,#galink,#skipbtn,#whybtn,#whybox'))){if(G.mvrep)G.mvrep=null;else triggerRespawn()}});
         cv.addEventListener('mousedown',e => {
             if(G&&G.kr){G.kr=null;return}
             if(G&&G.gal&&G.galK&&G.galK[0]=='m'){galExit();return}
@@ -4722,6 +4780,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             const newB=(G.newB||[]).slice(),pn=G.pr.n,dd=G.deaths,ending=G.end||'good';if(!S.badges)S.badges={good:0,bad:0};const firstBadge=!S.badges[ending],wasBoth=S.badges.good&&S.badges.bad;S.badges[ending]=(S.badges[ending]||0)+1;if(!wasBoth&&S.badges.good&&S.badges.bad){newB.push('Duality');toast('🏅 Badge unlocked: Duality!')}S.mem.runs++;S.mem.ld=dd;save();G.state='done';G=null;
             const missed=rvl.filter(e=>e.wrong>0).sort((a,b)=>b.wrong-a.wrong),clean=rvl.filter(e=>!e.wrong);
             const cnt=a=>{const m=new Map();a.forEach(x=>m.set(x,(m.get(x)||0)+1));return[...m].map(([k,v])=>esc(k)+(v>1?' <span class="text-red-400">×'+v+'</span>':'')).join(', ')};
+            const whyD=e=>e.why?`<details class="mt-1.5"><summary class="cursor-pointer text-[11px] font-bold text-amber-300 select-none">💡 Why?</summary><div class="text-[11px] text-zinc-200 mt-1 leading-relaxed bg-black/30 border border-amber-700/30 rounded p-2">${esc(e.why)}</div></details>`:'';
             const review=`<div class="bg-zinc-950 p-4 rounded border border-emerald-950 text-left text-sm">
                 <div class="title-font text-base font-bold text-emerald-400">📜 Question Review</div>
                 <div class="text-xs text-zinc-400 mt-1 mb-3">Subject: <b class="text-zinc-200">${esc(n)}</b> · ${rvl.length} answered · <span class="text-emerald-400">${clean.length} right first try</span> · <span class="text-red-400">${missed.length} missed</span></div>
@@ -4730,9 +4789,9 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                         <div class="flex justify-between gap-2 items-start"><div class="text-zinc-100 text-xs font-bold">${e.bonus?'💎 ':e.boss?'🩸 ':''}${esc(e.q)}</div><span class="shrink-0 text-[12px] font-bold bg-red-600 text-white rounded px-1.5 py-0.5">Wrong ×${e.wrong}</span></div>
                         <div class="text-[11px] mt-1.5 text-zinc-400">First click: <span class="text-red-300 font-bold">${esc(e.first)} ✗</span></div>
                         <div class="text-[11px] text-zinc-400">Wrong picks: <span class="text-red-200">${cnt(e.picks)}</span></div>
-                        <div class="text-[11px] text-zinc-400">Correct answer: <span class="text-emerald-300 font-bold">${esc(e.a)}</span></div>
+                        <div class="text-[11px] text-zinc-400">Correct answer: <span class="text-emerald-300 font-bold">${esc(e.a)}</span></div>${whyD(e)}
                     </div>`).join('')}</div>`:`<div class="text-xs text-emerald-300 font-bold">Flawless! Every answer was right on the first click. 🎉</div>`}
-                ${clean.length?`<details class="mt-3 text-xs"><summary class="cursor-pointer text-zinc-400">✅ Right on the first click (${clean.length})</summary><div class="mt-1.5 space-y-1 max-h-40 overflow-y-auto pr-1">${clean.map(e=>`<div class="text-zinc-300">${e.bonus?'💎 ':e.boss?'🩸 ':''}${esc(e.q)} <span class="text-emerald-400">→ ${esc(e.a)}</span></div>`).join('')}</div></details>`:''}
+                ${clean.length?`<details class="mt-3 text-xs"><summary class="cursor-pointer text-zinc-400">✅ Right on the first click (${clean.length})</summary><div class="mt-1.5 space-y-1 max-h-40 overflow-y-auto pr-1">${clean.map(e=>`<div class="text-zinc-300">${e.bonus?'💎 ':e.boss?'🩸 ':''}${esc(e.q)} <span class="text-emerald-400">→ ${esc(e.a)}</span>${whyD(e)}</div>`).join('')}</div></details>`:''}
             </div>`;
             $('#run').classList.remove('on');$('#score').classList.add('on');
             $('#score').innerHTML=`
@@ -6736,7 +6795,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                     <input type="text" value="${esc(q.topic||'')}" placeholder="Topic (optional)" oninput="edT(${i},this.value)" class="${INP}">
                     ${pr.map((p,k)=>`<div class="flex items-center gap-2"><input type="text" value="${esc(p[0])}" placeholder="Term ${k+1}" oninput="edP(${i},${k},0,this.value)" class="${INP}"><span class="text-emerald-500">→</span><input type="text" value="${esc(p[1])}" placeholder="Match ${k+1}" oninput="edP(${i},${k},1,this.value)" class="${INP}">${pr.length>2?`<button onclick="edPRm(${i},${k})" class="text-zinc-500 hover:text-red-400 px-1">✕</button>`:''}</div>`).join('')}
                     ${pr.length<4?`<button onclick="edPAdd(${i})" class="text-xs text-emerald-400 hover:text-emerald-300">+ Add pair</button>`:''}
-                    <div class="text-[12px] text-zinc-500">2 to 4 term → match pairs.</div></div>`}
+                    <div class="text-[12px] text-zinc-500">2 to 4 term → match pairs.</div>${edWhy(i,q)}</div>`}
                 let body;
                 if(q.t=='fb'){if(q.o.length!=1){q.o=[String(q.o[q.a]||q.o[0]||'')];q.a=0}
                     body=`<div class="text-[12px] text-zinc-400">Main answer: ONE answer only, no commas</div><input type="text" value="${esc(q.o[0])}" placeholder="The word the player types, e.g. Paris" oninput="edO(${i},0,this.value)" class="${INP}"><div class="text-[12px] text-zinc-400">Also accept (optional): other answers that count as correct, separated by commas</div><input type="text" value="${esc((q.alt||[]).join(', '))}" placeholder="Other correct answers, e.g. City of Light, Paris France" oninput="edAlt(${i},this.value)" class="${INP}"><div class="text-[12px] text-zinc-500">Put ____ in the sentence where the blank goes. The player types the missing word. Capitals, accents and small typos are forgiven.</div>`}
@@ -6746,10 +6805,37 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                     <div class="flex items-center justify-between gap-2"><span class="title-font text-xs font-bold text-emerald-400">Question ${i+1}</span>
                     <div class="flex items-center gap-2">${edSel(i,q.t)}
                     <button onclick="edDel(${i})" class="text-zinc-500 hover:text-red-400 px-1" title="Delete question">🗑️</button></div></div>
-                    <textarea rows="2" oninput="edQ(${i},this.value)" placeholder="${q.t=='fb'?'Sentence with a blank, e.g. The ____ is the powerhouse of the cell':'Question text'}" class="${INP}">${esc(q.q)}</textarea><input type="text" value="${esc(q.topic||'')}" placeholder="Topic (optional, e.g. Soul Society)" oninput="edT(${i},this.value)" class="${INP}">${body}</div>`;
+                    <textarea rows="2" oninput="edQ(${i},this.value)" placeholder="${q.t=='fb'?'Sentence with a blank, e.g. The ____ is the powerhouse of the cell':'Question text'}" class="${INP}">${esc(q.q)}</textarea><input type="text" value="${esc(q.topic||'')}" placeholder="Topic (optional, e.g. Soul Society)" oninput="edT(${i},this.value)" class="${INP}">${body}${edWhy(i,q)}</div>`;
             }).join('')||'<div class="text-xs text-zinc-500 text-center py-4 border border-dashed border-emerald-950 rounded">No questions yet. Add one below!</div>';
         }
         const edSel=(i,t)=>`<select onchange="edType(${i},this.value)" class="bg-zinc-900 border border-emerald-950 text-xs text-zinc-300 rounded p-1"><option value="mc" ${t=='mc'?'selected':''}>Multiple choice</option><option value="tf" ${t=='tf'?'selected':''}>True / False</option><option value="fb" ${t=='fb'?'selected':''}>Fill in the blank</option><option value="mt" ${t=='mt'?'selected':''}>Matching</option></select>`;
+        // 💡 the Why note: the reasoning behind the answer. Players read it on the Why? button.
+        const edWhy=(i,q)=>(q.why||q._wo)
+            ?`<div class="border border-amber-700/40 bg-amber-950/10 rounded p-2 space-y-1.5"><div class="flex items-center justify-between gap-2"><span class="text-[12px] font-bold text-amber-300">💡 Why is this the answer? <span class="text-zinc-500 font-normal">(shown on the Why? button)</span></span><button type="button" id="ed-aiw-${i}" onclick="edAIWhy(${i})" class="text-[12px] font-bold bg-zinc-800 hover:bg-zinc-700 text-amber-200 rounded px-2 py-1 whitespace-nowrap">✨ Write with AI</button></div><textarea id="ed-why-${i}" rows="2" oninput="edW(${i},this.value)" placeholder="e.g. Mitochondria turn food into the energy the cell uses." class="${INP}">${esc(q.why||'')}</textarea></div>`
+            :`<button type="button" onclick="edWOpen(${i})" class="text-xs text-amber-300 hover:text-amber-200 font-bold text-left">💡 Add Why</button>`;
+        // what the AI needs to explain a question: its text and its correct answer
+        const edAns=q=>String((q.t=='fb'?(q.o&&q.o[0]):(q.o&&q.o[q.a]))||'').trim();
+        const edReady=q=>q.t=='mt'?(q.pairs||[]).filter(p=>(p[0]||'').trim()&&(p[1]||'').trim()).length>=2
+            :!!(q.q||'').trim()&&(q.t=='tf'||!!edAns(q));
+        const edTmp=q=>q.t=='mt'?{t:'mt',pairs:(q.pairs||[]).filter(p=>(p[0]||'').trim()&&(p[1]||'').trim()).map(p=>[p[0].trim(),p[1].trim()])}
+            :q.t=='tf'?{t:'tf',q:(q.q||'').trim(),a:q.a===true}
+            :{t:q.t=='fb'?'fb':'mc',q:(q.q||'').trim(),o:[edAns(q)],a:0,alt:q.alt};
+        window.edW=(i,v)=>{ED.qs[i].why=v};
+        window.edWOpen=i=>{ED.qs[i]._wo=1;edRender();const t=$('#ed-why-'+i);if(t)t.focus()};
+        window.edAIWhy=async i=>{const q=ED&&ED.qs[i];if(!q)return;const err=$('#ed-err');
+            if(!edReady(q)){err.textContent='Question '+(i+1)+': fill in the question and its correct answer first, then the AI can explain it.';return}
+            const b=$('#ed-aiw-'+i);if(b){b.disabled=true;b.textContent='✨ Thinking...'}err.textContent='';
+            try{const w=(await aiWhys([edTmp(q)]))[0];if(!w)throw new Error('the AI sent nothing back');q.why=w;const t=$('#ed-why-'+i);if(t&&ED&&ED.qs[i]===q)t.value=w}
+            catch(e){console.error('Gemini error (why):',e);err.textContent='The AI could not write a Why for question '+(i+1)+'. Type one yourself, or try again.'}
+            finally{const b2=$('#ed-aiw-'+i);if(b2){b2.disabled=false;b2.textContent='✨ Write with AI'}}};
+        $('#ed-ai-all').onclick=async()=>{const b=$('#ed-ai-all'),err=$('#ed-err');
+            const todo=ED.qs.filter(q=>!(q.why||'').trim()&&edReady(q));
+            if(!todo.length){err.textContent='Every finished question already has a Why.';return}
+            err.textContent='';b.disabled=true;const old=b.textContent;b.textContent='✨ Writing '+todo.length+'...';
+            try{const w=await aiWhys(todo.map(edTmp));if(!ED)return;let n=0;todo.forEach((q,k)=>{if(w[k]){q.why=w[k];n++}});edRender();
+                toast(n?'💡 Wrote '+n+' Why note'+(n>1?'s':'')+'. Press Save to keep '+(n>1?'them':'it')+'.':'The AI had nothing to add.')}
+            catch(e){console.error('Gemini error (why):',e);err.textContent='The AI could not write the Why notes right now. You can type them yourself.'}
+            finally{b.disabled=false;b.textContent=old}};
         window.edP=(i,k,n,v)=>{ED.qs[i].pairs[k][n]=v};
         window.edPAdd=i=>{ED.qs[i].pairs.push(['','']);edRender()};
         window.edPRm=(i,k)=>{ED.qs[i].pairs.splice(k,1);edRender()};
@@ -6774,21 +6860,21 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(!ED.qs.length)return err('A deck needs at least one question.');
             const out=[];
             for(let i=0;i<ED.qs.length;i++){
-                const q=ED.qs[i];
+                const q=ED.qs[i],WY=(q.why||'').trim()?{why:q.why.trim()}:{};
                 if(q.t=='mt'){const pr=(q.pairs||[]).map(p=>[(p[0]||'').trim(),(p[1]||'').trim()]).filter(p=>p[0]||p[1]);
                     if(pr.length<2||pr.some(p=>!p[0]||!p[1]))return err('Question '+(i+1)+': matching needs at least 2 complete pairs.');
-                    const tp=(q.topic||'').trim();out.push(Object.assign({t:'mt',q:'Matching: '+pr.map(p=>p[0]).join(', '),pairs:pr.slice(0,4)},tp?{topic:tp}:{}));continue}
+                    const tp=(q.topic||'').trim();out.push(Object.assign({t:'mt',q:'Matching: '+pr.map(p=>p[0]).join(', '),pairs:pr.slice(0,4)},tp?{topic:tp}:{},WY));continue}
                 const text=(q.q||'').trim();if(!text)return err('Question '+(i+1)+' has no text.');
                 const tpc=(q.topic||'').trim(),TP=tpc?{topic:tpc}:{};
-                if(q.t=='tf'){out.push(Object.assign({t:'tf',q:text,o:['True','False'],a:q.a===true},TP));continue}
+                if(q.t=='tf'){out.push(Object.assign({t:'tf',q:text,o:['True','False'],a:q.a===true},TP,WY));continue}
                 if(q.t=='fb'){const ans=String((q.o&&q.o[0])||'').trim();if(!ans)return err('Question '+(i+1)+': type the correct answer for the blank.');
                     const alt=(q.alt||[]).map(x=>String(x).trim()).filter(Boolean);
-                    out.push(Object.assign({t:'fb',q:/_{2,}/.test(text)?text:text+' ____',o:[ans],a:0},alt.length?{alt}:{},TP));continue}
+                    out.push(Object.assign({t:'fb',q:/_{2,}/.test(text)?text:text+' ____',o:[ans],a:0},alt.length?{alt}:{},TP,WY));continue}
                 const o=[];let a=-1;
                 q.o.forEach((v,k)=>{const t=(v||'').trim();if(t){if(k===q.a)a=o.length;o.push(t)}});
                 if(o.length<2)return err('Question '+(i+1)+' needs at least 2 answers.');
                 if(a<0)return err('Question '+(i+1)+': the correct answer is empty. Tick a filled-in answer.');
-                out.push(Object.assign({t:q.t=='fb'?'fb':'mc',q:(q.t=='fb'&&!/_{2,}/.test(text))?text+' ____':text,o,a},TP));
+                out.push(Object.assign({t:q.t=='fb'?'fb':'mc',q:(q.t=='fb'&&!/_{2,}/.test(text))?text+' ____':text,o,a},TP,WY));
             }
             const d=S.decks[ED.i],old=d.name;
             if(old!==name&&S.best[old]){S.best[name]=S.best[old];delete S.best[old]}
@@ -6838,7 +6924,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             const topicHtml = rows.map(r => { const [lb, lc] = label(r); return `<div class="bg-zinc-950 border border-emerald-950 rounded p-2.5">
                 <div class="flex justify-between items-baseline gap-2"><div class="text-xs font-bold text-zinc-200 truncate">${esc(r.name)} <span class="text-zinc-500 font-normal">· ${r.cnt} question${r.cnt == 1 ? '' : 's'}</span></div><div class="text-[12px] font-bold shrink-0" style="color:${lc}">${lb}${r.n && r.n < 3 ? ' <span class="text-zinc-500 font-normal">(few tries)</span>' : ''}</div></div>
                 <div class="flex items-center gap-2 mt-1.5"><div class="flex-1 h-2 rounded bg-zinc-800 overflow-hidden"><div style="width:${r.n ? Math.max(3, r.p) : 0}%;height:100%;background:${col(r.p)}"></div></div><div class="text-xs w-24 text-right text-zinc-300">${r.n ? r.p + '% <span class="text-zinc-500">(' + r.ok + '/' + r.n + ')</span>' : '—'}</div></div></div>`; }).join('');
-            const weakHtml = weak.length ? weak.map(w => `<div class="border border-red-900/50 bg-red-950/20 rounded p-2.5 flex justify-between gap-2 items-start"><div class="min-w-0"><div class="text-zinc-100 text-xs font-bold">${esc(w.k)}</div>${w.tp && w.tp != 'General' ? `<div class="text-[12px] text-zinc-500 mt-0.5">${esc(w.tp)}</div>` : ''}</div><span class="shrink-0 text-[12px] font-bold bg-red-600 text-white rounded px-1.5 py-0.5">missed ${w.miss} of ${w.n}</span></div>`).join('')
+            const weakHtml = weak.length ? weak.map(w => `<div class="border border-red-900/50 bg-red-950/20 rounded p-2.5 flex justify-between gap-2 items-start"><div class="min-w-0"><div class="text-zinc-100 text-xs font-bold">${esc(w.k)}</div>${w.tp && w.tp != 'General' ? `<div class="text-[12px] text-zinc-500 mt-0.5">${esc(w.tp)}</div>` : ''}${(() => { const x = qs.find(z => dsQKey(z) === w.k); return x && x.why ? `<details class="mt-1"><summary class="cursor-pointer text-[11px] font-bold text-amber-300 select-none">💡 Why?</summary><div class="text-[11px] text-zinc-200 mt-1 leading-relaxed">${esc(x.why)}</div></details>` : ''; })()}</div><span class="shrink-0 text-[12px] font-bold bg-red-600 text-white rounded px-1.5 py-0.5">missed ${w.miss} of ${w.n}</span></div>`).join('')
                 : `<div class="text-xs text-zinc-500 text-center py-3 border border-dashed border-emerald-950 rounded">${tot ? 'No missed questions yet. Nice.' : 'Play this deck to find your weak spots.'}</div>`;
             const onlyGeneral = rows.length == 1 && rows[0].name == 'General';
             let ov = $('#dstats');
