@@ -7,11 +7,11 @@ const MOVES=[['Jab',6],['Quick Slash',8],['Dagger Stab',8],['Shield Bash',9],['R
  ['Soul Drain',14],['Thunderclap',13],['Spear Thrust',11],['Cursed Hex',12],['Dragon Breath',20],['Shadow Strike',16],['Radiant Beam',18],['Earthquake',19],['Executioner',24],['Sufference',25]];
 const ERR={not_logged_in:'Sign in first (👤 Account).',no_such_player:'No player with that name.',self:"You can't pick yourself.",bad_amount:'Check the gold amounts.',bad_pass:'Pass mark must be 1-100%.',
  bad_time:'Time limit must be 5-300 seconds (or empty).',too_many:'Too many open quizzes (max 10, or 3 for the same player).',bad_questions:'Those questions could not be used.',banned:'This account is banned.',
- not_found:'Not found.',closed:'That one is already over.',late:'Too late.',already_in_duel:'You are already in a duel.',own_duel:"That's your own duel.",not_invited:'That duel is for someone else.',wrong_round:'Round already moved on.'};
+ not_found:'Not found.',full:'That room is full.',not_enough:'Need at least 4 players to start.',not_host:'Only the host can start.',bad_players:'Room size must be 4-6.',not_yours:'You are not in that one.',already:'Already answered.',closed:'That one is already over.',late:'Too late.',already_in_duel:'You are already in a duel.',own_duel:"That's your own duel.",not_invited:'That duel is for someone else.',wrong_round:'Round already moved on.'};
 const $=s=>document.querySelector(s);
 const say=m=>{try{toast(m)}catch(e){alert(m)}};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let sb=null,modal=null,tab='inbox',Q=null,D=null,qTimer=0,dPoll=0,dTick=0,busy=false;
+let sb=null,modal=null,tab='inbox',Q=null,D=null,GR=null,gPoll=0,gTick=0,gPolling=false,qTimer=0,dPoll=0,dTick=0,busy=false;
 
 const setGold=d=>{S.gold=Math.max(0,(S.gold|0)+d);save();try{shopGold()}catch(e){}try{shopRender()}catch(e){}};
 const collect=()=>{try{window.SUFF_claimGold&&window.SUFF_claimGold()}catch(e){}};
@@ -66,14 +66,14 @@ const STYLE=`<style>
 const MODAL=`<div id="wg-modal" style="display:none;position:fixed;inset:0;z-index:85;align-items:center;justify-content:center;background:rgba(0,0,0,.7);overflow:auto">
 <div style="background:#14101c;border:2px solid #a78bfa;border-radius:10px;padding:16px 18px;width:min(94vw,520px);max-height:92vh;overflow:auto;color:#e6dcc0;font:14px sans-serif">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div style="font:900 20px Cinzel,serif;color:#c4b5fd">⚔️ Wagers &amp; Duels</div><button id="wg-x" class="wg-b wg-z">✕</button></div>
-<div style="display:flex;gap:4px"><button class="wg-tab" data-tab="inbox">📬 Inbox</button><button class="wg-tab" data-tab="send">📨 Send quiz</button><button class="wg-tab" data-tab="duel">🥊 Duel</button></div>
+<div style="display:flex;gap:4px"><button class="wg-tab" data-tab="inbox">📬 Inbox</button><button class="wg-tab" data-tab="send">📨 Send quiz</button><button class="wg-tab" data-tab="duel">🥊 Duel</button><button class="wg-tab" data-tab="group">👥 Group</button></div>
 <div id="wg-body" style="border:1px solid #2f2a3d;border-radius:0 8px 8px 8px;padding:10px 12px;background:#1a1526"></div>
 </div></div>`;
 const view=h=>{const b=$('#wg-body');if(b)b.innerHTML=h};
 const body=()=>$('#wg-body');
 
 // shop items (orb, favour, shield, key...) are banned while a wager quiz or a live duel is running
-const itemsBanned=()=>!!(Q||(D&&!D.over));
+const itemsBanned=()=>!!(Q||(D&&!D.over)||(GR&&!GR.over));
 function banItems(){
   try{const u=window.useItem;if(typeof u!=='function'||u.__wg)return;
     const w=function(){if(itemsBanned()){say('🚫 Items are banned in duels and wagers.');return}return u.apply(this,arguments)};w.__wg=1;window.useItem=w}catch(e){}
@@ -89,7 +89,7 @@ function init(){
   $('#wg-x').addEventListener('click',close);
   ['mousedown','keydown','keyup','keypress'].forEach(ev=>modal.addEventListener(ev,e=>e.stopPropagation()));
   modal.addEventListener('click',onClick);
-  modal.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='wg-fb'){e.preventDefault();answerFb()}if(e.key==='Enter'&&e.target.id==='dfb'){e.preventDefault();duelFb()}});
+  modal.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='gfb'){e.preventDefault();groupFb()}if(e.key==='Enter'&&e.target.id==='wg-fb'){e.preventDefault();answerFb()}if(e.key==='Enter'&&e.target.id==='dfb'){e.preventDefault();duelFb()}});
   setTimeout(badge,4000);setInterval(badge,60000);
 }
 async function badge(){
@@ -101,12 +101,12 @@ async function open(){
   if(!await loggedIn()){tab='inbox';mark();view('<div style="padding:14px;text-align:center">Sign in with Google first (👤 Account) to send quizzes and duel other players.</div>');return}
   collect();go(tab);
 }
-function close(){modal.style.display='none';clearInterval(dPoll);clearInterval(dTick);clearInterval(qTimer)}
+function close(){modal.style.display='none';clearInterval(gPoll);clearInterval(gTick);clearInterval(dPoll);clearInterval(dTick);clearInterval(qTimer)}
 const mark=()=>modal.querySelectorAll('.wg-tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===tab));
 function go(t){
-  tab=t;mark();clearInterval(dPoll);clearInterval(dTick);
+  tab=t;mark();clearInterval(dPoll);clearInterval(dTick);clearInterval(gPoll);clearInterval(gTick);
   if(Q){showQ();return}
-  if(t==='inbox')inbox();else if(t==='send')sendForm();else duelHome();
+  if(t==='inbox')inbox();else if(t==='send')sendForm();else if(t==='group')groupHome();else duelHome();
 }
 
 // ---------- INBOX ----------
@@ -376,6 +376,140 @@ async function duelAnswer(v){
 }
 function duelFb(){const f=$('#dfb');if(!f||f.disabled)return;duelAnswer(f.value.trim()||'')}
 
+// ---------- GROUP TRIVIA (4-6 players) ----------
+async function groupHome(){
+  view('Loading…');
+  const r=await rpc('trivia_lobby');if(!r||tab!=='group')return;
+  collect();
+  if(r.mine){startGroup(r.mine);return}
+  GR=null;
+  const open=(r.open||[]).map(d=>`<div class="wg-card"><b>${esc(d.who)}</b> · ${esc(d.title)} <span class="wg-s" style="color:#c4b5fd">${d.cnt}/${d.maxp} players</span>
+    <div style="font-size:12px;color:#a1a1aa">${d.n} questions · ${d.secs}s each · pot grows 🪙${d.stake} per player</div>
+    <div style="font-size:11px;color:#a1a1aa">In the room: ${(d.names||[]).map(esc).join(', ')}</div>
+    <button class="wg-b wg-g" style="margin-top:5px" data-act="gjoin" data-id="${d.id}" data-stake="${d.stake}">👥 Join (🪙${d.stake})</button></div>`).join('')||'<div style="color:#71717a;font-size:13px">No open rooms right now. Host one!</div>';
+  view(`<div style="display:flex;justify-content:space-between"><b style="color:#fcd34d">Open group rooms</b><button class="wg-b wg-z" data-act="refresh">↻ Refresh</button></div>${open}
+   <b style="color:#fcd34d;display:block;margin-top:14px">Host a group trivia</b>
+   <div style="font-size:12px;color:#a1a1aa">4-6 players answer the same questions. A right answer casts one of the 30 moves for points (+ a speed bonus). Top 3 split the pot: 🥇50% 🥈30% 🥉20%.
+   <b style="color:#c4b5fd">Your own gear counts:</b> blade = more points per right answer, pet = bonus on streaks, armour = softer penalty for wrong answers. 🚫 Items are banned. You are wearing: ${esc([gn('WPNS',gearNow().wpn),gn('SKINS',gearNow().skin),gn('PETS',gearNow().pet)].filter(Boolean).join(', ')||'nothing')}.</div>
+   <label class="wg-lb">DECK</label><select id="gg-deck" class="wg-in">${deckOpts()}</select>
+   <label class="wg-lb">QUESTION TYPES</label><div>${typeBoxes('gg-t')}</div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div><label class="wg-lb">ROUNDS (3-30)</label><input id="gg-n" class="wg-in" type="number" min="3" max="30" value="10"></div>
+    <div><label class="wg-lb">SECONDS PER QUESTION</label><input id="gg-secs" class="wg-in" type="number" min="5" max="60" value="15"></div>
+    <div><label class="wg-lb">STAKE EACH 🪙</label><input id="gg-stake" class="wg-in" type="number" min="0" value="50"></div>
+    <div><label class="wg-lb">ROOM SIZE (4-6)</label><select id="gg-max" class="wg-in"><option>4</option><option>5</option><option selected>6</option></select></div>
+   </div>
+   <button class="wg-b wg-p" style="margin-top:10px" data-act="gcreate">👥 Host group trivia</button>`);
+}
+async function createGroup(){
+  if(busy)return;
+  const deck=S.decks[+$('#gg-deck').value],types=pickTypes('gg-t'),n=Math.floor(+$('#gg-n').value||0),secs=Math.floor(+$('#gg-secs').value||0),
+    stake=Math.max(0,Math.floor(+$('#gg-stake').value||0)),mx=+$('#gg-max').value;
+  if(!deck||!types.length)return say('Pick a deck and at least one question type.');
+  if(secs<5||secs>60)return say('Seconds per question: 5-60.');
+  if(stake>(S.gold|0))return say("You don't have 🪙"+stake+'.');
+  const qs=shuffle(pool(deck,types)).slice(0,Math.max(3,Math.min(30,n)));
+  if(qs.length<3)return say('Need at least 3 usable questions in that deck.');
+  busy=true;await syncGear();
+  const r=await rpc('trivia_create',{p_title:deck.name.slice(0,40),p_questions:qs,p_stake:stake,p_secs:secs,p_max:mx});
+  busy=false;
+  if(r==null)return;
+  if(typeof r==='string'&&r.indexOf('ok:')===0){setGold(-stake);startGroup(r.slice(3))}else say(errMsg(r));
+}
+async function joinGroup(id,stake){
+  if(busy)return;
+  if(stake>(S.gold|0))return say('You need 🪙'+stake+' to join.');
+  busy=true;await syncGear();const r=await rpc('trivia_join',{p_id:id});busy=false;
+  if(r==='ok'){setGold(-stake);startGroup(id)}else if(r){say(errMsg(r));groupHome()}
+}
+function startGroup(id){
+  if(!GR||GR.id!==id)GR={id,rnd:-1,phase:'',answered:false,deadline:0,over:false,paid:false};
+  GR.phase='';tab='group';mark();
+  clearInterval(gPoll);clearInterval(gTick);
+  gPoll=setInterval(pollGroup,1100);gTick=setInterval(tickGroup,200);pollGroup();
+}
+async function pollGroup(){
+  if(!GR||gPolling)return;
+  gPolling=true;
+  try{
+    const {data:st,error}=await sb.rpc('trivia_state',{p_id:GR.id});
+    if(error||!st||!GR)return;
+    if(!st.ok){say(errMsg(st.err));GR=null;clearInterval(gPoll);clearInterval(gTick);groupHome();return}
+    renderGroup(st);
+  }catch(e){}finally{gPolling=false}
+}
+function tickGroup(){
+  const t=$('#gtm');if(!t||!GR||GR.over)return;
+  t.textContent='⏱ '+Math.max(0,(GR.deadline-performance.now())/1000).toFixed(1)+'s';
+}
+function gScore(pls,showDone){
+  return pls.slice().sort((a,b)=>b.score-a.score).map((p,i)=>`<div class="wg-card" style="margin:4px 0;padding:6px 9px${p.me?';border-color:#a78bfa':''}">
+    <div style="display:flex;justify-content:space-between"><span>${i+1}. <b>${esc(p.name)}</b>${p.me?' (you)':''}${p.streak>=2?' 🔥'+p.streak:''}</span><span>${showDone?(p.done?'✅ ':'… '):''}<b style="color:#fcd34d">${p.score}</b></span></div>${gearLine(p.g,p.b)}</div>`).join('');
+}
+function gFeed(log){
+  return (log||[]).map(e=>`<div style="margin:3px 0"><span style="color:#a1a1aa">R${e.r+1} · answer: <b style="color:#fff">${esc(e.ans)}</b></span> ${(e.res||[]).map(x=>x.ok?`<span style="color:#86efac">${esc(x.n)}: ${esc((MOVES[x.mv-1]||['?'])[0])} +${x.pts}</span>`:(x.ans?`<span style="color:#fca5a5">${esc(x.n)}: ${x.pts}</span>`:`<span style="color:#71717a">${esc(x.n)}: 💤</span>`)).join(' · ')}</div>`).join('');
+}
+function renderGroup(st){
+  const pls=st.players||[];
+  if(st.status==='waiting'){
+    GR.phase='wait';
+    const enough=pls.length>=4;
+    view(`<div style="text-align:center"><div style="font:900 18px Cinzel,serif;color:#fcd34d">Waiting for players… ${pls.length}/${st.maxp}</div>
+      <div style="color:#a1a1aa;font-size:13px;margin:4px 0 8px">${esc(st.title)} · ${st.n} rounds · ${st.secs}s each · pot so far 🪙${st.pot}</div></div>
+      ${gScore(pls,false)}
+      <div style="font-size:12px;color:#a1a1aa;margin:6px 0">${enough?'Ready! The host can start now.':'Need at least 4 players to start.'}</div>
+      <div style="display:flex;gap:8px">${st.host?`<button class="wg-b wg-g" data-act="gstart" ${enough?'':'disabled style="opacity:.5"'}>▶ Start</button>`:''}<button class="wg-b wg-z" data-act="gleave">${st.host?'Cancel &amp; refund':'Leave &amp; refund'}</button></div>`);
+    return;
+  }
+  if(st.status==='cancelled'){
+    GR.over=true;clearInterval(gPoll);clearInterval(gTick);collect();
+    view('<div style="text-align:center;padding:14px"><div style="font:900 20px Cinzel,serif;color:#a1a1aa">🚫 Room cancelled</div><div style="margin:6px 0 12px">Stakes are refunded.</div><button class="wg-b wg-p" data-act="gback">Back to lobby</button></div>');
+    return;
+  }
+  if(GR.phase!=='play'){
+    view(`<div style="display:flex;justify-content:space-between;font-size:12px;color:#a1a1aa"><span id="ginfo"></span><span id="gtm" style="color:#fcd34d;font-weight:700"></span></div>
+      <div id="gsb"></div><div id="gq"></div><div id="gst" style="font-size:12px;color:#a1a1aa;min-height:16px;margin-top:6px"></div>
+      <div id="gf" class="wg-feed" style="margin-top:8px"></div>`);
+    GR.phase='play';GR.rnd=-1;
+  }
+  $('#gsb').innerHTML=gScore(pls,st.status==='active');
+  $('#gf').innerHTML=gFeed(st.log);
+  $('#ginfo').textContent='Round '+Math.min(st.rnd+1,st.n)+'/'+st.n+' · pot 🪙'+st.pot;
+  if(st.status!=='active'){
+    GR.over=true;clearInterval(gPoll);clearInterval(gTick);
+    const medal=['🥇','🥈','🥉'];
+    const rows=(st.rank||[]).map((r,i)=>`<div class="wg-card" style="margin:4px 0;padding:6px 9px${r.me?';border-color:#fcd34d':''}"><div style="display:flex;justify-content:space-between"><span>${medal[i]||(i+1)+'.'} <b>${esc(r.name)}</b>${r.me?' (you)':''}</span><span>${r.score} pts${r.pay?' · <b style="color:#86efac">🪙'+r.pay+'</b>':''}</span></div></div>`).join('');
+    const mine=(st.rank||[]).find(r=>r.me);
+    $('#gq').innerHTML=`<div style="text-align:center;padding:8px"><div style="font:900 22px Cinzel,serif;color:#fcd34d">🏁 Final standings</div>
+      <div style="margin:4px 0 8px">${mine&&mine.pay?'You win <b style="color:#86efac">🪙'+mine.pay+'</b>!':'No prize this time.'}</div>${rows}
+      <button class="wg-b wg-p" style="margin-top:8px" data-act="gback">Back to lobby</button></div>`;
+    $('#gtm').textContent='';$('#gst').textContent='';
+    if(!GR.paid){GR.paid=true;collect()}
+    return;
+  }
+  GR.deadline=performance.now()+st.left*1000;
+  const me=pls.find(p=>p.me),meAns=!!(me&&me.done);
+  if(st.rnd!==GR.rnd){
+    GR.rnd=st.rnd;GR.answered=meAns;
+    const q=st.q;let inp;
+    if(q.t==='mc')inp=q.o.map((o,i)=>`<button class="wg-opt" data-act="ga" data-v="${i}">${'ABCDEF'[i]}. ${esc(o)}</button>`).join('');
+    else if(q.t==='tf')inp='<button class="wg-opt" data-act="ga" data-v="true">✅ True</button><button class="wg-opt" data-act="ga" data-v="false">❌ False</button>';
+    else inp='<input id="gfb" class="wg-in" placeholder="Type your answer…" autocomplete="off"><button class="wg-b wg-g" style="margin-top:8px" data-act="gfb">Lock in!</button>';
+    $('#gq').innerHTML=`<div style="font:700 17px sans-serif;margin:8px 0;color:#fff">${esc(q.q)}</div>${inp}`;
+    if(GR.answered)lockGq();else if(q.t==='fb'){const f=$('#gfb');if(f)f.focus()}
+  }else if(meAns&&!GR.answered){GR.answered=true;lockGq()}
+  const left=pls.filter(p=>!p.done).length;
+  $('#gst').textContent=meAns?(left?'Locked in. Waiting for '+left+' more…':''):'';
+}
+function lockGq(){modal.querySelectorAll('#gq button,#gq input').forEach(b=>b.disabled=true)}
+async function groupAnswer(v){
+  if(!GR||GR.answered||GR.over)return;
+  GR.answered=true;lockGq();
+  await rpc('trivia_answer',{p_id:GR.id,p_rnd:GR.rnd,p_ans:v},true);
+  pollGroup();
+}
+function groupFb(){const f=$('#gfb');if(!f||f.disabled)return;groupAnswer(f.value.trim()||'')}
+
 // ---------- clicks ----------
 async function onClick(e){
   const t=e.target.closest('[data-tab],[data-act]');if(!t)return;
@@ -396,6 +530,13 @@ async function onClick(e){
   else if(a==='dcancel'){const r=await rpc('duel_cancel',{p_id:D&&D.id});if(r==='ok'){collect();say('Duel cancelled. Your stake is coming back.')}else if(r)say(errMsg(r));D=null;go('duel')}
   else if(a==='dforfeit'){if(confirm('Forfeit? Your opponent takes the whole pot.')){const r=await rpc('duel_forfeit',{p_id:D&&D.id});if(r&&r!=='ok')say(errMsg(r));pollDuel()}}
   else if(a==='dback'){D=null;go('duel')}
+  else if(a==='gcreate')createGroup();
+  else if(a==='gjoin')joinGroup(id,+t.dataset.stake||0);
+  else if(a==='ga'){const v=t.dataset.v;groupAnswer(v==='true'?true:v==='false'?false:+v)}
+  else if(a==='gfb')groupFb();
+  else if(a==='gstart'){const r=await rpc('trivia_start',{p_id:GR&&GR.id});if(r&&r!=='ok')say(errMsg(r));pollGroup()}
+  else if(a==='gleave'){const r=await rpc('trivia_leave',{p_id:GR&&GR.id});if(r==='ok'){collect();say('Left the room. Your stake is coming back.')}else if(r)say(errMsg(r));GR=null;go('group')}
+  else if(a==='gback'){GR=null;go('group')}
 }
 
 // the big menu button works even before init has finished (delegated, so it never misses)
