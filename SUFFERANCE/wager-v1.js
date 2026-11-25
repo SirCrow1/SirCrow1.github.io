@@ -72,13 +72,18 @@ const MODAL=`<div id="wg-modal" style="display:none;position:fixed;inset:0;z-ind
 const view=h=>{const b=$('#wg-body');if(b)b.innerHTML=h};
 const body=()=>$('#wg-body');
 
+// shop items (orb, favour, shield, key...) are banned while a wager quiz or a live duel is running
+const itemsBanned=()=>!!(Q||(D&&!D.over));
+function banItems(){
+  try{const u=window.useItem;if(typeof u!=='function'||u.__wg)return;
+    const w=function(){if(itemsBanned()){say('🚫 Items are banned in duels and wagers.');return}return u.apply(this,arguments)};w.__wg=1;window.useItem=w}catch(e){}
+}
 function init(){
-  sb=window.SUFF_SB;
-  const acct=$('#acctbtn'),b=document.createElement('button');
-  b.id='wgbtn';b.type='button';b.textContent='⚔️ Wagers';b.className=acct.className;
-  acct.parentNode.insertBefore(b,acct);
-  const w=document.createElement('button');w.id='wgduel';w.type='button';w.textContent='🥊 Wager Duel';w.className=acct.className;
-  acct.parentNode.insertBefore(w,acct);w.addEventListener('click',()=>{tab='duel';open()});
+  sb=window.SUFF_SB;banItems();setInterval(banItems,3000);
+  // lives in the main menu next to Dungeon / Armory / Gallery (full-width, so the grid stays symmetrical)
+  let b=$('#wgnav');
+  if(!b){const acct=$('#acctbtn');b=document.createElement('button');b.id='wgnav';b.type='button';b.textContent='⚔️ Wagers & Duels';b.className=acct.className;acct.parentNode.insertBefore(b,acct)}
+
   document.body.insertAdjacentHTML('beforeend',STYLE+MODAL);
   modal=$('#wg-modal');
   b.addEventListener('click',open);
@@ -90,7 +95,7 @@ function init(){
 }
 async function badge(){
   try{if(!await loggedIn())return;const r=await rpc('challenge_list',null,true);if(!r)return;
-    const n=(r.incoming||[]).filter(c=>c.status==='pending').length;$('#wgbtn').textContent='⚔️ Wagers'+(n?' ('+n+')':'');}catch(e){}
+    const n=(r.incoming||[]).filter(c=>c.status==='pending').length;$('#wgnav').textContent='⚔️ Wagers & Duels'+(n?' ('+n+' new)':'');}catch(e){}
 }
 async function open(){
   modal.style.display='flex';
@@ -134,7 +139,7 @@ async function inbox(){
 
 // ---------- SEND A QUIZ ----------
 function sendForm(){
-  view(`<div style="font-size:12px;color:#a1a1aa">Pick a deck and a player. If they score at least the pass mark they win gold from you; if they miss it, you win their stake.</div>
+  view(`<div style="font-size:12px;color:#fca5a5">🚫 Items are banned while a wager quiz is running.</div><div style="font-size:12px;color:#a1a1aa">Pick a deck and a player. If they score at least the pass mark they win gold from you; if they miss it, you win their stake.</div>
   <label class="wg-lb">SEND TO (exact player name)</label><input id="wg-to" class="wg-in" maxlength="16" placeholder="Player_1234abcd">
   <label class="wg-lb">DECK</label><select id="wg-deck" class="wg-in">${deckOpts()}</select>
   <label class="wg-lb">QUESTION TYPES</label><div>${typeBoxes('wg-t')}</div>
@@ -240,7 +245,7 @@ async function duelHome(){
     <button class="wg-b wg-g" style="margin-top:5px" data-act="djoin" data-id="${d.id}" data-stake="${d.stake}">⚔️ Fight! (🪙${d.stake})</button></div>`).join('')||'<div style="color:#71717a;font-size:13px">No open duels right now. Host one!</div>';
   view(`<div style="display:flex;justify-content:space-between"><b style="color:#fcd34d">Open duels</b><button class="wg-b wg-z" data-act="refresh">↻ Refresh</button></div>${open}
    <b style="color:#fcd34d;display:block;margin-top:14px">Host a duel</b>
-   <div style="font-size:12px;color:#a1a1aa">Both players answer the same questions. Every right answer casts one of 30 moves at the other player (the faster right answer gets +5). 100 HP each, winner takes the whole pot. <b style="color:#c4b5fd">Your own gear counts:</b> blade = extra damage, armour = less damage taken, pet = heals you every round. You are wearing: ${esc([gn('WPNS',gearNow().wpn),gn('SKINS',gearNow().skin),gn('PETS',gearNow().pet)].filter(Boolean).join(', ')||'nothing')}.</div>
+   <div style="font-size:12px;color:#a1a1aa">Both players answer the same questions. Every right answer casts one of 30 moves at the other player (the faster right answer gets +5). 100 HP each, winner takes the whole pot. <b style="color:#c4b5fd">🚫 Items (orbs, favours, shields, keys) are banned. Your own gear counts:</b> blade = extra damage, armour = less damage taken, pet = heals you every round. You are wearing: ${esc([gn('WPNS',gearNow().wpn),gn('SKINS',gearNow().skin),gn('PETS',gearNow().pet)].filter(Boolean).join(', ')||'nothing')}.</div>
    <label class="wg-lb">DECK</label><select id="dd-deck" class="wg-in">${deckOpts()}</select>
    <label class="wg-lb">QUESTION TYPES</label><div>${typeBoxes('dd-t')}</div>
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">

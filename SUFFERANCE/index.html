@@ -1255,6 +1255,7 @@ sync();
                     <button data-t="s" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-2 py-2 rounded transition title-font text-xs sm:text-sm w-full text-center">🛡️ Armory</button>
                     <button data-t="h" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-2 py-2 rounded transition title-font text-xs sm:text-sm w-full text-center">🖼️ Gallery</button>
                     <button data-t="a" class="tab-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-2 py-2 rounded transition title-font text-xs sm:text-sm w-full text-center">🏅 Achievements</button>
+                    <button id="wgnav" type="button" class="col-span-3 bg-violet-700 hover:bg-violet-600 text-white shadow-[0_0_10px_rgba(139,92,246,0.4)] font-bold px-2 py-2 rounded transition title-font text-xs sm:text-sm w-full text-center">⚔️ Wagers &amp; Duels</button>
                 </nav>
 
                 <!-- Tab: Profile (filled by account-v14.js) -->
@@ -7421,12 +7422,19 @@ return{has:k=>!!P[k],back,front,
   g.restore()},
  tex(g,k,sheet,fi,dx,dy,w,h,tag){if(!TX.has(k))return;const ov=TX.get(k,sheet,fi,120,80,tag||'i');const o=g.imageSmoothingEnabled;g.imageSmoothingEnabled=false;g.drawImage(ov,0,0,120,80,dx,dy,w,h);g.imageSmoothingEnabled=o},
  pv(g,k,x,y,t,layer){if(!P[k])return;g.save();g.translate(x,y);(layer?front:back)(g,k,t);g.restore()},
- hook(A,fn){const k=shopS().eq.skin,spr=A[0];if(!P[k]||!(spr===sprites.idle||spr===sprites.run)||!G||G.state=='dying')return fn();
+ hook(A,fn){const k=shopS().eq.skin,spr=A[0];if(!P[k]||!(spr===sprites.idle||spr===sprites.run||spr===sprites.attack)||!G||G.state=='dying')return fn();const isA=spr===sprites.attack,ao=isA?atkOff(Math.floor((performance.now()/100)%(A[3]||4))):null;
   const u=(A[7]||2.2)/2.2,dir=A[6]||1,t=performance.now()/1000,bob=spr===sprites.run?Math.sin(t*14)*1.5:0;
-  const dr=l=>{ctx.save();ctx.translate(A[4]-dir*(10-(spr===sprites.run?7:0))*u,A[5]-66*u+bob);ctx.scale(dir*u,u);(l?front:back)(ctx,k,t);ctx.restore()};
-  try{dr(0)}catch(e){}const r=fn();try{if(TX.has(k)){const fw=A[1]||120,fh=A[2]||80,fi=Math.floor((performance.now()/100)%(A[3]||10)),sc=A[7]||2.2;ctx.save();ctx.translate(A[4],A[5]);ctx.scale(dir,1);ctx.imageSmoothingEnabled=false;ctx.drawImage(TX.get(k,spr.img,fi,120,80,spr===sprites.run?'r':'i'),0,0,120,80,-(fw*sc)/2,-(fh*sc)+15,fw*sc,fh*sc);ctx.restore()}}catch(e){}try{dr(1)}catch(e){}return r}};
+  const dr=l=>{ctx.save();ctx.translate(A[4]-dir*(10-(spr===sprites.run?7:0))*u+(isA?dir*ao.dx*u*2.2:0),A[5]-66*u+bob+(isA?ao.dy*u*2.2:0));ctx.scale(dir*u,u);(l?front:back)(ctx,k,t);ctx.restore()};
+  try{dr(0)}catch(e){}const r=fn();try{if(TX.has(k)){const fw=A[1]||120,fh=A[2]||80,fi=Math.floor((performance.now()/100)%(A[3]||10)),sc=A[7]||2.2;ctx.save();ctx.translate(A[4],A[5]);ctx.scale(dir,1);ctx.imageSmoothingEnabled=false;ctx.drawImage(TX.get(k,isA?(window.ATKIMG||spr.img):spr.img,fi,120,80,isA?'a':spr===sprites.run?'r':'i'),0,0,120,80,-(fw*sc)/2,-(fh*sc)+15,fw*sc,fh*sc);ctx.restore()}}catch(e){}try{dr(1)}catch(e){}return r}};
 })();
-const _ds=drawSprite;drawSprite=function(){const h=shopS(),sk=SKINS[h.eq.skin],w=WPNS[h.eq.wpn];if(!sk&&!w)return _ds.apply(this,arguments);const A=arguments;if(A[0]===sprites.attack){const sh=wSheet();if(sh){const o=A[0].img;A[0].img=sh;try{return _ds.apply(this,A)}finally{A[0].img=o}}}DJ.hook(A,()=>_ds.apply(this,A));
+// where the head sits in each swing frame compared with idle, so horns / tails / halos follow the body
+const AOC={};function atkOff(f){if(AOC[f])return AOC[f];const Z={dx:0,dy:0};try{const im=window.ATKIMG||sprites.attack.img,id=sprites.idle.img;if(!im||im.complete===false||!id.complete||!id.naturalWidth)return Z;
+ const head=(img,fi)=>{const c=document.createElement('canvas');c.width=120;c.height=80;const g=c.getContext('2d');g.drawImage(img,fi*120,0,120,80,0,0,120,80);const d=g.getImageData(0,0,120,80).data;
+  const ok=i=>{if(d[i+3]<200)return false;const r=d[i],gg=d[i+1],b=d[i+2];return !((r==199&&gg==199&&b==176)||(r==230&&gg==230&&b==212))};
+  let top=-1;for(let y=0;y<80&&top<0;y++)for(let x=0;x<120;x++)if(ok((y*120+x)*4)){top=y;break}
+  if(top<0)return null;let sx=0,n=0;for(let y=top;y<top+5;y++)for(let x=0;x<120;x++)if(ok((y*120+x)*4)){sx+=x;n++}return{x:sx/n,y:top}};
+ const a=head(im,f),b=head(id,0);if(!a||!b)return Z;return AOC[f]={dx:a.x-b.x,dy:a.y-b.y}}catch(e){return Z}}
+const _ds=drawSprite;drawSprite=function(){const h=shopS(),sk=SKINS[h.eq.skin],w=WPNS[h.eq.wpn];if(!sk&&!w)return _ds.apply(this,arguments);const A=arguments;if(A[0]===sprites.attack){const sh=wSheet();if(sh){const o=A[0].img;if(o&&o.naturalWidth)window.ATKIMG=o;A[0].img=sh;try{return DJ.hook(A,()=>_ds.apply(this,A))}finally{A[0].img=o}}}DJ.hook(A,()=>_ds.apply(this,A));
  if(w&&(A[0]===sprites.idle||A[0]===sprites.run)&&G.state!='dying'){const sc=A[7]||2.2,dir=A[6]||1,t=performance.now()/1000;ctx.save();ctx.translate(A[4]+dir*5,A[5]-26+(A[0]===sprites.run?Math.sin(t*14)*2:0));ctx.scale(dir,1);ctx.rotate(.55+Math.sin(t*2)*.03);weaponDraw(h.eq.wpn,t);ctx.restore()}
  if(false&&h.eq.skin=='royal'&&(A[0]===sprites.idle||A[0]===sprites.run)&&G.state!='dying'){const sc=A[7]||2.2,dir=A[6]||1,t=performance.now()/1000;ctx.save();ctx.translate(A[4]-dir*10*sc/2.2,A[5]-(66*sc/2.2)+(A[0]===sprites.run?Math.sin(t*14)*1.5:0));ctx.scale(dir*sc/2.2,sc/2.2);
   ctx.fillStyle='#d4a017';ctx.fillRect(-6,2,12,3);ctx.fillRect(-1.5,-3,3,6);
