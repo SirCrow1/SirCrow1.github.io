@@ -388,11 +388,12 @@ async function showLB(sort){
   $('#lb-modal').style.display='flex';
   $('#lb-body').textContent='Loading…';
   await syncStats();
+  await loadBadges();
   if(sort==='players'){
     const {data,error}=await sb.rpc('get_players');
     if(error){$('#lb-body').textContent='Could not load: '+error.message;return}
     $('#lb-body').innerHTML=(data&&data.length)?data.map(r=>
-      `<div data-view="${esc(r.uname)}" style="cursor:pointer;display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid #27272a;${r.featured?'background:#2a1f05;':''}${r.uname===profile.username?'outline:1px solid #34d399;':''}"><span>${r.featured?'⭐ ':''}<b style="color:${r.featured?'#facc15':'#fff'}">${esc(r.uname)}</b></span><span style="color:#a1a1aa;font-size:12px">${r.solved} puzzles · best streak ${r.streak}</span></div>`
+      `<div data-view="${esc(r.uname)}" style="cursor:pointer;display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid #27272a;${r.featured?'background:#2a1f05;':''}${r.uname===profile.username?'outline:1px solid #34d399;':''}"><span>${r.featured?'⭐ ':''}<b style="color:${r.featured?'#facc15':'#fff'}">${esc(r.uname)}</b>${pfBadges(r.uname)}</span><span style="color:#a1a1aa;font-size:12px">${r.solved} puzzles · best streak ${r.streak}</span></div>`
     ).join(''):'<div style="color:#a1a1aa">No players yet.</div>';
     return;
   }
@@ -415,15 +416,17 @@ async function admLoad(){
   if(admTab==='players'){
     const {data,error}=await sb.rpc('admin_list_players');
     if(error){body.textContent='Error: '+error.message;return}
+    await loadBadges(true);
     body.innerHTML=`<div style="font-size:12px;color:#a1a1aa;margin-bottom:6px">${data.length} players</div>`+data.map(r=>{
       const me=r.uid===myId;
       return `<div style="border:1px solid #27272a;border-radius:8px;padding:8px;margin-bottom:6px;background:#0b0912">
-        <div><b style="color:#fff">${esc(r.uname||'(no name yet)')}</b> ${r.urole==='admin'?'<span style="color:#facc15">[admin]</span>':''} ${r.isbanned?'<span style="color:#f87171">[BANNED]</span>':''} ${me?'<span style="color:#34d399">(you)</span>':''}</div>
+        <div><b style="color:#fff">${esc(r.uname||'(no name yet)')}</b>${pfBadges(r.uname,r.uid)} ${r.urole==='admin'?'<span style="color:#facc15">[admin]</span>':''} ${r.isbanned?'<span style="color:#f87171">[BANNED]</span>':''} ${me?'<span style="color:#34d399">(you)</span>':''}</div>
         <div style="font-size:11px;color:#a1a1aa">${esc(r.mail||'')}</div>
         <div style="font-size:11px;color:#a1a1aa">Invited by: ${esc(r.invited_by_name||'—')} · Invited ${r.invited_n} players · Pending gold: ${r.pend}</div>
         <div style="margin-top:6px">
           <button class="acct-b" data-act="rename" data-uid="${esc(r.uid)}" data-name="${esc(r.uname||'')}" style="background:#3f3f46;margin:0 4px 4px 0">✏️ Rename</button>
           <button class="acct-b" data-act="view" data-name="${esc(r.uname||'')}" style="background:#0e7490;margin:0 4px 4px 0">👁 View</button>
+          ${badgeBtns(r)}
           <button class="acct-b" data-act="feat" data-uid="${esc(r.uid)}" data-flag="${r.feat?'0':'1'}" style="background:#ca8a04;margin:0 4px 4px 0">${r.feat?'Unfeature':'⭐ Feature'}</button>
           ${me?'':`<button class="acct-b" data-act="ban" data-uid="${esc(r.uid)}" data-flag="${r.isbanned?'0':'1'}" style="background:${r.isbanned?'#059669':'#7f1d1d'};margin:0 4px 4px 0">${r.isbanned?'Unban':'Ban'}</button>
           <button class="acct-b" data-act="role" data-uid="${esc(r.uid)}" data-role="${r.urole==='admin'?'player':'admin'}" style="background:#7c3aed;margin:0 4px 4px 0">${r.urole==='admin'?'Make player':'Make admin'}</button>`}
@@ -477,6 +480,12 @@ async function admClick(e){
       const {data,error}=await sb.rpc('admin_set_featured',{target:b.dataset.uid,flag:f});
       if(error)return say(error.message);
       say(data==='ok'?(f?'Player featured':'Feature removed'):data);
+    }else if(act==='badge'){
+      const f=b.dataset.flag==='1';
+      const {data,error}=await sb.rpc('admin_set_badge',{target:b.dataset.uid,badge_key:b.dataset.badge,flag:f});
+      if(error)return say(error.message);
+      say(data==='ok'?(f?'Badge given':'Badge removed'):data);
+      await loadBadges(true);
     }else if(act==='gc-create'){
       const num=id=>{const v=$(id).value.trim();return v===''?null:Math.floor(Number(v))};
       const {data,error}=await sb.rpc('admin_create_code',{p_code:$('#gc-code').value.trim(),p_gold:num('#gc-gold'),p_max_uses:num('#gc-max'),p_days:num('#gc-days')});
@@ -567,12 +576,13 @@ async function viewPlayer(name){
   const {data,error}=await sb.rpc(isAdmin?'admin_get_player':'get_player',{p_name:name});
   if(error){body.textContent='Could not load: '+error.message;return}
   if(!data){body.textContent='Player not found';return}
+  await loadBadges();
   const st=data.stats||{},has=v=>v!==undefined&&v!==null;
   const d=v=>v?new Date(v).toLocaleDateString():'—';
   const box=(l,v)=>`<div class="acct-stat">${l}<b>${esc(has(v)?v:'—')}</b></div>`;
   const eq=st.eq||{};
   const eqTxt=[eq.pet&&typeof PETS!=='undefined'&&PETS[eq.pet]?PETS[eq.pet].n:'',eq.skin&&typeof SKINS!=='undefined'&&SKINS[eq.skin]?SKINS[eq.skin].n:'',eq.blade&&typeof WPNS!=='undefined'&&WPNS[eq.blade]?WPNS[eq.blade].n:''].filter(Boolean).join(' · ');
-  let html=`<div style="font:bold 20px sans-serif;color:#fff;margin-bottom:2px">${data.featured?'⭐ ':''}${esc(data.name)}</div>
+  let html=`<div style="font:bold 20px sans-serif;color:#fff;margin-bottom:2px">${data.featured?'⭐ ':''}${esc(data.name)}${pfBadges(data.name)}</div>
     <div style="font-size:12px;color:#a1a1aa;margin-bottom:10px">Joined ${d(data.joined)} · Last seen ${d(data.last_seen)}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">`
     +box('🪙 Gold',has(st.gold)?Number(st.gold).toLocaleString():null)+box('🧩 Puzzles solved',data.solved)
@@ -762,6 +772,7 @@ async function profileTabOpen(){
   $('#pf-search').oninput=e=>{pfFilter=e.target.value.trim().toLowerCase();pfRenderList()};
   $('#pf-list').onclick=e=>{const r=e.target.closest('[data-pf]');if(r)pfSelect(r.dataset.pf)};
   await syncStats();   // so your own numbers are current
+  await loadBadges(true);
   const {data,error}=await sb.rpc('get_players');
   if(error){$('#pf-list').textContent='Could not load: '+error.message;return}
   pfPlayers=data||[];
@@ -773,7 +784,7 @@ function pfRenderList(){
   const box=$('#pf-list');if(!box)return;
   const rows=pfPlayers.filter(r=>!pfFilter||String(r.uname).toLowerCase().includes(pfFilter));
   box.innerHTML=rows.length?rows.map(r=>`<div data-pf="${esc(r.uname)}" style="cursor:pointer;display:flex;justify-content:space-between;gap:8px;padding:6px 8px;border-bottom:1px solid #27272a;${r.featured?'background:#2a1f05;':''}${r.uname===pfSel?'outline:1px solid #34d399;outline-offset:-1px;':''}">
-      <span style="text-align:left">${r.featured?'⭐ ':''}<b style="color:${r.featured?'#facc15':'#fff'}">${esc(r.uname)}</b>${r.uname===profile.username?' <span style="color:#34d399;font-size:11px">(you)</span>':''}</span>
+      <span style="text-align:left">${r.featured?'⭐ ':''}<b style="color:${r.featured?'#facc15':'#fff'}">${esc(r.uname)}</b>${pfBadges(r.uname)}${r.uname===profile.username?' <span style="color:#34d399;font-size:11px">(you)</span>':''}</span>
       <span style="color:#a1a1aa;font-size:12px;white-space:nowrap">${r.solved} puzzles</span></div>`).join(''):'<div style="color:#a1a1aa;padding:8px">No match.</div>';
 }
 async function pfSelect(name){
@@ -782,6 +793,7 @@ async function pfSelect(name){
   card.textContent='Loading…';
   const {data,error}=await sb.rpc(isAdmin?'admin_get_player':'get_player',{p_name:name});
   if(pfSel!==name)return;   // another player was picked meanwhile
+  await loadBadges();
   if(error){card.textContent='Could not load: '+error.message;return}
   if(!data){card.textContent='Player not found';return}
   const st=data.stats||{},eq=st.eq||{},has=v=>v!==undefined&&v!==null;
@@ -790,7 +802,7 @@ async function pfSelect(name){
   const synced=Object.keys(st).length>0;
   const PT_=typeof PETS!=='undefined'?PETS:null,WP_=typeof WPNS!=='undefined'?WPNS:null,SK_=typeof SKINS!=='undefined'?SKINS:null;
   card.innerHTML=`<div style="border:1px solid #27272a;border-radius:10px;padding:12px;background:#0f0c18;text-align:left;color:#d4d4d8">
-    <div style="font:bold 22px sans-serif;color:#fff">👤 ${data.featured?'⭐ ':''}${esc(data.name)}</div>
+    <div style="font:bold 22px sans-serif;color:#fff">👤 ${data.featured?'⭐ ':''}${esc(data.name)}${pfBadges(data.name)}</div>
     <div style="font-size:12px;color:#a1a1aa;margin:2px 0 10px">Joined ${d(data.joined)} · Last seen ${d(data.last_seen)}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
       ${pfBox('🪙 Gold',num(st.gold))}${pfBox('⚔️ Runs',num(data.runs))}
@@ -807,6 +819,36 @@ async function pfSelect(name){
     <div style="font-size:11px;color:#71717a;margin-top:8px">Numbers are reported by the player's browser and update when they open the game.</div></div>`;
 }
 window.profileTabOpen=profileTabOpen;
+
+// ================= v15: profile badges (tiny, hidden until a player has one; only admins can give them) =================
+// Add a new badge by adding a line here AND its key to the SQL list (badge_ok). Nobody sees a badge they don't have.
+const PBADGES={
+  beta:{i:'🧪',n:'Beta Tester',d:'Helped test the game early',c:'#38bdf8'},
+  owner:{i:'👑',n:'Owner',d:'Owner of the game',c:'#facc15'}
+};
+let badgeMap={},badgeAt=0;
+async function loadBadges(force){
+  if(!sb||(!force&&Date.now()-badgeAt<30000))return;
+  badgeAt=Date.now();   // also on failure, so a missing server function is not hammered
+  try{
+    const {data,error}=await sb.rpc('get_all_badges');
+    if(error||!Array.isArray(data))return;
+    const m={};
+    data.forEach(r=>{const b=(r.badges||[]).filter(k=>PBADGES[k]);if(r.uid)m['u:'+r.uid]=b;if(r.uname)m['n:'+String(r.uname).toLowerCase()]=b});
+    badgeMap=m;
+  }catch(e){}
+}
+function badgeKeys(name,uid){return (uid&&badgeMap['u:'+uid])||(name&&badgeMap['n:'+String(name).toLowerCase()])||[]}
+function pfBadges(name,uid){   // the tiny badges shown next to a name; empty string when the player has none
+  return badgeKeys(name,uid).map(k=>{const b=PBADGES[k];
+    return `<span title="${esc(b.n)} — ${esc(b.d)}" aria-label="${esc(b.n)}" style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;font-size:11px;line-height:1;border:1px solid ${b.c};background:${b.c}26;border-radius:5px;margin-left:4px;vertical-align:middle;cursor:help">${b.i}</span>`}).join('');
+}
+function badgeBtns(r){   // admin panel: one give/remove button per badge
+  const has=badgeKeys(r.uname,r.uid);
+  return Object.keys(PBADGES).map(k=>{const on=has.includes(k);
+    return `<button class="acct-b" data-act="badge" data-uid="${esc(r.uid)}" data-badge="${k}" data-flag="${on?'0':'1'}" style="background:${on?'#0f766e':'#3f3f46'};margin:0 4px 4px 0">${PBADGES[k].i} ${on?'Remove':'Give'} ${PBADGES[k].n}</button>`}).join('');
+}
+
 
 // ---------- admin: teleport to any puzzle room (secret trick rooms, boss room, normal rooms) ----------
 function teleOpen(){
