@@ -2175,7 +2175,7 @@ ${G}
         }
         // two independent passes (second one with the options shuffled); a question is kept only if both give the same answer
         async function aiFill(pending) {
-            const A = await askAnswers(pending, false), B = await askAnswers(pending, true);
+            const [A, B] = await Promise.all([askAnswers(pending, false), askAnswers(pending, true)]);   // both checks at the same time = about twice as fast
             return pending.map((p, i) => { if (!(A[i] && B[i] && A[i].k === B[i].k)) return null; const wy = p.why || A[i].w || B[i].w || ''; return Object.assign({ t: p.t, q: p.q, o: p.o, a: A[i].k, topic: p.topic }, wy ? { why: wy } : {}); });
         }
         // study notes (no questions in the text at all): let Gemini write the questions, with the answer as TEXT, then double-check them
