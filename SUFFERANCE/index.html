@@ -1706,9 +1706,9 @@ ${G}
             save();
         }
         // ---- optional question types: tick which kinds show up in the dungeon ----
-        if(!S.types)S.types={mc:true,tf:true,fb:true,mt:true};
-        const QT=[['mc','Multiple choice'],['tf','True / False'],['fb','Fill in the blank'],['mt','Matching']];
-        const typeOn=q=>S.types[q.t==='mt'?'mt':q.t==='tf'?'tf':q.t==='fb'?'fb':'mc']!==false;
+        if(!S.types)S.types={mc:true,mm:true,tf:true,fb:true,mt:true};
+        const QT=[['mc','Multiple choice'],['mm','Multiple answers'],['tf','True / False'],['fb','Fill in the blank'],['mt','Matching']];
+        const typeOn=q=>S.types[q.t==='mt'?'mt':q.t==='tf'?'tf':q.t==='fb'?'fb':(q.multi||(Array.isArray(q.as)&&q.as.length>1))?'mm':'mc']!==false;
         const onlyTypes=(qs,fb)=>{const f=(qs||[]).filter(typeOn);return f.length?f:(fb||qs||[])};
         function typeBar(){
             let b=$('#qtypes');
