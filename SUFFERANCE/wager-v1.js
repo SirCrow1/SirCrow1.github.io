@@ -7,7 +7,7 @@ const MOVES=[['Jab',6],['Quick Slash',8],['Dagger Stab',8],['Shield Bash',9],['R
  ['Soul Drain',14],['Thunderclap',13],['Spear Thrust',11],['Cursed Hex',12],['Dragon Breath',20],['Shadow Strike',16],['Radiant Beam',18],['Earthquake',19],['Executioner',24],['Sufference',25]];
 const ERR={not_logged_in:'Sign in first (👤 Account).',no_such_player:'No player with that name.',self:"You can't pick yourself.",bad_amount:'Check the gold amounts.',bad_pass:'Pass mark must be 1-100%.',
  bad_time:'Time limit must be 5-300 seconds (or empty).',too_many:'Too many open quizzes (max 10, or 3 for the same player).',bad_questions:'Those questions could not be used.',banned:'This account is banned.',
- not_found:'Not found.',full:'That room is full.',not_enough:'Need at least 4 players to start.',not_host:'Only the host can start.',bad_players:'Room size must be 4-6.',not_yours:'You are not in that one.',already:'Already answered.',closed:'That one is already over.',late:'Too late.',already_in_duel:'You are already in a duel.',own_duel:"That's your own duel.",not_invited:'That duel is for someone else.',wrong_round:'Round already moved on.'};
+ not_found:'Not found.',full:'That room is full.',not_enough:'Need at least 2 players to start.',not_host:'Only the host can start.',bad_players:'Room size must be 2-10.',not_yours:'You are not in that one.',already:'Already answered.',closed:'That one is already over.',late:'Too late.',already_in_duel:'You are already in a duel.',own_duel:"That's your own duel.",not_invited:'That duel is for someone else.',wrong_round:'Round already moved on.',bad_code:'No open room with that code.',no_gold:"You don't have enough 🪙 for that room.",already_in_room:'You are already in a party room.'};
 const $=s=>document.querySelector(s);
 const say=m=>{try{toast(m)}catch(e){alert(m)}};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -16,7 +16,7 @@ let sb=null,modal=null,tab='inbox',Q=null,D=null,GR=null,gPoll=0,gTick=0,gPollin
 const setGold=d=>{S.gold=Math.max(0,(S.gold|0)+d);save();try{shopGold()}catch(e){}try{shopRender()}catch(e){}};
 const collect=()=>{try{window.SUFF_claimGold&&window.SUFF_claimGold()}catch(e){}};
 const errMsg=c=>ERR[c]||('Error: '+c);
-async function rpc(fn,args,quiet){const {data,error}=await sb.rpc(fn,args||{});if(error){if(!quiet)say('⚠️ '+(/function .* does not exist|schema cache/i.test(error.message)?'Run wager-setup.sql in Supabase first.':error.message));return null}return data}
+async function rpc(fn,args,quiet){const {data,error}=await sb.rpc(fn,args||{});if(error){if(!quiet)say('⚠️ '+(/function .* does not exist|schema cache/i.test(error.message)?'Run the latest sufference-setup.sql in Supabase first.':error.message));return null}return data}
 async function loggedIn(){try{const {data}=await sb.auth.getSession();return !!(data&&data.session)}catch(e){return false}}
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 
@@ -233,6 +233,25 @@ async function finishQ(){
 }
 
 // ---------- LIVE DUELS ----------
+// ---------- join codes ----------
+const codeBox=()=>`<div style="border:1px dashed #a78bfa;border-radius:8px;padding:8px;margin-bottom:10px"><b style="color:#c4b5fd">🔑 Have a room code?</b>
+  <div style="display:flex;gap:6px;margin-top:6px"><input id="wg-code" class="wg-in" maxlength="8" placeholder="e.g. K7QX2M" autocomplete="off" style="text-transform:uppercase;letter-spacing:3px;margin:0"><button class="wg-b wg-g" data-act="codejoin">Join</button></div></div>`;
+const codeShow=c=>c?`<div style="margin:10px 0;text-align:center"><div style="font-size:11px;color:#a1a1aa">ROOM CODE · share it so others can join</div>
+  <div style="font:900 30px Cinzel,serif;letter-spacing:5px;color:#fff">${esc(c)}</div><button class="wg-b wg-z" data-act="copycode" data-code="${esc(c)}">📋 Copy code</button></div>`:'';
+const privBox=id=>`<label class="wg-ck" style="display:block;margin-top:8px"><input type="checkbox" id="${id}"> 🔒 Private: only people with the room code can join</label>`;
+async function joinByCode(){
+  if(busy)return;
+  const el=$('#wg-code'),code=el?el.value.trim().toUpperCase():'';
+  if(!code)return say('Type the room code first.');
+  busy=true;await syncGear();
+  const r=await rpc('room_join_code',{p_code:code,p_gold:S.gold|0});
+  busy=false;
+  if(typeof r==='string'&&r.indexOf('ok:')===0){
+    const p=r.split(':'),kind=p[1],id=p[2],stake=+p[3]||0;
+    setGold(-stake);
+    if(kind==='duel')startDuel(id);else startGroup(id);
+  }else if(r)say(errMsg(r));
+}
 async function duelHome(){
   view('Loading…');
   const r=await rpc('duel_lobby');if(!r||tab!=='duel')return;
@@ -242,7 +261,7 @@ async function duelHome(){
   const open=(r.open||[]).map(d=>`<div class="wg-card"><b>${esc(d.who)}</b> · ${esc(d.title)} ${d.invited?'<span class="wg-s" style="color:#fcd34d">invited you</span>':''}
     <div style="font-size:12px;color:#a1a1aa">${d.n} questions · ${d.secs}s each · winner takes 🪙${d.stake*2}</div>${gearLine(d.gear,d.bonus)}
     <button class="wg-b wg-g" style="margin-top:5px" data-act="djoin" data-id="${d.id}" data-stake="${d.stake}">⚔️ Fight! (🪙${d.stake})</button></div>`).join('')||'<div style="color:#71717a;font-size:13px">No open duels right now. Host one!</div>';
-  view(`<div style="display:flex;justify-content:space-between"><b style="color:#fcd34d">Open duels</b><button class="wg-b wg-z" data-act="refresh">↻ Refresh</button></div>${open}
+  view(`${codeBox()}<div style="display:flex;justify-content:space-between"><b style="color:#fcd34d">Open duels</b><button class="wg-b wg-z" data-act="refresh">↻ Refresh</button></div>${open}
    <b style="color:#fcd34d;display:block;margin-top:14px">Host a duel</b>
    <div style="font-size:12px;color:#a1a1aa">Both players answer the same questions. Every right answer casts one of 30 moves at the other player (the faster right answer gets +5). 100 HP each, winner takes the whole pot. <b style="color:#c4b5fd">🚫 Items (orbs, favours, shields, keys) are banned. Your own gear counts:</b> blade = extra damage, armour = less damage taken, pet = heals you every round. You are wearing: ${esc([gn('WPNS',gearNow().wpn),gn('SKINS',gearNow().skin),gn('PETS',gearNow().pet)].filter(Boolean).join(', ')||'nothing')}.</div>
    <label class="wg-lb">DECK</label><select id="dd-deck" class="wg-in">${deckOpts()}</select>
@@ -253,6 +272,7 @@ async function duelHome(){
     <div><label class="wg-lb">STAKE EACH 🪙</label><input id="dd-stake" class="wg-in" type="number" min="0" value="50"></div>
     <div><label class="wg-lb">INVITE (optional name)</label><input id="dd-inv" class="wg-in" maxlength="16" placeholder="anyone can join"></div>
    </div>
+   ${privBox('dd-priv')}
    <button class="wg-b wg-p" style="margin-top:10px" data-act="dcreate">🥊 Host duel</button>`);
 }
 async function createDuel(){
@@ -265,7 +285,7 @@ async function createDuel(){
   const qs=shuffle(pool(deck,types)).slice(0,Math.max(3,Math.min(30,n)));
   if(qs.length<3)return say('Need at least 3 usable questions in that deck.');
   busy=true;await syncGear();
-  const r=await rpc('duel_create',{p_title:deck.name.slice(0,40),p_questions:qs,p_stake:stake,p_secs:secs,p_invite:inv});
+  const r=await rpc('duel_create',{p_title:deck.name.slice(0,40),p_questions:qs,p_stake:stake,p_secs:secs,p_invite:inv,p_private:!!($('#dd-priv')&&$('#dd-priv').checked)});
   busy=false;
   if(r==null)return;
   if(typeof r==='string'&&r.indexOf('ok:')===0){setGold(-stake);startDuel(r.slice(3))}else say(errMsg(r));
@@ -325,7 +345,7 @@ function renderDuel(st){
     D.built=false;
     view(`<div style="text-align:center;padding:14px"><div style="font:900 18px Cinzel,serif;color:#fcd34d">Waiting for an opponent…</div>
       <div style="color:#a1a1aa;font-size:13px;margin:6px 0 12px">${esc(st.title)} · ${st.n} rounds · ${st.secs}s each · pot 🪙${st.stake*2}</div>
-      <button class="wg-b wg-z" data-act="dcancel">Cancel &amp; refund</button></div>`);
+      ${codeShow(st.code)}<button class="wg-b wg-z" data-act="dcancel">Cancel &amp; refund</button></div>`);
     return;
   }
   if(!D.built){
@@ -376,7 +396,7 @@ async function duelAnswer(v){
 }
 function duelFb(){const f=$('#dfb');if(!f||f.disabled)return;duelAnswer(f.value.trim()||'')}
 
-// ---------- GROUP TRIVIA (4-6 players) ----------
+// ---------- GROUP TRIVIA (2-10 players, host picks) ----------
 async function groupHome(){
   view('Loading…');
   const r=await rpc('trivia_lobby');if(!r||tab!=='group')return;
@@ -387,9 +407,9 @@ async function groupHome(){
     <div style="font-size:12px;color:#a1a1aa">${d.n} questions · ${d.secs}s each · pot grows 🪙${d.stake} per player</div>
     <div style="font-size:11px;color:#a1a1aa">In the room: ${(d.names||[]).map(esc).join(', ')}</div>
     <button class="wg-b wg-g" style="margin-top:5px" data-act="gjoin" data-id="${d.id}" data-stake="${d.stake}">👥 Join (🪙${d.stake})</button></div>`).join('')||'<div style="color:#71717a;font-size:13px">No open rooms right now. Host one!</div>';
-  view(`<div style="display:flex;justify-content:space-between"><b style="color:#fcd34d">Open group rooms</b><button class="wg-b wg-z" data-act="refresh">↻ Refresh</button></div>${open}
+  view(`${codeBox()}<div style="display:flex;justify-content:space-between"><b style="color:#fcd34d">Open group rooms</b><button class="wg-b wg-z" data-act="refresh">↻ Refresh</button></div>${open}
    <b style="color:#fcd34d;display:block;margin-top:14px">Host a group trivia</b>
-   <div style="font-size:12px;color:#a1a1aa">4-6 players answer the same questions. A right answer casts one of the 30 moves for points (+ a speed bonus). Top 3 split the pot: 🥇50% 🥈30% 🥉20%.
+   <div style="font-size:12px;color:#a1a1aa">You pick the room size (2-10 players) and everyone answers the same questions. A right answer casts one of the 30 moves for points (+ a speed bonus). Top 3 split the pot: 🥇50% 🥈30% 🥉20% (with only 2 players the winner takes it all).
    <b style="color:#c4b5fd">Your own gear counts:</b> blade = more points per right answer, pet = bonus on streaks, armour = softer penalty for wrong answers. 🚫 Items are banned. You are wearing: ${esc([gn('WPNS',gearNow().wpn),gn('SKINS',gearNow().skin),gn('PETS',gearNow().pet)].filter(Boolean).join(', ')||'nothing')}.</div>
    <label class="wg-lb">DECK</label><select id="gg-deck" class="wg-in">${deckOpts()}</select>
    <label class="wg-lb">QUESTION TYPES</label><div>${typeBoxes('gg-t')}</div>
@@ -397,8 +417,9 @@ async function groupHome(){
     <div><label class="wg-lb">ROUNDS (3-30)</label><input id="gg-n" class="wg-in" type="number" min="3" max="30" value="10"></div>
     <div><label class="wg-lb">SECONDS PER QUESTION</label><input id="gg-secs" class="wg-in" type="number" min="5" max="60" value="15"></div>
     <div><label class="wg-lb">STAKE EACH 🪙</label><input id="gg-stake" class="wg-in" type="number" min="0" value="50"></div>
-    <div><label class="wg-lb">ROOM SIZE (4-6)</label><select id="gg-max" class="wg-in"><option>4</option><option>5</option><option selected>6</option></select></div>
+    <div><label class="wg-lb">HOW MANY PLAYERS (2-10)</label><select id="gg-max" class="wg-in">${[2,3,4,5,6,7,8,9,10].map(k=>`<option ${k==6?'selected':''}>${k}</option>`).join('')}</select></div>
    </div>
+   ${privBox('gg-priv')}
    <button class="wg-b wg-p" style="margin-top:10px" data-act="gcreate">👥 Host group trivia</button>`);
 }
 async function createGroup(){
@@ -411,7 +432,7 @@ async function createGroup(){
   const qs=shuffle(pool(deck,types)).slice(0,Math.max(3,Math.min(30,n)));
   if(qs.length<3)return say('Need at least 3 usable questions in that deck.');
   busy=true;await syncGear();
-  const r=await rpc('trivia_create',{p_title:deck.name.slice(0,40),p_questions:qs,p_stake:stake,p_secs:secs,p_max:mx});
+  const r=await rpc('trivia_create',{p_title:deck.name.slice(0,40),p_questions:qs,p_stake:stake,p_secs:secs,p_max:mx,p_private:!!($('#gg-priv')&&$('#gg-priv').checked)});
   busy=false;
   if(r==null)return;
   if(typeof r==='string'&&r.indexOf('ok:')===0){setGold(-stake);startGroup(r.slice(3))}else say(errMsg(r));
@@ -453,11 +474,11 @@ function renderGroup(st){
   const pls=st.players||[];
   if(st.status==='waiting'){
     GR.phase='wait';
-    const enough=pls.length>=4;
+    const enough=pls.length>=2;
     view(`<div style="text-align:center"><div style="font:900 18px Cinzel,serif;color:#fcd34d">Waiting for players… ${pls.length}/${st.maxp}</div>
       <div style="color:#a1a1aa;font-size:13px;margin:4px 0 8px">${esc(st.title)} · ${st.n} rounds · ${st.secs}s each · pot so far 🪙${st.pot}</div></div>
-      ${gScore(pls,false)}
-      <div style="font-size:12px;color:#a1a1aa;margin:6px 0">${enough?'Ready! The host can start now.':'Need at least 4 players to start.'}</div>
+      ${gScore(pls,false)}${codeShow(st.code)}
+      <div style="font-size:12px;color:#a1a1aa;margin:6px 0">${enough?'Ready! The host can start now.':'Need at least 2 players to start.'}</div>
       <div style="display:flex;gap:8px">${st.host?`<button class="wg-b wg-g" data-act="gstart" ${enough?'':'disabled style="opacity:.5"'}>▶ Start</button>`:''}<button class="wg-b wg-z" data-act="gleave">${st.host?'Cancel &amp; refund':'Leave &amp; refund'}</button></div>`);
     return;
   }
@@ -537,6 +558,8 @@ async function onClick(e){
   else if(a==='gstart'){const r=await rpc('trivia_start',{p_id:GR&&GR.id});if(r&&r!=='ok')say(errMsg(r));pollGroup()}
   else if(a==='gleave'){const r=await rpc('trivia_leave',{p_id:GR&&GR.id});if(r==='ok'){collect();say('Left the room. Your stake is coming back.')}else if(r)say(errMsg(r));GR=null;go('group')}
   else if(a==='gback'){GR=null;go('group')}
+  else if(a==='codejoin')joinByCode();
+  else if(a==='copycode'){const c=t.dataset.code||'';try{navigator.clipboard.writeText(c).then(()=>say('Code copied: '+c),()=>say('Room code: '+c))}catch(e){say('Room code: '+c)}}
 }
 
 // the big menu button works even before init has finished (delegated, so it never misses)

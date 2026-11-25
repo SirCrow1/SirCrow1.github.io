@@ -832,7 +832,7 @@ async function loadBadges(force){
   badgeAt=Date.now();   // also on failure, so a missing server function is not hammered
   try{
     const {data,error}=await sb.rpc('get_all_badges');
-    if(error||!Array.isArray(data))return;
+    if(error||!Array.isArray(data)){if(error){console.error('get_all_badges:',error);if(isAdmin&&!window.__badgeWarned){window.__badgeWarned=1;say('Badges could not load: '+error.message+' (run Part 3 of the SQL?)')}}return}
     const m={};
     data.forEach(r=>{const b=(r.badges||[]).filter(k=>PBADGES[k]);if(r.uid)m['u:'+r.uid]=b;if(r.uname)m['n:'+String(r.uname).toLowerCase()]=b});
     badgeMap=m;
