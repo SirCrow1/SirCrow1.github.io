@@ -290,18 +290,20 @@ async function afterLogin(){
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let myId=null,admTab='players',spamT=null;
 
-function badgeCount(){
+function badgeFlags(){
   const st=S.st||{},b=S.badges||{};
   const seenN=countSeen(deathKeys()),moveN=countSeen(MOVEKEYS());
   const lairN=Object.keys(st.lairs||{}).filter(k=>+k>=6&&+k<=25).length;
   const items=['orb','fav','shield','phx','key'].every(k=>st.items&&st.items[k]);
   let bond=false;try{bond=!!(window.PBOND&&window.PBOND.top()>=10)}catch(e){}
-  return [seenN>=deathKeys().length,moveN>=MOVEKEYS().length,!!st.adr,!!st.nd,!!st.sp,(st.bs||0)>=10,!!st.pm,!!st.ng,!!(b.good&&b.bad),lairN>=20,bond,items,!!st.fr].filter(Boolean).length;
+  return [seenN>=deathKeys().length,moveN>=MOVEKEYS().length,!!st.adr,!!st.nd,!!st.sp,(st.bs||0)>=10,!!st.pm,!!st.ng,!!(b.good&&b.bad),lairN>=20,bond,items,!!st.fr];
 }
+function badgeCount(){return badgeFlags().filter(Boolean).length}
+function achKeys(){try{const f=badgeFlags();return ACH.filter((a,i)=>f[i]).map(a=>a[0])}catch(e){return []}}
 function statsBlob(){
   const h=S.shop||{},own=h.own||{},eq=h.eq||{};
   const cnt=p=>Object.keys(own).filter(k=>k.startsWith(p)&&own[k]).length;
-  return {gold:S.gold|0,deaths:countSeen(deathKeys()),deathsMax:deathKeys().length,badges:badgeCount(),badgesMax:13,
+  return {gold:S.gold|0,deaths:countSeen(deathKeys()),deathsMax:deathKeys().length,badges:badgeCount(),badgesMax:13,ach:achKeys(),
     pets:cnt('pet'),skins:cnt('skin'),blades:cnt('wpn'),daily:(S.dly&&S.dly.b)||0,eq:{pet:eq.pet||null,skin:eq.skin||null,blade:eq.wpn||null}};
 }
 async function syncStats(){
@@ -583,7 +585,7 @@ async function viewPlayer(name){
   const eq=st.eq||{};
   const eqTxt=[eq.pet&&typeof PETS!=='undefined'&&PETS[eq.pet]?PETS[eq.pet].n:'',eq.skin&&typeof SKINS!=='undefined'&&SKINS[eq.skin]?SKINS[eq.skin].n:'',eq.blade&&typeof WPNS!=='undefined'&&WPNS[eq.blade]?WPNS[eq.blade].n:''].filter(Boolean).join(' · ');
   let html=`<div style="font:bold 20px sans-serif;color:#fff;margin-bottom:2px">${data.featured?'⭐ ':''}${esc(data.name)}${pfBadges(data.name)}</div>
-    <div style="font-size:12px;color:#a1a1aa;margin-bottom:10px">Joined ${d(data.joined)} · Last seen ${d(data.last_seen)}</div>
+    <div style="font-size:12px;color:#a1a1aa;margin-bottom:10px">Joined ${d(data.joined)} · Last seen ${d(data.last_seen)}</div>${pfAch(st.ach)}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">`
     +box('🪙 Gold',has(st.gold)?Number(st.gold).toLocaleString():null)+box('🧩 Puzzles solved',data.solved)
     +box('🔥 Best streak',data.streak)+box('⚔️ Runs',data.runs)
@@ -803,7 +805,7 @@ async function pfSelect(name){
   const PT_=typeof PETS!=='undefined'?PETS:null,WP_=typeof WPNS!=='undefined'?WPNS:null,SK_=typeof SKINS!=='undefined'?SKINS:null;
   card.innerHTML=`<div style="border:1px solid #27272a;border-radius:10px;padding:12px;background:#0f0c18;text-align:left;color:#d4d4d8">
     <div style="font:bold 22px sans-serif;color:#fff">👤 ${data.featured?'⭐ ':''}${esc(data.name)}${pfBadges(data.name)}</div>
-    <div style="font-size:12px;color:#a1a1aa;margin:2px 0 10px">Joined ${d(data.joined)} · Last seen ${d(data.last_seen)}</div>
+    <div style="font-size:12px;color:#a1a1aa;margin:2px 0 10px">Joined ${d(data.joined)} · Last seen ${d(data.last_seen)}</div>${pfAch(st.ach)}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
       ${pfBox('🪙 Gold',num(st.gold))}${pfBox('⚔️ Runs',num(data.runs))}
       ${pfBox('🧩 Puzzles solved',num(data.solved))}${pfBox('🔥 Best streak',num(data.streak))}
@@ -826,6 +828,21 @@ const PBADGES={
   beta:{i:'🧪',n:'Beta Tester',d:'Helped test the game early',c:'#38bdf8'},
   owner:{i:'👑',n:'Owner',d:'Owner of the game',c:'#facc15'}
 };
+
+// the 13 achievements as tiny chips (same order as badgeFlags). Only earned ones are shown.
+const ACH=[
+  ['dall','💀','Collector','All deaths seen'],['mall','🗡️','Swordmaster','All moves seen'],['drun','🩸','Doomed','Doomed'],
+  ['nd','🛡️','Untouchable','Untouchable'],['sp','⚡','Blitz','Blitz'],['bs','🔥','Inferno','Inferno'],
+  ['pm','💎','Flawless','Flawless'],['ng','♾️','Relentless','Relentless'],['two','☯️','Duality','Both endings'],
+  ['lair','🧭','Wanderer','Wanderer'],['bond','🐾','Soulbound','Soulbound'],['item','⚗️','Alchemist','Alchemist'],
+  ['prun','🏆','Conqueror','Conqueror']
+];
+function pfAch(keys){
+  const have=Array.isArray(keys)?keys:[];
+  const out=ACH.filter(a=>have.includes(a[0])).map(a=>
+    `<span title="${esc(a[2])} — achievement" aria-label="${esc(a[2])}" style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;font-size:11px;line-height:1;border:1px solid #a16207;background:#facc1526;border-radius:5px;cursor:help">${a[1]}</span>`).join('');
+  return out?`<div style="margin:0 0 10px;display:flex;flex-wrap:wrap;gap:4px">${out}</div>`:'';
+}
 let badgeMap={},badgeAt=0;
 async function loadBadges(force){
   if(!sb||(!force&&Date.now()-badgeAt<30000))return;
