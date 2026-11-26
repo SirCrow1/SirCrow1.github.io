@@ -3034,7 +3034,7 @@ ${G}
             b.gone=1;
             die(null,16);G.ch=b
         }
-        // ----- the secret door: a faint seam in the back wall (only 1 in 4 rooms has one) -----
+        // ----- the secret door: a faint seam in the back wall (about 2 in 5 rooms have one) -----
         function secretDoorDraw(now){
             if(!G.sec||G.sec.used)return;
             const x=G.sec.x,near=Math.max(0,1-Math.hypot(G.hx-x,G.hy-150)/180),a=.1+near*.45;
@@ -3902,7 +3902,10 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             $('#rm').textContent=r.boss?'👹 Boss Room':'🚪 Room '+(G.i+1)+'/'+G.rooms.length;
             if(r.boss&&!r.qs){G.state='choose';$('#q').textContent='The Demon Lord blocks the gate to the princess...';showChoice();return}
             mkQ();
-            G.maxX=G.wide?745:470;G.chs=mkChests();{const free=(G.wide?gapXs():[180,350]).filter(x=>!G.chs.some(c=>Math.abs(c.x-x)<60));G.sec=(Math.random()<.25&&free.length)?{x:rnd(free),used:0}:null}
+            G.maxX=G.wide?745:470;G.chs=mkChests();{const cand=G.wide?gapXs():[180,350];let free=cand.filter(x=>!G.chs.some(c=>Math.abs(c.x-x)<60));
+                if(Math.random()<.40){   // 40% of rooms have a secret door; if chests took every wall spot, the door wins and the crowding chest is removed
+                    if(!free.length&&cand.length){const x=rnd(cand);G.chs=G.chs.filter(c=>Math.abs(c.x-x)>=60);free=[x]}
+                    G.sec=free.length?{x:rnd(free),used:0}:null}else G.sec=null}
             useBg(buildRoomBg());   // every room gets its own theme + decor (needs the doors from mkQ so nothing sits on a doorway)
         }
 
