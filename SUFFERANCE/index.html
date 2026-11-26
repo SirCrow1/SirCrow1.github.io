@@ -9048,6 +9048,91 @@ const _sr=shopRender;shopRender=function(){const r=_sr.apply(this,arguments);try
 })();
 </script>
 
+<!-- ===== HOW TO PLAY: step-by-step tutorial (shows once on first visit; reopen with the ❓ button; Skip at any time) ===== -->
+<style>
+#tut{position:fixed;inset:0;z-index:9500;display:none;align-items:center;justify-content:center;padding:14px;background:rgba(2,8,5,.86);backdrop-filter:blur(3px)}
+#tut.on{display:flex}
+#tut .tc{position:relative;width:min(560px,100%);max-height:92vh;overflow:auto;background:linear-gradient(180deg,#0f1f18,#0a120e);border:1px solid rgba(16,185,129,.45);border-radius:14px;box-shadow:0 0 40px rgba(16,185,129,.18);padding:22px 22px 16px;color:#d4d4d8;font-family:system-ui,sans-serif}
+#tut .tx{position:absolute;top:10px;right:12px;background:rgba(0,0,0,.45);border:1px solid #3f3f46;color:#a1a1aa;border-radius:8px;padding:5px 11px;font-size:12px;cursor:pointer}
+#tut .tx:hover{color:#fca5a5;border-color:#7f1d1d}
+#tut .ti{font-size:46px;text-align:center;line-height:1;margin:6px 0 8px}
+#tut h2{font-family:Cinzel,Georgia,serif;font-size:21px;font-weight:800;color:#34d399;text-align:center;margin:0 0 10px;text-shadow:0 0 12px rgba(16,185,129,.4)}
+#tut .tb{font-size:14px;line-height:1.55;text-align:left}
+#tut .tb p{margin:0 0 8px}
+#tut .tb ul{margin:4px 0 8px;padding-left:0;list-style:none}
+#tut .tb li{margin:5px 0;padding-left:20px;position:relative}
+#tut .tb li::before{content:'▸';position:absolute;left:4px;color:#10b981}
+#tut kbd{background:#18181b;border:1px solid #52525b;border-bottom-width:2px;border-radius:5px;padding:0 6px;font:12px monospace;color:#fde68a}
+#tut b{color:#ecfdf5}
+#tut .tip{margin-top:10px;padding:8px 11px;border-radius:8px;background:rgba(16,185,129,.09);border:1px solid rgba(16,185,129,.28);font-size:12.5px;color:#a7f3d0}
+#tut .tf{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px}
+#tut .dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;flex:1}
+#tut .dots i{width:8px;height:8px;border-radius:50%;background:#3f3f46;cursor:pointer}
+#tut .dots i.on{background:#34d399;box-shadow:0 0 8px #10b981}
+#tut .bt2{border-radius:8px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer;border:1px solid #3f3f46;background:#18181b;color:#e4e4e7}
+#tut .bt2:hover{background:#27272a}
+#tut .bt2.go{background:#10b981;border-color:#10b981;color:#052e1c}
+#tut .bt2.go:hover{background:#34d399}
+#tut .bt2[disabled]{opacity:.35;cursor:default}
+#tut .sk{display:block;margin:12px auto 0;background:none;border:0;color:#a1a1aa;font-size:12px;text-decoration:underline;cursor:pointer}
+#tut .sk:hover{color:#fca5a5}
+body:has(#run.on) #howbtn{display:none}
+</style>
+<div id="tut" role="dialog" aria-modal="true" aria-label="How to play"><div class="tc">
+  <button class="tx" id="tut-x" type="button" title="Skip the tutorial (Esc)">Skip ✕</button>
+  <div class="ti" id="tut-i"></div><h2 id="tut-h"></h2><div class="tb" id="tut-b"></div>
+  <div class="tf"><button class="bt2" id="tut-p" type="button">◀ Back</button><div class="dots" id="tut-d"></div><button class="bt2 go" id="tut-n" type="button">Next ▶</button></div>
+  <button class="sk" id="tut-s" type="button">Skip tutorial</button>
+</div></div>
+<script>
+(function(){
+const KEY='sufTutorialDone';
+const S=[
+ {i:'🛡️',h:'Welcome to Sufference',b:`<p>You are an <b>immortal knight</b> trapped in a dungeon of questions. Answer them to move room by room, beat the <b>Demon Lord</b> in the boss room, and rescue your royalty.</p><ul><li>Wrong answers hurt (in very creative ways) but <b>you never lose progress</b>.</li><li>Dying is part of studying: every new death you see unlocks in the 💀 Gallery.</li></ul><div class="tip">This tour takes about a minute. You can skip it any time, and reopen it later with the ❓ button at the top.</div>`},
+ {i:'🕹️',h:'Moving around',b:`<ul><li><b>Move:</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or the arrow keys.</li><li><b>Sword attack:</b> <kbd>Space</kbd>, <kbd>J</kbd> or a mouse click.</li><li><b>On a phone:</b> use the on-screen joystick, tap to attack, and use the 🥷 CRAWL button.</li><li>If you ride a mount, <kbd>V</kbd> (or the ⬇ Dismount button) gets you off.</li></ul>`},
+ {i:'🚪',h:'Answering a question',b:`<p>Each room shows a <b>question banner</b> at the top and the possible answers on the wall.</p><ul><li><b>Walk under the answer you think is right</b>, then <b>attack</b> it.</li><li>Correct: the door opens, you earn 🪙 <b>gold</b> and move on to the next room.</li><li>Wrong: the dungeon takes its revenge (see the next step).</li></ul>`},
+ {i:'📝',h:'Question types',b:`<ul><li><b>Multiple choice:</b> hit the one right answer.</li><li><b>Pick all that apply:</b> hit every correct answer.</li><li><b>True / False:</b> two doors, pick one.</li><li><b>Fill in the blank:</b> type your answer in the box that appears and press <kbd>Enter</kbd>.</li><li><b>Matching:</b> attack a term to pick it up (it gets chained to you ⛓️), then attack the definition that goes with it. <kbd>Esc</kbd> drops the term you picked.</li></ul>`},
+ {i:'💀',h:'When you get one wrong',b:`<p>A wrong answer triggers a (hopefully entertaining) death scene.</p><ul><li><b>Respawn:</b> click the screen or press <kbd>Space</kbd> / <kbd>Enter</kbd>.</li><li><kbd>R</kbd> replays the death, <kbd>P</kbd> pauses it.</li><li>Press 💡 <b>Why?</b> when it appears to see the right answer and an explanation.</li></ul><div class="tip">Reading the explanation is how you actually learn the answer. The next time that question comes around, you'll know it.</div>`},
+ {i:'🪙',h:'Gold, chests and barrels',b:`<ul><li><b>Chests:</b> stand next to one and attack to open it.</li><li><b>Barrels:</b> attack them to smash them for loot.</li><li>If a chest and a door are both close, the nearest thing wins, so line yourself up under the door to answer it.</li><li>Gold is kept in the top bar (🪙) and spent in the Armory.</li></ul>`},
+ {i:'🗝️',h:'Secret doors',b:`<p>Some rooms hide a <b>faint seam in the back wall</b>.</p><ul><li>Walk up to it and you'll be asked whether to go in: <kbd>Enter</kbd> / <kbd>E</kbd> / <kbd>Y</kbd> to enter, <kbd>Esc</kbd> / <kbd>N</kbd> to stay out.</li><li>Inside is a trick room: a puzzle or a gauntlet of traps with a <b>big gold reward</b> if you make it to the end.</li><li>The traps can kill you in secret ways that unlock in the Gallery.</li></ul>`},
+ {i:'👹',h:'The boss room',b:`<p>At the end of the dungeon the <b>Demon Lord</b> guards the gate to the princess.</p><ul><li>Pick your trial: <kbd>1</kbd> = your <b>weak spots</b> (questions you got wrong), <kbd>2</kbd> = <b>5 bonus questions</b> for extra gold.</li><li>Beat him, then choose your ending: <kbd>1</kbd> good or <kbd>2</kbd> bad.</li></ul>`},
+ {i:'🛒',h:'The Armory and items',b:`<p>Spend gold in the <b>🛡️ Armory</b> tab on the hub screen.</p><ul><li>🔮 <b>Princess Orb</b> (<kbd>1</kbd>): crosses out 1 wrong answer.</li><li>😈 <b>Demon's Favour</b> (<kbd>2</kbd>): crosses out 2 wrong answers.</li><li>🗝️ <b>Forbidden Answer Key</b> (<kbd>3</kbd>): solves the question (once per run, not for matching).</li><li>🛡️ <b>Iron Shield</b> and 🪽 <b>Phoenix Wing</b> are automatic: they save you from a death.</li><li>The Armory also sells armor, skins and pets.</li></ul>`},
+ {i:'⚔️',h:'Special moves',b:`<p>Buy a sword-art move in the Armory and <b>equip</b> it. During a question, press <kbd>E</kbd> (or <kbd>4</kbd> to <kbd>9</kbd>) to unleash it on the wrong answers.</p><ul><li><b>Star Platinum:</b> time stops, then an ORA barrage.</li><li><b>Getsuga Tensho:</b> your knight enters Bankai first.</li><li><b>Hollow Purple:</b> opens with Domain Expansion: Unlimited Void.</li><li><b>Kamehameha:</b> powered up with Ultra Instinct. And more!</li></ul><div class="tip">You can use one special move per run, and you can preview every move in the 💀 Gallery before you buy it.</div>`},
+ {i:'📚',h:'Your own questions',b:`<p>Study what <b>you</b> need to study.</p><ul><li>The <b>📚 Question Pool</b> tab lets you paste notes or type your own questions and save them as a deck.</li><li>Pick a deck on the 🏰 <b>Dungeon</b> tab, then press <b>Descend into Sufference</b>.</li><li>The editor supports every question type listed earlier.</li></ul>`},
+ {i:'🧭',h:'More to explore',b:`<ul><li>🖼️ <b>Gallery:</b> replay every death and special move you've unlocked.</li><li>🏅 <b>Achievements:</b> badges for milestones.</li><li>👤 <b>Profile</b> and ⚔️ <b>Wagers & Duels</b> are on the hub screen.</li><li>🔊 <b>Sound:</b> <kbd>M</kbd> mutes everything; the speaker button has volume and music settings.</li><li>During cutscenes, <kbd>Esc</kbd> skips them.</li></ul>`},
+ {i:'🎉',h:'You\'re ready!',b:`<p>That's everything. Pick a deck, hit <b>Descend into Sufference</b>, and start studying (and dying).</p><div class="tip">Need a refresher later? Press the <b>❓ How to play</b> button at the top any time.</div>`}
+];
+let n=0,onClose=null;
+const $=id=>document.getElementById(id),root=$('tut');
+function done(){try{localStorage.setItem(KEY,'1')}catch(_){}}
+function render(){const s=S[n];$('tut-i').textContent=s.i;$('tut-h').textContent=s.h;$('tut-b').innerHTML=s.b;
+  $('tut-d').innerHTML=S.map((_,k)=>'<i class="'+(k==n?'on':'')+'" data-k="'+k+'"></i>').join('');
+  $('tut-p').disabled=n==0;const last=n==S.length-1;$('tut-n').textContent=last?'Start playing ⚔️':'Next ▶';$('tut-s').style.display=last?'none':'block';$('tut-x').style.display=last?'none':'block';
+  root.querySelector('.tc').scrollTop=0}
+function open(at){n=at||0;render();root.classList.add('on')}
+function close(){root.classList.remove('on');done()}
+$('tut-n').onclick=()=>{if(n>=S.length-1)close();else{n++;render()}};
+$('tut-p').onclick=()=>{if(n>0){n--;render()}};
+$('tut-s').onclick=close;$('tut-x').onclick=close;
+$('tut-d').onclick=e=>{const k=e.target.dataset&&e.target.dataset.k;if(k!=null){n=+k;render()}};
+root.addEventListener('mousedown',e=>{if(e.target===root)e.stopPropagation()},true);
+// while the tutorial is open it owns the keyboard, so nothing leaks into the game behind it
+addEventListener('keydown',e=>{if(!root.classList.contains('on'))return;
+  if(e.code=='Escape'){close()}else if(e.code=='ArrowRight'||e.code=='Enter'){$('tut-n').click()}else if(e.code=='ArrowLeft'){$('tut-p').click()}else return;
+  e.preventDefault();e.stopImmediatePropagation()},true);
+addEventListener('keyup',e=>{if(root.classList.contains('on'))e.stopImmediatePropagation()},true);
+// "How to play" button in the top bar
+const hb=document.createElement('button');hb.id='howbtn';hb.type='button';hb.title='How to play (tutorial)';
+hb.className='bg-zinc-900 px-3 py-1.5 rounded border border-emerald-900/50 text-emerald-300 hover:bg-emerald-950 transition whitespace-nowrap';
+hb.innerHTML='❓<span class="hidden sm:inline"> How to play</span>';hb.onclick=()=>open(0);
+const gl=$('galink');if(gl&&gl.parentNode)gl.parentNode.insertBefore(hb,gl);
+window.openTutorial=open;
+// first visit: show it once the intro splash has gone
+let seen=0;try{seen=localStorage.getItem(KEY)}catch(_){}
+if(!seen)setTimeout(()=>{if(!(window.G&&window.G.state))open(0)},2600);
+})();
+</script>
+
 <script src="account-v14.js?v=18"></script>
 <script src="wager-v2.js?v=5"></script>
 </body>
