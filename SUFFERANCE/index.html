@@ -4025,7 +4025,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             {n:"ETERNAL ROSE CANON",ty:'thrust',c:'255,40,150',fx:'roses'},   // rose magenta
             {n:"WORLD END STORM",ty:'rising',c:'255,248,170',fx:'bolts'},   // storm butter
             // ---- 10 anime sword arts: each one draws its own whole strike (see ANI below) ----
-            {n:"RASENSHURIKEN",ty:'anime',x:'susanoo',c:'255,35,55'},       // Naruto: armoured Susanoo throws a Rasenshuriken
+            {n:"RASENSHURIKEN",ty:'anime',x:'susanoo',c:'255,35,55'},       // Naruto: the armoured Susanoo throws a Rasenshuriken
             {n:"GETSUGA TENSHO",ty:'anime',x:'getsuga',c:'255,45,80'},                // Bleach: black crescent wave
             {n:"BALAQ SAIGA",ty:'anime',x:'baal',c:'60,150,255'},         // Magi: Sinbad's Baal - a sword of golden thunder
             {n:"13TH FORM",ty:'anime',x:'flame',c:'255,115,25'},         // Demon Slayer: Rengoku's fire tiger
@@ -4047,12 +4047,100 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             const TD=(x,y,w,h,col)=>{ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x-w,y);ctx.quadraticCurveTo(x-w*.85,y-h*.55,x,y-h);ctx.quadraticCurveTo(x+w*.85,y-h*.55,x+w,y);ctx.closePath();ctx.fill()};
             const ang=(x0,y0,x1,y1)=>{const t=Math.atan2(y1-y0,x1-x0);return t>Math.PI/2?t-2*Math.PI:t};   // so a swing from "straight up" always goes the short way round
             return{
-                // 1) SUSANOO (Naruto): a heavily armoured spectral giant forms, raises a hand, and throws a RASENSHURIKEN
-                susanoo(a){const{p,now,F,oy,tx,ty,c}=a,X=kx(a),al=clp(p/.18)*(1-clp((p-.8)/.2));
-                    const s=.75+.35*ezs(clp(p/.3)),cy=oy-18,col='rgba(225,20,45,',edge='rgba(255,110,100,',blk='rgba(12,0,4,';
-                    const st=(w,a2,e)=>{ctx.strokeStyle=(e?edge:col)+a2*al+')';ctx.lineWidth=w};
-                    const plate=(pts,f)=>poly(pts,blk+Math.min(.92,f*2.8)*al+')',edge+.9*al+')',1.8);
-                    const hdx=X+F*88*s,hdy=cy-84*s;   // the throwing hand
+                // 1) SUSANOO (Naruto): a giant winged armoured knight rises, raises its greatsword and throws a RASENSHURIKEN
+                susanoo(a){const{p,now,F,oy,tx,ty}=a,al=clp(p/.18)*(1-clp((p-.8)/.2));
+                    const s=.75+.35*ezs(clp(p/.3)),cy=oy-9,X=Math.max(236*s,Math.min(W-236*s,kx(a))),   // always keep the whole giant on screen
+                        od=-F,G1='255,35,55';
+                    const lerp=(u,v,t)=>u+(v-u)*t;
+                    // sword arm key poses [time, elbow x, elbow y, hand x, hand y, blade angle]; x counts outward from the body
+                    const KF=[[0,100,4,154,-8,-1.36],[.18,100,4,154,-8,-1.36],[.28,114,-34,138,-62,-1.34],[.34,114,-34,138,-62,-1.34],[.44,98,-6,122,18,.9],[.66,98,-6,122,18,.9],[.84,100,4,154,-8,-1.36],[1,100,4,154,-8,-1.36]];
+                    let i0=0;while(i0<KF.length-2&&p>KF[i0+1][0])i0++;
+                    const A0=KF[i0],A1=KF[i0+1],kt=ezs(clp((p-A0[0])/(A1[0]-A0[0]))),Q=A0.map((v,i)=>lerp(v,A1[i],kt));
+                    const el=[od*Q[1],Q[2]],hd=[od*Q[3],Q[4]],bd=[od*Math.cos(Q[5]),Math.sin(Q[5])],BL=178;
+                    const bp=(u,v)=>[hd[0]+bd[0]*u-bd[1]*v,hd[1]+bd[1]*u+bd[0]*v];
+                    if(al>0){const E='rgba(104,116,136,.92)',D='#04060a',
+                        rg=(y0,y1,c0,c1)=>{const g=ctx.createLinearGradient(0,y0,0,y1);g.addColorStop(0,c0);g.addColorStop(1,c1);return g},
+                        path=q=>{ctx.beginPath();q.forEach((v,i)=>i?ctx.lineTo(v[0],v[1]):ctx.moveTo(v[0],v[1]))},
+                        P=(...q)=>{const r=[];for(let i=0;i<q.length;i+=2)r.push([q[i],q[i+1]]);return r},
+                        // armour plate: dark gradient with a pale moonlit rim
+                        pl=(q,c0,c1,lw,e)=>{let y0=1e9,y1=-1e9;q.forEach(v=>{y0=Math.min(y0,v[1]);y1=Math.max(y1,v[1])});path(q);ctx.closePath();ctx.fillStyle=rg(y0,y1+1,c0||'#101217',c1||'#010102');ctx.fill();ctx.lineJoin='round';ctx.lineWidth=lw||1.5;ctx.strokeStyle=e||E;ctx.stroke()},
+                        tube=(q,w,c)=>{c=c||[D,'#0b0d11','#15181f','#4a5463'];ctx.lineCap='round';ctx.lineJoin='round';[1,.78,.46,.12].forEach((m,i)=>{ctx.lineWidth=w*m;ctx.strokeStyle=c[i];path(q);ctx.stroke()})},
+                        // armoured limb segment: tapered, rim-lit, so arms and legs read clearly against the wings
+                        limb=(u,v,w0,w1,c0,c1)=>{const dx=v[0]-u[0],dy=v[1]-u[1],L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L,m=(w0+w1)*.6;
+                            pl([[u[0]+nx*w0,u[1]+ny*w0],[u[0]+dx*.4+nx*m,u[1]+dy*.4+ny*m],[v[0]+nx*w1,v[1]+ny*w1],[v[0]-nx*w1,v[1]-ny*w1],[u[0]+dx*.4-nx*m,u[1]+dy*.4-ny*m],[u[0]-nx*w0,u[1]-ny*w0]],c0,c1,2.4,'rgba(150,166,188,1)');
+                            ctx.strokeStyle='rgba(150,166,188,.35)';ctx.lineWidth=1.3;for(const t of[.3,.55,.8]){const x=u[0]+dx*t,y=u[1]+dy*t,w=lerp(w0,w1,t)*.95;ctx.beginPath();ctx.moveTo(x+nx*w,y+ny*w);ctx.quadraticCurveTo(x+dx/L*8,y+dy/L*8,x-nx*w,y-ny*w);ctx.stroke()}},
+                        fire=(x,y,w,h,a2)=>{TD(x,y,w,h,'rgba(14,2,4,'+.9*a2+')');TD(x,y,w*.5,h*.62,'rgba(220,35,50,'+.4*a2+')')};
+                    ctx.save();ctx.globalAlpha=al;
+                    // night falls round the giant, then a cold moonlit halo so the black armour stands out
+                    {const g=ctx.createRadialGradient(X,cy,60,X,cy,420);g.addColorStop(0,'rgba(8,16,34,.82)');g.addColorStop(.55,'rgba(6,10,24,.66)');g.addColorStop(1,'rgba(4,6,16,0)');ctx.fillStyle=g;ctx.fillRect(X-420,cy-420,840,840)}
+                    ctx.translate(X,cy);ctx.scale(s,s);
+                    LT();glow(0,-30,230,'75,90,130',.46);SO();
+                    // WINGS: wide torn membranes on long spar bones
+                    {const fl=Math.sin(now/230)*7;
+                     for(const d of[-1,1]){const W1=[d*104,-150+fl*.5],T=[d*204,-178+fl],t1=[d*218,-84+fl],t2=[d*198,-12+fl*.7],t3=[d*146,40+fl*.4],R=[d*34,10];
+                        ctx.beginPath();ctx.moveTo(d*28,-58);ctx.lineTo(W1[0],W1[1]);ctx.lineTo(T[0],T[1]);ctx.quadraticCurveTo(d*188,-128,t1[0],t1[1]);ctx.quadraticCurveTo(d*176,-70,t2[0],t2[1]);ctx.quadraticCurveTo(d*150,-26,t3[0],t3[1]);ctx.quadraticCurveTo(d*96,-8,R[0],R[1]);ctx.closePath();
+                        ctx.fillStyle=rg(-180,40,'#0a0a0f','#010103');ctx.fill();ctx.strokeStyle=E;ctx.lineWidth=2;ctx.stroke();
+                        for(const e of[t1,t2,t3]){tube([W1,[(W1[0]+e[0])/2+d*10,(W1[1]+e[1])/2-4],e],5);pl([[e[0]-d*4,e[1]-5],[e[0]+d*12,e[1]+5],[e[0]-d*5,e[1]+5]],'#737c89','#101217')}
+                        tube([[d*28,-58],W1,T],11);pl([[W1[0]-d*7,W1[1]-2],[W1[0]+d*4,W1[1]-34],[W1[0]+d*10,W1[1]+1]],'#737c89','#101217')}}
+                    // LEGS: wide battle stance
+                    for(const d of[-1,1]){limb([d*28,40],[d*58,96],19,15);limb([d*58,96],[d*74,140],15,12);
+                        pl(P(d*44,86, d*64,74, d*80,96, d*62,108),'#1b1e25','#020204');pl(P(d*58,134, d*86,134, d*104,150, d*56,150),'#101217','#010102')}
+                    // waist armour
+                    pl(P(-50,22, 50,22, 56,86, 34,74, 18,102, 0,78, -18,102, -34,74, -56,86),'#0c0d12','#010102');
+                    for(const k of[-34,-17,17,34]){ctx.strokeStyle='rgba(104,116,136,.5)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(k*.8,42);ctx.lineTo(k*1.15,76);ctx.stroke()}
+                    // CHEST
+                    pl(P(-52,-62, 52,-62, 46,-14, 28,28, -28,28, -46,-14),'#121419','#010102',2);
+                    for(let i=0;i<4;i++){const w=44-i*6,y=-50+i*18;pl(P(-w,y, 0,y+11, w,y, w-2,y+9, 0,y+20, -w+2,y+9),'#0d0e12','#020203',1.2)}
+                    LT();glow(0,-24,24,G1,.9);SO();pl(P(-7,-26, 0,-38, 7,-26, 0,-10),'#ffd8da','#b01a28',1.2,'#ffecee');
+                    pl(P(-54,20, 54,20, 50,40, -50,40),'#1b1e25','#030306');pl(P(-10,22, 10,22, 13,48, 0,60, -13,48),'#2c313b','#050609');
+                    // SHOULDERS
+                    for(const d of[-1,1]){pl(P(d*30,-68, d*66,-88, d*92,-66, d*82,-42, d*44,-46),'#1b1e25','#020204',2);pl(P(d*48,-48, d*82,-44, d*86,-28, d*60,-24, d*44,-38),'#121419','#010102');
+                        pl(P(d*62,-84, d*84,-122, d*80,-76),'#737c89','#0a0b10');pl(P(d*84,-70, d*112,-88, d*88,-56),'#737c89','#0a0b10')}
+                    pl(P(-28,-68, 28,-68, 18,-46, -18,-46),'#22262f','#040508');
+                    // HEAD: horned black great-helm, green soul-flame crest, burning eyes
+                    {const fk=Math.sin(now/170)*4;ctx.save();ctx.translate(0,-102);
+                     for(const d of[-1,1])pl(P(d*18,-24, d*40,-36, d*54,-60, d*52,-90, d*40,-64, d*28,-50, d*12,-40),'#737c89','#08090d');
+                     pl(P(-18,-30, -14,-54+fk, -5,-70+fk, 0,-92+fk*1.5, 6,-70+fk, 15,-54+fk, 18,-30),'#ff3b4a','#4a060d',1.2,'#ffb3b8');
+                     pl(P(-28,-8, -27,-26, -16,-38, 0,-43, 16,-38, 27,-26, 28,-8, 25,18, 14,36, 0,46, -14,36, -25,18),'#17191f','#020203',2);
+                     pl(P(-30,-12, 0,-2, 30,-12, 30,-4, 0,8, -30,-4),'#2c313b','#050609');
+                     poly(P(-23,-3, -3,6, -3,34, 3,34, 3,6, 23,-3, 21,9, 8,14, -8,14, -21,9),'#010203');
+                     LT();for(const d of[-1,1])glow(d*13,6,15,G1,1);SO();
+                     for(const d of[-1,1])poly(P(d*6,6, d*20,1, d*17,9, d*7,11),'#ffe6e6');
+                     tube(P(0,-42, 0,0),5,[D,'#161a21','#454f5e','#8d99aa']);ctx.restore()}
+                    // SHIELD ARM + a huge tower shield on the side facing the enemy
+                    limb([F*62,-48],[F*100,-6],17,13);limb([F*100,-6],[F*122,6],13,11);
+                    {ctx.save();ctx.translate(F*136,10+Math.sin(now/260)*3);
+                     const out=[[0,-128],[38,-108],[66,-96],[60,-20],[56,40],[34,90],[0,128],[-34,90],[-56,40],[-60,-20],[-66,-96],[-38,-108]],k=m=>out.map(v=>[v[0]*m,v[1]*m]);
+                     for(let i=0;i<out.length;i++){const v=out[i],h=24+14*Math.sin(now/110+i*2.1);fire(v[0]*.96,v[1]*.96+8,10,h,.95)}
+                     LT();glow(0,0,150,'200,50,60',.22);SO();
+                     for(const[i,dx,dy]of[[2,18,-14],[4,20,6],[8,-20,6],[10,-18,-14]]){const v=out[i];pl([[v[0]*.94,v[1]-14],[v[0]+dx,v[1]+dy],[v[0]*.94,v[1]+14]],'#737c89','#0a0b10')}
+                     pl(out,'#343944','#08090d',3,'#8d99aa');pl(k(.85),'#0c0d12','#010102',2);pl(k(.66),'#07080b','#020203',1.2);
+                     for(const v of k(.925)){ctx.fillStyle='#7f8998';ctx.beginPath();ctx.arc(v[0],v[1],2.6,0,7);ctx.fill()}
+                     pl(P(-6,-106, 6,-106, 8,102, 0,112, -8,102),'#2c313b','#050609');
+                     for(const d of[-1,1]){pl(P(d*8,-30, d*50,-72, d*40,-38, d*10,-8),'#22262f','#040508');pl(P(d*8,20, d*44,38, d*28,58, d*8,44),'#22262f','#040508')}
+                     LT();glow(0,0,54+6*Math.sin(now/120),G1,.8);SO();
+                     pl(P(0,-40, 25,0, 0,40, -25,0),'#2c313b','#050609',2,'#8d99aa');pl(P(0,-27, 15,0, 0,27, -15,0),'#ffd8da','#9c1220',1.2,'#ffecee');pl(P(0,-18, 4,0, 0,18, -4,0),'#1a0205','#1a0205',1,'#1a0205');
+                     ctx.restore()}
+                    // GREATSWORD: long black blade with a bright edge, wrapped in red soul-fire
+                    {for(let i=0;i<9;i++){const q=bp(38+i*15,(i%2?-1:1)*13),h=26+16*Math.sin(now/90+i*1.7);fire(q[0],q[1]+8,9,h,.95)}
+                     const m=bp(110,0);LT();glow(m[0],m[1],105,'220,40,55',.28+.5*clp((p-.18)/.1)*(1-clp((p-.34)/.08)));SO();
+                     tube([bp(-30,0),bp(18,0)],10,[D,'#0b0d12','#1f252f','#5d6878']);pl([bp(-30,-9),bp(-45,0),bp(-30,9),bp(-24,0)],'#737c89','#0a0b10');
+                     pl([bp(24,-15),bp(70,-18),bp(80,-12),bp(130,-17),bp(142,-11),bp(BL,0),bp(150,13),bp(112,17),bp(100,11),bp(52,18),bp(24,15)],'#1f232c','#040508',3,'#aab8ca');
+                     path([bp(30,0),bp(BL-14,0)]);ctx.strokeStyle='rgba(255,70,80,.95)';ctx.lineWidth=3;ctx.stroke()}
+                    // SWORD ARM: drawn in front of everything, brighter than the body so it can be read at a glance
+                    limb([od*58,-50],el,21,15,'#414957','#07090e');limb(el,hd,16,12,'#4b5463','#0a0d13');
+                    pl([[el[0]-od*13,el[1]-6],[el[0]+od*5,el[1]-17],[el[0]+od*15,el[1]+3],[el[0]+od*30,el[1]+24],[el[0],el[1]+15]],'#535c6b','#090c12',2);
+                    // gauntlet gripping the hilt, and the cross-guard above it
+                    pl([bp(-17,-15),bp(13,-17),bp(17,0),bp(13,17),bp(-17,15),bp(-22,0)],'#505968','#0b0e15',2.4,'#aab8ca');
+                    for(const u of[-9,-1,7]){path([bp(u,-14),bp(u,12)]);ctx.strokeStyle='#0b1019';ctx.lineWidth=2;ctx.stroke()}
+                    pl([bp(15,-8),bp(17,-24),bp(36,-38),bp(27,-17),bp(28,0),bp(27,17),bp(36,38),bp(17,24),bp(15,8)],'#737c89','#0a0b10',2,'#aab8ca');
+                    // top pauldron overlaps the sword arm's shoulder
+                    pl(P(od*40,-60, od*64,-82, od*90,-60, od*78,-40, od*52,-42),'#22262f','#030306',2);
+                    // dust and broken rock round its feet
+                    for(let i=0;i<22;i++){const x=(i/21-.5)*390+Math.sin(now/300+i)*8,r=20+hz(i,2)*22,y=156-hz(i,3)*14,g=ctx.createRadialGradient(x,y,2,x,y,r);g.addColorStop(0,'rgba(92,100,120,.55)');g.addColorStop(1,'rgba(60,66,84,0)');ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2)}
+                    for(let i=0;i<20;i++){const u=(now/1500+hz(i,4))%1,x=(hz(i,5)-.5)*400,y=152-u*(50+hz(i,6)*120),r=(3+hz(i,7)*7)*(1-u*.6),q=[];for(let j=0;j<5;j++){const an=j*1.2566+u*4+i,rr=r*(.7+hz(i+j,8)*.6);q.push([x+Math.cos(an)*rr,y+Math.sin(an)*rr])}poly(q,'rgba(16,20,30,'+(1-u)+')','rgba(105,118,138,'+.7*(1-u)+')',1)}
+                    ctx.restore();
+                    LT();for(let j=0;j<26;j++){const u=(now/900+hz(j,1))%1;ctx.fillStyle='rgba(255,70,80,'+.8*al*(1-u)+')';ctx.fillRect(X+(hz(j,2)-.5)*280*s,cy+110*s-u*250,3,3)}SO()}
                     // the rasenshuriken: a ball of wind with four spinning blades
                     const rs=(x,y,R,a2,sp)=>{if(R<2||a2<=0)return;LT();glow(x,y,R*2.6,'255,40,60',.5*a2);
                         for(let k=0;k<4;k++){const an=sp+k*1.5708,ca=Math.cos(an),sa=Math.sin(an),cb=Math.cos(an+.9),sb=Math.sin(an+.9);
@@ -4060,105 +4148,21 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                         ctx.fillStyle='rgba(14,0,4,'+.95*a2+')';ctx.beginPath();ctx.arc(x,y,R*.62,0,7);ctx.fill();
                         for(let r=0;r<3;r++){ctx.strokeStyle='rgba(255,30,50,'+.85*a2+')';ctx.lineWidth=2.4;ctx.beginPath();ctx.ellipse(x,y,Math.max(1,R*(.58-r*.12)),Math.max(1,R*(.22+r*.1)),sp*2+r*1.05,0,5.4);ctx.stroke()}
                         glow(x,y,R*.5,'255,255,255',.9*a2)};
-                    if(al>0){const D='#050509',E='rgba(132,132,136,.95)',od=-F,
- P=(...q)=>{const r=[];for(let i=0;i<q.length;i+=2)r.push([X+q[i]*s,cy+q[i+1]*s]);return r},
- Hp=(...q)=>P(...q.map((v,i)=>i%2?v-104:v)),
- rg=(x0,y0,x1,y1,c0,c1)=>{const g=ctx.createLinearGradient(x0,y0,x1,y1);g.addColorStop(0,c0);g.addColorStop(1,c1);return g},
- path=pts=>{ctx.beginPath();pts.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]))},
- // solid armour plate: gradient fill, carved hatch texture, glowing rim
- pl=(pts,c0,c1)=>{let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;pts.forEach(q=>{x0=Math.min(x0,q[0]);x1=Math.max(x1,q[0]);y0=Math.min(y0,q[1]);y1=Math.max(y1,q[1])});
-  ctx.save();path(pts);ctx.closePath();ctx.fillStyle=rg(0,y0,0,y1+1,c0||'#4e4e52',c1||'#0a0a0e');ctx.fill();ctx.clip();
-  const hh=y1-y0,st=Math.max(4,5*s),cxm=(x0+x1)/2,dr=Math.abs(cxm-X)<3*s?0:(cxm<X?-1:1),hl=k=>{ctx.moveTo(dr<0?k+hh:k,y1);ctx.lineTo(dr>0?k+hh:dr<0?k:k,y0)};   // hatch leans away from the centre line, so left and right plates mirror each other
-  ctx.lineWidth=1;ctx.strokeStyle='rgba(2,2,6,.5)';ctx.beginPath();for(let k=x0-hh;k<x1;k+=st)hl(k);ctx.stroke();
-  ctx.strokeStyle='rgba(143,143,147,.26)';ctx.beginPath();for(let k=x0-hh+st/2;k<x1;k+=st*2)hl(k);ctx.stroke();ctx.restore();
-  path(pts);ctx.closePath();ctx.lineJoin='round';ctx.lineWidth=1.8;ctx.strokeStyle=E;ctx.stroke()},
- // solid round limb / bone: dark outline, body, lit core, specular
- tube=(pts,w,c)=>{c=c||[D,'#26262a','#4f4f53','#89898d'];ctx.lineCap='round';ctx.lineJoin='round';[1,.78,.5,.16].forEach((m,i)=>{ctx.lineWidth=w*m;ctx.strokeStyle=c[i];path(pts);ctx.stroke()})},
- BONE=[D,'#414145','#77777b','#e9e9ed'];
- LT();glow(X,cy,240*s,'73,73,77',.4*al);
- ctx.save();ctx.globalAlpha=al;
- // ghost-fire licking up behind the whole figure
- LT();for(let i=0;i<20;i++){const u=i/19,fx=X+(u-.5)*250*s,by=cy-150*s+Math.pow(Math.abs(u-.5)*2,1.4)*230*s,h=(46+26*Math.sin(now/120+i*1.9)+hz(i,3)*26)*s;TD(fx,by,13*s,h,'rgba(80,80,84,.30)');TD(fx,by,7*s,h*.62,'rgba(142,142,146,.28)')}
- SO();
- // DRAGON coiled behind the giant: tapered scaled body, dorsal spikes, horned head
- {const dp=[[X+F*118*s,cy+108*s],[X+F*205*s,cy-120*s],[X+od*215*s,cy-150*s],[X+od*118*s,cy+46*s]],
-  Bz=u=>{const m=1-u;return[m*m*m*dp[0][0]+3*m*m*u*dp[1][0]+3*m*u*u*dp[2][0]+u*u*u*dp[3][0],m*m*m*dp[0][1]+3*m*m*u*dp[1][1]+3*m*u*u*dp[2][1]+u*u*u*dp[3][1]]};
-  for(let i=0;i<=46;i++){const u=i/46,p=Bz(u),a1=Bz(Math.min(1,u+.02)),b1=Bz(Math.max(0,u-.02)),an=Math.atan2(a1[1]-b1[1],a1[0]-b1[0]),r=(5+11*Math.pow(u,.8))*s,nx=Math.sin(an),ny=-Math.cos(an),cx2=Math.cos(an),sy2=Math.sin(an);
-   if(i%3==1){const h=r+(10+9*u)*s;ctx.beginPath();ctx.moveTo(p[0]-cx2*r*.6+nx*r*.6,p[1]-sy2*r*.6+ny*r*.6);ctx.lineTo(p[0]+nx*h-cx2*r*.4,p[1]+ny*h-sy2*r*.4);ctx.lineTo(p[0]+cx2*r*.6+nx*r*.6,p[1]+sy2*r*.6+ny*r*.6);ctx.closePath();ctx.fillStyle='#151519';ctx.fill();ctx.lineWidth=1.2;ctx.strokeStyle=E;ctx.stroke()}
-   ctx.fillStyle=D;ctx.beginPath();ctx.arc(p[0],p[1],r+1.8,0,7);ctx.fill();
-   ctx.fillStyle=i%2?'#26262a':'#202024';ctx.beginPath();ctx.arc(p[0],p[1],r,0,7);ctx.fill();
-   ctx.fillStyle='rgba(99,99,103,.45)';ctx.beginPath();ctx.arc(p[0]-nx*r*.38,p[1]-ny*r*.38,r*.5,0,7);ctx.fill();
-   ctx.strokeStyle='rgba(3,3,7,.6)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(p[0]+cx2*r*.2,p[1]+sy2*r*.2,r*.72,an-1.2,an+1.2);ctx.stroke()}
-  const hp=Bz(1),hq=Bz(.97),ha=Math.atan2(hp[1]-hq[1],hp[0]-hq[0]);
-  ctx.save();ctx.translate(hp[0],hp[1]);ctx.rotate(ha);if(Math.cos(ha)<0)ctx.scale(1,-1);ctx.scale(s*1.25,s*1.25);
-  pl([[-8,-9],[-36,-26],[-30,-6]],'#444448','#0d0d11');pl([[-2,-11],[-24,-38],[-18,-10]],'#444448','#0d0d11');
-  pl([[-16,-12],[8,-13],[32,-6],[40,-1],[38,4],[8,5],[-16,13]],'#5e5e62','#151519');pl([[0,5],[36,6],[30,13],[-6,17]],'#39393d','#0d0d11');
-  poly([[20,5],[22,12],[26,5]],'#efeff3');poly([[29,5],[31,11],[34,5]],'#efeff3');poly([[10,5],[12,11],[15,5]],'#efeff3');
-  ctx.strokeStyle=E;ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(34,-3);ctx.quadraticCurveTo(52,-16+4*Math.sin(now/150),66,-6);ctx.stroke();
-  LT();glow(7,-5,10,'255,35,55',.95);SO();poly([[2,-6],[11,-8],[9,-3]],'#ffffff');ctx.restore()}
- // ROBE / skirt, flowing into the flames
- pl(P(-46,24, 46,24, 76,122, 38,138, 0,120, -38,138, -76,122),'#26262a','#050509');
- for(let i=-2;i<=2;i++)tube([...P(i*14,40, i*20,90, i*26,128)],3*s,['#050509','#16161a','#3d3d41','#656569']);
- // CHEST: a symmetrical plate cuirass - steel breastplate, centre ridge, lamellar chevron bands, rivets, a glowing core and a row of side spikes
- pl(P(-54,-62, 54,-62, 52,-14, 30,26, -30,26, -52,-14),'#6b7380','#1a1c22');
- for(let i=0;i<4;i++){const w=50-i*5,y=-52+i*18;pl(P(-w,y, 0,y+10, w,y, w,y+8, 0,y+19, -w,y+8),i%2?'#59606b':'#7b838e','#1d2026');
-  for(const d of[-1,1]){ctx.fillStyle='#d6dce3';ctx.beginPath();ctx.arc(X+d*(w-7)*s,cy+(y+5)*s,1.8*s,0,7);ctx.fill()}}
- tube(P(0,-62, 0,24),7*s,[D,'#3a3d44','#8a929a','#e6edf3']);
- for(const d of[-1,1])for(let i=0;i<3;i++){const y=-34+i*20,x=48-i*5;pl(P(d*x,y-7, d*(x+22),y+2, d*x,y+9),'#b4bcc5','#2a2e35')}
- LT();glow(X,cy-26*s,16*s,'255,40,60',.9);SO();pl(P(-6,-32, 0,-40, 6,-32, 0,-20),'#ff5a64','#5a0a14');
- // sash + tassets
- pl(P(-56,22, 56,22, 54,42, -54,42),'#49494d','#151519');pl(P(-9,24, 9,24, 12,50, 0,58, -12,50),'#757579','#26262a');
- for(const d of[-1,1]){pl(P(d*8,44, d*60,40, d*56,92, d*16,86),'#444448','#09090d');pl(P(d*16,90, d*58,96, d*50,128, d*22,122),'#39393d','#07070b');pl(P(d*56,44, d*80,56, d*56,70),'#b4bcc5','#2a2e35');pl(P(d*52,94, d*74,108, d*50,118),'#b4bcc5','#2a2e35')}
- // OFF ARM holding a katana
- tube(P(od*72,-48, od*100,2, od*88,56),14*s);pl(P(od*72,18, od*106,16, od*102,54, od*74,56),'#57575b','#0d0d11');
- ctx.fillStyle='#3d3d41';ctx.strokeStyle=E;ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(X+od*88*s,cy+62*s,12*s,0,7);ctx.fill();ctx.stroke();
- {const hx=X+od*88*s,hy=cy+62*s,dx=od*.46,dy=.89,nx=-dy,ny=dx,ps=(u,v)=>[hx+(dx*u+nx*v)*s,hy+(dy*u+ny*v)*s];
-  LT();glow(hx+dx*95*s,hy+dy*95*s,80*s,'92,92,96',.32);SO();
-  tube([ps(-22,0),ps(20,0)],7*s,['#050509','#1d1d21','#3d3d41','#656569']);pl([ps(18,-13),ps(25,-13),ps(25,13),ps(18,13)],'#89898d','#1d1d21');
-  pl([ps(26,-6),ps(168,-5),ps(184,-1),ps(164,5),ps(26,6)],'#e9e9ed','#36363a');ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(ps(30,4)[0],ps(30,4)[1]);ctx.lineTo(ps(176,1)[0],ps(176,1)[1]);ctx.stroke()}
- // PAULDRONS: three stacked plates + swept spikes each side, gorget between
- for(const d of[-1,1]){pl(P(d*40,-68, d*98,-82, d*114,-56, d*84,-40, d*44,-46),'#5d5d61','#0d0d11');pl(P(d*44,-46, d*84,-40, d*106,-20, d*76,-8, d*46,-22),'#4e4e52','#0a0a0e');pl(P(d*46,-22, d*76,-8, d*92,12, d*64,20, d*44,4),'#39393d','#07070b');
-  pl(P(d*96,-80, d*124,-126, d*110,-66),'#b4bcc5','#2a2e35');pl(P(d*104,-56, d*146,-84, d*116,-40),'#b4bcc5','#2a2e35');pl(P(d*104,-30, d*142,-30, d*106,-10),'#b4bcc5','#2a2e35');pl(P(d*52,-70, d*62,-120, d*80,-72),'#b4bcc5','#2a2e35')}
- pl(P(-32,-66, 32,-66, 22,-44, -22,-44),'#69696d','#151519');
- // HEAD: the KNIGHT's steel great-helm, built mirror-symmetrical: red plume, swept horns, domed crown, brow band, T-visor with glowing eyes, riveted cheek guards
- {const fk=Math.sin(now/170)*4,St=['#b4bcc5','#2a2e35'];
-  for(const d of[-1,1])pl(Hp(d*18,-30, d*34,-40, d*50,-58, d*62,-84, d*46,-62, d*30,-50, d*14,-42),St[0],St[1]);
-  pl(Hp(-18,-30, -14,-56+fk, -6,-76+fk, 0,-98+fk*1.5, 6,-76+fk, 14,-56+fk, 18,-30),'#e0283a','#5a0a14');pl(Hp(-8,-30, -5,-56+fk, 0,-84+fk*1.3, 5,-56+fk, 8,-30),'#ff8a8a','#a3242b');
-  pl(Hp(-28,-8, -27,-26, -16,-38, 0,-43, 16,-38, 27,-26, 28,-8, 27,22, 19,38, 0,47, -19,38, -27,22),'#9aa2ab','#2f343b');
-  tube(Hp(0,-42, 0,-8),5*s,[D,'#3b4048','#8a929a','#e6edf3']);
-  pl(Hp(-29,-9, 29,-9, 29,2, -29,2),'#4a4f59','#1b1e24');
-  for(const k of[-24,-12,12,24]){ctx.fillStyle='#d6dce3';ctx.beginPath();ctx.arc(X+k*s,cy-107.5*s,1.7*s,0,7);ctx.fill()}
-  poly(Hp(-23,-4, 23,-4, 23,6, -23,6),'#020206');poly(Hp(-3,6, 3,6, 3,34, -3,34),'#020206');
-  for(const d of[-1,1]){for(let i=0;i<4;i++)poly(Hp(d*9-2,13+i*7, d*9+2,13+i*7, d*9+2,16+i*7, d*9-2,16+i*7),'#020206');
-   pl(Hp(d*28,2, d*8,8, d*10,38, d*21,31),'#6b7380','#1d2026');
-   for(let i=0;i<3;i++){ctx.fillStyle='#d6dce3';ctx.beginPath();ctx.arc(X+d*(19-i*2)*s,cy+(-94+i*9)*s,1.5*s,0,7);ctx.fill()}}
-  pl(Hp(-12,38, 12,38, 0,52),'#7a828c','#2a2e35');
-  LT();for(const d of[-1,1])glow(X+d*13*s,cy-103*s,12*s,'255,35,55',.95);SO();
-  for(const d of[-1,1])poly(Hp(d*8,-3, d*18,-3, d*18,3, d*8,3),'#ffd6d6')}
- // THROWING ARM: bent upper arm, forearm up, open palm with fingers
- tube([[X+F*66*s,cy-50*s],[X+F*106*s,cy-58*s],[hdx,hdy+6*s]],14*s);pl([[hdx-13*s,hdy+8*s],[hdx+13*s,hdy+8*s],[hdx+11*s,hdy+36*s],[hdx-11*s,hdy+36*s]],'#57575b','#0d0d11');
- pl([[hdx-12*s,hdy+8*s],[hdx+12*s,hdy+8*s],[hdx+13*s,hdy-8*s],[hdx-13*s,hdy-8*s]],'#4e4e52','#151519');
- for(let k=-2;k<=2;k++){if(!k)continue;poly([[hdx+k*6*s-3*s,hdy-8*s],[hdx+k*8*s,hdy-28*s],[hdx+k*6*s+3*s,hdy-8*s]],'#69696d',E,1.4)}
- for(const[ex,ey,o]of[[X+F*106*s,cy-58*s,F],[X+od*100*s,cy+2*s,od]]){poly([[ex,ey-11*s],[ex+o*34*s,ey-6*s],[ex,ey+9*s]],'#b4bcc5',E,1.4);poly([[ex-o*4*s,ey-9*s],[ex+o*4*s,ey-34*s],[ex+o*10*s,ey-9*s]],'#b4bcc5',E,1.4)}   // elbow cops: the same pair of spikes on both arms
- {const fx=X+od*88*s,fy=cy+62*s;for(const j of[-1,0,1])poly([[fx+od*10*s,fy+j*8*s-4*s],[fx+od*26*s,fy+j*10*s],[fx+od*10*s,fy+j*8*s+4*s]],'#b4bcc5',E,1.2)}
- ctx.restore();
- LT();glow(X,cy-18*s,34*s,'255,30,50',.5*al);glow(X,cy-104*s,46*s,'255,30,50',.3*al);
- for(let j=0;j<22;j++){const u=(now/900+hz(j,1))%1;ctx.fillStyle='rgba(255,60,70,'+.8*al*(1-u)+')';ctx.fillRect(X+(hz(j,2)-.5)*190*s,cy+80*s-u*230,3,3)}}
-                    // 1) the rasenshuriken gathers over the raised hand
-                    const fr=clp((p-.12)/.16);
-                    if(p<.3&&fr>0)rs(hdx,hdy-34*s*ezs(fr)-6,34*ezs(fr),al,now/45);
-                    // 2) it is thrown
-                    const tt=clp((p-.3)/.2);
-                    if(p>=.3&&p<.5){const g=ezs(tt),y0=hdy-40,px=hdx+(tx-hdx)*g,py=y0+(ty-y0)*g-Math.sin(Math.PI*tt)*50;
-                        for(let k=5;k>=1;k--){const g2=ezs(Math.max(0,tt-k*.05));glow(hdx+(tx-hdx)*g2,y0+(ty-y0)*g2-Math.sin(Math.PI*Math.max(0,tt-k*.05))*50,30-k*3,'255,50,60',.22*(1-k/6))}
-                        rs(px,py,36+10*tt,1,now/30)}
+                    // 1) the rasenshuriken gathers above the tip of the raised blade
+                    const fr=clp((p-.12)/.16),lt=bp(BL,0),gx=X+lt[0]*s,gy=cy+lt[1]*s-19;
+                    if(p<.3&&fr>0){rs(gx,gy-14*ezs(fr),34*ezs(fr),al,now/45);SO()}
+                    // 2) the swing throws it
+                    const tipx=X+od*178.7*s,tipy=cy-235.4*s-19;
+                    if(p>=.3&&p<.5){const tt=clp((p-.3)/.2),g=ezs(tt),y0=tipy-14,px=tipx+(tx-tipx)*g,py=y0+(ty-y0)*g-Math.sin(Math.PI*tt)*50;
+                        for(let k=5;k>=1;k--){const g2=ezs(Math.max(0,tt-k*.05));glow(tipx+(tx-tipx)*g2,y0+(ty-y0)*g2-Math.sin(Math.PI*Math.max(0,tt-k*.05))*50,30-k*3,'255,50,60',.22*(1-k/6))}
+                        rs(px,py,36+10*tt,1,now/30);SO()}
                     // 3) it explodes in a sphere of a thousand wind blades
                     if(p>=.5){const q=clp((p-.5)/.5),fa=1-q,R=26+ezs(clp(q*1.6))*96;LT();
                         if(q<.7)rs(tx,ty,R*.8,clp(1-q/.7),now/25);
                         for(let r=0;r<3;r++){const qq=clp(q*1.4-r*.12);if(qq<=0||qq>=1)continue;ctx.strokeStyle='rgba(255,50,70,'+.85*(1-qq)+')';ctx.lineWidth=5*(1-qq)+1.5;ctx.beginPath();ctx.ellipse(tx,ty,Math.max(1,40+qq*230),Math.max(1,28+qq*150),0,0,7);ctx.stroke()}
                         for(let j=0;j<18;j++){const an=j*.349+q*1.8,r0=R*.7,r1=R*1.5+q*120*(.6+hz(j,1)*.7);GL(tx+Math.cos(an)*r0,ty+Math.sin(an)*r0*.8,tx+Math.cos(an+.14)*r1,ty+Math.sin(an+.14)*r1*.8,3.5*fa+1,'255,50,70',fa*.9)}
                         for(let j=0;j<28;j++){const u=clp(q*1.3-hz(j,3)*.25);if(u<=0)continue;ctx.fillStyle='rgba(255,90,90,'+.9*(1-u)+')';ctx.fillRect(tx+(hz(j,4)-.5)*330*u,ty-Math.sin(u*3)*hz(j,5)*160+(hz(j,6)-.3)*50,3,3)}
-                        glow(tx,ty,150*fa+30,'255,20,40',.5*fa)}},
+                        glow(tx,ty,150*fa+30,'255,20,40',.5*fa);SO()}},
 
                 // 2) GETSUGA TENSHO (Bleach): blood-red spirit chains wind round the blade, a huge BLACK BEAM crashes through, then a black crescent moon hangs in the sky
                 getsuga(a){const{p,now,F,tx,ty,sx,sy}=a;SO();
