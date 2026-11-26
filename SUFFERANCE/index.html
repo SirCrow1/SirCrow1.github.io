@@ -193,6 +193,9 @@ function laugh(k,t,low,sy){
 // ---------- other effects ----------
 const SFX={
   right(t){noise('s',t,.22,.4,'bandpass',3000,800,2);[523,659,784,1047].forEach((f,i)=>note('s','triangle',f,t+.05+i*.07,.35,.2,1,0,1))},
+  bankai(t){noise('s',t,1.0,.4,'bandpass',200,3500,2,1);sweep('s','sawtooth',60,180,t,1.0,.2,1);note('s','sine',55,t,1.1,.45,1,0,1);
+    sweep('s','sine',140,26,t+1.0,1.3,1,1);noise('s',t+1.0,.7,.7,'lowpass',4000,100,1,1);sweep('s','square',900,90,t+1.0,.5,.12,1);
+    for(let i=0;i<6;i++)note('s','sine',180+i*60,t+1.05+i*.05,.5,.1,1,0,1)},
   timestop(t){sweep('s','sine',120,28,t,1.6,.95,1);noise('s',t,1.0,.45,'bandpass',200,5000,2,1);note('s','sine',70,t+.05,1.4,.5,1,0,1);
     for(let i=0;i<7;i++){const tt=t+1.0+i*.26;noise('s',tt,.035,.55,'bandpass',2600,0,6);note('s',i%2?'square':'triangle',i%2?1900:1500,tt,.05,.12,0,0,1)}
     sweep('s','sine',90,24,t+2.9,.9,.9,1);noise('s',t+2.9,.5,.5,'lowpass',1800,90,1,1)},
@@ -4199,6 +4202,25 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                     ctx.save();ctx.globalAlpha=ma;LT();glow(tx,ty-150,230*sz,'255,30,50',.32);SO();ctx.translate(tx,ty-150);ctx.rotate(-.55*F);ctx.scale(sz,sz);
                     cres(0,0,115,.45,'rgba(3,0,2,.99)','rgba(255,70,95,1)',1);ctx.restore()},
 
+                // POWER-UP INTRO for Special Moves (text only, no voice): BANKAI (Getsuga Tensho), DOMAIN EXPANSION (Hollow Purple), ULTRA INSTINCT (Kamehameha). tt = seconds since it began, fin = null until the move ends, then seconds since the knight reverted. kind picks the look.
+                bankai(a){const{tt,fin,now,hx,hy,kind}=a,C=BKC[kind]||BKC.getsuga;SO();const px=hx,py=hy-40,cx=W/2,run=fin==null;
+                    const dk=run?clp(tt/.6)*(1-clp((tt-2.6)/.7)):0;
+                    if(dk>0){ctx.fillStyle='rgba('+C.dk+','+C.da*dk+')';ctx.fillRect(0,0,W,H);
+                        if(C.stars){for(let j=0;j<70;j++){const tw=.5+.5*Math.sin(now/260+j*7.3);ctx.fillStyle='rgba(220,210,255,'+.85*dk*tw+')';ctx.fillRect(hz(j,5)*W,hz(j,6)*H,hz(j,7)>.85?3:2,hz(j,7)>.85?3:2)}}}
+                    const pa=run?clp((tt-.15)/.45)*(C.keep?1:1-clp((tt-3.0)/.6)):1-clp(fin/.4);
+                    if(pa>0){LT();glow(px,py,110+26*Math.sin(now/80),C.c,.55*pa);
+                        for(let j=0;j<16;j++){const u=(now/650+hz(j,1))%1,xx=px+(hz(j,2)-.5)*84,yy=py+70-u*270;ctx.fillStyle='rgba('+C.p+','+.85*pa*(1-u)+')';ctx.fillRect(xx,yy,3,10+hz(j,4)*16)}SO()}
+                    const ca=C.chains?(run?clp((tt-.9)/.4):1-clp(fin/.4)):0;
+                    if(ca>0){for(let i=0;i<26;i++){const an=now/420+i*.2417,r=i%2,xx=px+Math.cos(an)*(48+r*14),yy=py+Math.sin(an)*(86+r*10)*.9,dp=Math.sin(an);
+                        ctx.save();ctx.translate(xx,yy);ctx.rotate(an+1.57);ctx.beginPath();ctx.ellipse(0,0,i%3?5:8,3.6,0,0,6.3);ctx.fillStyle='rgba(8,0,4,'+.95*ca*(.55+.45*dp)+')';ctx.fill();ctx.strokeStyle='rgba('+C.c+','+ca*(.6+.4*dp)+')';ctx.lineWidth=2.2;ctx.stroke();ctx.restore()}}
+                    if(run&&tt>=1&&tt<1.5){const f=1-(tt-1)/.5;LT();ctx.fillStyle='rgba('+C.c+','+.35*f+')';ctx.fillRect(0,0,W,H);SO();ctx.fillStyle='rgba(255,255,255,'+.6*clp(f*2-1)+')';ctx.fillRect(0,0,W,H);
+                        ctx.strokeStyle='rgba('+C.c+','+f+')';ctx.lineWidth=8*f+1;ctx.beginPath();ctx.arc(px,py,(1-f)*380+10,0,6.3);ctx.stroke()}
+                    if(!run){const f=1-clp(fin/.45);if(f>0){ctx.fillStyle='rgba('+C.c+','+.4*f+')';ctx.fillRect(0,0,W,H);ctx.strokeStyle='rgba('+C.c+','+f+')';ctx.lineWidth=6*f+1;ctx.beginPath();ctx.arc(px,py,(1-f)*240+10,0,6.3);ctx.stroke()}}
+                    const T=(txt,a2,sz)=>{if(a2<=0)return;ctx.save();ctx.textAlign='center';ctx.lineJoin='round';ctx.font='italic 900 '+sz+'px Cinzel, Georgia, serif';const mw=ctx.measureText(txt).width;if(mw>W-60){sz=Math.max(18,Math.floor(sz*(W-60)/mw));ctx.font='italic 900 '+sz+'px Cinzel, Georgia, serif'}
+                        ctx.lineWidth=8;ctx.strokeStyle='rgba(0,0,0,'+.9*a2+')';ctx.shadowColor='rgba('+C.c+','+a2+')';ctx.shadowBlur=26;
+                        const y=Math.max(sz+34,Math.round(H*.17));ctx.strokeText(txt,cx,y);ctx.fillStyle='rgba('+C.t+','+a2+')';ctx.fillText(txt,cx,y);ctx.restore()};
+                    if(run){T(C.t1,clp((tt-.15)/.2)*(C.t2?1-clp((tt-.95)/.15):1-clp((tt-2.6)/.5)),C.s1||64);if(C.t2)T(C.t2,clp((tt-1.15)/.25)*(1-clp((tt-2.8)/.6)),44)}},
+
                 // TIME STOP (Star Platinum: The World). tt = seconds since it began, fin = null while time is stopped, then seconds since time resumed
                 tstop(a){const{tt,fin,now}=a;SO();const cx=W/2,cy=H/2;
                     const gr=fin==null?clp(tt/.4):1-clp(fin/.5),inv=fin==null?clp(1-tt/.35):0;
@@ -4424,6 +4446,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             const off=q=>{q=Math.max(0,q);if(q<.2)return -10*F*(q/.2);if(q<.4)return F*(-10+80*ezs((q-.2)/.2));if(q<.7)return 70*F;return 70*F*(1-ezs(Math.min(1,(q-.7)/.25)))};
             const pet=shopS().eq.pet,ride=!G.gal&&mountedNow();
             const draw=(o,al)=>{ctx.save();ctx.globalAlpha*=al;
+                if(G.bk&&G.bk.fin==null&&G.bk.t>=1&&BKC[G.bk.kind]&&BKC[G.bk.kind].filter){ctx.filter=BKC[G.bk.kind].filter;ctx.shadowColor=BKC[G.bk.kind].glow;ctx.shadowBlur=16}   // BANKAI: black armor + blood-red glow / ULTRA INSTINCT: silver
                 if(ride){rideSkill(kx+o,ks,p,F,pet);ctx.restore();return}   // mounted: the knight and his mount dash and strike together
                 ctx.translate(kx+o,G.hy);ctx.scale(F,1);
                 if(im.loaded){const f=Math.min(3,Math.floor(Math.min(1,p*1.15)*4));ctx.drawImage(im.img,f*120,0,120,80,-(120*ks)/2,-(80*ks)+15,120*ks,80*ks)}
@@ -4806,11 +4829,12 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(G.fin>0)G.fin-=dt;
             if(G.sk&&(G.sk.t+=(s=='clear'||s=='bclear'?dt*KSLOW:dt))>1.3)G.sk=null;
             if(G.spm&&(G.spm.t+=dt)>2.8)G.spm=null;
+            if(G.bk){const q=G.bk;q.t+=dt;if(!G.spk&&q.fin==null)q.fin=0;if(q.fin!=null&&(q.fin+=dt)>.9)G.bk=null}
             if(G.tst){const q=G.tst;q.t+=dt;if(!G.spk&&q.fin==null)q.fin=0;if(q.fin!=null&&(q.fin+=dt)>.9)G.tst=null}
             if(G.spk){const e=G.spk;if(e.pre>0)e.pre-=dt;else e.t+=dt/SPSLOW;if(!e.hit&&e.t>=.5){e.hit=1;const o=e.q[e.j];o.dyAt=performance.now();if(!e.keep){const g0=G;setTimeout(()=>{if(G===g0&&G.tg)G.tg=G.tg.filter(x=>x!==o)},500)}}if(e.t>=.95)spkNext()}
             if(s=='clear'){
                 G.ct+=dt*KSLOW;const c=G.ct,d=G.dr;
-                if(G.last){if(G.galK&&G.galK[0]=='m'){if(c>2.5&&!G.spk&&!G.spm&&!G.tst){const k=G.galK;G=null;keys={};setTimeout(()=>galPlay(k[0],k[1]),80);return}}else if(c>1.5)winStart()}
+                if(G.last){if(G.galK&&G.galK[0]=='m'){if(c>2.5&&!G.spk&&!G.spm&&!G.tst&&!G.bk){const k=G.galK;G=null;keys={};setTimeout(()=>galPlay(k[0],k[1]),80);return}}else if(c>1.5)winStart()}
                 else{
                     if(c>=1.1&&c<2.6){const p=Math.min(1,(c-1.1)/1.1),e=p*p*(3-2*p);if(!G.w0)G.w0=[G.hx,G.hy];G.hx=G.w0[0]+(d.x-G.w0[0])*e;G.hy=G.w0[1]+(d.y+8-G.w0[1])*e;G.face=1;G.moving=1}else G.moving=0;
                     G.ka=1-Math.max(0,Math.min(1,(c-2.2)/.5));
@@ -6863,6 +6887,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             }
             if(G.state=='win'&&G.end=='bad')badFx(now);
             if(!isB){propsDraw(now,true);bitsDraw(now);hoverDraw()}
+            if(G.bk){try{ANI.bankai({tt:G.bk.t,fin:G.bk.fin,now,hx:G.hx,hy:G.hy,kind:G.bk.kind})}catch(_){}}   // bankai: shout, flash, chains
             if(G.tst){try{ANI.tstop({tt:G.tst.t,fin:G.tst.fin,now})}catch(_){}}   // time stop: grey world, clock, title
             if(G.sk&&(G.state=='clear'||G.state=='bclear'))skDraw(now);   // the sword art
             if(G.spk){const sv=G.sk;G.sk=G.spk;try{skDraw(now)}catch(_){}G.sk=sv}   // Special Move strike
@@ -7250,11 +7275,17 @@ const TS_SFX_FILE='timestop.mp3';
 function tsSound(){const fb=()=>{try{SND.sfx('timestop')}catch(_){}};
  try{if(window._tsAudio){window._tsAudio.pause()}if(!(SND.cfg&&SND.cfg.on===false)){let used=0;const a=new Audio(TS_SFX_FILE);window._tsAudio=a;a.volume=.9;
    const f=()=>{if(!used){used=1;fb()}};a.addEventListener('error',f,{once:true});const pr=a.play();if(pr&&pr.catch)pr.catch(f)}}catch(_){fb()}}
-function runSpecial(idx,rm,keep){if(!G)return;const K=SKILLS[idx],ts=K.x=='ora';G.spk={k:K,t:0,tx:0,ty:0,q:rm,j:-1,hit:0,keep:!!keep,pre:ts?2.6:0};G.tst=null;if(ts){G.tst={t:0,fin:null};tsSound()}spkNext()}
+const BKC={getsuga:{t1:'BANKAI!',t2:'TENSA ZANGETSU',c:'255,40,70',t:'255,235,238',p:'255,60,70',dk:'18,0,6',da:.5,chains:1,pre:3.4,
+  filter:'sepia(1) hue-rotate(-38deg) saturate(5) brightness(.42) contrast(1.35)',glow:'rgba(255,30,60,.95)'},
+ void:{t1:'DOMAIN EXPANSION',t2:'UNLIMITED VOID',c:'150,110,255',t:'235,228,255',p:'200,180,255',dk:'6,2,30',da:.72,stars:1,pre:3.4},
+ kame:{t1:'ULTRA INSTINCT!',s1:60,c:'200,225,255',t:'240,248,255',p:'215,232,255',dk:'10,14,30',da:.4,keep:1,pre:3.0,
+  filter:'grayscale(1) brightness(1.75) contrast(1.1)',glow:'rgba(200,225,255,.95)'}};
+function bankaiSound(){try{SND.sfx('bankai')}catch(_){}}
+function runSpecial(idx,rm,keep){if(!G)return;const K=SKILLS[idx],ts=K.x=='ora',bk=BKC[K.x];G.spk={k:K,t:0,tx:0,ty:0,q:rm,j:-1,hit:0,keep:!!keep,pre:ts?2.6:bk?bk.pre:0};G.tst=null;G.bk=null;if(bk){G.bk={t:0,fin:null,kind:K.x};bankaiSound()}if(ts){G.tst={t:0,fin:null};tsSound()}spkNext()}
 /* Replay button shown while previewing a Special Move from the shop */
 {const b=document.createElement('button');b.id='sprep';b.type='button';b.textContent='↺ Replay';b.style.cssText='position:fixed;top:70px;right:14px;z-index:10001;display:none;padding:8px 16px;border-radius:8px;background:#000c;border:2px solid #a78bfa;color:#ddd6fe;font:bold 15px monospace;cursor:pointer';document.body.appendChild(b);
  ['pointerdown','mousedown','touchstart','click'].forEach(ev=>b.addEventListener(ev,e=>e.stopPropagation()));
- b.addEventListener('click',()=>{if(!G||!G.gal||!window._spPrev||G.spIdx==null)return;G.spk=null;G.spm=null;G.tst=null;G.tg.forEach(t=>{delete t.dyAt});runSpecial(G.spIdx,G.tg.filter(t=>!t.ok).sort(()=>Math.random()-.5).slice(0,3),true)});
+ b.addEventListener('click',()=>{if(!G||!G.gal||!window._spPrev||G.spIdx==null)return;G.spk=null;G.spm=null;G.tst=null;G.bk=null;G.tg.forEach(t=>{delete t.dyAt});runSpecial(G.spIdx,G.tg.filter(t=>!t.ok).sort(()=>Math.random()-.5).slice(0,3),true)});
  setInterval(()=>{const on=!!(G&&G.gal&&window._spPrev);if(b.style.display!==(on?'block':'none'))b.style.display=on?'block':'none'},200)}
 /* SPECIAL MOVES: one-use consumables. Each one fires its anime sword art and destroys 3 of the 4 answers. idx = place in SKILLS. */
 const SMOVES={form13:{n:'🐯 13th Form',p:3000,i:23},star:{n:'👊 Star Platinum',p:3400,i:24},hollow:{n:'🟣 Hollow Purple',p:3800,i:25},divider:{n:'🖤 Black Divider',p:4200,i:27},balaq:{n:'🌩️ Balaq Saiga',p:4600,i:22},divine:{n:'🏴‍☠️ Divine Departure',p:5000,i:26},rasen:{n:'👹 Rasenshuriken',p:5400,i:20},excal:{n:'🗡️ Excalibur',p:5800,i:29},getsuga:{n:'🌘 Getsuga Tensho',p:6200,i:21},kame:{n:'💥 Kamehameha',p:6600,i:28}};
