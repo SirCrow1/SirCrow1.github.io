@@ -8,10 +8,11 @@ const MOVES=[['Jab',6],['Quick Slash',8],['Dagger Stab',8],['Shield Bash',9],['R
 const ERR={not_logged_in:'Sign in first (👤 Account).',no_such_player:'No player with that name.',self:"You can't pick yourself.",bad_amount:'Check the gold amounts.',bad_pass:'Pass mark must be 1-100%.',
  bad_time:'Time limit must be 5-300 seconds (or empty).',too_many:'Too many open quizzes (max 10, or 3 for the same player).',bad_questions:'Those questions could not be used.',banned:'This account is banned.',
  not_found:'Not found.',full:'That room is full.',not_enough:'Need at least 2 players to start.',not_host:'Only the host can start.',bad_players:'Room size must be 2-10.',not_yours:'You are not in that one.',already:'Already answered.',closed:'That one is already over.',late:'Too late.',already_in_duel:'You are already in a duel.',own_duel:"That's your own duel.",not_invited:'That duel is for someone else.',wrong_round:'Round already moved on.',bad_code:'No open room with that code.',no_gold:"You don't have enough 🪙 for that room.",already_in_room:'You are already in a party room.'};
+Object.assign(ERR,{playing:"You can't watch a game you are playing in.",private:'That room is private. Use its room code in the box above.',not_started:'That room has not started yet. Come back when the game begins.'});
 const $=s=>document.querySelector(s);
 const say=m=>{try{toast(m)}catch(e){alert(m)}};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let sb=null,modal=null,tab='inbox',Q=null,D=null,GR=null,gPoll=0,gTick=0,gPolling=false,qTimer=0,dPoll=0,dTick=0,busy=false;
+let sb=null,modal=null,tab='inbox',Q=null,D=null,GR=null,W=null,gPoll=0,gTick=0,gPolling=false,qTimer=0,dPoll=0,dTick=0,wPoll=0,wTick=0,wPolling=false,busy=false;
 
 const setGold=d=>{S.gold=Math.max(0,(S.gold|0)+d);save();try{shopGold()}catch(e){}try{shopRender()}catch(e){}};
 const collect=()=>{try{window.SUFF_claimGold&&window.SUFF_claimGold()}catch(e){}};
@@ -66,7 +67,7 @@ const STYLE=`<style>
 const MODAL=`<div id="wg-modal" style="display:none;position:fixed;inset:0;z-index:85;align-items:center;justify-content:center;background:rgba(0,0,0,.7);overflow:auto">
 <div style="background:#14101c;border:2px solid #a78bfa;border-radius:10px;padding:16px 18px;width:min(94vw,520px);max-height:92vh;overflow:auto;color:#e6dcc0;font:14px sans-serif">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div style="font:900 20px Cinzel,serif;color:#c4b5fd">⚔️ Wagers &amp; Duels</div><button id="wg-x" class="wg-b wg-z">✕</button></div>
-<div style="display:flex;gap:4px"><button class="wg-tab" data-tab="inbox">📬 Inbox</button><button class="wg-tab" data-tab="send">📨 Send quiz</button><button class="wg-tab" data-tab="duel">🥊 Duel</button><button class="wg-tab" data-tab="group">👥 Group</button></div>
+<div style="display:flex;gap:4px;flex-wrap:wrap"><button class="wg-tab" data-tab="inbox">📬 Inbox</button><button class="wg-tab" data-tab="send">📨 Send quiz</button><button class="wg-tab" data-tab="duel">🥊 Duel</button><button class="wg-tab" data-tab="group">👥 Group</button><button class="wg-tab" data-tab="watch">👁 Watch</button></div>
 <div id="wg-body" style="border:1px solid #2f2a3d;border-radius:0 8px 8px 8px;padding:10px 12px;background:#1a1526"></div>
 </div></div>`;
 const view=h=>{const b=$('#wg-body');if(b)b.innerHTML=h};
@@ -89,7 +90,7 @@ function init(){
   $('#wg-x').addEventListener('click',close);
   ['mousedown','keydown','keyup','keypress'].forEach(ev=>modal.addEventListener(ev,e=>e.stopPropagation()));
   modal.addEventListener('click',onClick);
-  modal.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='gfb'){e.preventDefault();groupFb()}if(e.key==='Enter'&&e.target.id==='wg-fb'){e.preventDefault();answerFb()}if(e.key==='Enter'&&e.target.id==='dfb'){e.preventDefault();duelFb()}});
+  modal.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='gfb'){e.preventDefault();groupFb()}if(e.key==='Enter'&&e.target.id==='wg-fb'){e.preventDefault();answerFb()}if(e.key==='Enter'&&e.target.id==='dfb'){e.preventDefault();duelFb()}if(e.key==='Enter'&&e.target.id==='wg-wcode'){e.preventDefault();watchByCode()}});
   setTimeout(badge,4000);setInterval(badge,60000);
 }
 async function badge(){
@@ -101,12 +102,12 @@ async function open(){
   if(!await loggedIn()){tab='inbox';mark();view('<div style="padding:14px;text-align:center">Sign in with Google first (👤 Account) to send quizzes and duel other players.</div>');return}
   collect();go(tab);
 }
-function close(){modal.style.display='none';clearInterval(gPoll);clearInterval(gTick);clearInterval(dPoll);clearInterval(dTick);clearInterval(qTimer)}
+function close(){modal.style.display='none';clearInterval(gPoll);clearInterval(gTick);clearInterval(dPoll);clearInterval(dTick);clearInterval(qTimer);clearInterval(wPoll);clearInterval(wTick);W=null}
 const mark=()=>modal.querySelectorAll('.wg-tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===tab));
 function go(t){
-  tab=t;mark();clearInterval(dPoll);clearInterval(dTick);clearInterval(gPoll);clearInterval(gTick);
+  tab=t;mark();clearInterval(dPoll);clearInterval(dTick);clearInterval(gPoll);clearInterval(gTick);clearInterval(wPoll);clearInterval(wTick);W=null;
   if(Q){showQ();return}
-  if(t==='inbox')inbox();else if(t==='send')sendForm();else if(t==='group')groupHome();else duelHome();
+  if(t==='inbox')inbox();else if(t==='send')sendForm();else if(t==='group')groupHome();else if(t==='watch')watchHome();else duelHome();
 }
 
 // ---------- INBOX ----------
@@ -531,6 +532,118 @@ async function groupAnswer(v){
 }
 function groupFb(){const f=$('#gfb');if(!f||f.disabled)return;groupAnswer(f.value.trim()||'')}
 
+// ---------- WATCH (spectate other players' duels and group trivia, read-only) ----------
+async function watchHome(){
+  W=null;view('Loading…');
+  const r=await rpc('watch_list');if(!r||tab!=='watch')return;
+  const du=(r.duels||[]).map(d=>`<div class="wg-card"><b>${esc(d.p1)}</b> ⚔️ <b>${esc(d.p2)}</b> · ${esc(d.title)}
+    <div style="font-size:12px;color:#a1a1aa">Round ${Math.min(d.rnd+1,d.n)}/${d.n} · HP ${d.hp1} vs ${d.hp2} · pot 🪙${d.stake*2}${d.watching?' · 👁 '+d.watching:''}</div>
+    <button class="wg-b wg-g" style="margin-top:5px" data-act="wview" data-kind="duel" data-id="${d.id}">👁 Watch</button></div>`).join('')||'<div style="color:#71717a;font-size:13px">No public duels running right now.</div>';
+  const pa=(r.parties||[]).map(d=>`<div class="wg-card"><b>${esc(d.title)}</b> <span class="wg-s" style="color:#c4b5fd">${d.cnt} players</span>
+    <div style="font-size:12px;color:#a1a1aa">Round ${Math.min(d.rnd+1,d.n)}/${d.n} · pot 🪙${d.pot}${d.watching?' · 👁 '+d.watching:''}</div>
+    <div style="font-size:11px;color:#a1a1aa">${(d.names||[]).map(esc).join(', ')}</div>
+    <button class="wg-b wg-g" style="margin-top:5px" data-act="wview" data-kind="trivia" data-id="${d.id}">👁 Watch</button></div>`).join('')||'<div style="color:#71717a;font-size:13px">No public group rooms running right now.</div>';
+  view(`<div style="border:1px dashed #a78bfa;border-radius:8px;padding:8px;margin-bottom:10px"><b style="color:#c4b5fd">🔑 Watch a private room</b>
+    <div style="display:flex;gap:6px;margin-top:6px"><input id="wg-wcode" class="wg-in" maxlength="8" placeholder="room code" autocomplete="off" style="text-transform:uppercase;letter-spacing:3px;margin:0"><button class="wg-b wg-g" data-act="wcode">Watch</button></div></div>
+    <div style="display:flex;justify-content:space-between"><b style="color:#fcd34d">Live duels</b><button class="wg-b wg-z" data-act="refresh">↻ Refresh</button></div>${du}
+    <b style="color:#fcd34d;display:block;margin-top:14px">Live group trivia</b>${pa}
+    <div style="font-size:11px;color:#71717a;margin-top:10px">Spectators can only look. You never see the answer until the round is over, and you don't pay or win anything.</div>`);
+}
+async function watchByCode(){
+  const el=$('#wg-wcode'),code=el?el.value.trim().toUpperCase():'';
+  if(!code)return say('Type the room code first.');
+  const r=await rpc('room_watch_code',{p_code:code});
+  if(typeof r==='string'&&r.indexOf('ok:')===0){const p=r.split(':');startWatch(p[1],p[2],code)}else if(r)say(errMsg(r));
+}
+function stopWatch(){clearInterval(wPoll);clearInterval(wTick);W=null}
+function startWatch(kind,id,code){
+  W={kind,id,code:code||null,seen:0,feed:[],rnd:-1,built:false,over:false,deadline:0,hp:[100,100]};
+  tab='watch';mark();clearInterval(wPoll);clearInterval(wTick);
+  wPoll=setInterval(pollWatch,1100);wTick=setInterval(tickWatch,200);pollWatch();
+}
+async function pollWatch(){
+  if(!W||wPolling)return;
+  wPolling=true;
+  try{
+    const {data:st,error}=await sb.rpc(W.kind==='duel'?'duel_spectate':'trivia_spectate',{p_id:W.id,p_code:W.code});
+    if(error||!st||!W)return;
+    if(!st.ok){say(errMsg(st.err));stopWatch();watchHome();return}
+    if(W.kind==='duel')renderWatchDuel(st);else renderWatchGroup(st);
+  }catch(e){}finally{wPolling=false}
+}
+function tickWatch(){
+  const t=$('#wtm');if(!t||!W||W.over)return;
+  t.textContent='⏱ '+Math.max(0,(W.deadline-performance.now())/1000).toFixed(1)+'s';
+}
+const wQuestion=q=>`<div style="font:700 17px sans-serif;margin:8px 0;color:#fff">${esc(q.q)}</div>`+(q.t==='mc'?q.o.map((o,i)=>`<div class="wg-opt" style="opacity:.75;cursor:default">${'ABCDEF'[i]}. ${esc(o)}</div>`).join(''):q.t==='tf'?'<div class="wg-opt" style="opacity:.75;cursor:default">✅ True or ❌ False?</div>':'<div class="wg-opt" style="opacity:.75;cursor:default">✍️ Fill in the blank</div>');
+function wDuelLine(e,n1,n2){
+  const side=(x,n,o)=>x.ok?`🗡️ <b>${esc(n)}</b> cast <b>${esc((MOVES[x.mv-1]||['???'])[0])}</b> <span style="color:#fca5a5">(-${x.dmg} to ${esc(o)})</span>`:`❌ ${esc(n)} missed`;
+  return`<div>R${e.r+1} · answer: <b>${esc(e.ans)}</b> — ${side(e.p1,n1,n2)} · ${side(e.p2,n2,n1)}</div>`;
+}
+function wHp(i,v,old){
+  const b=$('#whb'+i),t=$('#wht'+i);if(!b)return;
+  b.style.width=Math.max(0,v)+'%';t.textContent=v+'/100';
+  if(v<old){const p=b.parentNode.parentNode;p.classList.remove('wg-hit');void p.offsetWidth;p.classList.add('wg-hit')}
+}
+function renderWatchDuel(st){
+  const n1=st.p1||'…',n2=st.p2||'…';
+  if(!W.built){
+    view(`<div style="display:flex;justify-content:space-between;font-size:12px;color:#c4b5fd;margin-bottom:6px"><b>👁 Watching: ${esc(st.title)}</b><span id="wwatch"></span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><div style="font-weight:700;color:#86efac">${esc(n1)}</div><div class="wg-bar"><i id="whb1" style="width:100%;background:#22c55e"></i></div><div id="wht1" style="font-size:12px">100/100</div>${gearLine(st.g1,st.b1)}</div>
+      <div><div style="font-weight:700;color:#fca5a5">${esc(n2)}</div><div class="wg-bar"><i id="whb2" style="width:100%;background:#ef4444"></i></div><div id="wht2" style="font-size:12px">100/100</div>${gearLine(st.g2,st.b2)}</div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#a1a1aa;margin-top:8px"><span id="winfo"></span><span id="wtm" style="color:#fcd34d;font-weight:700"></span></div>
+      <div id="wq"></div><div id="wst" style="font-size:12px;color:#a1a1aa;min-height:16px;margin-top:6px"></div>
+      <div id="wf" class="wg-feed" style="margin-top:8px"></div>
+      <div style="margin-top:8px"><button class="wg-b wg-z" data-act="wback">⬅ Stop watching</button></div>`);
+    W.built=true;W.rnd=-1;W.hp=[100,100];
+  }
+  wHp(1,st.hp1,W.hp[0]);wHp(2,st.hp2,W.hp[1]);W.hp=[st.hp1,st.hp2];
+  const first=st.logn-st.log.length;
+  st.log.forEach((e,k)=>{if(first+k>=W.seen)W.feed.push(wDuelLine(e,n1,n2))});
+  W.seen=Math.max(W.seen,st.logn);
+  $('#wf').innerHTML=W.feed.slice(-8).reverse().join('');
+  $('#winfo').textContent='Round '+Math.min(st.rnd+1,st.n)+'/'+st.n+' · pot 🪙'+st.stake*2;
+  $('#wwatch').textContent=st.watching?'👁 '+st.watching+' watching':'';
+  if(st.status!=='active'){
+    W.over=true;clearInterval(wPoll);clearInterval(wTick);
+    const head=st.winner?'🏆 '+esc(st.winner)+' wins 🪙'+st.stake*2+'!':'🤝 Draw — both stakes refunded';
+    $('#wq').innerHTML=`<div style="text-align:center;padding:12px"><div style="font:900 22px Cinzel,serif;color:#fcd34d">${head}</div><button class="wg-b wg-p" style="margin-top:10px" data-act="wback">Back to Watch</button></div>`;
+    $('#wtm').textContent='';$('#wst').textContent='';
+    return;
+  }
+  W.deadline=performance.now()+st.left*1000;
+  if(st.rnd!==W.rnd){W.rnd=st.rnd;$('#wq').innerHTML=wQuestion(st.q)}
+  $('#wst').textContent=st.a1&&st.a2?'Both locked in…':st.a1?n1+' locked in.':st.a2?n2+' locked in.':'';
+}
+function renderWatchGroup(st){
+  const pls=st.players||[];
+  if(!W.built){
+    view(`<div style="display:flex;justify-content:space-between;font-size:12px;color:#c4b5fd;margin-bottom:6px"><b>👁 Watching: ${esc(st.title)}</b><span id="wwatch"></span></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#a1a1aa"><span id="winfo"></span><span id="wtm" style="color:#fcd34d;font-weight:700"></span></div>
+      <div id="wsb"></div><div id="wq"></div><div id="wst" style="font-size:12px;color:#a1a1aa;min-height:16px;margin-top:6px"></div>
+      <div id="wf" class="wg-feed" style="margin-top:8px"></div>
+      <div style="margin-top:8px"><button class="wg-b wg-z" data-act="wback">⬅ Stop watching</button></div>`);
+    W.built=true;W.rnd=-1;
+  }
+  $('#wsb').innerHTML=gScore(pls,st.status==='active');
+  $('#wf').innerHTML=gFeed(st.log);
+  $('#winfo').textContent='Round '+Math.min(st.rnd+1,st.n)+'/'+st.n+' · pot 🪙'+st.pot;
+  $('#wwatch').textContent=st.watching?'👁 '+st.watching+' watching':'';
+  if(st.status!=='active'){
+    W.over=true;clearInterval(wPoll);clearInterval(wTick);
+    const medal=['🥇','🥈','🥉'];
+    const rows=(st.rank||[]).map((r,i)=>`<div class="wg-card" style="margin:4px 0;padding:6px 9px"><div style="display:flex;justify-content:space-between"><span>${medal[i]||(i+1)+'.'} <b>${esc(r.name)}</b></span><span>${r.score} pts${r.pay?' · <b style="color:#86efac">🪙'+r.pay+'</b>':''}</span></div></div>`).join('');
+    $('#wq').innerHTML=`<div style="text-align:center;padding:8px"><div style="font:900 22px Cinzel,serif;color:#fcd34d">🏁 Final standings</div>${rows}<button class="wg-b wg-p" style="margin-top:8px" data-act="wback">Back to Watch</button></div>`;
+    $('#wtm').textContent='';$('#wst').textContent='';
+    return;
+  }
+  W.deadline=performance.now()+st.left*1000;
+  if(st.rnd!==W.rnd){W.rnd=st.rnd;$('#wq').innerHTML=wQuestion(st.q)}
+  const left=pls.filter(p=>!p.done).length;
+  $('#wst').textContent=left?left+' of '+pls.length+' still thinking…':'Everyone locked in…';
+}
+
 // ---------- clicks ----------
 async function onClick(e){
   const t=e.target.closest('[data-tab],[data-act]');if(!t)return;
@@ -559,6 +672,9 @@ async function onClick(e){
   else if(a==='gleave'){const r=await rpc('trivia_leave',{p_id:GR&&GR.id});if(r==='ok'){collect();say('Left the room. Your stake is coming back.')}else if(r)say(errMsg(r));GR=null;go('group')}
   else if(a==='gback'){GR=null;go('group')}
   else if(a==='codejoin')joinByCode();
+  else if(a==='wview')startWatch(t.dataset.kind,id,null);
+  else if(a==='wcode')watchByCode();
+  else if(a==='wback'){stopWatch();go('watch')}
   else if(a==='copycode'){const c=t.dataset.code||'';try{navigator.clipboard.writeText(c).then(()=>say('Code copied: '+c),()=>say('Room code: '+c))}catch(e){say('Room code: '+c)}}
 }
 
