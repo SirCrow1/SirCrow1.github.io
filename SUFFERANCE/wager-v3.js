@@ -64,6 +64,8 @@ const STYLE=`<style>
 .wg-kn i{display:block;font-style:normal;font-size:28px;filter:drop-shadow(0 0 4px #a78bfa)}
 .wg-kn.me i{filter:drop-shadow(0 0 6px #4ade80)}.wg-kn.me{color:#86efac;font-weight:700}
 .wg-kn.done i{opacity:.55}
+.wg-arena{display:block;width:100%;max-width:460px;margin:8px auto;border-radius:10px;border:2px solid #3b3350;background:#14101c}
+.wg-kc{display:block;width:64px;height:60px;margin:0 auto}.wg-kn.done .wg-kc{opacity:.55}.wg-kn.me .wg-kc{filter:drop-shadow(0 0 5px #4ade80)}
 .wg-doors{position:relative;z-index:1;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:6px;padding-bottom:14px}
 .wg-door{width:calc(33% - 10px);min-width:92px;max-width:150px;min-height:120px;padding:26px 6px 6px;border-radius:60px 60px 4px 4px;border:3px solid #7c5a2a;background:linear-gradient(#6b4a22,#4a3016);color:#fff;font:700 13px sans-serif;cursor:pointer;position:relative;display:flex;align-items:flex-end;justify-content:center;text-align:center;box-shadow:0 0 0 3px #2b1f10,inset 0 0 18px #000a}
 .wg-door:before{content:'';position:absolute;top:14px;left:50%;width:70%;height:34%;transform:translateX(-50%);border-radius:40px 40px 0 0;border:2px solid #3a2810;background:#00000033}
@@ -106,6 +108,7 @@ function init(){
 
   document.body.insertAdjacentHTML('beforeend',STYLE+MODAL);
   modal=$('#wg-modal');
+  if(modal&&!modal._ko){modal._ko=1;try{new MutationObserver(()=>wireKnights(modal)).observe(modal,{childList:true,subtree:true})}catch(e){}}
   $('#wg-x').addEventListener('click',close);
   ['mousedown','keydown','keyup','keypress'].forEach(ev=>modal.addEventListener(ev,e=>e.stopPropagation()));
   modal.addEventListener('click',onClick);
@@ -223,7 +226,7 @@ function showQ(){
   else inp='<input id="wg-fb" class="wg-in" placeholder="Type your answer…" autocomplete="off"><button class="wg-b wg-g" style="margin-top:8px" data-act="qfb">Submit</button>';
   view(`<div style="display:flex;justify-content:space-between;font-size:12px;color:#a1a1aa"><span>${esc(Q.title)} · question ${Q.i+1}/${Q.qs.length}</span><span>🪙${Q.stake} at risk · pass ${Q.pass}%</span></div>
    ${Q.secs?'<div class="wg-bar" style="margin:6px 0"><i id="wg-tb" style="width:100%;background:#fbbf24;transition:width .15s linear"></i></div>':''}
-   <div style="font:700 17px sans-serif;margin:10px 0;color:#fff">${esc(q.q)}</div>${inp}
+   <div style="text-align:center;margin-top:4px">${kc(myGear())}</div><div style="font:700 17px sans-serif;margin:10px 0;color:#fff">${esc(q.q)}</div>${inp}
    <div style="margin-top:8px"><button class="wg-b wg-z" data-act="qskip">Skip</button></div>`);
   if(q.t==='fb'){const f=$('#wg-fb');if(f)f.focus()}
   if(Q.secs){
@@ -349,14 +352,163 @@ function gearLine(g,b){
   return p.length?'<div style="font-size:11px;color:#c4b5fd">'+p.map(esc).join(' · ')+'</div>':'<div style="font-size:11px;color:#71717a">no gear equipped</div>';
 }
 
+
+// ================= KNIGHT ARENA =================
+// The game's own knight (same sprite sheets, armour colours, blade art and pet art as the Armory) drawn for EVERY player
+// in a duel / party / quiz, using the gear that player has equipped. Everything is wrapped in try/catch: if the game
+// files ever change, the knights just stop drawing and nothing else breaks.
+const GL=n=>{try{return window.eval(n)}catch(e){}};
+const skOff=v=>{try{window.eval('SKOFF='+v)}catch(e){}};
+const myGear=()=>{const e=gearNow();return{pet:e.pet||null,skin:e.skin||null,blade:e.wpn||null}};
+const AR={set:new Set(),raf:0};
+function arReg(cv,fn){cv._fn=fn;AR.set.add(cv);if(!AR.raf)AR.raf=requestAnimationFrame(arLoop)}
+function arLoop(now){
+  AR.raf=0;
+  for(const cv of [...AR.set]){if(!cv.isConnected){AR.set.delete(cv);continue}try{cv._fn(cv,now/1000)}catch(e){}}
+  if(AR.set.size)AR.raf=requestAnimationFrame(arLoop);
+}
+function arSize(cv,w,h){const d=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(w*d);cv.height=Math.round(h*d);cv._g=cv.getContext('2d');cv._d=d;cv._w=w;cv._h=h}
+function arClear(cv){const g=cv._g;g.setTransform(cv._d,0,0,cv._d,0,0);g.clearRect(0,0,cv._w,cv._h);return g}
+function wdFor(cv,g){if(cv._wd)return cv._wd;try{cv._wd=new Function('ctx','return '+GL('weaponDraw').toString())(g)}catch(e){cv._wd=function(){}}return cv._wd}
+// pets: the game's own creature art, auto-fitted so a T-Rex and a crow both fit
+let _pm=null;const PFIT={};
+function petMk(){if(_pm)return _pm;const fs=['petCreature','horseDraw0','horseDraw','hfTexture','hfTint'].map(GL);if(fs.some(f=>typeof f!=='function'))throw 0;return _pm=new Function('ctx',fs.map(f=>f.toString()).join('\n')+'\nreturn{pc:petCreature,hd:horseDraw}')}
+function petScale(k){const M=(GL('MOUNT')||{})[k];return k==='horse'?(GL('HORSE_K')||1):M?M.K:k==='cat'?1.2:1}
+function petFit(k){
+  if(PFIT[k])return PFIT[k];
+  const o=document.createElement('canvas');o.width=900;o.height=700;
+  const g=o.getContext('2d',{willReadFrequently:true}),f=petMk()(g),ps=petScale(k);
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(const t of [0,.4,.8,1.2]){
+    g.clearRect(0,0,900,700);g.save();g.translate(450,520);g.scale(ps,ps);g.lineCap='round';
+    if(k==='horse')f.hd(t,1,0,'bh');else f.pc(k,t,.045,true);
+    g.restore();
+    const d=g.getImageData(0,0,900,700).data;
+    for(let y=0;y<700;y++)for(let x=0;x<900;x++)if(d[(y*900+x)*4+3]>40){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+  }
+  if(x1<x0){x0=y0=-20;x1=y1=20}else{x0-=450;x1-=450;y0-=520;y1-=520}
+  const w=x1-x0,h=y1-y0;
+  return PFIT[k]={cx:(x0+x1)/2,by:y1,f:Math.min(84/w,64/h,3)};
+}
+function drawPet(cv,g,key,t){
+  const fn=cv._pf||(cv._pf=petMk()(g)),ft=petFit(key),ps=petScale(key),fly=!!{crow:1,dragon:1,phoenix:1,bison:1}[key],bob=fly?Math.sin(t*5)*3:0;
+  g.save();g.translate(-82,-(fly?10:0)+bob);
+  g.fillStyle='rgba(0,0,0,.35)';g.beginPath();g.ellipse(0,fly?10:0,Math.min(40,ft.f*18*ps)||18,4,0,0,6.3);g.fill();
+  g.scale(ft.f,ft.f);g.translate(-ft.cx,-ft.by);g.scale(ps,ps);g.lineCap='round';
+  if(key==='horse')fn.hd(t,false,0,'bh');else fn.pc(key,t,.045,false);
+  g.restore();
+}
+// one knight. gear = {pet,skin,blade}. o = {sc,face,pose:'idle'|'attack'|'dead',u:0..1,dx,flash,a,pet}
+function drawKnight(cv,g,cx,fy,gear,t,o){
+  o=o||{};gear=gear||{};
+  const sp=GL('sprites');
+  if(!sp||!sp.idle||!sp.idle.loaded){g.font='26px serif';g.textAlign='center';g.fillText('🤺',cx,fy-6);return}
+  const SKT=GL('SKINS')||{},WP=GL('WPNS')||{},sk=SKT[gear.skin],bl=gear.blade&&WP[gear.blade]?gear.blade:null;
+  const k=(o.sc||2.2)/2.2,face=o.face||1,pose=o.pose||'idle';
+  let sh=sp.idle,fi=Math.floor(t*10)%10,swing=-1;
+  if(pose==='dead'&&sp.death&&sp.death.loaded){sh=sp.death;fi=Math.min(9,Math.floor((o.u||0)*10))}
+  else if(pose==='attack'){if(bl){fi=0;swing=Math.min(1,o.u||0)}else if(sp.attack&&sp.attack.loaded){sh=sp.attack;fi=Math.min(3,Math.floor((o.u||0)*4))}}
+  let img=sh.img;
+  try{if(sk&&sk.pal)img=GL('palBake')(img,1)}catch(e){}
+  const DJ=GL('DJ'),dx=-54.5*2.2,dy=-80*2.2,fcx=dx+60*2.2;
+  g.save();g.translate(cx+face*(o.dx||0),fy);g.scale(face*k,k);g.imageSmoothingEnabled=false;
+  if(o.a!=null)g.globalAlpha=o.a;
+  g.fillStyle='rgba(0,0,0,.4)';g.beginPath();g.ellipse(0,2,38,7,0,0,6.3);g.fill();
+  if(o.pet!==false&&gear.pet&&pose!=='dead'){try{drawPet(cv,g,gear.pet,t)}catch(e){}}
+  try{DJ&&DJ.pv&&DJ.pv(g,gear.skin,2,-81,t,0)}catch(e){}
+  skOff(1);
+  try{
+    let f=(sk&&sk.f&&!sk.pal)?sk.f:'';if(o.flash)f+=' brightness(2.4) saturate(.3)';
+    g.filter=f||'none';
+    g.drawImage(img,fi*120,0,120,80,dx,dy,264,176);
+  }finally{skOff(0);g.filter='none'}
+  if(sh===sp.idle){try{DJ&&DJ.tex&&DJ.tex(g,gear.skin,sp.idle.img,fi,dx,dy,264,176,'i')}catch(e){}}
+  try{DJ&&DJ.pv&&DJ.pv(g,gear.skin,2,-81,t,1)}catch(e){}
+  if(bl&&pose!=='dead'){
+    g.save();g.translate(fcx+5,-41);
+    g.rotate(swing>=0?-1.0+2.5*Math.sin(swing*Math.PI/2):.55+Math.sin(t*2)*.03);
+    try{wdFor(cv,g)(bl,t)}catch(e){}
+    g.restore();
+  }
+  g.restore();
+}
+// ---- the big duel arena: two knights facing each other, they swing when a round is won, flinch when hit ----
+function arenaInit(cv,gl,gr){
+  if(!cv)return;arSize(cv,460,190);
+  cv._a={g:[gl||{},gr||{}],pose:[null,null],fl:[-9,-9],q:[],tx:[],hp:[100,100],dk:[0,0],dead:[0,0],done:[false,false],t:0};
+  arReg(cv,arenaDraw);
+}
+function arenaSync(cv,hl,hr){
+  const A=cv&&cv._a;if(!A)return;
+  [hl,hr].forEach((v,s)=>{A.hp[s]=v;if(v<=0&&!A.dk[s]){A.dk[s]=1;A.q.push({at:A.t+.8,fn:()=>{A.dead[s]=A.t}})}});
+}
+// e = one log entry, li = which player (1 or 2) stands on the LEFT
+function arenaRound(cv,e,li){
+  const A=cv&&cv._a;if(!A||!e)return;
+  const L=e['p'+li],R=e['p'+(3-li)],nm=m=>(MOVES[m-1]||['Strike'])[0];
+  const go=(s,x,delay)=>{
+    if(!x||!x.ok)return;
+    A.q.push({at:A.t+delay,fn:()=>{A.pose[s]={t0:A.t}}});
+    A.q.push({at:A.t+delay+.3,fn:()=>{
+      A.fl[1-s]=A.t;
+      A.tx.push({x:s?115:345,t0:A.t,s:x.dmg>0?'-'+x.dmg+'  '+nm(x.mv):'blocked',c:x.dmg>0?'#fca5a5':'#93c5fd'});
+    }});
+  };
+  go(0,L,0);go(1,R,.12);
+}
+function arenaDraw(cv,t){
+  const A=cv._a;if(!A)return;A.t=t;
+  for(let i=A.q.length-1;i>=0;i--){if(A.q[i].at<=t){const it=A.q.splice(i,1)[0];try{it.fn()}catch(e){}}}
+  const g=arClear(cv),W=cv._w,H=cv._h;
+  g.fillStyle='#1a1424';g.fillRect(0,0,W,H);
+  g.strokeStyle='rgba(255,255,255,.045)';g.lineWidth=1;
+  for(let x=0;x<W;x+=46){g.beginPath();g.moveTo(x,0);g.lineTo(x,152);g.stroke()}
+  for(let y=30;y<152;y+=30){g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke()}
+  g.fillStyle='#2a2238';g.fillRect(0,152,W,H-152);
+  g.fillStyle='#3a3148';g.fillRect(0,152,W,3);
+  for(const x of [26,W-26]){
+    const fl=.75+.25*Math.sin(t*9+x),q=g.createRadialGradient(x,38,0,x,38,52);
+    q.addColorStop(0,'rgba(255,160,60,'+.35*fl+')');q.addColorStop(1,'rgba(255,160,60,0)');
+    g.fillStyle=q;g.beginPath();g.arc(x,38,52,0,6.3);g.fill();
+    g.font='20px serif';g.textAlign='center';g.fillText('🔥',x,46);
+  }
+  g.font='bold 16px sans-serif';g.textAlign='center';g.fillStyle='rgba(255,255,255,.14)';g.fillText('VS',W/2,96);
+  for(let s=0;s<2;s++){
+    const cx=s?345:115,face=s?-1:1,o={sc:2.2,face,pet:true};
+    let sx=0;
+    if(A.dead[s]){o.pose='dead';o.u=Math.min(1,(t-A.dead[s])/1.0)}
+    else{
+      const p=A.pose[s];
+      if(p&&t-p.t0<.55){const u=(t-p.t0)/.55;o.pose='attack';o.u=u;o.dx=Math.sin(u*Math.PI)*42}
+      if(t-A.fl[s]<.28){o.flash=Math.floor((t-A.fl[s])*30)%2===0;sx=Math.sin(t*90)*5}
+    }
+    drawKnight(cv,g,cx+sx,172,A.g[s],t,o);
+    if(A.done[s]&&!A.dead[s]){g.font='bold 12px sans-serif';g.textAlign='center';g.fillStyle='#fcd34d';g.fillText('🔒 locked in',cx,34)}
+  }
+  A.tx=A.tx.filter(f=>t-f.t0<1.3);
+  for(const f of A.tx){const u=(t-f.t0)/1.3;g.globalAlpha=1-u*u;g.font='bold 15px sans-serif';g.textAlign='center';g.fillStyle='#000';g.fillText(f.s,f.x+1,70-u*34+1);g.fillStyle=f.c;g.fillText(f.s,f.x,70-u*34)}
+  g.globalAlpha=1;
+}
+// ---- small idle knights (party room, quiz header): <canvas class="wg-kc" data-g='{"skin":"gold",...}'> ----
+const kc=gear=>`<canvas class="wg-kc" data-g='${esc(JSON.stringify(gear||{}))}'></canvas>`;
+function wireKnights(root){
+  if(!root)return;
+  root.querySelectorAll('canvas.wg-kc').forEach(cv=>{
+    if(cv._k)return;cv._k=1;
+    let gear={};try{gear=JSON.parse(cv.dataset.g||'{}')||{}}catch(e){}
+    arSize(cv,64,60);
+    arReg(cv,(c,t)=>{const g=arClear(c);drawKnight(c,g,32,57,gear,t,{sc:.95,face:1,pet:false})});
+  });
+}
+
 // ---------- dungeon room: knights stand together, players CLICK a door (no walking, so nobody can copy a path) ----------
 function dungeonQ(q,act,knights,fbId,fbAct,fbLabel){
-  const kn=(knights||[]).map(k=>`<div class="wg-kn${k.me?' me':''}${k.done?' done':''}" title="${esc(k.name)}"><i>🤺</i>${esc(k.name)}${k.me?' (you)':''}</div>`).join('');
+  const kn=(knights||[]).map(k=>`<div class="wg-kn${k.me?' me':''}${k.done?' done':''}" title="${esc(k.name)}">${k.g?kc(k.g):'<i>🤺</i>'}${esc(k.name)}${k.me?' (you)':''}</div>`).join('');
   let doors;
   if(q.t==='mc')doors=q.o.map((o,i)=>`<button class="wg-door" data-act="${act}" data-v="${i}"><b>${'ABCDEF'[i]}</b><span>${esc(o)}</span></button>`).join('');
   else if(q.t==='tf')doors='<button class="wg-door" data-act="'+act+'" data-v="true"><b>✅</b><span>True</span></button><button class="wg-door" data-act="'+act+'" data-v="false"><b>❌</b><span>False</span></button>';
   else doors=`<div class="wg-lock"><div style="font-size:30px">🚪🔒</div><div style="font-size:12px;color:#d4d4d8;margin:4px 0">Speak the password to open the door</div><input id="${fbId}" class="wg-in" placeholder="Type your answer…" autocomplete="off"><button class="wg-b wg-g" style="margin-top:8px" data-act="${fbAct}">${fbLabel}</button></div>`;
-  return `<div style="font:700 17px sans-serif;margin:8px 0;color:#fff">${esc(q.q)}</div><div class="wg-room"><span class="wg-torch l">🔥</span><span class="wg-torch r">🔥</span><div class="wg-knights">${kn}</div><div class="wg-doors">${doors}</div></div>`;
+  return `<div style="font:700 17px sans-serif;margin:8px 0;color:#fff">${esc(q.q)}</div><div class="wg-room"><span class="wg-torch l">🔥</span><span class="wg-torch r">🔥</span>${kn?`<div class="wg-knights">${kn}</div>`:''}<div class="wg-doors">${doors}</div></div>`;
 }
 // mark the door I clicked (only on my own screen; nobody else can see which door I chose)
 function markDoor(v){try{modal.querySelectorAll('.wg-door').forEach(b=>{if(b.dataset.v===String(v))b.classList.add('pick')})}catch(e){}}
@@ -384,22 +536,26 @@ function renderDuel(st){
     view(`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div><div style="font-weight:700;color:#86efac">${esc(myN)} (you)</div><div class="wg-bar"><i id="dhb1" style="width:100%;background:#22c55e"></i></div><div id="dht1" style="font-size:12px">100/100</div>${gearLine(st['g'+me],st['b'+me])}</div>
       <div><div style="font-weight:700;color:#fca5a5">${esc(opN)}</div><div class="wg-bar"><i id="dhb2" style="width:100%;background:#ef4444"></i></div><div id="dht2" style="font-size:12px">100/100</div>${gearLine(st['g'+opp],st['b'+opp])}</div></div>
+      <canvas id="dar" class="wg-arena"></canvas>
       <div style="display:flex;justify-content:space-between;font-size:12px;color:#a1a1aa;margin-top:8px"><span id="dinfo"></span><span id="dtm" style="color:#fcd34d;font-weight:700"></span></div>
       <div id="dq"></div><div id="dst" style="font-size:12px;color:#a1a1aa;min-height:16px;margin-top:6px"></div>
       <div id="df" class="wg-feed" style="margin-top:8px"></div>
       <div style="margin-top:8px" id="dfw"><button class="wg-b wg-r" data-act="dforfeit">🏳️ Forfeit</button></div>`);
     D.built=true;D.rnd=-1;D.hp=[100,100];
+    arenaInit($('#dar'),st['g'+me],st['g'+opp]);
     // the feed is kept; it is repainted below
   }
   const mh=st['hp'+me],oh=st['hp'+opp];
   setHp(1,mh,D.hp[0]);setHp(2,oh,D.hp[1]);D.hp=[mh,oh];
+  arenaSync($('#dar'),mh,oh);
   const first=st.logn-st.log.length;
-  st.log.forEach((e,k)=>{if(first+k>=D.seen)D.feed.push(logLine(e,me,opN))});
+  st.log.forEach((e,k)=>{if(first+k>=D.seen){D.feed.push(logLine(e,me,opN));if(first+k===st.logn-1)arenaRound($('#dar'),e,me)}});
   D.seen=Math.max(D.seen,st.logn);
   $('#df').innerHTML=D.feed.slice(-8).reverse().join('');
   $('#dinfo').textContent='Round '+Math.min(st.rnd+1,st.n)+'/'+st.n+' · pot 🪙'+st.stake*2;
   if(st.status!=='active'){
     D.over=true;clearInterval(dPoll);clearInterval(dTick);
+    {const c=$('#dar');if(c&&c._a)c._a.done=[false,false]}
     const R={win:['🏆 VICTORY','#fcd34d','You take 🪙'+st.stake*2+'!'],lose:['💀 DEFEAT','#fca5a5','You lose your 🪙'+st.stake+'.'],draw:['🤝 DRAW','#93c5fd','Both stakes are refunded.'],cancelled:['🚫 Duel cancelled','#a1a1aa','Stakes are refunded.']}[st.result]||['Over','#ccc',''];
     $('#dq').innerHTML=`<div style="text-align:center;padding:12px"><div style="font:900 24px Cinzel,serif;color:${R[1]}">${R[0]}</div><div style="margin:6px 0 12px">${R[2]}</div><button class="wg-b wg-p" data-act="dback">Back to lobby</button></div>`;
     $('#dtm').textContent='';$('#dst').textContent='';$('#dfw').innerHTML='';
@@ -411,10 +567,11 @@ function renderDuel(st){
   if(st.rnd!==D.rnd){
     D.rnd=st.rnd;D.answered=!!meAns;
     const q=st.q;
-    $('#dq').innerHTML=dungeonQ(q,'da',[{name:myN,me:true,done:!!meAns},{name:opN,done:!!opAns}],'dfb','dfb','Open the door!');
+    $('#dq').innerHTML=dungeonQ(q,'da',[],'dfb','dfb','Open the door!');
     if(D.answered)lockDq();else if(q.t==='fb'){const f=$('#dfb');if(f)f.focus()}
   }else if(meAns&&!D.answered){D.answered=true;lockDq()}
   {const k=modal.querySelectorAll('#dq .wg-kn');if(k[0])k[0].classList.toggle('done',!!meAns);if(k[1])k[1].classList.toggle('done',!!opAns)}
+  {const c=$('#dar');if(c&&c._a)c._a.done=[!!meAns,!!opAns]}
   $('#dst').textContent=meAns&&!opAns?'Locked in. Waiting for your opponent…':(opAns&&!meAns?'⚡ Your opponent already answered!':'');
 }
 function lockDq(){modal.querySelectorAll('#dq button,#dq input').forEach(b=>b.disabled=true)}
@@ -544,7 +701,7 @@ function renderGroup(st){
   if(st.rnd!==GR.rnd){
     GR.rnd=st.rnd;GR.answered=meAns;
     const q=st.q;
-    $('#gq').innerHTML=dungeonQ(q,'ga',pls.map(p=>({name:p.name,me:p.me,done:p.done})),'gfb','gfb','Open the door!');
+    $('#gq').innerHTML=dungeonQ(q,'ga',pls.map(p=>({name:p.name,me:p.me,done:p.done,g:p.g||{}})),'gfb','gfb','Open the door!');
     if(GR.answered)lockGq();else if(q.t==='fb'){const f=$('#gfb');if(f)f.focus()}
   }else if(meAns&&!GR.answered){GR.answered=true;lockGq()}
   const left=pls.filter(p=>!p.done).length;
@@ -619,15 +776,18 @@ function renderWatchDuel(st){
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div><div style="font-weight:700;color:#86efac">${esc(n1)}</div><div class="wg-bar"><i id="whb1" style="width:100%;background:#22c55e"></i></div><div id="wht1" style="font-size:12px">100/100</div>${gearLine(st.g1,st.b1)}</div>
       <div><div style="font-weight:700;color:#fca5a5">${esc(n2)}</div><div class="wg-bar"><i id="whb2" style="width:100%;background:#ef4444"></i></div><div id="wht2" style="font-size:12px">100/100</div>${gearLine(st.g2,st.b2)}</div></div>
+      <canvas id="war" class="wg-arena"></canvas>
       <div style="display:flex;justify-content:space-between;font-size:12px;color:#a1a1aa;margin-top:8px"><span id="winfo"></span><span id="wtm" style="color:#fcd34d;font-weight:700"></span></div>
       <div id="wq"></div><div id="wst" style="font-size:12px;color:#a1a1aa;min-height:16px;margin-top:6px"></div>
       <div id="wf" class="wg-feed" style="margin-top:8px"></div>
       <div style="margin-top:8px"><button class="wg-b wg-z" data-act="wback">⬅ Stop watching</button></div>`);
     W.built=true;W.rnd=-1;W.hp=[100,100];
+    arenaInit($('#war'),st.g1,st.g2);
   }
   wHp(1,st.hp1,W.hp[0]);wHp(2,st.hp2,W.hp[1]);W.hp=[st.hp1,st.hp2];
+  arenaSync($('#war'),st.hp1,st.hp2);
   const first=st.logn-st.log.length;
-  st.log.forEach((e,k)=>{if(first+k>=W.seen)W.feed.push(wDuelLine(e,n1,n2))});
+  st.log.forEach((e,k)=>{if(first+k>=W.seen){W.feed.push(wDuelLine(e,n1,n2));if(first+k===st.logn-1)arenaRound($('#war'),e,1)}});
   W.seen=Math.max(W.seen,st.logn);
   $('#wf').innerHTML=W.feed.slice(-8).reverse().join('');
   $('#winfo').textContent='Round '+Math.min(st.rnd+1,st.n)+'/'+st.n+' · pot 🪙'+st.stake*2;
