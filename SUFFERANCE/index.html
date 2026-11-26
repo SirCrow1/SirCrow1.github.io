@@ -4211,11 +4211,13 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                         const ha=-1.5708+Math.min(tt,1.6)*3.9;ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(ha)*135,Math.sin(ha)*135);ctx.stroke();
                         ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(ha*.08-1.5)*90,Math.sin(ha*.08-1.5)*90);ctx.stroke();SO();ctx.restore()}
                     const ta=fin==null?clp((tt-.2)/.25)*(1-clp((tt-2.1)/.6)):0;
-                    if(ta>0){ctx.save();ctx.textAlign='center';ctx.font='italic bold 44px Cinzel, Georgia, serif';ctx.lineJoin='round';ctx.lineWidth=7;ctx.strokeStyle='rgba(0,0,0,'+.85*ta+')';ctx.shadowColor='rgba(170,110,255,'+ta+')';ctx.shadowBlur=22;
-                        ctx.strokeText('STAR PLATINUM: THE WORLD!',cx,cy-210);ctx.fillStyle='rgba(235,220,255,'+ta+')';ctx.fillText('STAR PLATINUM: THE WORLD!',cx,cy-210);
-                        ctx.font='italic bold 22px Cinzel, Georgia, serif';ctx.shadowBlur=12;ctx.fillText('Time has stopped...',cx,cy-176);ctx.restore()}
+                    if(ta>0){ctx.save();ctx.textAlign='center';ctx.lineJoin='round';const TT='STAR PLATINUM: THE WORLD!';let fs=44;ctx.font='italic bold '+fs+'px Cinzel, Georgia, serif';const mw=ctx.measureText(TT).width;if(mw>W-60)fs=Math.max(18,Math.floor(fs*(W-60)/mw));
+                        const ty0=Math.max(fs+34,Math.round(H*.17));   // always fully inside the canvas, below the corner buttons
+                        ctx.font='italic bold '+fs+'px Cinzel, Georgia, serif';ctx.lineWidth=7;ctx.strokeStyle='rgba(0,0,0,'+.85*ta+')';ctx.shadowColor='rgba(170,110,255,'+ta+')';ctx.shadowBlur=22;
+                        ctx.strokeText(TT,cx,ty0);ctx.fillStyle='rgba(235,220,255,'+ta+')';ctx.fillText(TT,cx,ty0);
+                        ctx.font='italic bold 22px Cinzel, Georgia, serif';ctx.shadowBlur=12;ctx.fillText('Time has stopped...',cx,ty0+34);ctx.restore()}
                     if(fin!=null){const fa=1-clp(fin/.3);if(fa>0){ctx.fillStyle='rgba(255,255,255,'+.55*fa+')';ctx.fillRect(0,0,W,H)}
-                        const xa=1-clp(fin/.8);if(xa>0){ctx.save();ctx.textAlign='center';ctx.font='italic bold 32px Cinzel, Georgia, serif';ctx.shadowColor='rgba(170,110,255,1)';ctx.shadowBlur=18;ctx.fillStyle='rgba(235,220,255,'+xa+')';ctx.fillText('...and time moves again.',cx,cy-190);ctx.restore()}}},
+                        const xa=1-clp(fin/.8);if(xa>0){ctx.save();ctx.textAlign='center';ctx.font='italic bold 32px Cinzel, Georgia, serif';ctx.shadowColor='rgba(170,110,255,1)';ctx.shadowBlur=18;ctx.fillStyle='rgba(235,220,255,'+xa+')';ctx.fillText('...and time moves again.',cx,Math.max(66,Math.round(H*.17)));ctx.restore()}}},
 
                 // 3) SINBAD: BALAQ SAIGA (Magi): golden thunder crawls over the blade, forked bolts lash out, then a sky-splitting bolt crashes down in a blinding flash
                 baal(a){const{p,now,F,oy,tx,ty,sx,sy,c}=a,X=kx(a),fl=Math.floor(now/45);
@@ -4808,7 +4810,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(G.spk){const e=G.spk;if(e.pre>0)e.pre-=dt;else e.t+=dt/SPSLOW;if(!e.hit&&e.t>=.5){e.hit=1;const o=e.q[e.j];o.dyAt=performance.now();if(!e.keep){const g0=G;setTimeout(()=>{if(G===g0&&G.tg)G.tg=G.tg.filter(x=>x!==o)},500)}}if(e.t>=.95)spkNext()}
             if(s=='clear'){
                 G.ct+=dt*KSLOW;const c=G.ct,d=G.dr;
-                if(G.last){if(G.galK&&G.galK[0]=='m'){if(c>2.5){const k=G.galK;G=null;keys={};setTimeout(()=>galPlay(k[0],k[1]),80);return}}else if(c>1.5)winStart()}
+                if(G.last){if(G.galK&&G.galK[0]=='m'){if(c>2.5&&!G.spk&&!G.spm&&!G.tst){const k=G.galK;G=null;keys={};setTimeout(()=>galPlay(k[0],k[1]),80);return}}else if(c>1.5)winStart()}
                 else{
                     if(c>=1.1&&c<2.6){const p=Math.min(1,(c-1.1)/1.1),e=p*p*(3-2*p);if(!G.w0)G.w0=[G.hx,G.hy];G.hx=G.w0[0]+(d.x-G.w0[0])*e;G.hy=G.w0[1]+(d.y+8-G.w0[1])*e;G.face=1;G.moving=1}else G.moving=0;
                     G.ka=1-Math.max(0,Math.min(1,(c-2.2)/.5));
@@ -7243,7 +7245,12 @@ function petGold(){const p=shopS().eq.pet;return p=='crow'?1:p=='turtle'?2:0}
 /* Special move engine: the knight performs the real sword art (dash + strike) on ONE answer at a time and kills it, then the next, until all targets are gone. */
 const SPSLOW=2.6;   // Special Moves play this many times slower than a normal sword art so you can watch them
 function spkNext(){const e=G.spk;if(!e)return;e.j++;e.t=0;e.hit=0;if(e.j>=e.q.length){G.spk=null;if(e.k.x=='getsuga'){const l=e.q[e.q.length-1];G.spm={t:0,tx:l.x,ty:l.y}}return}const o=e.q[e.j];e.tx=o.x;e.ty=o.y;G.face=o.x>=G.hx?1:-1;const dl=(e.j==0&&e.pre>0)?e.pre*1000:0,pk=()=>{try{SND.skill(e.k.ty,SKILLS.indexOf(e.k),1/SPSLOW,false)}catch(_){}};if(dl)setTimeout(pk,dl);else pk()}
-function runSpecial(idx,rm,keep){if(!G)return;const K=SKILLS[idx],ts=K.x=='ora';G.spk={k:K,t:0,tx:0,ty:0,q:rm,j:-1,hit:0,keep:!!keep,pre:ts?2.6:0};G.tst=null;if(ts){G.tst={t:0,fin:null};try{SND.sfx('timestop')}catch(_){}}spkNext()}
+/* Time-stop sound effect: drop a file called timestop.mp3 (or .ogg/.wav, set TS_SFX_FILE) next to this page and it plays here. If the file is missing, the built-in synth sound plays instead. */
+const TS_SFX_FILE='timestop.mp3';
+function tsSound(){const fb=()=>{try{SND.sfx('timestop')}catch(_){}};
+ try{if(window._tsAudio){window._tsAudio.pause()}if(!(SND.cfg&&SND.cfg.on===false)){let used=0;const a=new Audio(TS_SFX_FILE);window._tsAudio=a;a.volume=.9;
+   const f=()=>{if(!used){used=1;fb()}};a.addEventListener('error',f,{once:true});const pr=a.play();if(pr&&pr.catch)pr.catch(f)}}catch(_){fb()}}
+function runSpecial(idx,rm,keep){if(!G)return;const K=SKILLS[idx],ts=K.x=='ora';G.spk={k:K,t:0,tx:0,ty:0,q:rm,j:-1,hit:0,keep:!!keep,pre:ts?2.6:0};G.tst=null;if(ts){G.tst={t:0,fin:null};tsSound()}spkNext()}
 /* Replay button shown while previewing a Special Move from the shop */
 {const b=document.createElement('button');b.id='sprep';b.type='button';b.textContent='↺ Replay';b.style.cssText='position:fixed;top:70px;right:14px;z-index:10001;display:none;padding:8px 16px;border-radius:8px;background:#000c;border:2px solid #a78bfa;color:#ddd6fe;font:bold 15px monospace;cursor:pointer';document.body.appendChild(b);
  ['pointerdown','mousedown','touchstart','click'].forEach(ev=>b.addEventListener(ev,e=>e.stopPropagation()));
