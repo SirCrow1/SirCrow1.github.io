@@ -193,6 +193,9 @@ function laugh(k,t,low,sy){
 // ---------- other effects ----------
 const SFX={
   right(t){noise('s',t,.22,.4,'bandpass',3000,800,2);[523,659,784,1047].forEach((f,i)=>note('s','triangle',f,t+.05+i*.07,.35,.2,1,0,1))},
+  timestop(t){sweep('s','sine',120,28,t,1.6,.95,1);noise('s',t,1.0,.45,'bandpass',200,5000,2,1);note('s','sine',70,t+.05,1.4,.5,1,0,1);
+    for(let i=0;i<7;i++){const tt=t+1.0+i*.26;noise('s',tt,.035,.55,'bandpass',2600,0,6);note('s',i%2?'square':'triangle',i%2?1900:1500,tt,.05,.12,0,0,1)}
+    sweep('s','sine',90,24,t+2.9,.9,.9,1);noise('s',t+2.9,.5,.5,'lowpass',1800,90,1,1)},
   bosshit(t){sweep('s','sine',200,45,t,.4,1);noise('s',t,.35,.8,'lowpass',2500,200);noise('s',t,.08,.6,'highpass',4000,1800);SFX.right(t+.05)},
   swing(t){noise('s',t,.22,.75,'bandpass',4200,500,1.3);sweep('s','sawtooth',950,240,t,.14,.12);note('s','sine',3136,t+.02,.3,.07,1,0,1);sweep('s','sine',150,60,t+.1,.12,.35)},
   click(t){note('s','square',1200,t,.04,.05,0,0,1)},
@@ -2800,7 +2803,7 @@ ${G}
                 const ok=G.tg.find(t=>t.ok)||G.tg[0],n=performance.now();
                 G.state='clear';G.last=1;G.ct=0;G.dr=null;G.sel=null;G.kq=0;G.kd=0;G.kf=0;G.lsk=+id;G.face=1;
                 G.sk={t:0,k:SKILLS[+id],tx:ok.x,ty:ok.y};ok.dyAt=n;try{SND.skill(SKILLS[+id].ty,+id,1/KSLOW,false)}catch(_){}
-                if(window._spPrev){G.sk=null;delete ok.dyAt;runSpecial(+id,G.tg.filter(t=>!t.ok).sort(()=>Math.random()-.5).slice(0,3),true)}
+                if(window._spPrev){G.sk=null;delete ok.dyAt;G.spIdx=+id;runSpecial(+id,G.tg.filter(t=>!t.ok).sort(()=>Math.random()-.5).slice(0,3),true)}
             }else if(kind=='n'){
                 label=galNName(id);
                 if(id=='16'){const b={x:350,y:WB+9,st:1,t0:performance.now(),kind:'mimic',gone:1,g:0};G.chs.push(b);
@@ -4018,7 +4021,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             // ---- 10 anime sword arts: each one draws its own whole strike (see ANI below) ----
             {n:"RASENSHURIKEN",ty:'anime',x:'susanoo',c:'255,35,55'},       // Naruto: armoured Susanoo throws a Rasenshuriken
             {n:"GETSUGA TENSHO",ty:'anime',x:'getsuga',c:'255,45,80'},                // Bleach: black crescent wave
-            {n:"BALAQ SAIGA",ty:'anime',x:'baal',c:'255,222,60'},         // Magi: Sinbad's Baal - a sword of golden thunder
+            {n:"BALAQ SAIGA",ty:'anime',x:'baal',c:'60,150,255'},         // Magi: Sinbad's Baal - a sword of golden thunder
             {n:"13TH FORM",ty:'anime',x:'flame',c:'255,115,25'},         // Demon Slayer: Rengoku's fire tiger
             {n:"STAR PLATINUM",ty:'anime',x:'ora',c:'185,105,255'},           // JoJo: Star Platinum's barrage
             {n:"HOLLOW PURPLE",ty:'anime',x:'void',c:'170,70,255'},              // Jujutsu Kaisen: Gojo's Unlimited Void into Hollow Purple
@@ -4151,20 +4154,68 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                         for(let j=0;j<28;j++){const u=clp(q*1.3-hz(j,3)*.25);if(u<=0)continue;ctx.fillStyle='rgba(255,90,90,'+.9*(1-u)+')';ctx.fillRect(tx+(hz(j,4)-.5)*330*u,ty-Math.sin(u*3)*hz(j,5)*160+(hz(j,6)-.3)*50,3,3)}
                         glow(tx,ty,150*fa+30,'255,20,40',.5*fa)}},
 
-                // 2) GETSUGA TENSHO (Bleach): a black crescent wave with a red edge
+                // 2) GETSUGA TENSHO (Bleach): blood-red spirit chains wind round the blade, a huge BLACK BEAM crashes through, then a black crescent moon hangs in the sky
                 getsuga(a){const{p,now,F,tx,ty,sx,sy}=a;SO();
+                    const dx=tx-sx,dy=ty-sy,L=Math.hypot(dx,dy)||1;
+                    const link=(x,y,ang,al,k)=>{ctx.save();ctx.translate(x,y);ctx.rotate(ang);ctx.beginPath();ctx.ellipse(0,0,k?10:6,k?4:5.5,0,0,6.3);ctx.fillStyle='rgba(10,0,6,'+.92*al+')';ctx.fill();ctx.strokeStyle='rgba(255,45,70,'+al+')';ctx.lineWidth=2.6;ctx.stroke();ctx.restore()};
+                    const chain=(x0,y0,x1,y1,amp,ph,al,n)=>{if(al<=0)return;const ddx=x1-x0,ddy=y1-y0,LL=Math.hypot(ddx,ddy)||1,px=-ddy/LL,py=ddx/LL;let ox=x0,oy=y0;
+                        for(let i=0;i<=n;i++){const u=i/n,o=Math.sin(u*9+ph)*amp*Math.sin(Math.PI*u),x=x0+ddx*u+px*o,y=y0+ddy*u+py*o;link(x,y,i?Math.atan2(y-oy,x-ox):0,al,i%2);ox=x;oy=y}};
                     const cres=(x,y,R,k,fill,edge,al)=>{const d=R*k,ph=Math.acos(-d/(2*R)),ps=Math.acos(d/(2*R));ctx.beginPath();
                         for(let i=0;i<=24;i++){const t=-ph+2*ph*i/24;ctx.lineTo(x+F*R*Math.cos(t),y+R*Math.sin(t))}
                         for(let i=0;i<=24;i++){const t=ps-2*ps*i/24;ctx.lineTo(x+F*(R*Math.cos(t)-d),y+R*Math.sin(t))}
-                        ctx.closePath();ctx.shadowColor='rgba(255,30,60,'+al+')';ctx.shadowBlur=26;ctx.fillStyle=fill;ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=edge;ctx.lineWidth=4;ctx.stroke()};
-                    const dk=clp((p-.24)/.1)*(1-clp((p-.62)/.25));if(dk>0){ctx.fillStyle='rgba(0,0,0,'+.42*dk+')';ctx.fillRect(0,0,W,H)}
-                    const e=ezs(clp((p-.3)/.22));
-                    if(p>.3&&p<.75){const fa=1-clp((p-.52)/.2);
-                        for(let g=5;g>=1;g--){const ee=Math.max(0,e-g*.06);cres(sx+(tx-sx)*ee,sy+(ty-sy)*ee,80+ee*30,.34,'rgba(10,0,8,'+.22/g*fa+')','rgba(255,50,80,'+.25/g*fa+')',.2)}
-                        cres(sx+(tx-sx)*e,sy+(ty-sy)*e,80+e*30,.34,'rgba(8,0,6,'+.96*fa+')','rgba(255,60,90,'+fa+')',fa)}
-                    if(p>=.5){const ip=clp((p-.5)/.15),fa=1-clp((p-.62)/.4);
-                        if(fa>0){cres(tx,ty,60+ip*100,.34,'rgba(8,0,6,'+.9*fa+')','rgba(255,50,80,'+fa+')',fa);
-                            const u=clp((p-.5)/.5);for(let j=0;j<22;j++){const an=hz(j,1)*6.283,d=u*(40+hz(j,2)*170);ctx.fillStyle=j%2?'rgba(255,60,90,'+.9*fa+')':'rgba(25,0,14,'+.95*fa+')';ctx.fillRect(tx+Math.cos(an)*d,ty+Math.sin(an)*d*.8,5,5)}}}},
+                        ctx.closePath();ctx.shadowColor='rgba(255,30,60,'+al+')';ctx.shadowBlur=30;ctx.fillStyle=fill;ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=edge;ctx.lineWidth=4;ctx.stroke()};
+                    // the whole screen goes dark while the spirit pressure builds
+                    const dk=clp((p-.03)/.1)*(1-clp((p-.62)/.2));if(dk>0){ctx.fillStyle='rgba(0,0,0,'+.55*dk+')';ctx.fillRect(0,0,W,H)}
+                    // 1) charge: red-black reiatsu chains spiral in and wrap the blade
+                    const ch=clp(p/.08)*(1-clp((p-.22)/.07));
+                    if(ch>0){LT();glow(sx,sy,120,'255,30,50',.55*ch);glow(sx,sy,60,'40,0,10',.7*ch);SO();
+                        for(let j=0;j<6;j++){const a0=now/260+j*1.047,r=190*(1-clp(p/.24)*.65);chain(sx+Math.cos(a0)*r,sy+Math.sin(a0)*r*.75,sx,sy,16,now/120+j,ch,9)}}
+                    // 2) the black beam
+                    if(p>.2&&p<.7){const e=ezs(clp((p-.2)/.22)),hx=sx+dx*e,hy=sy+dy*e,fa=1-clp((p-.5)/.2),w=100;
+                        LT();glow(hx,hy,150,'255,30,50',.45*fa);SO();
+                        const ln2=(wd,col,al)=>{ctx.strokeStyle='rgba('+col+','+al+')';ctx.lineWidth=wd;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(hx,hy);ctx.stroke()};
+                        ln2(w*1.7,'255,30,50',.22*fa);ln2(w*1.25,'255,45,70',.8*fa);ln2(w,'6,0,4',.98*fa);ln2(w*.16,'255,90,110',.85*fa);
+                        // blood chains whipping round the beam
+                        const nL=Math.max(3,Math.floor(L*e/15));
+                        for(let j=0;j<4;j++)chain(sx,sy,hx,hy,(46+j*8)*(j%2?-1:1),now/110+j*1.9,fa,nL);
+                        // red sparks torn off the beam
+                        LT();for(let j=0;j<26;j++){const u=hz(j,3)*e,x=sx+dx*u+(hz(j,4)-.5)*w*1.4,y=sy+dy*u+(hz(j,5)-.5)*w*1.4-((now/6+j*37)%70)*.6;ctx.fillStyle='rgba(255,'+(40+hz(j,6)*60|0)+',70,'+.85*fa+')';ctx.fillRect(x,y,4,4)}SO();
+                        // crescent head of the wave
+                        cres(hx,hy,125,.34,'rgba(6,0,4,'+.98*fa+')','rgba(255,60,90,'+fa+')',fa)}
+                    // 3) impact: black-red blast, chains burst outward
+                    if(p>=.44&&p<.84){const ip=clp((p-.44)/.3),fa=1-clp((p-.58)/.26);
+                        LT();glow(tx,ty,60+ip*190,'255,30,50',.6*fa);glow(tx,ty,40+ip*60,'30,0,8',.8*fa);SO();
+                        for(let j=0;j<8;j++){const an=j*.785+hz(j,1)*.4,d=30+ip*170;chain(tx+Math.cos(an)*30,ty+Math.sin(an)*24,tx+Math.cos(an)*d,ty+Math.sin(an)*d*.8,10,now/100+j,fa,7)}
+                        ctx.strokeStyle='rgba(255,50,80,'+.8*fa+')';ctx.lineWidth=5*(1-ip*.6);ctx.beginPath();ctx.ellipse(tx,ty,30+ip*210,12+ip*80,0,0,6.3);ctx.stroke()}
+                },
+                // AFTER-EFFECT of Getsuga Tensho: once the whole special move is over, a black crescent moon hangs in the sky and fades
+                getsugaMoon(a){const{p,F,tx,ty}=a;SO();
+                    const ma=clp(p/.3)*(1-clp((p-.7)/.3));if(ma<=0)return;const sz=1+p*.2;
+                    const cres=(x,y,R,k,fill,edge,al)=>{const d=R*k,ph=Math.acos(-d/(2*R)),ps=Math.acos(d/(2*R));ctx.beginPath();
+                        for(let i=0;i<=24;i++){const t=-ph+2*ph*i/24;ctx.lineTo(x+F*R*Math.cos(t),y+R*Math.sin(t))}
+                        for(let i=0;i<=24;i++){const t=ps-2*ps*i/24;ctx.lineTo(x+F*(R*Math.cos(t)-d),y+R*Math.sin(t))}
+                        ctx.closePath();ctx.shadowColor='rgba(255,30,60,'+al+')';ctx.shadowBlur=30;ctx.fillStyle=fill;ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=edge;ctx.lineWidth=4;ctx.stroke()};
+                    ctx.fillStyle='rgba(0,0,0,'+.3*ma+')';ctx.fillRect(0,0,W,H);
+                    ctx.save();ctx.globalAlpha=ma;LT();glow(tx,ty-150,230*sz,'255,30,50',.32);SO();ctx.translate(tx,ty-150);ctx.rotate(-.55*F);ctx.scale(sz,sz);
+                    cres(0,0,115,.45,'rgba(3,0,2,.99)','rgba(255,70,95,1)',1);ctx.restore()},
+
+                // TIME STOP (Star Platinum: The World). tt = seconds since it began, fin = null while time is stopped, then seconds since time resumed
+                tstop(a){const{tt,fin,now}=a;SO();const cx=W/2,cy=H/2;
+                    const gr=fin==null?clp(tt/.4):1-clp(fin/.5),inv=fin==null?clp(1-tt/.35):0;
+                    if(gr>0){ctx.globalCompositeOperation='saturation';ctx.fillStyle='rgba(128,128,128,'+gr+')';ctx.fillRect(0,0,W,H);SO();ctx.fillStyle='rgba(20,18,50,'+.3*gr+')';ctx.fillRect(0,0,W,H)}
+                    if(inv>0){ctx.globalCompositeOperation='difference';ctx.fillStyle='rgba(255,255,255,'+inv+')';ctx.fillRect(0,0,W,H);SO()}
+                    const ca=fin==null?clp(tt/.3)*(1-clp((tt-2.2)/.6)):0;
+                    if(ca>0){ctx.save();ctx.translate(cx,cy);LT();
+                        ctx.strokeStyle='rgba(190,170,255,'+.6*ca+')';ctx.lineWidth=5;ctx.beginPath();ctx.arc(0,0,175,0,6.3);ctx.stroke();ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,150,0,6.3);ctx.stroke();
+                        for(let i=0;i<12;i++){const an=i*.5236;ctx.lineWidth=i%3?2:5;ctx.beginPath();ctx.moveTo(Math.cos(an)*152,Math.sin(an)*152);ctx.lineTo(Math.cos(an)*172,Math.sin(an)*172);ctx.stroke()}
+                        const ha=-1.5708+Math.min(tt,1.6)*3.9;ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(ha)*135,Math.sin(ha)*135);ctx.stroke();
+                        ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(ha*.08-1.5)*90,Math.sin(ha*.08-1.5)*90);ctx.stroke();SO();ctx.restore()}
+                    const ta=fin==null?clp((tt-.2)/.25)*(1-clp((tt-2.1)/.6)):0;
+                    if(ta>0){ctx.save();ctx.textAlign='center';ctx.font='italic bold 44px Cinzel, Georgia, serif';ctx.lineJoin='round';ctx.lineWidth=7;ctx.strokeStyle='rgba(0,0,0,'+.85*ta+')';ctx.shadowColor='rgba(170,110,255,'+ta+')';ctx.shadowBlur=22;
+                        ctx.strokeText('STAR PLATINUM: THE WORLD!',cx,cy-210);ctx.fillStyle='rgba(235,220,255,'+ta+')';ctx.fillText('STAR PLATINUM: THE WORLD!',cx,cy-210);
+                        ctx.font='italic bold 22px Cinzel, Georgia, serif';ctx.shadowBlur=12;ctx.fillText('Time has stopped...',cx,cy-176);ctx.restore()}
+                    if(fin!=null){const fa=1-clp(fin/.3);if(fa>0){ctx.fillStyle='rgba(255,255,255,'+.55*fa+')';ctx.fillRect(0,0,W,H)}
+                        const xa=1-clp(fin/.8);if(xa>0){ctx.save();ctx.textAlign='center';ctx.font='italic bold 32px Cinzel, Georgia, serif';ctx.shadowColor='rgba(170,110,255,1)';ctx.shadowBlur=18;ctx.fillStyle='rgba(235,220,255,'+xa+')';ctx.fillText('...and time moves again.',cx,cy-190);ctx.restore()}}},
 
                 // 3) SINBAD: BALAQ SAIGA (Magi): golden thunder crawls over the blade, forked bolts lash out, then a sky-splitting bolt crashes down in a blinding flash
                 baal(a){const{p,now,F,oy,tx,ty,sx,sy,c}=a,X=kx(a),fl=Math.floor(now/45);
@@ -4175,20 +4226,20 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                     LT();
                     // 1) charge: the screen dims, thunder crawls over the blade and the knight
                     const ch=clp((p-.04)/.1)*(1-clp((p-.5)/.12));
-                    if(ch>0){SO();ctx.fillStyle='rgba(16,12,0,'+.38*ch+')';ctx.fillRect(0,0,W,H);LT();glow(sx,sy,90,c,.55*ch);
-                        for(let j=0;j<7;j++){const an=hz(j,fl)*6.283,r0=14+hz(j,fl+2)*20,r1=50+hz(j,fl+4)*50;bolt(sx+Math.cos(an)*r0,sy+Math.sin(an)*r0,sx+Math.cos(an)*r1,sy+Math.sin(an)*r1,fl*7+j,2.4,ch,5)}
-                        for(let j=0;j<4;j++)bolt(X+(hz(j,fl+8)-.5)*30,oy-70+hz(j,fl+9)*50,X+(hz(j,fl+10)-.5)*90,oy-60+hz(j,fl+11)*90,fl*5+j,2,ch*.8,4)}
+                    if(ch>0){SO();ctx.fillStyle='rgba(0,8,26,'+.38*ch+')';ctx.fillRect(0,0,W,H);LT();glow(sx,sy,190,c,.6*ch);
+                        for(let j=0;j<14;j++){const an=hz(j,fl)*6.283,r0=14+hz(j,fl+2)*30,r1=130+hz(j,fl+4)*150;bolt(sx+Math.cos(an)*r0,sy+Math.sin(an)*r0,sx+Math.cos(an)*r1,sy+Math.sin(an)*r1,fl*7+j,2.4,ch,5)}
+                        for(let j=0;j<8;j++)bolt(X+(hz(j,fl+8)-.5)*60,oy-70+hz(j,fl+9)*70,X+(hz(j,fl+10)-.5)*320,oy-60+hz(j,fl+11)*200,fl*5+j,2.4,ch*.85,6)}
                     // 2) forked bolts lash from the blade to the target
                     if(p>=.26&&p<.52){const q=clp((p-.26)/.1),fa=1-clp((p-.4)/.12);
                         for(let k=0;k<3;k++)bolt(sx,sy+(k-1)*10,sx+(tx-sx)*q,sy+(ty-sy)*q+(k-1)*14,fl*11+k,4-k*.8,fa,12)}
                     // 3) the sky-splitting strike
                     if(p>=.46){const ip=clp((p-.46)/.54),fa=1-clp((p-.62)/.38),fl2=1-clp((p-.46)/.1);
-                        if(fl2>0){SO();ctx.fillStyle='rgba(255,252,220,'+.65*fl2+')';ctx.fillRect(0,0,W,H);LT()}
-                        if(ip<.55){const a2=1-clp((ip-.3)/.25);bolt(tx+30,-10,tx,ty,fl*13+1,14,a2,16);bolt(tx-110,-10,tx-14,ty,fl*13+2,6,a2*.85,14);bolt(tx+150,-10,tx+16,ty,fl*13+3,6,a2*.85,14)}
-                        glow(tx,ty,70+230*(1-ip),c,.7*fa);glow(tx,ty,50,'255,255,255',.8*fa);
-                        for(let r=0;r<3;r++){const qq=clp(ip*1.5-r*.14);if(qq<=0||qq>=1)continue;ctx.strokeStyle='rgba('+(r%2?c:'255,255,255')+','+.9*(1-qq)+')';ctx.lineWidth=6*(1-qq)+1.5;ctx.beginPath();ctx.ellipse(tx,ty+26,Math.max(1,30+qq*250),Math.max(1,14+qq*110),0,0,7);ctx.stroke()}
-                        for(let j=0;j<9;j++){const an=j*.698+hz(j,3)*.3,L2=40+ezs(clp(ip*2))*(90+hz(j,1)*110);bolt(tx+Math.cos(an)*14,ty+Math.sin(an)*10,tx+Math.cos(an)*L2,ty+Math.sin(an)*L2*.8,fl*3+j,3*fa+1,fa*.9,5)}
-                        for(let j=0;j<30;j++){const u=clp(ip*1.4-hz(j,4)*.3);if(u<=0)continue;ctx.fillStyle='rgba(255,'+(215+hz(j,2)*40|0)+',120,'+.95*(1-u)+')';ctx.fillRect(tx+(hz(j,5)-.5)*300*u,ty-Math.sin(u*3)*hz(j,6)*170+(hz(j,7)-.3)*40,3,3)}}},
+                        if(fl2>0){SO();ctx.fillStyle='rgba(205,230,255,'+.65*fl2+')';ctx.fillRect(0,0,W,H);LT()}
+                        if(ip<.55){const a2=1-clp((ip-.3)/.25);bolt(tx+30,-10,tx,ty,fl*13+1,14,a2,16);bolt(tx-230,-10,tx-14,ty,fl*13+2,8,a2*.85,16);bolt(tx+280,-10,tx+16,ty,fl*13+3,8,a2*.85,16);bolt(tx-110,-10,tx-6,ty,fl*13+4,5,a2*.7,14);bolt(tx+130,-10,tx+8,ty,fl*13+5,5,a2*.7,14)}
+                        glow(tx,ty,130+380*(1-ip),c,.7*fa);glow(tx,ty,50,'255,255,255',.8*fa);
+                        for(let r=0;r<3;r++){const qq=clp(ip*1.5-r*.14);if(qq<=0||qq>=1)continue;ctx.strokeStyle='rgba('+(r%2?c:'255,255,255')+','+.9*(1-qq)+')';ctx.lineWidth=6*(1-qq)+1.5;ctx.beginPath();ctx.ellipse(tx,ty+26,Math.max(1,30+qq*460),Math.max(1,14+qq*200),0,0,7);ctx.stroke()}
+                        for(let j=0;j<16;j++){const an=j*.393+hz(j,3)*.3,L2=60+ezs(clp(ip*2))*(200+hz(j,1)*240);bolt(tx+Math.cos(an)*14,ty+Math.sin(an)*10,tx+Math.cos(an)*L2,ty+Math.sin(an)*L2*.8,fl*3+j,3*fa+1,fa*.9,5)}
+                        for(let j=0;j<30;j++){const u=clp(ip*1.4-hz(j,4)*.3);if(u<=0)continue;ctx.fillStyle='rgba('+(120+hz(j,2)*60|0)+',190,255,'+.95*(1-u)+')';ctx.fillRect(tx+(hz(j,5)-.5)*560*u,ty-Math.sin(u*3)*hz(j,6)*260+(hz(j,7)-.3)*40,3,3)}}},
 
                 // 4) FIRE BREATHING 13TH FORM (Demon Slayer): a blazing tiger leaps and bites, then thirteen fire slashes burst out
                 flame(a){const{p,now,F,tx,ty,sx,sy,c}=a;LT();
@@ -4752,7 +4803,9 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             updBits(dt);
             if(G.fin>0)G.fin-=dt;
             if(G.sk&&(G.sk.t+=(s=='clear'||s=='bclear'?dt*KSLOW:dt))>1.3)G.sk=null;
-            if(G.spk){const e=G.spk;e.t+=dt;if(!e.hit&&e.t>=.5){e.hit=1;const o=e.q[e.j];o.dyAt=performance.now();if(!e.keep){const g0=G;setTimeout(()=>{if(G===g0&&G.tg)G.tg=G.tg.filter(x=>x!==o)},500)}}if(e.t>=.95)spkNext()}
+            if(G.spm&&(G.spm.t+=dt)>2.8)G.spm=null;
+            if(G.tst){const q=G.tst;q.t+=dt;if(!G.spk&&q.fin==null)q.fin=0;if(q.fin!=null&&(q.fin+=dt)>.9)G.tst=null}
+            if(G.spk){const e=G.spk;if(e.pre>0)e.pre-=dt;else e.t+=dt/SPSLOW;if(!e.hit&&e.t>=.5){e.hit=1;const o=e.q[e.j];o.dyAt=performance.now();if(!e.keep){const g0=G;setTimeout(()=>{if(G===g0&&G.tg)G.tg=G.tg.filter(x=>x!==o)},500)}}if(e.t>=.95)spkNext()}
             if(s=='clear'){
                 G.ct+=dt*KSLOW;const c=G.ct,d=G.dr;
                 if(G.last){if(G.galK&&G.galK[0]=='m'){if(c>2.5){const k=G.galK;G=null;keys={};setTimeout(()=>galPlay(k[0],k[1]),80);return}}else if(c>1.5)winStart()}
@@ -6808,8 +6861,10 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             }
             if(G.state=='win'&&G.end=='bad')badFx(now);
             if(!isB){propsDraw(now,true);bitsDraw(now);hoverDraw()}
+            if(G.tst){try{ANI.tstop({tt:G.tst.t,fin:G.tst.fin,now})}catch(_){}}   // time stop: grey world, clock, title
             if(G.sk&&(G.state=='clear'||G.state=='bclear'))skDraw(now);   // the sword art
             if(G.spk){const sv=G.sk;G.sk=G.spk;try{skDraw(now)}catch(_){}G.sk=sv}   // Special Move strike
+            if(G.spm){try{ANI.getsugaMoon({p:G.spm.t/2.8,now,F:G.face||1,tx:G.spm.tx,ty:G.spm.ty})}catch(_){}}
             if(late)late();   // speech bubbles always sit above barrels, crates and bones
             if(G.kiss){const b=1+Math.sin((G.wt-WT.kiss)*5)*.12;heart(G.hx,G.hy+15-KH-54,7*b,Math.min(1,(G.wt-WT.kiss)*3))}
             G.hearts.forEach(h=>heart(h.x,h.y,h.s,1-h.l/2.2));
@@ -7186,8 +7241,14 @@ const PETS={crow:{n:'🐦‍⬛ Crow',p:0,e:'🐦‍⬛',d:'+1 gold from every c
 function petGold(){const p=shopS().eq.pet;return p=='crow'?1:p=='turtle'?2:0}
 // ONE-TIME ITEMS (armor skins, blades, pets, mounts and the run items: orb, favour, shield, wing, key) are priced for players with trillions of gold. Change ONE_TIME_MULT to re-balance. Free items stay free; run items and pet food are not touched.
 /* Special move engine: the knight performs the real sword art (dash + strike) on ONE answer at a time and kills it, then the next, until all targets are gone. */
-function spkNext(){const e=G.spk;if(!e)return;e.j++;e.t=0;e.hit=0;if(e.j>=e.q.length){G.spk=null;return}const o=e.q[e.j];e.tx=o.x;e.ty=o.y;G.face=o.x>=G.hx?1:-1;try{SND.skill(e.k.ty,SKILLS.indexOf(e.k),1,false)}catch(_){}}
-function runSpecial(idx,rm,keep){if(!G)return;G.spk={k:SKILLS[idx],t:0,tx:0,ty:0,q:rm,j:-1,hit:0,keep:!!keep};spkNext()}
+const SPSLOW=2.6;   // Special Moves play this many times slower than a normal sword art so you can watch them
+function spkNext(){const e=G.spk;if(!e)return;e.j++;e.t=0;e.hit=0;if(e.j>=e.q.length){G.spk=null;if(e.k.x=='getsuga'){const l=e.q[e.q.length-1];G.spm={t:0,tx:l.x,ty:l.y}}return}const o=e.q[e.j];e.tx=o.x;e.ty=o.y;G.face=o.x>=G.hx?1:-1;const dl=(e.j==0&&e.pre>0)?e.pre*1000:0,pk=()=>{try{SND.skill(e.k.ty,SKILLS.indexOf(e.k),1/SPSLOW,false)}catch(_){}};if(dl)setTimeout(pk,dl);else pk()}
+function runSpecial(idx,rm,keep){if(!G)return;const K=SKILLS[idx],ts=K.x=='ora';G.spk={k:K,t:0,tx:0,ty:0,q:rm,j:-1,hit:0,keep:!!keep,pre:ts?2.6:0};G.tst=null;if(ts){G.tst={t:0,fin:null};try{SND.sfx('timestop')}catch(_){}}spkNext()}
+/* Replay button shown while previewing a Special Move from the shop */
+{const b=document.createElement('button');b.id='sprep';b.type='button';b.textContent='↺ Replay';b.style.cssText='position:fixed;top:70px;right:14px;z-index:10001;display:none;padding:8px 16px;border-radius:8px;background:#000c;border:2px solid #a78bfa;color:#ddd6fe;font:bold 15px monospace;cursor:pointer';document.body.appendChild(b);
+ ['pointerdown','mousedown','touchstart','click'].forEach(ev=>b.addEventListener(ev,e=>e.stopPropagation()));
+ b.addEventListener('click',()=>{if(!G||!G.gal||!window._spPrev||G.spIdx==null)return;G.spk=null;G.spm=null;G.tst=null;G.tg.forEach(t=>{delete t.dyAt});runSpecial(G.spIdx,G.tg.filter(t=>!t.ok).sort(()=>Math.random()-.5).slice(0,3),true)});
+ setInterval(()=>{const on=!!(G&&G.gal&&window._spPrev);if(b.style.display!==(on?'block':'none'))b.style.display=on?'block':'none'},200)}
 /* SPECIAL MOVES: one-use consumables. Each one fires its anime sword art and destroys 3 of the 4 answers. idx = place in SKILLS. */
 const SMOVES={form13:{n:'🐯 13th Form',p:3000,i:23},star:{n:'👊 Star Platinum',p:3400,i:24},hollow:{n:'🟣 Hollow Purple',p:3800,i:25},divider:{n:'🖤 Black Divider',p:4200,i:27},balaq:{n:'🌩️ Balaq Saiga',p:4600,i:22},divine:{n:'🏴‍☠️ Divine Departure',p:5000,i:26},rasen:{n:'👹 Rasenshuriken',p:5400,i:20},excal:{n:'🗡️ Excalibur',p:5800,i:29},getsuga:{n:'🌘 Getsuga Tensho',p:6200,i:21},kame:{n:'💥 Kamehameha',p:6600,i:28}};
 for(const k in SMOVES)SMOVES[k].d='Buy it once, equip it. Once per run it destroys 3 out of 4 answers, and it recharges every new run.';
