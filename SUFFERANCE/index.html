@@ -1663,7 +1663,7 @@ ${G}
             const solved=[...all].filter(k=>st.sol&&st.sol[k]).length;
             return [
                 {id:'dall',pal:['#c5ffd6','#22c765','#0a5a2c'],name:'Collector',glyph:'skull',desc:`Find every way to die. All ${GN.length} deaths and ${GSK.length} secret deaths in the Death Gallery.`,cur:seenD,tot:nD,done:seenD>=nD,unit:'deaths found'},
-                {id:'mall',pal:['#d4f0ff','#38b6ff','#0a4a7a'],name:'Swordmaster',glyph:'star',desc:`Unlock every sword-art move in the Moves Gallery. All ${SKILLS.length} moves.`,cur:SKILLS.filter((k,i)=>mvOpen(i)).length,tot:SKILLS.length,done:SKILLS.every((k,i)=>mvOpen(i)),unit:'moves found'},
+                {id:'mall',pal:['#d4f0ff','#38b6ff','#0a4a7a'],name:'Swordmaster',glyph:'star',desc:`Unlock every sword-art move in the Moves Gallery. All ${SKILLS.filter(k=>k.ty!='anime').length} moves.`,cur:SKILLS.filter((k,i)=>k.ty!='anime'&&mvOpen(i)).length,tot:SKILLS.filter(k=>k.ty!='anime').length,done:SKILLS.every((k,i)=>k.ty=='anime'||mvOpen(i)),unit:'moves found'},
                 {id:'pall',pal:['#d8e0ff','#5470ff','#1a2a9a'],name:'Scholar',glyph:'rune',desc:'Answer every puzzle in every deck correctly at least once.',cur:solved,tot:all.size,done:all.size>0&&solved>=all.size,unit:'puzzles solved'},
                 {id:'drun',pal:['#f6d2ff','#b25cf2','#511a8a'],name:'Doomed',glyph:'bones',desc:`Die every possible way in one single run: all ${nD} deaths.`,cur:Math.min(st.bdk||0,nD),tot:nD,done:!!st.adr,unit:'different deaths in your best run'},
                 {id:'nd',pal:['#c3fff2','#35cdbd','#0d5f66'],name:'Untouchable',glyph:'shield',desc:'Finish a run without dying even once.',cur:st.nd?1:0,tot:1,done:!!st.nd,unit:'deathless run'},
@@ -2769,11 +2769,11 @@ ${G}
             const tab=(v,t)=>`<button type="button" onclick="${GALV==v?'':'galView()'}" class="title-font text-xs sm:text-sm font-bold px-3 py-1.5 rounded ${GALV==v?'bg-emerald-600 text-zinc-950':'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}">${t}</button>`;
             return `<div class="flex items-center justify-center gap-2 pb-1"><button type="button" onclick="galView(-1)" title="Previous page" class="bg-zinc-800 hover:bg-zinc-700 text-emerald-300 font-bold px-3 py-1.5 rounded text-sm">◀</button>${tab('d','💀 Deaths')}${tab('m','⚔️ Moves')}<button type="button" onclick="galView(1)" title="Next page" class="bg-zinc-800 hover:bg-zinc-700 text-emerald-300 font-bold px-3 py-1.5 rounded text-sm">▶</button></div>`}
         function galMoves(){
-            const nm=SKILLS.filter((k,i)=>mvOpen(i)).length;
-            const cards=SKILLS.map((k,i)=>{const col='rgb('+k.c+')';
+            const nm=SKILLS.filter((k,i)=>k.ty!='anime'&&mvOpen(i)).length,tn=SKILLS.filter(k=>k.ty!='anime').length;
+            const cards=SKILLS.map((k,i)=>{if(k.ty=='anime')return '';const col='rgb('+k.c+')';
                 if(!mvOpen(i))return `<div class="bg-zinc-950 border border-zinc-800 rounded-lg p-3 flex flex-col items-center justify-center text-center min-h-[118px] opacity-80"><div class="text-2xl text-zinc-600">🔒</div><div class="title-font text-xl font-black text-zinc-600 tracking-widest">???</div><div class="text-[12px] text-zinc-600 mt-1">Answer right to unlock</div></div>`;
                 return `<div class="bg-zinc-950 border rounded-lg p-3 flex flex-col items-center text-center min-h-[118px]" style="border-color:${col};box-shadow:inset 0 0 14px rgba(${k.c},.12)"><div class="text-2xl">${MVI[i]}</div><div class="title-font text-[11px] font-bold leading-tight mt-1 flex-1 flex items-center" style="color:${col}">${galTitle(k.n)}</div><div class="text-[12px] text-zinc-500 mt-1">Used ${S.seen['mv:'+i]}×</div><button onclick="galPlay('m','${i}')" class="mt-2 w-full bg-emerald-700/80 hover:bg-emerald-600 text-zinc-950 text-[11px] font-bold py-1 rounded title-font">▶ Replay</button></div>`}).join('');
-            return `<h3 class="title-font text-lg font-bold text-sky-300 border-b border-sky-950 pb-2 flex justify-between items-end"><span>⚔️ Sword-Art Moves</span><span class="text-xs text-zinc-400 font-mono">${nm}/${SKILLS.length} found</span></h3>
+            return `<h3 class="title-font text-lg font-bold text-sky-300 border-b border-sky-950 pb-2 flex justify-between items-end"><span>⚔️ Sword-Art Moves</span><span class="text-xs text-zinc-400 font-mono">${nm}/${tn} found</span></h3>
                 <p class="text-xs text-zinc-500">Every right answer makes the knight use a sword art. Each new one unlocks here. Tap Replay to watch it again.</p>
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${cards}</div>`}
         function galRender(){
@@ -2793,7 +2793,7 @@ ${G}
             if(G&&!G.gal&&!SAVED)galOpen();   // safety: never let a replay overwrite a live run
             const d=S.decks.find(x=>x.qs&&x.qs.some(q=>q.t!='mt'))||DEFAULT_DECK,q=rnd(((d.qs||[]).filter(q=>q.t!='mt')))||{t:'mc',q:'What is 2 + 2?',o:['3','4','5','6'],a:1};   // a deck of only matching questions still gets a plain replay room
             startRun(q);if(!G)return;
-            $('#galx').style.display=$('#galprev').style.display=$('#galnext').style.display='block';G.galK=[kind,id];G.hx=200;G.hy=330;G.face=1;
+            $('#galx').style.display=$('#galprev').style.display=$('#galnext').style.display='block';G.galK=[kind,id];G.hx=200;G.hy=330;G.face=1;if(window._spPrev)$('#galprev').style.display=$('#galnext').style.display='none';
             let label;
             if(kind=='m'){
                 label=galTitle(SKILLS[+id].n);
@@ -2816,13 +2816,13 @@ ${G}
                 srHurt(c,type);
             }
             $('#q').textContent=(kind=='m'?'⚔️ Gallery: ':'💀 Gallery: ')+label;
-            const h=$('#respawn-hint');h.textContent=kind=='m'?'Click anywhere to return to the Gallery, or use Prev / Next (← →) to jump to another move...':'Click anywhere to return to the Gallery, or use Prev / Next (← →) to jump to another death...';h.style.display='block';
+            const h=$('#respawn-hint');h.textContent=window._spPrev?'Special Move preview. Click anywhere to go back to the Shop.':kind=='m'?'Click anywhere to return to the Gallery, or use Prev / Next (← →) to jump to another move...':'Click anywhere to return to the Gallery, or use Prev / Next (← →) to jump to another death...';h.style.display='block';
         };
         function galExit(){if(G)G.galX=1}
         // Jump straight to the previous / next unlocked death while a replay is on screen (one click, no trip back to the list)
         window.galStep=function(dir){
-            if(!G||!G.gal||!G.galK)return;
-            const L=G.galK[0]=='m'?SKILLS.map((k,i)=>String(i)).filter(i=>mvOpen(+i)).map(i=>['m',i]):GN.filter(k=>S.seen[k]).map(k=>['n',k]).concat(GSK.filter(k=>S.seen['s:'+k]).map(k=>['s',k]));
+            if(!G||!G.gal||!G.galK||window._spPrev)return;
+            const L=G.galK[0]=='m'?SKILLS.map((k,i)=>String(i)).filter(i=>SKILLS[+i].ty!='anime'&&mvOpen(+i)).map(i=>['m',i]):GN.filter(k=>S.seen[k]).map(k=>['n',k]).concat(GSK.filter(k=>S.seen['s:'+k]).map(k=>['s',k]));
             if(L.length<2)return;
             let i=L.findIndex(x=>x[0]==G.galK[0]&&x[1]==G.galK[1]);i=((i<0?0:i)+dir+L.length)%L.length;
             const nx=L[i];
@@ -2831,10 +2831,11 @@ ${G}
             setTimeout(()=>galPlay(nx[0],nx[1]),80);
         };
         function galDone(){
+            const spv=window._spPrev;window._spPrev=0;if(spv){try{shopTab='special'}catch(e){}}
             if(G&&G.galK)GALV=G.galK[0]=='m'?'m':'d';   // come back to the page you left
             G=null;$('#run').classList.remove('on');$('#galx').style.display=$('#galprev').style.display=$('#galnext').style.display='none';$('#respawn-hint').style.display='none';$('#respawn-hint').textContent='💀 Click anywhere on screen to respawn...';$('#bc').style.display='none';
             $('#hub').classList.add('on');hub();
-            const tb=document.querySelector('.tab-btn[data-t="h"]');if(tb)tb.click();scrollTo(0,0);
+            const tb=document.querySelector('.tab-btn[data-t="'+(spv?'s':'h')+'"]');if(tb)tb.click();scrollTo(0,0);
         }
         // The Death Gallery is its own page. Opening it from a run (or the scorecard) PARKS what you were doing, untouched,
         // and "Back" puts it back exactly as it was. Replays are a separate throw-away session that counts for nothing.
@@ -4018,7 +4019,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             {n:"GETSUGA TENSHO",ty:'anime',x:'getsuga',c:'255,45,80'},                // Bleach: black crescent wave
             {n:"BALAQ SAIGA",ty:'anime',x:'baal',c:'255,222,60'},         // Magi: Sinbad's Baal - a sword of golden thunder
             {n:"13TH FORM",ty:'anime',x:'flame',c:'255,115,25'},         // Demon Slayer: Rengoku's fire tiger
-            {n:"ORA ORA",ty:'anime',x:'ora',c:'185,105,255'},           // JoJo: Star Platinum's barrage
+            {n:"STAR PLATINUM",ty:'anime',x:'ora',c:'185,105,255'},           // JoJo: Star Platinum's barrage
             {n:"HOLLOW PURPLE",ty:'anime',x:'void',c:'170,70,255'},              // Jujutsu Kaisen: Gojo's Unlimited Void into Hollow Purple
             {n:"DIVINE DEPARTURE",ty:'anime',x:'divine',c:'255,45,75'},        // One Piece: Roger/Shanks' Conqueror's Haki slash
             {n:"BLACK DIVIDER",ty:'anime',x:'divider',c:'170,100,255'},            // anti-magic black sword
@@ -4354,7 +4355,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             };
         })();
         function startSkill(tx,ty){
-            let i=0;{const w=SKILLS.map(k=>k.ty=='anime'?.25:1);let r=Math.random()*w.reduce((x,y)=>x+y,0);while(i<w.length-1&&(r-=w[i])>=0)i++}G.lsk=i;   // anime moves are RARE: a quarter of the chance of a normal sword art
+            let i=0;{const w=SKILLS.map(k=>k.ty=='anime'?0:1);let r=Math.random()*w.reduce((x,y)=>x+y,0);while(i<w.length-1&&(r-=w[i])>=0)i++}G.lsk=i;   // anime moves never drop at random any more: they are Special Moves you buy in the shop
               // every move has an equal 1/SKILLS.length chance (repeats allowed)
             if(!G.gal){const kk='mv:'+i,n0=S.seen[kk]||0;S.seen[kk]=n0+1;save();if(!n0){try{SND.sfx('ding')}catch(_){}toast('🔓 Move unlocked: '+galTitle(SKILLS[i].n))}}
             G.sk={t:0,k:SKILLS[i],tx,ty};SND.skill(SKILLS[i].ty,i,1/KSLOW,G.rooms[G.i].boss);   // adv() puts the fight into slow-motion right after this, so stretch the sound to matchG.face=tx>=G.hx?1:-1;
@@ -4750,6 +4751,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             updBits(dt);
             if(G.fin>0)G.fin-=dt;
             if(G.sk&&(G.sk.t+=(s=='clear'||s=='bclear'?dt*KSLOW:dt))>1.3)G.sk=null;
+            if(G.spx&&(G.spx.t+=dt)>1.3)G.spx=null;
             if(s=='clear'){
                 G.ct+=dt*KSLOW;const c=G.ct,d=G.dr;
                 if(G.last){if(G.galK&&G.galK[0]=='m'){if(c>2.5){const k=G.galK;G=null;keys={};setTimeout(()=>galPlay(k[0],k[1]),80);return}}else if(c>1.5)winStart()}
@@ -6805,6 +6807,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(G.state=='win'&&G.end=='bad')badFx(now);
             if(!isB){propsDraw(now,true);bitsDraw(now);hoverDraw()}
             if(G.sk&&(G.state=='clear'||G.state=='bclear'))skDraw(now);   // the sword art
+            if(G.spx){const e=G.spx,K=e.k,ox=G.hx,oy=G.hy-45,F=G.face||1;ctx.save();ctx.lineCap='round';try{ANI[K.x]({p:Math.min(1,e.t),now,F,ox,oy,tx:e.tx,ty:e.ty,sx:ox+F*34,sy:oy-8,c:K.c})}catch(_){}ctx.restore()}   // Special Move bought in the shop
             if(late)late();   // speech bubbles always sit above barrels, crates and bones
             if(G.kiss){const b=1+Math.sin((G.wt-WT.kiss)*5)*.12;heart(G.hx,G.hy+15-KH-54,7*b,Math.min(1,(G.wt-WT.kiss)*3))}
             G.hearts.forEach(h=>heart(h.x,h.y,h.s,1-h.l/2.2));
@@ -7180,24 +7183,30 @@ const PETS={crow:{n:'🐦‍⬛ Crow',p:0,e:'🐦‍⬛',d:'+1 gold from every c
  bison:{n:'🦬 Sky Bison (Mount)',p:1600,e:'🦬',d:'Mount. +12 gold every room you clear.'}};
 function petGold(){const p=shopS().eq.pet;return p=='crow'?1:p=='turtle'?2:0}
 // ONE-TIME ITEMS (armor skins, blades, pets, mounts and the run items: orb, favour, shield, wing, key) are priced for players with trillions of gold. Change ONE_TIME_MULT to re-balance. Free items stay free; run items and pet food are not touched.
+/* SPECIAL MOVES: one-use consumables. Each one fires its anime sword art and destroys 3 of the 4 answers. idx = place in SKILLS. */
+const SMOVES={form13:{n:'🐯 13th Form',p:3000,i:23},star:{n:'👊 Star Platinum',p:3400,i:24},hollow:{n:'🟣 Hollow Purple',p:3800,i:25},divider:{n:'🖤 Black Divider',p:4200,i:27},balaq:{n:'🌩️ Balaq Saiga',p:4600,i:22},divine:{n:'🏴‍☠️ Divine Departure',p:5000,i:26},rasen:{n:'👹 Rasenshuriken',p:5400,i:20},excal:{n:'🗡️ Excalibur',p:5800,i:29},getsuga:{n:'🌘 Getsuga Tensho',p:6200,i:21},kame:{n:'💥 Kamehameha',p:6600,i:28}};
+for(const k in SMOVES)SMOVES[k].d='ONE USE. Unleash it to destroy 3 out of 4 answers. Buy it again for another use.';
 const ONE_TIME_MULT=5;
 [SKINS,WPNS,PETS,SHOP_ITEMS].forEach(L=>Object.keys(L).forEach(k=>{if(L[k].p>0&&!L[k].inf){L[k].p*=ONE_TIME_MULT;L[k].inf=1}}));
 SHOP_ITEMS.orb.p=200;SHOP_ITEMS.key.p=1000;   // fixed prices chosen by hand
 // every one-time item gets its own price: when two items would cost the same, the later one goes up in steps of 25 until nobody shares a price
-{const all=[];[SKINS,WPNS,PETS,SHOP_ITEMS].forEach(L=>Object.keys(L).forEach(k=>{if(L[k].p>0)all.push(L[k])}));
+{const all=[];[SMOVES,SKINS,WPNS,PETS,SHOP_ITEMS].forEach(L=>Object.keys(L).forEach(k=>{if(L[k].p>0)all.push(L[k])}));
  all.sort((x,y)=>x.p-y.p);let last=0;all.forEach(i=>{if(i.p<=last)i.p=last+25;last=i.p})}
 function shopS(){if(!S.shop)S.shop={};const h=S.shop;h.inv=h.inv||{};h.own=h.own||{};h.eq=h.eq||{};if(h.own.petrfrog){delete h.own.petrfrog;h.own.petraccoon=1}if(h.eq.pet=='rfrog')h.eq.pet='raccoon';return h}
 let shopTab='items',shopPaused=0;
 function shopGold(){const g=document.querySelector('#gold');if(g)g.textContent='🪙 '+S.gold}
 function shopHTML(){const h=shopS(),row=(n,d,r,pv)=>`<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid #3a3a2a;border-radius:6px;margin:6px 0${pv&&pv[0]=='p'?';flex-wrap:wrap':''}"><div style="display:flex;gap:10px;align-items:center;min-width:0${pv&&pv[0]=='p'?';flex:1 1 230px':''}">${pv?`<canvas class="pv" data-pv="${pv}" title="Preview"></canvas>`:''}<div style="font-size:15px"><b>${n}</b><div style="font-size:14px;line-height:1.35;color:#d4d4d8;margin-top:2px">${d||''}</div></div></div>${r}</div>`,btn=(a,t,ok)=>`<button data-a="${a}" style="padding:4px 10px;border-radius:5px;background:${ok?'#14532d':'#27272a'};color:${ok?'#bbf7d0':'#71717a'};white-space:nowrap">${t}</button>`;let o='';
-if(shopTab=='items')for(const k of Object.keys(SHOP_ITEMS).sort((a,b)=>SHOP_ITEMS[a].p-SHOP_ITEMS[b].p)){const i=SHOP_ITEMS[k];o+=row(i.n+' <span style="color:#facc15">x'+(h.inv[k]||0)+'</span>',i.d,btn('i:'+k,'Buy 🪙'+i.p.toLocaleString(),S.gold>=i.p),'item:'+k)}
+if(shopTab=='special'){o+='<div style="margin-top:10px;color:#facc15;font-weight:bold">✨ Special Moves</div><div style="font-size:13px;color:#a1a1aa">Each move is used ONCE: it destroys 3 out of 4 answers. Use it from the bar at the bottom-left during a question.</div>';for(const k of Object.keys(SMOVES)){const i=SMOVES[k];o+=row(i.n+' <span style="color:#facc15">x'+(h.inv['sm_'+k]||0)+'</span>',i.d,'<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">'+btn('sp:'+k,'▶ Preview',1)+btn('m:'+k,'Buy 🪙'+i.p.toLocaleString(),S.gold>=i.p)+'</div>')}}
+else if(shopTab=='items')for(const k of Object.keys(SHOP_ITEMS).sort((a,b)=>SHOP_ITEMS[a].p-SHOP_ITEMS[b].p)){const i=SHOP_ITEMS[k];o+=row(i.n+' <span style="color:#facc15">x'+(h.inv[k]||0)+'</span>',i.d,btn('i:'+k,'Buy 🪙'+i.p.toLocaleString(),S.gold>=i.p),'item:'+k)}
 else{const secs=shopTab=='armory'?[['⚔️ Armor Skins',SKINS,'skin'],['🗡️ Blades',WPNS,'wpn']]:[['🐾 Pets',PETS,'pet']];for(const [ti,L,sl] of secs){o+=`<div style="margin-top:10px;color:#facc15;font-weight:bold">${ti}</div>`+(sl=='pet'&&typeof petIntro=='function'?petIntro():'');o+=row({skin:'🛡️ Default Armor',wpn:'⚔️ Default Weapon',pet:'🚫 No Pet'}[sl],'Your original look. Always yours, free.',!h.eq[sl]?btn('e:'+sl+':none','Equipped ✓',0):btn('e:'+sl+':none','Equip',1),sl=='pet'?'':sl+':none');for(const k of Object.keys(L).sort((a,b)=>L[a].p-L[b].p)){const i=L[k],own=h.own[sl+k],eq=h.eq[sl]==k;const pb=sl=='pet'&&own&&window.PBOND;if(sl=='pet'&&typeof petCard=='function'){o+=petCard(k,i,own,eq,pb);continue}o+=row(i.n+(pb?window.PBOND.tag(k):''),(i.d||'')+(pb?window.PBOND.bar(k):''),own?(pb?'<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;max-width:260px">'+window.PBOND.btns(k,btn)+btn('e:'+sl+':'+k,eq?'Equipped ✓ (unequip)':'Equip',1)+'</div>':btn('e:'+sl+':'+k,eq?'Equipped ✓ (unequip)':'Equip',1)):btn('b:'+sl+':'+k,'Buy 🪙'+i.p.toLocaleString(),S.gold>=i.p),sl+':'+k)}}}
-return `<div style="background:#14110c;border:1px solid #a16207;border-radius:10px;text-align:left;padding:14px;color:#e4e4e7;font-family:monospace"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px;color:#facc15">🛒 Dungeon Shop</b><span>🪙 ${S.gold}</span></div><div style="display:flex;gap:6px;margin:10px 0">${['items','armory','pets'].map(t=>`<button data-a="t:${t}" style="padding:4px 10px;border-radius:5px;background:${t==shopTab?'#a16207':'#27272a'}">${{items:'🎒 Items',armory:'🛡️ Armory',pets:'🐾 Pets'}[t]}</button>`).join('')}</div>${o}</div>`}
+return `<div style="background:#14110c;border:1px solid #a16207;border-radius:10px;text-align:left;padding:14px;color:#e4e4e7;font-family:monospace"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px;color:#facc15">🛒 Dungeon Shop</b><span>🪙 ${S.gold}</span></div><div style="display:flex;gap:6px;margin:10px 0">${['items','armory','pets','special'].map(t=>`<button data-a="t:${t}" style="padding:4px 10px;border-radius:5px;background:${t==shopTab?'#a16207':'#27272a'}">${{items:'🎒 Items',armory:'🛡️ Armory',pets:'🐾 Pets',special:'✨ Special Move'}[t]}</button>`).join('')}</div>${o}</div>`}
 function shopRender(){const m=document.querySelector('#armory-shop');if(m)m.innerHTML=shopHTML()}
 (function(){const m=document.querySelector('#armory-shop');if(!m)return;m.addEventListener('click',e=>{const a=e.target.dataset&&e.target.dataset.a;if(!a)return;const p=a.split(':'),h=shopS();
  if(p[0]=='t')shopTab=p[1];
  else if(p[0]=='i'){const i=SHOP_ITEMS[p[1]];if(S.gold>=i.p){S.gold-=i.p;h.inv[p[1]]=(h.inv[p[1]]||0)+1}}
  else if(p[0]=='b'){const i=(p[1]=='skin'?SKINS:p[1]=='wpn'?WPNS:PETS)[p[2]];if(S.gold>=i.p){S.gold-=i.p;h.own[p[1]+p[2]]=1;h.eq[p[1]]=p[2];if(p[1]=='pet'){try{window.PBOND&&window.PBOND.welcome(p[2])}catch(e){}}}}
+ else if(p[0]=='m'){const i=SMOVES[p[1]];if(i&&S.gold>=i.p){S.gold-=i.p;h.inv['sm_'+p[1]]=(h.inv['sm_'+p[1]]||0)+1}}
+ else if(p[0]=='sp'){const i=SMOVES[p[1]];if(i){save();window._spPrev=1;try{galPlay('m',String(i.i))}catch(e){window._spPrev=0}return}}
  else if(p[0]=='n'){try{window.PBOND&&window.PBOND.rename(p[2]||p[1])}catch(e){}}
  else if(p[0]=='f'||p[0]=='p'){try{const m=p[0]=='f'?window.PBOND.buy(p[1]):window.PBOND.pet(p[1]);if(m)toast(m)}catch(e){}}
  else if(p[0]=='e'){h.eq[p[1]]=(h.eq[p[1]]==p[2]||p[2]=='none')?null:p[2]}
@@ -7217,6 +7226,7 @@ function shopBar(){let b=document.querySelector('#shopbar');if(!b){b=document.cr
   pas='padding:6px 10px;min-height:34px;display:flex;align-items:center;border-radius:7px;background:#000a;border:1px dashed #4d7c0f;color:#bef264;font:13px monospace;pointer-events:none;animation:shopArm 1.6s ease-in-out infinite';
  const hk={orb:'1',fav:'2',key:'3'};
  let html=BAR_KEYS.filter(k=>h.inv[k]>0).map(k=>`<button type="button" data-k="${k}" title="${SHOP_ITEMS[k].n}: ${SHOP_ITEMS[k].d} [key ${hk[k]}]" style="${css}">${SHOP_ITEMS[k].n.split(' ')[0]} x${h.inv[k]} <span style="opacity:.55">[${hk[k]}]</span></button>`).join('');
+ html+=Object.keys(SMOVES).filter(k=>h.inv['sm_'+k]>0).map(k=>`<button type="button" data-k="sm_${k}" title="${SMOVES[k].n}: ${SMOVES[k].d}" style="${css};border-color:#a78bfa;color:#ddd6fe">${SMOVES[k].n} x${h.inv['sm_'+k]}</button>`).join('');
  if(h.inv.phx>0)html+=`<span title="${SHOP_ITEMS.phx.d}" style="${pas}">🪽 armed x${h.inv.phx}</span>`;
  if(h.inv.shield>0)html+=`<span title="${SHOP_ITEMS.shield.d}" style="${pas}">🛡️ armed x${h.inv.shield}</span>`;
  if(html!==_barHTML){_barHTML=html;b.innerHTML=html}}
@@ -7224,6 +7234,11 @@ setInterval(shopBar,300);
 addEventListener('keydown',e=>{if(e.repeat||e.ctrlKey||e.metaKey||e.altKey)return;const k=BAR_HOT[e.code];if(!k||!G||G.gal||G.state!='play')return;if(shopS().inv[k]>0)useItem(k)});
 function useItem(k){if(!G||G.state!='play'||G.gal)return;const h=shopS(),tg=G.tg||[],plain=tg.length&&tg.every(t=>t.k!='m'&&t.k!='d'&&t.ok!==undefined);
  if(!plain){toast('Can\'t use that on this kind of question.');return}
+ if(k.indexOf('sm_')==0){const sm=SMOVES[k.slice(3)];if(!sm||!(h.inv[k]>0))return;const wr=tg.filter(t=>!t.ok);if(!wr.length){toast('Nothing left to destroy.');return}
+  const rm=wr.sort(()=>Math.random()-.5).slice(0,Math.min(3,wr.length));h.inv[k]--;save();
+  const K=SKILLS[sm.i],tx=rm.reduce((a,t)=>a+t.x,0)/rm.length,ty=rm.reduce((a,t)=>a+t.y,0)/rm.length;
+  G.spx={k:K,t:0,tx,ty};try{SND.skill(K.ty,sm.i,1,false)}catch(_){}toast(sm.n+'! 3 answers destroyed.');
+  const g0=G;setTimeout(()=>{if(G!==g0||!G.tg)return;G.tg=G.tg.filter(o=>!rm.includes(o));shopBar()},650);shopBar();return}
  if(k=='key'){if(G.keyUsed){toast('Only one Answer Key per run.');return}const t=tg.find(o=>o.ok||o.k=='f');if(!t)return;G.keyUsed=1;h.inv.key--;save();toast('🗝️ The forbidden key opens the way!');if(t.k=='f'){const fq=G.rooms[G.i].q;t.l=String(fq.o[fq.a]);t.ok=1}hit(t);return}
  const n=k=='orb'?1:2,wr=tg.filter(t=>!t.ok);if(wr.length<2){toast('Nothing left to cross out.');return}
  const rm=wr.sort(()=>Math.random()-.5).slice(0,Math.min(n,wr.length-1));G.tg=tg.filter(t=>!rm.includes(t));h.inv[k]--;save();
