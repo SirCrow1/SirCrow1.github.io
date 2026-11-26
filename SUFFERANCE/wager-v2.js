@@ -55,6 +55,25 @@ const STYLE=`<style>
 .wg-card{background:#0b0912;border:1px solid #2f2a3d;border-radius:8px;padding:9px 11px;margin:7px 0}
 .wg-tab{padding:6px 12px;border-radius:6px 6px 0 0;background:#1c1726;color:#a1a1aa;border:1px solid #2f2a3d;border-bottom:0}
 .wg-tab.on{background:#2a2140;color:#fcd34d}
+.wg-room{position:relative;margin:8px 0;padding:10px 8px 12px;border-radius:10px;border:2px solid #3b3350;background:repeating-linear-gradient(90deg,#26202f 0 38px,#211b2a 38px 40px),#211b2a;box-shadow:inset 0 0 40px #000}
+.wg-room:before{content:'';position:absolute;left:0;right:0;bottom:0;height:22px;background:repeating-linear-gradient(90deg,#3a3148 0 30px,#332a40 30px 32px);border-radius:0 0 8px 8px}
+.wg-torch{position:absolute;top:6px;font-size:18px;animation:wgFl 1.2s infinite alternate}.wg-torch.l{left:8px}.wg-torch.r{right:8px}
+@keyframes wgFl{from{opacity:.65;transform:scale(.92)}to{opacity:1;transform:scale(1.08)}}
+.wg-knights{position:relative;z-index:1;display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin:14px 0 8px}
+.wg-kn{text-align:center;font-size:11px;color:#d4d4d8;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wg-kn i{display:block;font-style:normal;font-size:28px;filter:drop-shadow(0 0 4px #a78bfa)}
+.wg-kn.me i{filter:drop-shadow(0 0 6px #4ade80)}.wg-kn.me{color:#86efac;font-weight:700}
+.wg-kn.done i{opacity:.55}
+.wg-doors{position:relative;z-index:1;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:6px;padding-bottom:14px}
+.wg-door{width:calc(33% - 10px);min-width:92px;max-width:150px;min-height:120px;padding:26px 6px 6px;border-radius:60px 60px 4px 4px;border:3px solid #7c5a2a;background:linear-gradient(#6b4a22,#4a3016);color:#fff;font:700 13px sans-serif;cursor:pointer;position:relative;display:flex;align-items:flex-end;justify-content:center;text-align:center;box-shadow:0 0 0 3px #2b1f10,inset 0 0 18px #000a}
+.wg-door:before{content:'';position:absolute;top:14px;left:50%;width:70%;height:34%;transform:translateX(-50%);border-radius:40px 40px 0 0;border:2px solid #3a2810;background:#00000033}
+.wg-door:after{content:'';position:absolute;right:10px;top:58%;width:8px;height:8px;border-radius:50%;background:#fbbf24}
+.wg-door:hover{border-color:#fbbf24;filter:brightness(1.2)}
+.wg-door b{position:absolute;top:6px;left:50%;transform:translateX(-50%);color:#fcd34d;font-size:14px}
+.wg-door span{position:relative;z-index:1;background:#000a;padding:3px 5px;border-radius:5px;word-break:break-word}
+.wg-door[disabled]{cursor:default;filter:none}.wg-door[disabled]:hover{border-color:#7c5a2a}
+.wg-door.pick{border-color:#4ade80;box-shadow:0 0 12px #4ade80,0 0 0 3px #2b1f10}
+.wg-lock{position:relative;z-index:1;text-align:center;padding-bottom:14px}
 .wg-opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 12px;border-radius:8px;background:#1c1726;border:1px solid #4b4363;color:#fff;font:15px sans-serif}
 .wg-opt:hover{background:#2a2140;border-color:#a78bfa}.wg-opt[disabled]{opacity:.5;cursor:default}
 .wg-bar{height:14px;border-radius:7px;background:#27272a;overflow:hidden;border:1px solid #0008}
@@ -329,6 +348,18 @@ function gearLine(g,b){
   if(b[2])p.push((gn('PETS',g.pet)||'Pet')+' +'+b[2]+' HP/round');
   return p.length?'<div style="font-size:11px;color:#c4b5fd">'+p.map(esc).join(' · ')+'</div>':'<div style="font-size:11px;color:#71717a">no gear equipped</div>';
 }
+
+// ---------- dungeon room: knights stand together, players CLICK a door (no walking, so nobody can copy a path) ----------
+function dungeonQ(q,act,knights,fbId,fbAct,fbLabel){
+  const kn=(knights||[]).map(k=>`<div class="wg-kn${k.me?' me':''}${k.done?' done':''}" title="${esc(k.name)}"><i>🤺</i>${esc(k.name)}${k.me?' (you)':''}</div>`).join('');
+  let doors;
+  if(q.t==='mc')doors=q.o.map((o,i)=>`<button class="wg-door" data-act="${act}" data-v="${i}"><b>${'ABCDEF'[i]}</b><span>${esc(o)}</span></button>`).join('');
+  else if(q.t==='tf')doors='<button class="wg-door" data-act="'+act+'" data-v="true"><b>✅</b><span>True</span></button><button class="wg-door" data-act="'+act+'" data-v="false"><b>❌</b><span>False</span></button>';
+  else doors=`<div class="wg-lock"><div style="font-size:30px">🚪🔒</div><div style="font-size:12px;color:#d4d4d8;margin:4px 0">Speak the password to open the door</div><input id="${fbId}" class="wg-in" placeholder="Type your answer…" autocomplete="off"><button class="wg-b wg-g" style="margin-top:8px" data-act="${fbAct}">${fbLabel}</button></div>`;
+  return `<div style="font:700 17px sans-serif;margin:8px 0;color:#fff">${esc(q.q)}</div><div class="wg-room"><span class="wg-torch l">🔥</span><span class="wg-torch r">🔥</span><div class="wg-knights">${kn}</div><div class="wg-doors">${doors}</div></div>`;
+}
+// mark the door I clicked (only on my own screen; nobody else can see which door I chose)
+function markDoor(v){try{modal.querySelectorAll('.wg-door').forEach(b=>{if(b.dataset.v===String(v))b.classList.add('pick')})}catch(e){}}
 const mv=x=>MOVES[x.mv-1]||['???',0];
 function logLine(e,me,opN){
   const a=e['p'+me],b=e['p'+(3-me)];
@@ -379,19 +410,17 @@ function renderDuel(st){
   const meAns=me===1?st.a1:st.a2,opAns=me===1?st.a2:st.a1;
   if(st.rnd!==D.rnd){
     D.rnd=st.rnd;D.answered=!!meAns;
-    const q=st.q;let inp;
-    if(q.t==='mc')inp=q.o.map((o,i)=>`<button class="wg-opt" data-act="da" data-v="${i}">${'ABCDEF'[i]}. ${esc(o)}</button>`).join('');
-    else if(q.t==='tf')inp='<button class="wg-opt" data-act="da" data-v="true">✅ True</button><button class="wg-opt" data-act="da" data-v="false">❌ False</button>';
-    else inp='<input id="dfb" class="wg-in" placeholder="Type your answer…" autocomplete="off"><button class="wg-b wg-g" style="margin-top:8px" data-act="dfb">Cast it!</button>';
-    $('#dq').innerHTML=`<div style="font:700 17px sans-serif;margin:8px 0;color:#fff">${esc(q.q)}</div>${inp}`;
+    const q=st.q;
+    $('#dq').innerHTML=dungeonQ(q,'da',[{name:myN,me:true,done:!!meAns},{name:opN,done:!!opAns}],'dfb','dfb','Open the door!');
     if(D.answered)lockDq();else if(q.t==='fb'){const f=$('#dfb');if(f)f.focus()}
   }else if(meAns&&!D.answered){D.answered=true;lockDq()}
+  {const k=modal.querySelectorAll('#dq .wg-kn');if(k[0])k[0].classList.toggle('done',!!meAns);if(k[1])k[1].classList.toggle('done',!!opAns)}
   $('#dst').textContent=meAns&&!opAns?'Locked in. Waiting for your opponent…':(opAns&&!meAns?'⚡ Your opponent already answered!':'');
 }
 function lockDq(){modal.querySelectorAll('#dq button,#dq input').forEach(b=>b.disabled=true)}
 async function duelAnswer(v){
   if(!D||D.answered||D.over)return;
-  D.answered=true;lockDq();
+  D.answered=true;lockDq();markDoor(v);
   await rpc('duel_answer',{p_id:D.id,p_rnd:D.rnd,p_ans:v},true);
   pollDuel();
 }
@@ -495,6 +524,7 @@ function renderGroup(st){
     GR.phase='play';GR.rnd=-1;
   }
   $('#gsb').innerHTML=gScore(pls,st.status==='active');
+  try{modal.querySelectorAll('#gq .wg-kn').forEach((el,i)=>{if(pls[i])el.classList.toggle('done',!!pls[i].done)})}catch(e){}
   $('#gf').innerHTML=gFeed(st.log);
   $('#ginfo').textContent='Round '+Math.min(st.rnd+1,st.n)+'/'+st.n+' · pot 🪙'+st.pot;
   if(st.status!=='active'){
@@ -513,11 +543,8 @@ function renderGroup(st){
   const me=pls.find(p=>p.me),meAns=!!(me&&me.done);
   if(st.rnd!==GR.rnd){
     GR.rnd=st.rnd;GR.answered=meAns;
-    const q=st.q;let inp;
-    if(q.t==='mc')inp=q.o.map((o,i)=>`<button class="wg-opt" data-act="ga" data-v="${i}">${'ABCDEF'[i]}. ${esc(o)}</button>`).join('');
-    else if(q.t==='tf')inp='<button class="wg-opt" data-act="ga" data-v="true">✅ True</button><button class="wg-opt" data-act="ga" data-v="false">❌ False</button>';
-    else inp='<input id="gfb" class="wg-in" placeholder="Type your answer…" autocomplete="off"><button class="wg-b wg-g" style="margin-top:8px" data-act="gfb">Lock in!</button>';
-    $('#gq').innerHTML=`<div style="font:700 17px sans-serif;margin:8px 0;color:#fff">${esc(q.q)}</div>${inp}`;
+    const q=st.q;
+    $('#gq').innerHTML=dungeonQ(q,'ga',pls.map(p=>({name:p.name,me:p.me,done:p.done})),'gfb','gfb','Open the door!');
     if(GR.answered)lockGq();else if(q.t==='fb'){const f=$('#gfb');if(f)f.focus()}
   }else if(meAns&&!GR.answered){GR.answered=true;lockGq()}
   const left=pls.filter(p=>!p.done).length;
@@ -526,7 +553,7 @@ function renderGroup(st){
 function lockGq(){modal.querySelectorAll('#gq button,#gq input').forEach(b=>b.disabled=true)}
 async function groupAnswer(v){
   if(!GR||GR.answered||GR.over)return;
-  GR.answered=true;lockGq();
+  GR.answered=true;lockGq();markDoor(v);
   await rpc('trivia_answer',{p_id:GR.id,p_rnd:GR.rnd,p_ans:v},true);
   pollGroup();
 }
