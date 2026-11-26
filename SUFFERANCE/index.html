@@ -2800,6 +2800,7 @@ ${G}
                 const ok=G.tg.find(t=>t.ok)||G.tg[0],n=performance.now();
                 G.state='clear';G.last=1;G.ct=0;G.dr=null;G.sel=null;G.kq=0;G.kd=0;G.kf=0;G.lsk=+id;G.face=1;
                 G.sk={t:0,k:SKILLS[+id],tx:ok.x,ty:ok.y};ok.dyAt=n;try{SND.skill(SKILLS[+id].ty,+id,1/KSLOW,false)}catch(_){}
+                if(window._spPrev){G.sk=null;delete ok.dyAt;runSpecial(+id,G.tg.filter(t=>!t.ok).sort(()=>Math.random()-.5).slice(0,3),true)}
             }else if(kind=='n'){
                 label=galNName(id);
                 if(id=='16'){const b={x:350,y:WB+9,st:1,t0:performance.now(),kind:'mimic',gone:1,g:0};G.chs.push(b);
@@ -4751,7 +4752,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             updBits(dt);
             if(G.fin>0)G.fin-=dt;
             if(G.sk&&(G.sk.t+=(s=='clear'||s=='bclear'?dt*KSLOW:dt))>1.3)G.sk=null;
-            if(G.spx&&(G.spx.t+=dt)>1.3)G.spx=null;
+            if(G.spk){const e=G.spk;e.t+=dt;if(!e.hit&&e.t>=.5){e.hit=1;const o=e.q[e.j];o.dyAt=performance.now();if(!e.keep){const g0=G;setTimeout(()=>{if(G===g0&&G.tg)G.tg=G.tg.filter(x=>x!==o)},500)}}if(e.t>=.95)spkNext()}
             if(s=='clear'){
                 G.ct+=dt*KSLOW;const c=G.ct,d=G.dr;
                 if(G.last){if(G.galK&&G.galK[0]=='m'){if(c>2.5){const k=G.galK;G=null;keys={};setTimeout(()=>galPlay(k[0],k[1]),80);return}}else if(c>1.5)winStart()}
@@ -6793,7 +6794,8 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
                 const lean=G.kiss?5*Math.abs(Math.sin((G.wt-WT.kiss)*2.5)):0;
                 ctx.save();ctx.globalAlpha=G.ka*((G.state=='win'&&G.end=='bad')?1-Math.max(0,Math.min(1,(G.wt-1.4)/1.8)):1);
                 const ks=2.2*(.6+.4*G.ka),kx=G.hx+lean;
-                if(G.sk&&(G.state=='clear'||G.state=='bclear')) {
+                if(G.spk){const sv=G.sk;G.sk=G.spk;try{skKnight(kx,ks)}catch(_){}G.sk=sv}
+                else if(G.sk&&(G.state=='clear'||G.state=='bclear')) {
                     skKnight(kx,ks);
                 } else if(G.sw > 0) {
                     drawSprite(sprites.attack, 120, 80, 4, kx, G.hy, G.face, ks);
@@ -6807,7 +6809,7 @@ const bsx=k=>k%2?670:130,bsy=k=>245+(k>>1)*105;   // answer stones flank the bos
             if(G.state=='win'&&G.end=='bad')badFx(now);
             if(!isB){propsDraw(now,true);bitsDraw(now);hoverDraw()}
             if(G.sk&&(G.state=='clear'||G.state=='bclear'))skDraw(now);   // the sword art
-            if(G.spx){const e=G.spx,K=e.k,ox=G.hx,oy=G.hy-45,F=G.face||1;ctx.save();ctx.lineCap='round';try{ANI[K.x]({p:Math.min(1,e.t),now,F,ox,oy,tx:e.tx,ty:e.ty,sx:ox+F*34,sy:oy-8,c:K.c})}catch(_){}ctx.restore()}   // Special Move bought in the shop
+            if(G.spk){const sv=G.sk;G.sk=G.spk;try{skDraw(now)}catch(_){}G.sk=sv}   // Special Move strike
             if(late)late();   // speech bubbles always sit above barrels, crates and bones
             if(G.kiss){const b=1+Math.sin((G.wt-WT.kiss)*5)*.12;heart(G.hx,G.hy+15-KH-54,7*b,Math.min(1,(G.wt-WT.kiss)*3))}
             G.hearts.forEach(h=>heart(h.x,h.y,h.s,1-h.l/2.2));
@@ -7183,6 +7185,9 @@ const PETS={crow:{n:'🐦‍⬛ Crow',p:0,e:'🐦‍⬛',d:'+1 gold from every c
  bison:{n:'🦬 Sky Bison (Mount)',p:1600,e:'🦬',d:'Mount. +12 gold every room you clear.'}};
 function petGold(){const p=shopS().eq.pet;return p=='crow'?1:p=='turtle'?2:0}
 // ONE-TIME ITEMS (armor skins, blades, pets, mounts and the run items: orb, favour, shield, wing, key) are priced for players with trillions of gold. Change ONE_TIME_MULT to re-balance. Free items stay free; run items and pet food are not touched.
+/* Special move engine: the knight performs the real sword art (dash + strike) on ONE answer at a time and kills it, then the next, until all targets are gone. */
+function spkNext(){const e=G.spk;if(!e)return;e.j++;e.t=0;e.hit=0;if(e.j>=e.q.length){G.spk=null;return}const o=e.q[e.j];e.tx=o.x;e.ty=o.y;G.face=o.x>=G.hx?1:-1;try{SND.skill(e.k.ty,SKILLS.indexOf(e.k),1,false)}catch(_){}}
+function runSpecial(idx,rm,keep){if(!G)return;G.spk={k:SKILLS[idx],t:0,tx:0,ty:0,q:rm,j:-1,hit:0,keep:!!keep};spkNext()}
 /* SPECIAL MOVES: one-use consumables. Each one fires its anime sword art and destroys 3 of the 4 answers. idx = place in SKILLS. */
 const SMOVES={form13:{n:'🐯 13th Form',p:3000,i:23},star:{n:'👊 Star Platinum',p:3400,i:24},hollow:{n:'🟣 Hollow Purple',p:3800,i:25},divider:{n:'🖤 Black Divider',p:4200,i:27},balaq:{n:'🌩️ Balaq Saiga',p:4600,i:22},divine:{n:'🏴‍☠️ Divine Departure',p:5000,i:26},rasen:{n:'👹 Rasenshuriken',p:5400,i:20},excal:{n:'🗡️ Excalibur',p:5800,i:29},getsuga:{n:'🌘 Getsuga Tensho',p:6200,i:21},kame:{n:'💥 Kamehameha',p:6600,i:28}};
 for(const k in SMOVES)SMOVES[k].d='ONE USE. Unleash it to destroy 3 out of 4 answers. Buy it again for another use.';
@@ -7226,19 +7231,20 @@ function shopBar(){let b=document.querySelector('#shopbar');if(!b){b=document.cr
   pas='padding:6px 10px;min-height:34px;display:flex;align-items:center;border-radius:7px;background:#000a;border:1px dashed #4d7c0f;color:#bef264;font:13px monospace;pointer-events:none;animation:shopArm 1.6s ease-in-out infinite';
  const hk={orb:'1',fav:'2',key:'3'};
  let html=BAR_KEYS.filter(k=>h.inv[k]>0).map(k=>`<button type="button" data-k="${k}" title="${SHOP_ITEMS[k].n}: ${SHOP_ITEMS[k].d} [key ${hk[k]}]" style="${css}">${SHOP_ITEMS[k].n.split(' ')[0]} x${h.inv[k]} <span style="opacity:.55">[${hk[k]}]</span></button>`).join('');
- html+=Object.keys(SMOVES).filter(k=>h.inv['sm_'+k]>0).map(k=>`<button type="button" data-k="sm_${k}" title="${SMOVES[k].n}: ${SMOVES[k].d}" style="${css};border-color:#a78bfa;color:#ddd6fe">${SMOVES[k].n} x${h.inv['sm_'+k]}</button>`).join('');
+ html+=smOwned().map((k,ix)=>`<button type="button" data-k="sm_${k}" title="${SMOVES[k].n}: ${SMOVES[k].d}" style="${css};border-color:#a78bfa;color:#ddd6fe">${SMOVES[k].n} x${h.inv['sm_'+k]} <span style="opacity:.55">[${ix<6?ix+4:''}${ix==0?'/Q':''}]</span></button>`).join('');
  if(h.inv.phx>0)html+=`<span title="${SHOP_ITEMS.phx.d}" style="${pas}">🪽 armed x${h.inv.phx}</span>`;
  if(h.inv.shield>0)html+=`<span title="${SHOP_ITEMS.shield.d}" style="${pas}">🛡️ armed x${h.inv.shield}</span>`;
  if(html!==_barHTML){_barHTML=html;b.innerHTML=html}}
 setInterval(shopBar,300);
 addEventListener('keydown',e=>{if(e.repeat||e.ctrlKey||e.metaKey||e.altKey)return;const k=BAR_HOT[e.code];if(!k||!G||G.gal||G.state!='play')return;if(shopS().inv[k]>0)useItem(k)});
+const SM_HOT={Digit4:0,Digit5:1,Digit6:2,Digit7:3,Digit8:4,Digit9:5,Numpad4:0,Numpad5:1,Numpad6:2,Numpad7:3,Numpad8:4,Numpad9:5};
+function smOwned(){const h=shopS();return Object.keys(SMOVES).filter(k=>h.inv['sm_'+k]>0)}
+addEventListener('keydown',e=>{if(e.repeat||e.ctrlKey||e.metaKey||e.altKey)return;if(!G||G.gal||G.state!='play')return;const t=e.target&&e.target.tagName;if(t=='INPUT'||t=='TEXTAREA')return;const own=smOwned();let i=e.code=='KeyQ'?0:SM_HOT[e.code];if(i==null||!own[i])return;useItem('sm_'+own[i])});
 function useItem(k){if(!G||G.state!='play'||G.gal)return;const h=shopS(),tg=G.tg||[],plain=tg.length&&tg.every(t=>t.k!='m'&&t.k!='d'&&t.ok!==undefined);
  if(!plain){toast('Can\'t use that on this kind of question.');return}
- if(k.indexOf('sm_')==0){const sm=SMOVES[k.slice(3)];if(!sm||!(h.inv[k]>0))return;const wr=tg.filter(t=>!t.ok);if(!wr.length){toast('Nothing left to destroy.');return}
+ if(k.indexOf('sm_')==0){const sm=SMOVES[k.slice(3)];if(!sm||!(h.inv[k]>0))return;if(G.spk){toast('A special move is already running.');return}const wr=tg.filter(t=>!t.ok);if(!wr.length){toast('Nothing left to destroy.');return}
   const rm=wr.sort(()=>Math.random()-.5).slice(0,Math.min(3,wr.length));h.inv[k]--;save();
-  const K=SKILLS[sm.i],tx=rm.reduce((a,t)=>a+t.x,0)/rm.length,ty=rm.reduce((a,t)=>a+t.y,0)/rm.length;
-  G.spx={k:K,t:0,tx,ty};try{SND.skill(K.ty,sm.i,1,false)}catch(_){}toast(sm.n+'! 3 answers destroyed.');
-  const g0=G;setTimeout(()=>{if(G!==g0||!G.tg)return;G.tg=G.tg.filter(o=>!rm.includes(o));shopBar()},650);shopBar();return}
+  toast(sm.n+'! 3 answers will fall.');runSpecial(sm.i,rm,false);shopBar();return}
  if(k=='key'){if(G.keyUsed){toast('Only one Answer Key per run.');return}const t=tg.find(o=>o.ok||o.k=='f');if(!t)return;G.keyUsed=1;h.inv.key--;save();toast('🗝️ The forbidden key opens the way!');if(t.k=='f'){const fq=G.rooms[G.i].q;t.l=String(fq.o[fq.a]);t.ok=1}hit(t);return}
  const n=k=='orb'?1:2,wr=tg.filter(t=>!t.ok);if(wr.length<2){toast('Nothing left to cross out.');return}
  const rm=wr.sort(()=>Math.random()-.5).slice(0,Math.min(n,wr.length-1));G.tg=tg.filter(t=>!rm.includes(t));h.inv[k]--;save();
