@@ -7281,12 +7281,14 @@ function spkNext(){const e=G.spk;if(!e)return;e.j++;e.t=0;e.hit=0;if(e.j>=e.q.le
 const TS_SFX_FILE='timestop.mp3';
 /* Star Platinum punch sound: drop your 5-second punching sound next to this page and name it punch.mp3 (or change SP_SFX_FILE below). It plays whenever Star Platinum's ORA ORA move starts. If the file is missing, the built-in synth sound plays instead. */
 const SP_SFX_FILE='punch.mp3';
-const SP_SFX_LEN=2.7;   // seconds: the sound is cut off this long after the punching starts (the whole move lasts about 2.5-2.8 s)
+const SP_SFX_DELAY=.6;  // seconds: the move runs about half a second before the first fists appear, so the sound waits this long
+const SP_SFX_LEN=1.9;   // seconds: the sound is cut off this long after it starts (the whole move lasts about 2.5-2.8 s)
 function starPunchSound(fb){if(SND.cfg&&SND.cfg.on===false)return true;
- try{if(window._spAudio){window._spAudio.pause()}let used=0;const a=new Audio(SP_SFX_FILE);window._spAudio=a;a.volume=1;
-  const f=()=>{if(!used){used=1;try{fb()}catch(_){}}};a.addEventListener('error',f,{once:true});const pr=a.play();if(pr&&pr.catch)pr.catch(f);
-  /* cut the clip off when the punching ends (SP_SFX_LEN seconds), with a quick fade so it doesn't pop */
-  setTimeout(()=>{if(window._spAudio!==a)return;const t=setInterval(()=>{if(window._spAudio!==a||a.volume<=.12){clearInterval(t);if(window._spAudio===a)a.pause();return}a.volume=Math.max(0,a.volume-.12)},25)},Math.max(0,SP_SFX_LEN-.2)*1000);return true}catch(_){return false}}
+ try{const tok=window._spTok=(window._spTok||0)+1;
+  setTimeout(()=>{if(window._spTok!==tok)return;try{if(window._spAudio){window._spAudio.pause()}let used=0;const a=new Audio(SP_SFX_FILE);window._spAudio=a;a.volume=1;
+   const f=()=>{if(!used){used=1;try{fb()}catch(_){}}};a.addEventListener('error',f,{once:true});const pr=a.play();if(pr&&pr.catch)pr.catch(f);
+   /* cut the clip off when the punching ends (SP_SFX_LEN seconds after it starts), with a quick fade so it doesn't pop */
+   setTimeout(()=>{if(window._spAudio!==a)return;const t=setInterval(()=>{if(window._spAudio!==a||a.volume<=.12){clearInterval(t);if(window._spAudio===a)a.pause();return}a.volume=Math.max(0,a.volume-.12)},25)},Math.max(0,SP_SFX_LEN-.2)*1000)}catch(_){try{fb()}catch(__){}}},SP_SFX_DELAY*1000);return true}catch(_){return false}}
 function tsSound(){const fb=()=>{try{SND.sfx('timestop')}catch(_){}};
  try{if(window._tsAudio){window._tsAudio.pause()}if(!(SND.cfg&&SND.cfg.on===false)){let used=0;const a=new Audio(TS_SFX_FILE);window._tsAudio=a;a.volume=.9;
    const f=()=>{if(!used){used=1;fb()}};a.addEventListener('error',f,{once:true});const pr=a.play();if(pr&&pr.catch)pr.catch(f)}}catch(_){fb()}}
