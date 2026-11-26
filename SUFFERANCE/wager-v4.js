@@ -8,7 +8,7 @@ const MOVES=[['Jab',6],['Quick Slash',8],['Dagger Stab',8],['Shield Bash',9],['R
 const ERR={not_logged_in:'Sign in first (👤 Account).',no_such_player:'No player with that name.',self:"You can't pick yourself.",bad_amount:'Check the gold amounts.',bad_pass:'Pass mark must be 1-100%.',
  bad_time:'Time limit must be 5-300 seconds (or empty).',too_many:'Too many open quizzes (max 10, or 3 for the same player).',bad_questions:'Those questions could not be used.',banned:'This account is banned.',
  not_found:'Not found.',full:'That room is full.',not_enough:'Need at least 2 players to start.',not_host:'Only the host can start.',bad_players:'Room size must be 2-10.',not_yours:'You are not in that one.',already:'Already answered.',closed:'That one is already over.',late:'Too late.',already_in_duel:'You are already in a duel.',own_duel:"That's your own duel.",not_invited:'That duel is for someone else.',wrong_round:'Round already moved on.',bad_code:'No open room with that code.',no_gold:"You don't have enough 🪙 for that room.",already_in_room:'You are already in a party room.'};
-Object.assign(ERR,{playing:"You can't watch a game you are playing in.",private:'That room is private. Use its room code in the box above.',not_started:'That room has not started yet. Come back when the game begins.'});
+Object.assign(ERR,{special_used:'You already used your special move this duel.',too_late:'Answer already locked in.',playing:"You can't watch a game you are playing in.",private:'That room is private. Use its room code in the box above.',not_started:'That room has not started yet. Come back when the game begins.'});
 const $=s=>document.querySelector(s);
 const say=m=>{try{toast(m)}catch(e){alert(m)}};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -432,10 +432,50 @@ function drawKnight(cv,g,cx,fy,gear,t,o){
   }
   g.restore();
 }
+
+// ---- DUEL MOVE EFFECTS: move i plays the same kind of art as gallery move i (type + colour) ----
+// ty: crescent | rising | cross | thrust | whirl | beam (the anime arts)
+const MFX=[['thrust','220,232,255'],['crescent','220,232,255'],['thrust','200,200,215'],['cross','255,205,45'],['whirl','255,255,255'],
+ ['rising','255,125,30'],['thrust','120,205,245'],['cross','210,255,60'],['thrust','130,175,40'],['crescent','200,130,60'],
+ ['thrust','255,205,45'],['thrust','220,232,255'],['cross','255,248,200'],['rising','255,115,60'],['cross','150,105,215'],
+ ['whirl','40,225,200'],['rising','200,130,60'],['whirl','240,40,60'],['whirl','150,150,170'],['rising','200,130,60'],
+ ['beam','150,105,215'],['crescent','65,115,255'],['thrust','255,255,255'],['whirl','130,175,40'],['beam','255,115,25'],
+ ['crescent','120,120,165'],['beam','255,205,80'],['rising','200,130,60'],['cross','240,40,60'],['beam','170,70,255']];
+const SPFX=['beam','255,205,80'];   // the once-per-duel special move
+const _ez=v=>v*v*(3-2*v),_cl=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+// g = canvas ctx, f = {mv, sp, t0}, x0/x1 = attacker / victim x, u = 0..1 progress
+function drawMoveFx(g,f,x0,x1,u,t){
+  const T=f.sp?SPFX:(MFX[(f.mv||1)-1]||MFX[0]),ty=T[0],c=T[1],dir=x1>x0?1:-1,y=108,sx=x0+dir*34,fa=1-_cl((u-.62)/.38);
+  g.save();g.lineCap='round';g.globalCompositeOperation='lighter';
+  const ln=(a,b,c2,d,al,w)=>{g.strokeStyle='rgba('+c+','+.3*al+')';g.lineWidth=w*2.2;g.beginPath();g.moveTo(a,b);g.lineTo(c2,d);g.stroke();
+    g.strokeStyle='rgba('+c+','+.8*al+')';g.lineWidth=w;g.beginPath();g.moveTo(a,b);g.lineTo(c2,d);g.stroke();
+    g.strokeStyle='rgba(255,255,255,'+al+')';g.lineWidth=Math.max(1.5,w*.3);g.beginPath();g.moveTo(a,b);g.lineTo(c2,d);g.stroke()};
+  const sc=f.sp?1.7:1;
+  if(u<.3){const a=_cl(u/.15)*(1-_cl((u-.15)/.15));const r=g.createRadialGradient(sx,y,0,sx,y,24*sc+30*a);r.addColorStop(0,'rgba('+c+','+.7*a+')');r.addColorStop(1,'rgba('+c+',0)');g.fillStyle=r;g.beginPath();g.arc(sx,y,24*sc+30*a,0,6.3);g.fill()}
+  else if(fa>0){
+    const p=_cl((u-.3)/.3),e=_ez(p),mx=sx+(x1-sx)*.5;
+    if(ty==='crescent'){const R=(48+e*40)*sc,a0=-1.5,a1=a0+2.9*e;g.strokeStyle='rgba('+c+','+fa*.8+')';g.lineWidth=14*sc*(1-e*.4);g.beginPath();g.arc(sx+dir*30,y,R,dir>0?a0:Math.PI-a0,dir>0?a1:Math.PI-a1,dir<0);g.stroke();
+      g.strokeStyle='rgba(255,255,255,'+fa+')';g.lineWidth=3;g.stroke()}
+    else if(ty==='rising'){const a1=1.3-2.9*e;g.strokeStyle='rgba('+c+','+fa*.8+')';g.lineWidth=12*sc;g.beginPath();g.arc(sx+dir*20,y+14,58*sc,dir>0?1.3:Math.PI-1.3,dir>0?a1:Math.PI-a1,dir>0);g.stroke();
+      g.fillStyle='rgba('+c+','+fa+')';for(let j=0;j<12;j++)g.fillRect(x1+Math.sin(j*5+t*9)*22,y+40-p*70*(1+j%3*.4),3,3)}
+    else if(ty==='cross'){const L=34*sc,a=_ez(_cl((u-.3)/.12)),b=_ez(_cl((u-.4)/.12)),X=x1-dir*10;ln(X-L,y-L,X-L+2*L*a,y-L+2*L*a,fa,8*sc);ln(X+L,y-L,X+L-2*L*b,y-L+2*L*b,fa,8*sc)}
+    else if(ty==='thrust'){const bx=sx+(x1-sx)*e;ln(sx,y,bx,y,fa,9*sc);for(let j=1;j<5;j++){g.strokeStyle='rgba(255,255,255,'+fa*.7+')';g.lineWidth=2;g.beginPath();g.ellipse(sx+(x1-sx)*j/5*e,y,5+j,13,0,0,7);g.stroke()}}
+    else if(ty==='whirl'){const R=(30+e*46)*sc;g.strokeStyle='rgba('+c+','+fa*.8+')';g.lineWidth=6;g.beginPath();g.ellipse(x0,y+16,R,R*.38,0,0,7);g.stroke();
+      g.strokeStyle='rgba(255,255,255,'+fa+')';for(let j=0;j<3;j++){const a0=t*14+j*2.09;g.beginPath();g.ellipse(x0,y+16,R*.9,R*.34,0,a0,a0+1.1);g.stroke()}
+      const e2=_ez(_cl((u-.42)/.18));ln(x0,y,x0+(x1-x0)*e2,y,fa*.9,7)}
+    else{ // beam
+      const w=(10+16*Math.sin(p*3.14))*sc,e2=_ez(_cl((u-.32)/.2)),ex=sx+(x1-sx)*e2;ln(sx,y,ex,y,fa,w);
+      const r=g.createRadialGradient(sx,y,0,sx,y,30*sc);r.addColorStop(0,'rgba(255,255,255,'+fa+')');r.addColorStop(1,'rgba('+c+',0)');g.fillStyle=r;g.beginPath();g.arc(sx,y,30*sc,0,6.3);g.fill()}
+  }
+  if(u>=.55){ // impact on the victim
+    const ip=_cl((u-.55)/.4),a=1-ip,R=(14+ip*46)*sc;g.strokeStyle='rgba('+c+','+a+')';g.lineWidth=2+4*a;g.beginPath();g.arc(x1,y,R,0,7);g.stroke();
+    g.strokeStyle='rgba(255,255,255,'+a+')';g.lineWidth=2;for(let j=0;j<10;j++){const an=j*.628+1;g.beginPath();g.moveTo(x1+Math.cos(an)*(8+ip*14),y+Math.sin(an)*(8+ip*14));g.lineTo(x1+Math.cos(an)*(18+ip*44)*sc,y+Math.sin(an)*(18+ip*44)*sc);g.stroke()}}
+  g.restore();
+}
 // ---- the big duel arena: two knights facing each other, they swing when a round is won, flinch when hit ----
 function arenaInit(cv,gl,gr){
   if(!cv)return;arSize(cv,460,190);
-  cv._a={g:[gl||{},gr||{}],pose:[null,null],fl:[-9,-9],q:[],tx:[],hp:[100,100],dk:[0,0],dead:[0,0],done:[false,false],t:0};
+  cv._a={g:[gl||{},gr||{}],pose:[null,null],fl:[-9,-9],q:[],tx:[],fx:[],hp:[100,100],dk:[0,0],dead:[0,0],done:[false,false],t:0};
   arReg(cv,arenaDraw);
 }
 function arenaSync(cv,hl,hr){
@@ -448,13 +488,14 @@ function arenaRound(cv,e,li){
   const L=e['p'+li],R=e['p'+(3-li)],nm=m=>(MOVES[m-1]||['Strike'])[0];
   const go=(s,x,delay)=>{
     if(!x||!x.ok)return;
-    A.q.push({at:A.t+delay,fn:()=>{A.pose[s]={t0:A.t}}});
-    A.q.push({at:A.t+delay+.3,fn:()=>{
+    const sp=!!x.sp,dur=sp?1.5:1.0;
+    A.q.push({at:A.t+delay,fn:()=>{A.pose[s]={t0:A.t,d:.75};A.fx.push({s,mv:x.mv,sp,t0:A.t,dur})}});
+    A.q.push({at:A.t+delay+dur*.5,fn:()=>{
       A.fl[1-s]=A.t;
-      A.tx.push({x:s?115:345,t0:A.t,s:x.dmg>0?'-'+x.dmg+'  '+nm(x.mv):'blocked',c:x.dmg>0?'#fca5a5':'#93c5fd'});
+      A.tx.push({x:s?115:345,t0:A.t,s:(sp?'✨ ':'')+(x.dmg>0?'-'+x.dmg+'  '+nm(x.mv):'blocked'),c:x.dmg>0?(sp?'#fcd34d':'#fca5a5'):'#93c5fd'});
     }});
   };
-  go(0,L,0);go(1,R,.12);
+  go(0,L,0);go(1,R,.9);
 }
 function arenaDraw(cv,t){
   const A=cv._a;if(!A)return;A.t=t;
@@ -479,14 +520,67 @@ function arenaDraw(cv,t){
     if(A.dead[s]){o.pose='dead';o.u=Math.min(1,(t-A.dead[s])/1.0)}
     else{
       const p=A.pose[s];
-      if(p&&t-p.t0<.55){const u=(t-p.t0)/.55;o.pose='attack';o.u=u;o.dx=Math.sin(u*Math.PI)*42}
+      if(p&&t-p.t0<(p.d||.55)){const u=(t-p.t0)/(p.d||.55);o.pose='attack';o.u=u;o.dx=Math.sin(u*Math.PI)*42}
       if(t-A.fl[s]<.28){o.flash=Math.floor((t-A.fl[s])*30)%2===0;sx=Math.sin(t*90)*5}
     }
     drawKnight(cv,g,cx+sx,172,A.g[s],t,o);
     if(A.done[s]&&!A.dead[s]){g.font='bold 12px sans-serif';g.textAlign='center';g.fillStyle='#fcd34d';g.fillText('🔒 locked in',cx,34)}
   }
+  A.fx=A.fx.filter(f=>t-f.t0<f.dur);
+  for(const f of A.fx)drawMoveFx(g,f,f.s?345:115,f.s?115:345,(t-f.t0)/f.dur,t);
   A.tx=A.tx.filter(f=>t-f.t0<1.3);
   for(const f of A.tx){const u=(t-f.t0)/1.3;g.globalAlpha=1-u*u;g.font='bold 15px sans-serif';g.textAlign='center';g.fillStyle='#000';g.fillText(f.s,f.x+1,70-u*34+1);g.fillStyle=f.c;g.fillText(f.s,f.x,70-u*34)}
+  g.globalAlpha=1;
+}
+
+// ---- GROUP ARENA: every player is a knight; a right answer swings and fires that move's art at the demon in the middle ----
+function drawMoveFxAt(g,f,x0,y0,x1,y1,u,t){
+  const dx=x1-x0,dy=y1-y0,d=Math.hypot(dx,dy)||1;
+  g.save();g.translate(x0,y0-108);g.translate(0,108);g.rotate(Math.atan2(dy,dx));g.translate(0,-108);
+  drawMoveFx(g,f,0,d,u,t);g.restore();
+}
+function garInit(cv,pls){
+  if(!cv)return;arSize(cv,460,190);
+  const n=pls.length;
+  cv._ga={n,pl:pls.map(p=>({name:p.name,gear:p.g||{},t0:-9,sp:0})),fx:[],q:[],tx:[],fl:-9,t:0};
+  arReg(cv,garDraw);
+}
+function garPos(A,i){
+  const n=A.n,two=n>5,row=two?(i%2):0,per=two?Math.ceil(n/2):n,col=two?Math.floor(i/2):i;
+  const x=(two?(row?.5:0):0)+ (col+.5)*(460/per)+(two&&row?-(460/per)*.25:0);
+  return {x:Math.max(26,Math.min(434,x)),y:two?(row?176:132):172};
+}
+function garRound(cv,e,pls){
+  const A=cv&&cv._ga;if(!A||!e)return;
+  let k=0;
+  (e.res||[]).forEach(r=>{
+    if(!r.ok)return;
+    const i=A.pl.findIndex(p=>p.name===r.n);if(i<0)return;
+    const d=k++*.45,dur=r.sp?1.5:1.0;
+    A.q.push({at:A.t+d,fn:()=>{A.pl[i].t0=A.t;A.fx.push({i,mv:r.mv,sp:!!r.sp,t0:A.t,dur})}});
+    A.q.push({at:A.t+d+dur*.5,fn:()=>{A.fl=A.t;A.tx.push({i,t0:A.t,s:(r.sp?'✨ ':'')+'+'+r.pts,c:r.sp?'#fcd34d':'#86efac'})}});
+  });
+}
+function garDraw(cv,t){
+  const A=cv._ga;if(!A)return;A.t=t;
+  for(let i=A.q.length-1;i>=0;i--){if(A.q[i].at<=t){const it=A.q.splice(i,1)[0];try{it.fn()}catch(e){}}}
+  const g=arClear(cv),W=cv._w,H=cv._h;
+  g.fillStyle='#1a1424';g.fillRect(0,0,W,H);
+  g.fillStyle='#2a2238';g.fillRect(0,152,W,H-152);g.fillStyle='#3a3148';g.fillRect(0,152,W,3);
+  for(const x of [26,W-26]){g.font='20px serif';g.textAlign='center';g.fillText('🔥',x,46)}
+  const tx=W/2,ty=70,hit=t-A.fl<.28;
+  g.save();g.globalAlpha=.9;g.font=(hit?58:52)+'px serif';g.textAlign='center';g.fillText('👹',tx+(hit?Math.sin(t*90)*4:0),ty+16);g.restore();
+  const sc=A.n<=3?1.5:A.n<=5?1.05:A.n<=7?.85:.7;
+  const order=A.pl.map((p,i)=>i).sort((a,b)=>garPos(A,a).y-garPos(A,b).y);
+  for(const i of order){
+    const P=A.pl[i],pos=garPos(A,i),o={sc,face:pos.x<tx?1:-1,pet:A.n<=4};
+    if(t-P.t0<.75){const u=(t-P.t0)/.75;o.pose='attack';o.u=u;o.dx=Math.sin(u*Math.PI)*10}
+    drawKnight(cv,g,pos.x,pos.y,P.gear,t,o);
+  }
+  A.fx=A.fx.filter(f=>t-f.t0<f.dur);
+  for(const f of A.fx){const pos=garPos(A,f.i);drawMoveFxAt(g,f,pos.x,pos.y-48*sc/1.5,tx,ty+6,(t-f.t0)/f.dur,t)}
+  A.tx=A.tx.filter(f=>t-f.t0<1.3);
+  for(const f of A.tx){const pos=garPos(A,f.i),u=(t-f.t0)/1.3;g.globalAlpha=1-u*u;g.font='bold 14px sans-serif';g.textAlign='center';g.fillStyle='#000';g.fillText(f.s,pos.x+1,pos.y-70-u*30+1);g.fillStyle=f.c;g.fillText(f.s,pos.x,pos.y-70-u*30)}
   g.globalAlpha=1;
 }
 // ---- small idle knights (party room, quiz header): <canvas class="wg-kc" data-g='{"skin":"gold",...}'> ----
@@ -515,7 +609,7 @@ function markDoor(v){try{modal.querySelectorAll('.wg-door').forEach(b=>{if(b.dat
 const mv=x=>MOVES[x.mv-1]||['???',0];
 function logLine(e,me,opN){
   const a=e['p'+me],b=e['p'+(3-me)];
-  return`<div>R${e.r+1} · answer: <b>${esc(e.ans)}</b> — ${a.ok?`🗡️ you cast <b>${mv(a)[0]}</b> <span style="color:#86efac">(-${a.dmg})</span>`:'❌ you missed'} · ${b.ok?`💥 ${esc(opN)} cast <b>${mv(b)[0]}</b> <span style="color:#fca5a5">(-${b.dmg} to you)</span>`:'🛡️ they missed'}</div>`;
+  return`<div>R${e.r+1} · answer: <b>${esc(e.ans)}</b> — ${a.ok?`${a.sp?'✨ SPECIAL · ':''}🗡️ you cast <b>${mv(a)[0]}</b> <span style="color:#86efac">(-${a.dmg})</span>`:'❌ you missed'} · ${b.ok?`💥 ${esc(opN)} cast <b>${mv(b)[0]}</b> <span style="color:#fca5a5">(-${b.dmg} to you)</span>`:'🛡️ they missed'}</div>`;
 }
 function setHp(i,v,old){
   const b=$('#dhb'+i),t=$('#dht'+i);if(!b)return;
@@ -540,7 +634,7 @@ function renderDuel(st){
       <div style="display:flex;justify-content:space-between;font-size:12px;color:#a1a1aa;margin-top:8px"><span id="dinfo"></span><span id="dtm" style="color:#fcd34d;font-weight:700"></span></div>
       <div id="dq"></div><div id="dst" style="font-size:12px;color:#a1a1aa;min-height:16px;margin-top:6px"></div>
       <div id="df" class="wg-feed" style="margin-top:8px"></div>
-      <div style="margin-top:8px" id="dfw"><button class="wg-b wg-r" data-act="dforfeit">🏳️ Forfeit</button></div>`);
+      <div style="margin-top:8px" id="dfw"><button id="dsp" class="wg-b wg-p" data-act="dspecial">✨ Special Move (1 use)</button> <button class="wg-b wg-r" data-act="dforfeit">🏳️ Forfeit</button></div>`);
     D.built=true;D.rnd=-1;D.hp=[100,100];
     arenaInit($('#dar'),st['g'+me],st['g'+opp]);
     // the feed is kept; it is repainted below
@@ -562,6 +656,7 @@ function renderDuel(st){
     if(!D.paid){D.paid=true;collect()}
     return;
   }
+  {const b=$('#dsp');if(b){const used=me===1?st.sp1:st.sp2;b.disabled=!!used||!!meAnsEarly(st,me);if(used)b.textContent='✨ Special used'}}
   D.deadline=performance.now()+st.left*1000;
   const meAns=me===1?st.a1:st.a2,opAns=me===1?st.a2:st.a1;
   if(st.rnd!==D.rnd){
@@ -574,6 +669,8 @@ function renderDuel(st){
   {const c=$('#dar');if(c&&c._a)c._a.done=[!!meAns,!!opAns]}
   $('#dst').textContent=meAns&&!opAns?'Locked in. Waiting for your opponent…':(opAns&&!meAns?'⚡ Your opponent already answered!':'');
 }
+function meAnsEarly(st,me){return me===1?st.a1:st.a2}
+async function duelSpecial(){if(!D||D.over||D.answered)return;const r=await rpc('duel_special',{p_id:D.id,p_rnd:D.rnd});if(r==='ok'){const b=$('#dsp');if(b){b.disabled=true;b.textContent='✨ Special armed! Answer right!'}}else if(r)say(errMsg(r))}
 function lockDq(){modal.querySelectorAll('#dq button,#dq input').forEach(b=>b.disabled=true)}
 async function duelAnswer(v){
   if(!D||D.answered||D.over)return;
@@ -676,13 +773,15 @@ function renderGroup(st){
   }
   if(GR.phase!=='play'){
     view(`<div style="display:flex;justify-content:space-between;font-size:12px;color:#a1a1aa"><span id="ginfo"></span><span id="gtm" style="color:#fcd34d;font-weight:700"></span></div>
-      <div id="gsb"></div><div id="gq"></div><div id="gst" style="font-size:12px;color:#a1a1aa;min-height:16px;margin-top:6px"></div>
+      <div id="gsb"></div><canvas id="gar" class="wg-arena"></canvas><div id="gq"></div><div id="gst" style="font-size:12px;color:#a1a1aa;min-height:16px;margin-top:6px"></div><div id="gspw" style="margin-top:6px"><button id="gsp" class="wg-b wg-p" data-act="gspecial">✨ Special Move (1 use)</button></div>
       <div id="gf" class="wg-feed" style="margin-top:8px"></div>`);
-    GR.phase='play';GR.rnd=-1;
+    GR.phase='play';GR.rnd=-1;GR.lastR=(st.log&&st.log.length)?Math.max.apply(null,st.log.map(e=>e.r)):-1;garInit($('#gar'),pls);
   }
   $('#gsb').innerHTML=gScore(pls,st.status==='active');
   try{modal.querySelectorAll('#gq .wg-kn').forEach((el,i)=>{if(pls[i])el.classList.toggle('done',!!pls[i].done)})}catch(e){}
   $('#gf').innerHTML=gFeed(st.log);
+  {const nw=(st.log||[]).filter(e=>e.r>GR.lastR).sort((a,b)=>a.r-b.r);if(nw.length){garRound($('#gar'),nw[nw.length-1],pls);GR.lastR=nw[nw.length-1].r}}
+  {const b=$('#gsp'),m=pls.find(p=>p.me);if(b&&m){b.disabled=!!m.sp||!!m.done;if(m.sp&&!GR.spArmed)b.textContent='✨ Special used'}}
   $('#ginfo').textContent='Round '+Math.min(st.rnd+1,st.n)+'/'+st.n+' · pot 🪙'+st.pot;
   if(st.status!=='active'){
     GR.over=true;clearInterval(gPoll);clearInterval(gTick);
@@ -708,6 +807,7 @@ function renderGroup(st){
   $('#gst').textContent=meAns?(left?'Locked in. Waiting for '+left+' more…':''):'';
 }
 function lockGq(){modal.querySelectorAll('#gq button,#gq input').forEach(b=>b.disabled=true)}
+async function groupSpecial(){if(!GR||GR.over||GR.answered)return;const r=await rpc('trivia_special',{p_id:GR.id,p_rnd:GR.rnd});if(r==='ok'){const b=$('#gsp');if(b){b.disabled=true;b.textContent='✨ Special armed! Answer right!'}}else if(r)say(errMsg(r))}
 async function groupAnswer(v){
   if(!GR||GR.answered||GR.over)return;
   GR.answered=true;lockGq();markDoor(v);
@@ -849,6 +949,7 @@ async function onClick(e){
   else if(a==='da'){const v=t.dataset.v;duelAnswer(v==='true'?true:v==='false'?false:+v)}
   else if(a==='dfb')duelFb();
   else if(a==='dcancel'){const r=await rpc('duel_cancel',{p_id:D&&D.id});if(r==='ok'){collect();say('Duel cancelled. Your stake is coming back.')}else if(r)say(errMsg(r));D=null;go('duel')}
+  else if(a==='dspecial'){duelSpecial()}
   else if(a==='dforfeit'){if(confirm('Forfeit? Your opponent takes the whole pot.')){const r=await rpc('duel_forfeit',{p_id:D&&D.id});if(r&&r!=='ok')say(errMsg(r));pollDuel()}}
   else if(a==='dback'){D=null;go('duel')}
   else if(a==='gcreate')createGroup();
@@ -856,6 +957,7 @@ async function onClick(e){
   else if(a==='ga'){const v=t.dataset.v;groupAnswer(v==='true'?true:v==='false'?false:+v)}
   else if(a==='gfb')groupFb();
   else if(a==='gstart'){const r=await rpc('trivia_start',{p_id:GR&&GR.id});if(r&&r!=='ok')say(errMsg(r));pollGroup()}
+  else if(a==='gspecial'){groupSpecial()}
   else if(a==='gleave'){const r=await rpc('trivia_leave',{p_id:GR&&GR.id});if(r==='ok'){collect();say('Left the room. Your stake is coming back.')}else if(r)say(errMsg(r));GR=null;go('group')}
   else if(a==='gback'){GR=null;go('group')}
   else if(a==='codejoin')joinByCode();
